@@ -63,6 +63,7 @@
 #include <BmpImage.h>
 #include <ImageCanvas.h>
 #include <Label.h>
+#include <VerticalScroller.h>
 #include <GraphicsVideo.h>
 #include <metrics.h>
 
@@ -1432,8 +1433,20 @@ void graphics_window_app(int x, int y) {
 
   auto& closeBt = upanui::UIObjectFactory::createCloseIconButton(uiMenuBar, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
 
-  auto& uiMain = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, menuBarHeight, appWidth, mainHeight);
+  const int scrollBarWidth = 20;
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, mainHeight);
+
+  auto& uiMain = upanui::UIObjectFactory::createRectangleCanvas(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight + mainHeight);
   uiMain.backgroundColor(0xEFE8E6);
+
+  auto& child1 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 10, 40, 100, 200);
+  child1.backgroundColor(0xFF0000);
+
+  auto& child2 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 50, mainHeight - 30, 100, 100);
+  child2.backgroundColor(0x00FF00);
+
+  auto& child3 = upanui::UIObjectFactory::createRoundCanvas(uiMain, 200, mainHeight + 200, 100, 100);
+  child3.backgroundColor(0x0000FF);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;

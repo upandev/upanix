@@ -140,6 +140,9 @@ private:
     void sizeChanged() override {}
     void contentChanged() override {}
 
+    void vscroll(int rows) override {}
+    void hscroll(int columns) override {}
+
   private:
     RootFrame& _frame;
     upanui::DrawBuffer _drawBuffer;
