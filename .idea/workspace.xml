@@ -16,10 +16,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3c1b55fe-3232-4a89-b452-2fd4fbe06d67" name="Default Changelist" comment="handle mouse events asynchronously">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,20 +41,7 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/memory/MemManager.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/display/RootConsole.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/memory/MemManager.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/display/RootGUIConsole.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/kernel/MultiBoot.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../upanlibs/libupanui/text/ConsoleBuffer.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/display/RootConsole.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/util/StringUtil.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/kernel/UpanixMain.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/drivers/video/GraphicsVideo.h" root0="FORCE_HIGHLIGHTING" />
-  </component>
-  <component name="ProjectId" id="2I26Dqkw819uBoN8j7zlEoJf8AV" />
+  <component name="ProjectId" id="2KwYpfak6x92oCUSsIMkh0N6qn7" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -66,19 +54,17 @@
     <property name="cf.first.check.clang-format" value="false" />
     <property name="cidr.known.project.marker" value="true" />
     <property name="cmake.loaded.for.project" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/display" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="terminal" />
-  </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="\\wsl$\Ubuntu-22.04\home\prajwala\workspace\src\upanix\display" />
-    </key>
   </component>
   <component name="RunManager" selected="Shell Script.Upanix Load &amp; Run">
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Upanix Load &amp; Run" type="ShConfigurationType">
@@ -119,91 +105,17 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="3c1b55fe-3232-4a89-b452-2fd4fbe06d67" name="Default Changelist" comment="" />
-      <created>1669367215805</created>
+      <changelist id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="" />
+      <created>1674887296898</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1669367215805</updated>
-      <workItem from="1669367220506" duration="329000" />
-      <workItem from="1669367566368" duration="2703000" />
-      <workItem from="1669422760625" duration="11803000" />
-      <workItem from="1669469999018" duration="4590000" />
-      <workItem from="1669516552113" duration="17085000" />
-      <workItem from="1670030142602" duration="6746000" />
-      <workItem from="1670074252532" duration="3386000" />
-      <workItem from="1670117716104" duration="7971000" />
-      <workItem from="1670148451555" duration="5967000" />
-      <workItem from="1670720124745" duration="3481000" />
-      <workItem from="1671268987859" duration="5224000" />
-      <workItem from="1671280029527" duration="1658000" />
-      <workItem from="1671282175337" duration="116000" />
-      <workItem from="1671282492084" duration="896000" />
-      <workItem from="1671328730035" duration="5450000" />
-      <workItem from="1671373903677" duration="1037000" />
+      <updated>1674887296898</updated>
+      <workItem from="1674887308811" duration="25000" />
+      <workItem from="1674887461869" duration="6523000" />
     </task>
-    <task id="LOCAL-00001" summary="clion config change">
-      <created>1669380369207</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1669380369207</updated>
-    </task>
-    <task id="LOCAL-00002" summary="explicitly unset WP bit in CRO when enabling paging to allow supervisor (kernel) level process to write to read-only pages like for example graphics linear framebuffer">
-      <created>1669526466048</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1669526466048</updated>
-    </task>
-    <task id="LOCAL-00003" summary="support to write char* string to com ports">
-      <created>1669527415046</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1669527415046</updated>
-    </task>
-    <task id="LOCAL-00004" summary="config changed for higher display resolution">
-      <created>1669560206647</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1669560206647</updated>
-    </task>
-    <task id="LOCAL-00005" summary="handle mouse events asynchronously">
-      <created>1671369129058</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1671369129058</updated>
-    </task>
-    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="clion config change" />
-    <MESSAGE value="explicitly unset WP bit in CRO when enabling paging to allow supervisor (kernel) level process to write to read-only pages like for example graphics linear framebuffer" />
-    <MESSAGE value="support to write char* string to com ports" />
-    <MESSAGE value="config changed for higher display resolution" />
-    <MESSAGE value="handle mouse events asynchronously" />
-    <option name="LAST_COMMIT_MESSAGE" value="handle mouse events asynchronously" />
-  </component>
-  <component name="XSLT-Support.FileAssociations.UIState">
-    <expand />
-    <select />
   </component>
 </project>
