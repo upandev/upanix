@@ -34,7 +34,7 @@ class PS2MouseDriver
     }
 		void HandleEvent();
     void StartDispatcher();
-    upanui::MouseData GetMouseData();
+    upanui::MouseData GetMouseData(const upanui::MouseData& prevMouseData);
     void ResetMousePosition();
 
 	private:

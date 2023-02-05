@@ -117,6 +117,7 @@ private:
     void redraw() override {}
 
     void registerMouseEventHandler(upanui::MouseEventHandler& handler) override {}
+    bool hasAlphaLocal() override { return false; }
     bool hasAlpha() override { return false; }
     upan::option<UIObject&> uiObjectUnderCursor(const int x, const int y) override { return upan::option<UIObject&>::empty(); }
 
@@ -140,7 +141,7 @@ private:
     void sizeChanged() override {}
     void contentChanged() override {}
 
-    void vscroll(int rows) override {}
+    void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
 
   private:

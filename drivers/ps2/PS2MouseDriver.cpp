@@ -106,10 +106,11 @@ void PS2MouseDriver::HandleEvent() {
         bool middlePressed = status & 0x4;
         const upanui::MouseData mouseData = _prevMouseData.transition(deltaX, deltaY, leftPressed, rightPressed, middlePressed);
 
-        if (mouseData == _prevMouseData) {
+        if (mouseData == _prevMouseData && !mouseData.anyButtonHeld()) {
           return;
         }
         _prevMouseData = mouseData;
+
         if (!_qBuffer.push_back(mouseData)) {
           printf("\nMFULL");
         }
@@ -122,10 +123,19 @@ void PS2MouseDriver::HandleEvent() {
   }
 }
 
-upanui::MouseData PS2MouseDriver::GetMouseData() {
+upanui::MouseData PS2MouseDriver::GetMouseData(const upanui::MouseData& prevMouseData) {
   while(true) {
     if(_qBuffer.empty()) {
-      ProcessManager::Instance().WaitOnInterrupt(StdIRQ::Instance().MOUSE_IRQ);
+      ProcessManager::Instance().WaitOnInterruptWithTimeout(StdIRQ::Instance().MOUSE_IRQ, 100);
+      if (_qBuffer.empty()) {
+        auto mouseData = prevMouseData.transition(0, 0,
+                                                  prevMouseData.leftButtonState() == upanui::MouseData::PRESSED || prevMouseData.leftButtonState() == upanui::MouseData::HOLD,
+                                                  prevMouseData.middleButtonState() == upanui::MouseData::PRESSED || prevMouseData.middleButtonState() == upanui::MouseData::HOLD,
+                                                  prevMouseData.rightButtonState() == upanui::MouseData::PRESSED || prevMouseData.rightButtonState() == upanui::MouseData::HOLD);
+        if (mouseData.anyButtonHeld()) {
+          return mouseData;
+        }
+      }
     } else {
       const auto &data = _qBuffer.front();
       _qBuffer.pop_front();
@@ -140,8 +150,9 @@ void PS2MouseDriver::ResetMousePosition() {
 
 static void Mouse_Event_Dispatcher() {
   try {
+    upanui::MouseData mouseData;
     while(true) {
-      const auto& mouseData = PS2MouseDriver::Instance().GetMouseData();
+      mouseData = PS2MouseDriver::Instance().GetMouseData(mouseData);
 
       GraphicsVideo::Instance().SetMouseCursorPos(mouseData.x(), mouseData.y());
 

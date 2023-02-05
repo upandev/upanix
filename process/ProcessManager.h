@@ -91,6 +91,7 @@ class ProcessManager
     void SetResourceBusy(RESOURCE_KEYS uiType, bool bVal);
     void Sleep(unsigned uiSleepTime);
     void WaitOnInterrupt(const IRQ&);
+    void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
     int GetCurProcId();
     bool CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem::PresentWorkingDirectory& mOldPWD);
     void Kill(int iProcessID);

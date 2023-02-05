@@ -228,6 +228,18 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 		}
 		break ;
 
+    case WAIT_INT_WITH_TIMEOUT:
+    {
+      if(!WakeupProcessOnInterrupt(process)) {
+        if(PIT_GetClockCount() < stateInfo.SleepTime()) {
+          return;
+        }
+        stateInfo.SleepTime(0) ;
+        process.setStatus(RUN);
+      }
+    }
+    break ;
+
     case WAIT_EVENT:
     {
       if(!IsEventCompleted(process.processID()))
@@ -385,11 +397,30 @@ void ProcessManager::WaitOnInterrupt(const IRQ& irq)
 	}
 
 	ProcessManager::DisableTaskSwitch();
-	
-  GetCurrentPAS().stateInfo().Irq(&irq);
-	GetCurrentPAS().setStatus(WAIT_INT);
+
+  auto& p = GetCurrentPAS();
+  p.stateInfo().Irq(&irq);
+  p.setStatus(WAIT_INT);
 
 	ProcessManager_Yield();
+}
+
+void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout)
+{
+  if(DoPollWait())
+  {
+    KernelUtil::WaitOnInterrupt(irq);
+    return;
+  }
+
+  ProcessManager::DisableTaskSwitch();
+
+  auto& p = GetCurrentPAS();
+  p.stateInfo().Irq(&irq);
+  p.stateInfo().SleepTime(PIT_GetClockCount() + PIT_RoundSleepTime(timeout));
+  p.setStatus(WAIT_INT_WITH_TIMEOUT);
+
+  ProcessManager_Yield();
 }
 
 void ProcessManager::WaitForEvent()
