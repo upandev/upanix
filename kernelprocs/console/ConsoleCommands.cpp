@@ -1445,12 +1445,18 @@ void graphics_window_app(int x, int y) {
   auto& child2 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 50, mainHeight - 30, 100, 100);
   child2.backgroundColor(0x00FF00);
 
-  auto& child3 = upanui::UIObjectFactory::createRoundCanvas(uiMain, 200, mainHeight + 200, 100, 100);
+  auto& child3 = upanui::UIObjectFactory::createRoundCanvas(uiMain, 200, 40, 150, 150);
   child3.backgroundColor(0x0000FF);
+
+  auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5);
+  child4.backgroundColor(0x0FF0FF);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
   uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
+  uiMain.captureMouseEvents(true);
+  child3.registerMouseEventHandler(mouseHandler);
+  child4.registerMouseEventHandler(mouseHandler);
 
   gc.eventManager().startEventLoop();
 

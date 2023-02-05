@@ -119,6 +119,7 @@ private:
     void registerMouseEventHandler(upanui::MouseEventHandler& handler) override {}
     bool hasAlphaLocal() override { return false; }
     bool hasAlpha() override { return false; }
+    bool isRectangularShape() override { return true; }
     upan::option<UIObject&> uiObjectUnderCursor(const int x, const int y) override { return upan::option<UIObject&>::empty(); }
 
     bool captureMouseEvents() const override {

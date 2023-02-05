@@ -16,13 +16,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="scroller testing">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +108,7 @@
       <workItem from="1674887461869" duration="10003000" />
       <workItem from="1674966495326" duration="7628000" />
       <workItem from="1675170263491" duration="4011000" />
-      <workItem from="1675576774719" duration="3541000" />
+      <workItem from="1675576774719" duration="8574000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -127,7 +124,14 @@
       <option name="project" value="LOCAL" />
       <updated>1674909879894</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event">
+      <created>1675591833215</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1675591833215</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -148,6 +152,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update workspace.xml" />
     <MESSAGE value="scroller testing" />
-    <option name="LAST_COMMIT_MESSAGE" value="scroller testing" />
+    <MESSAGE value="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event" />
+    <option name="LAST_COMMIT_MESSAGE" value="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event" />
   </component>
 </project>
