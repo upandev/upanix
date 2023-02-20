@@ -225,7 +225,7 @@ upan::option<upanui::KeyboardData> KeyboardHandler::GetFromQueueBuffer() {
     return upan::option<upanui::KeyboardData>::empty();
   const auto& data = _qBuffer.front();
   _qBuffer.pop_front();
-  return data;// upan::option<KeyboardData>(data);
+  return upan::option<upanui::KeyboardData>(data);
 }
 
 bool KeyboardHandler::Process(const KeyboardKeys key, const bool isKeyReleased) {

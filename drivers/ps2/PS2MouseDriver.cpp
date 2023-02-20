@@ -81,7 +81,7 @@ upan::option<uint8_t> PS2MouseDriver::ReceiveIRQData() {
 
   const auto status = PortCom_ReceiveByte(PS2Controller::COMMAND_PORT);
 	if(status & 0x20) {
-    return PortCom_ReceiveByte(PS2Controller::DATA_PORT);
+    return upan::option<uint8_t>(PortCom_ReceiveByte(PS2Controller::DATA_PORT));
   }
 	// the data at the port is not from mouse
 	return upan::option<uint8_t>::empty();

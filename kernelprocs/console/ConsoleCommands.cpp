@@ -60,12 +60,13 @@
 #include <Line.h>
 #include <GCoreFunctions.h>
 #include <Point.h>
-#include <BmpImage.h>
 #include <ImageCanvas.h>
 #include <Label.h>
 #include <VerticalScroller.h>
 #include <GraphicsVideo.h>
 #include <metrics.h>
+#include <BmpEncoder.h>
+#include <PngEncoder.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -953,7 +954,8 @@ void graphics_photos(int x, int y) {
       file.seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file.read(buffer.get(), fileSize);
-      upanui::BmpImage& image = upanui::BmpImage::create(buffer.get());
+      upanui::BmpEncoder decoder;
+      upanui::Image& image = decoder.decode(buffer.get(), upan::option<uint32_t>::empty());
       images.push_back(&image);
       FileOperations_Close(file.id());
     }
@@ -1420,6 +1422,9 @@ void graphics_test_clock(int x, int y) {
   exit(0);
 }
 
+extern unsigned _binary_test_png_start;
+extern unsigned _binary_test_png_size;
+
 void graphics_window_app(int x, int y) {
   const int appWidth = 600;
   const int mainHeight = 500;
@@ -1450,6 +1455,38 @@ void graphics_window_app(int x, int y) {
 
   auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5);
   child4.backgroundColor(0x0FF0FF);
+
+  /**/
+  /* Create a context */
+  auto ctx = new upanui::PngEncoder::Context(0);
+
+  printf("\nAddr: %x, Size: %d", &_binary_test_png_start, &_binary_test_png_size);
+/* Set an input buffer */
+  upanui::PngEncoder::spng_set_png_buffer(ctx, &_binary_test_png_start, &_binary_test_png_size);
+
+  size_t out_size;
+/* Determine output image size */
+  ctx->spng_decoded_image_size(upanui::PngEncoder::PNG_FMT_RGBA8, &out_size);
+
+  printf("\nOut Size: %d", out_size);
+  byte* out = new byte[out_size];
+
+/* Decode to 8-bit RGBA */
+  ctx->spng_decode_image(out, out_size, upanui::PngEncoder::PNG_FMT_RGBA8, 0);
+
+  for(int i = 0; i < out_size; i += 4) {
+    byte x = out[i + 2];
+    out[i + 2] = out[i];
+    out[i] = x;
+  }
+
+/* Free context memory */
+  upanui::Image image(ctx->_ihdr.width, ctx->_ihdr.height, (uint32_t*)out);
+
+  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, image, 100, 100, 99, 99);
+
+  delete ctx;
+   /**/
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;

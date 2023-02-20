@@ -216,7 +216,7 @@ upan::option<uint8_t> PS2Controller::ReceiveData() {
   if(!WaitForRead()) {
     return upan::option<uint8_t>::empty();
   }
-	return PortCom_ReceiveByte(DATA_PORT);
+	return upan::option<uint8_t>(PortCom_ReceiveByte(DATA_PORT));
 }
 
 void PS2Controller::ClearOutputBuffer() {

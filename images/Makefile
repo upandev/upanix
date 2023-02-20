@@ -28,6 +28,15 @@ build: ${IMAGE_MOUSE_CURSOR_OBJ}
 ${IMAGE_MOUSE_CURSOR_OBJ}: ${IMAGE_MOUSE_CURSOR}
 	${LD} -r -b binary -o ${IMAGE_MOUSE_CURSOR_OBJ} ${IMAGE_MOUSE_CURSOR}
 
+IMAGE_TEST = test.png
+
+IMAGE_TEST_OBJ = test.o
+
+build: ${IMAGE_TEST_OBJ}
+
+${IMAGE_TEST_OBJ}: ${IMAGE_TEST}
+	${LD} -r -b binary -o ${IMAGE_TEST_OBJ} ${IMAGE_TEST}
+
 #readelf -s ${IMAGE_MOUSE_CURSOR_OBJ}
 
 clean:

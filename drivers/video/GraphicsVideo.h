@@ -24,7 +24,6 @@
 #include <MultiBoot.h>
 #include <KernelUtil.h>
 #include <usfncontext.h>
-#include <BmpImage.h>
 #include <atomicop.h>
 #include <list.h>
 #include <vector.h>
