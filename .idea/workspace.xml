@@ -16,7 +16,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="identify root gui console as a rectangular shape object">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="test PNG image decoder">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
@@ -121,6 +121,7 @@
       <workItem from="1676377978361" duration="4850000" />
       <workItem from="1676721681662" duration="5287000" />
       <workItem from="1676761257385" duration="8409000" />
+      <workItem from="1676893204091" duration="317000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -150,7 +151,14 @@
       <option name="project" value="LOCAL" />
       <updated>1675610053184</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="test PNG image decoder">
+      <created>1676893519306</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1676893519306</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -173,6 +181,7 @@
     <MESSAGE value="scroller testing" />
     <MESSAGE value="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event" />
     <MESSAGE value="identify root gui console as a rectangular shape object" />
-    <option name="LAST_COMMIT_MESSAGE" value="identify root gui console as a rectangular shape object" />
+    <MESSAGE value="test PNG image decoder" />
+    <option name="LAST_COMMIT_MESSAGE" value="test PNG image decoder" />
   </component>
 </project>
