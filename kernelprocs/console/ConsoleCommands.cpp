@@ -996,47 +996,47 @@ void graphics_test_process_canvas(int x, int y) {
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, 400, 400, true);
   uiRoot.backgroundColor(ColorPalettes::CP256::Get(15));
-  uiRoot.backgroundColorAlpha(50);
+  uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
   uiRoot.borderThickness(5);
 
   auto& cc1 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 120, 10, 120, 120);
   cc1.backgroundColor(ColorPalettes::CP256::Get(230));
-  cc1.backgroundColorAlpha(80);
+  cc1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(80));
   cc1.borderColor(ColorPalettes::CP256::Get(177));
-  cc1.borderColorAlpha(100);
+  cc1.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc1.borderThickness(10);
 
   auto& cc2 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 250, 10, 120, 120);
   cc2.backgroundColor(ColorPalettes::CP256::Get(230));
-  cc2.backgroundColorAlpha(100);
+  cc2.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc2.borderColor(ColorPalettes::CP256::Get(177));
-  cc2.borderColorAlpha(100);
+  cc2.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc2.borderThickness(10);
 
   auto& cpt = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, -10, 180, 100, 100);
   cpt.backgroundColor(ColorPalettes::CP256::Get(30));
-  cpt.backgroundColorAlpha(50);
+  cpt.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& cpt1 = upanui::UIObjectFactory::createRectangleCanvas(cpt, -10, 20, 60, 60);
   cpt1.backgroundColor(ColorPalettes::CP256::Get(0));
   cpt1.borderColor(ColorPalettes::CP256::Get(255));
   cpt1.borderThickness(2);
-  cpt1.backgroundColorAlpha(50);
-  cpt1.borderColorAlpha(50);
+  cpt1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
+  cpt1.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& cp1c1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 180, 130, 40);
   cp1c1.backgroundColor(ColorPalettes::CP256::Get(0));
-  cp1c1.backgroundColorAlpha(25);
+  cp1c1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(25));
 
   auto& cp1c2 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 220, 130, 40);
   cp1c2.backgroundColor(ColorPalettes::CP256::Get(10));
 
   auto& cp1c3 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 260, 130, 40);
   cp1c3.backgroundColor(ColorPalettes::CP256::Get(20));
-  cp1c3.backgroundColorAlpha(25);
+  cp1c3.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(25));
 
   auto& cp1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 200, 200, 100, 100);
-  cp1.backgroundColorAlpha(70);
+  cp1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(70));
   cp1.backgroundColor(ColorPalettes::CP256::Get(25));
 
   auto& ci1 = upanui::UIObjectFactory::createButton(cp1, 40, 10, 50, 30);
@@ -1059,7 +1059,7 @@ void graphics_test_process_canvas(int x, int y) {
 
   auto& bp1 = upanui::UIObjectFactory::createButton(uiRoot, 10, 50, 100, 100);
   bp1.backgroundColor(btpColor);
-  //bp1.backgroundColorAlpha(0);
+  //bp1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
   bp1.borderThickness(5);
 
   const uint32_t btColor = ColorPalettes::CP256::Get(25);
@@ -1111,7 +1111,7 @@ void graphics_test_process_line(int x, int y) {
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, 500, 400, true);
   uiRoot.backgroundColor(ColorPalettes::CP256::Get(15));
-  uiRoot.backgroundColorAlpha(50);
+  uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
   uiRoot.borderThickness(5);
 
   auto& lineh = upanui::UIObjectFactory::createLine(uiRoot, 10, 20, 100, 20, 10);
@@ -1122,19 +1122,19 @@ void graphics_test_process_line(int x, int y) {
 
   auto& line2 = upanui::UIObjectFactory::createLine(uiRoot, 345, 10, 365, 300, 25);
   line2.backgroundColor(ColorPalettes::CP256::Get(190));
-  line2.backgroundColorAlpha(100);
+  line2.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
   auto& line2a = upanui::UIObjectFactory::createLine(uiRoot, 375, 10, 395, 300, 25);
   line2a.backgroundColor(ColorPalettes::CP256::Get(190));
-  line2a.backgroundColorAlpha(50);
+  line2a.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& line2o = upanui::UIObjectFactory::createLine(uiRoot, 455, 10, 435, 300, 25);
   line2o.backgroundColor(ColorPalettes::CP256::Get(190));
-  line2o.backgroundColorAlpha(100);
+  line2o.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
   auto& line2oa = upanui::UIObjectFactory::createLine(uiRoot, 485, 10, 465, 300, 25);
   line2oa.backgroundColor(ColorPalettes::CP256::Get(190));
-  line2oa.backgroundColorAlpha(50);
+  line2oa.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& line21 = upanui::UIObjectFactory::createLine(uiRoot, 260, 10, 280, 300, 2);
   line21.backgroundColor(ColorPalettes::CP256::Get(190));
@@ -1150,19 +1150,19 @@ void graphics_test_process_line(int x, int y) {
 
   auto& line3 = upanui::UIObjectFactory::createLine(uiRoot, 20, 200, 200, 220, 25);
   line3.backgroundColor(ColorPalettes::CP256::Get(190));
-  line3.backgroundColorAlpha(100);
+  line3.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
   auto& line3a = upanui::UIObjectFactory::createLine(uiRoot, 20, 230, 200, 250, 25);
   line3a.backgroundColor(ColorPalettes::CP256::Get(190));
-  line3a.backgroundColorAlpha(50);
+  line3a.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& line3o = upanui::UIObjectFactory::createLine(uiRoot, 20, 350, 200, 330, 25);
   line3o.backgroundColor(ColorPalettes::CP256::Get(190));
-  line3o.backgroundColorAlpha(100);
+  line3o.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
   auto& line3oa = upanui::UIObjectFactory::createLine(uiRoot, 20, 380, 200, 360, 25);
   line3oa.backgroundColor(ColorPalettes::CP256::Get(190));
-  line3oa.backgroundColorAlpha(50);
+  line3oa.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
   auto& line31 = upanui::UIObjectFactory::createLine(uiRoot, 20, 50, 200, 70, 1);
   line31.backgroundColor(ColorPalettes::CP256::Get(190));
@@ -1250,7 +1250,7 @@ void graphics_test_flag(int x, int y) {
   auto& wheel = upanui::UIObjectFactory::createRoundCanvas(uiRoot, cx - r - 1, cy - r - 1, 2 * (r + 1), 2 * (r + 1));
   wheel.borderColor(ColorPalettes::CP256::Get(4));
   wheel.borderThickness(5);
-  wheel.backgroundColorAlpha(0);
+  wheel.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
 
   DragMouseHandler mouseHandler;
   uiRoot.registerMouseEventHandler(mouseHandler);
@@ -1346,7 +1346,7 @@ private:
                                                          upanui::usfn::PreloadedFonts::VGA16,
                                                          upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize);
       label.backgroundColor(0);
-      label.backgroundColorAlpha(0);
+      label.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
     }
 
     int c = 0;
@@ -1362,17 +1362,17 @@ private:
       sleepms(1000);
       c = (c + 1) % 20;
       if (c >= 5 && c < 10) {
-        _uiRoot.backgroundColorAlpha(50);
-        _uiRoot.borderColorAlpha(50);
+        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
+        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
       } else if (c >= 10 && c < 15){
-        _uiRoot.backgroundColorAlpha(0);
-        _uiRoot.borderColorAlpha(0);
+        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
+        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
       } else if (c >= 15 && c < 20) {
-        clockCanvas.backgroundColorAlpha(80);
+        clockCanvas.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(80));
       } else {
-        clockCanvas.backgroundColorAlpha(100);
-        _uiRoot.backgroundColorAlpha(100);
-        _uiRoot.borderColorAlpha(100);
+        clockCanvas.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
+        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
+        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
       }
     }
   }
@@ -1406,7 +1406,7 @@ void graphics_test_clock(int x, int y) {
   upanui::GraphicsContext::Init();
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, clockSize, clockSize, true);
-  //uiRoot.backgroundColorAlpha(0);
+  //uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
   uiRoot.borderThickness(10);
   uiRoot.borderColor(0xf0fff0);
   uiRoot.backgroundColor(0xf0f0ff);

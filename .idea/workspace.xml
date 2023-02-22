@@ -18,13 +18,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="test PNG image decoder">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2Controller.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2Controller.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/images/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -62,11 +55,6 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunManager" selected="Shell Script.Upanix Load &amp; Run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Upanix Load &amp; Run" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="make &amp;&amp; ./runqemu_uefi load &amp;&amp; exit" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
@@ -121,7 +109,8 @@
       <workItem from="1676377978361" duration="4850000" />
       <workItem from="1676721681662" duration="5287000" />
       <workItem from="1676761257385" duration="8409000" />
-      <workItem from="1676893204091" duration="317000" />
+      <workItem from="1676893204091" duration="1517000" />
+      <workItem from="1677072973157" duration="1239000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -158,7 +147,14 @@
       <option name="project" value="LOCAL" />
       <updated>1676893519306</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="test PNG image decoder">
+      <created>1676896791112</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1676896791112</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
