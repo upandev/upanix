@@ -63,7 +63,6 @@
 #include <ImageCanvas.h>
 #include <Label.h>
 #include <VerticalScroller.h>
-#include <GraphicsVideo.h>
 #include <metrics.h>
 #include <BmpEncoder.h>
 #include <PngEncoder.h>
