@@ -1432,7 +1432,7 @@ void graphics_window_app(int x, int y) {
   auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight);
   uiMenuBar.backgroundColor(0xA59E9D);
 
-  auto& closeBt = upanui::UIObjectFactory::createCloseIconButton(uiMenuBar, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
 
   const int scrollBarWidth = 20;
   auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, mainHeight);
@@ -1452,9 +1452,7 @@ void graphics_window_app(int x, int y) {
   auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5);
   child4.backgroundColor(0x0FF0FF);
 
-  upanui::PngEncoder pngEncoder;
-  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(upanui::ImageResource::TEST_PNG));
-  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, *image.get(), 100, 100, image->width(), image->height());
+  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, upanui::PngImageResource::TEST, 100, 100);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;

@@ -34,8 +34,6 @@
 #include <RootGUIConsole.h>
 #include <GCoreFunctions.h>
 #include <metrics.h>
-#include <BmpEncoder.h>
-#include <PngEncoder.h>
 #include <ImageResource.h>
 
 //make below extern as you load bmp files during testing
@@ -106,8 +104,7 @@ void GraphicsVideo::Initialize() {
   }
 
   printf("\n Initializing mouse cursor image");
-  upanui::PngEncoder pngEncoder;
-  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(upanui::ImageResource::MOUSE_CURSOR_PNG));
+  upan::uniq_ptr<upanui::Image> image(&upanui::PngImageResource::MOUSE_CURSOR.create());
   image->resize(12, 18);
   _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
 

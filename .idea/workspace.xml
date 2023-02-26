@@ -16,8 +16,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="use predefined image resource for mouse cursor and testing">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="refactor to remove unused header">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +123,7 @@
       <workItem from="1676893204091" duration="1517000" />
       <workItem from="1677072973157" duration="1904000" />
       <workItem from="1677299189851" duration="12065000" />
-      <workItem from="1677376639552" duration="11935000" />
+      <workItem from="1677376639552" duration="17241000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -187,7 +188,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677392546031</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="refactor to remove unused header">
+      <created>1677410075459</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1677410075459</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -214,6 +222,7 @@
     <MESSAGE value="change alpha channel range to 0-255" />
     <MESSAGE value="use png image for mouse cursor" />
     <MESSAGE value="use predefined image resource for mouse cursor and testing" />
-    <option name="LAST_COMMIT_MESSAGE" value="use predefined image resource for mouse cursor and testing" />
+    <MESSAGE value="refactor to remove unused header" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor to remove unused header" />
   </component>
 </project>
