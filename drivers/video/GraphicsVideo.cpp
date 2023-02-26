@@ -35,8 +35,12 @@
 #include <GCoreFunctions.h>
 #include <metrics.h>
 #include <BmpEncoder.h>
+#include <PngEncoder.h>
 
-extern unsigned _binary_mouse_cursor_bmp_start;
+extern unsigned _binary_mouse_cursor1_bmp_start;
+extern unsigned _binary_mouse_cursor2_png_start;
+extern unsigned _binary_mouse_cursor2_png_size;
+
 //make below extern as you load bmp files during testing
 unsigned _binary_p16_bmp_start;
 unsigned _binary_p256_bmp_start;
@@ -105,11 +109,16 @@ void GraphicsVideo::Initialize() {
   }
 
   printf("\n Initializing mouse cursor image");
-  upanui::BmpEncoder decoder;
-  upan::uniq_ptr<upanui::Image> image(&decoder.decode(&_binary_mouse_cursor_bmp_start,
-                                                     upan::option<uint32_t>(ColorPalettes::CP16::Get(ColorPalettes::CP16::FGColor::FG_RED))));
-  image->resize(16, 16);
+  upanui::PngEncoder pngEncoder;
+  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(&_binary_mouse_cursor2_png_start, (size_t)&_binary_mouse_cursor2_png_size));
+  image->resize(12, 18);
   _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
+
+//  upanui::BmpEncoder decoder;
+//  upan::uniq_ptr<upanui::Image> image(&decoder.decode(&_binary_mouse_cursor_bmp_start,
+//                                                      upan::option<uint32_t>(ColorPalettes::CP16::Get(ColorPalettes::CP16::FGColor::FG_RED))));
+//  image->resize(16, 16);
+//  _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
 
   // You can as well read a .sfn file in a buffer and call ssfn_load on the same
   // In here, the .sfn file was included as part of the kernel binary

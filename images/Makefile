@@ -19,21 +19,21 @@
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 LD = ${HOME}/opt/cross/i686-elf/bin/ld
 
-IMAGE_MOUSE_CURSOR = mouse_cursor.bmp
+IMAGE_MOUSE_CURSOR_BMP = mouse_cursor1.bmp
+IMAGE_MOUSE_CURSOR_BMP_OBJ = mouse_cursor1.o
+build: ${IMAGE_MOUSE_CURSOR_BMP_OBJ}
+${IMAGE_MOUSE_CURSOR_BMP_OBJ}: ${IMAGE_MOUSE_CURSOR_BMP}
+	${LD} -r -b binary -o ${IMAGE_MOUSE_CURSOR_BMP_OBJ} ${IMAGE_MOUSE_CURSOR_BMP}
 
-IMAGE_MOUSE_CURSOR_OBJ = mouse_cursor.o
-
-build: ${IMAGE_MOUSE_CURSOR_OBJ}
-
-${IMAGE_MOUSE_CURSOR_OBJ}: ${IMAGE_MOUSE_CURSOR}
-	${LD} -r -b binary -o ${IMAGE_MOUSE_CURSOR_OBJ} ${IMAGE_MOUSE_CURSOR}
+IMAGE_MOUSE_CURSOR_PNG = mouse_cursor2.png
+IMAGE_MOUSE_CURSOR_PNG_OBJ = mouse_cursor2.o
+build: ${IMAGE_MOUSE_CURSOR_PNG_OBJ}
+${IMAGE_MOUSE_CURSOR_PNG_OBJ}: ${IMAGE_MOUSE_CURSOR_PNG}
+	${LD} -r -b binary -o ${IMAGE_MOUSE_CURSOR_PNG_OBJ} ${IMAGE_MOUSE_CURSOR_PNG}
 
 IMAGE_TEST = test.png
-
 IMAGE_TEST_OBJ = test.o
-
 build: ${IMAGE_TEST_OBJ}
-
 ${IMAGE_TEST_OBJ}: ${IMAGE_TEST}
 	${LD} -r -b binary -o ${IMAGE_TEST_OBJ} ${IMAGE_TEST}
 

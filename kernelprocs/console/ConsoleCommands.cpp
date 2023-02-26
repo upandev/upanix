@@ -1456,37 +1456,9 @@ void graphics_window_app(int x, int y) {
   auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5);
   child4.backgroundColor(0x0FF0FF);
 
-  /**/
-  /* Create a context */
-  auto ctx = new upanui::PngEncoder::Context(0);
-
-  printf("\nAddr: %x, Size: %d", &_binary_test_png_start, &_binary_test_png_size);
-/* Set an input buffer */
-  upanui::PngEncoder::spng_set_png_buffer(ctx, &_binary_test_png_start, &_binary_test_png_size);
-
-  size_t out_size;
-/* Determine output image size */
-  ctx->spng_decoded_image_size(upanui::PngEncoder::PNG_FMT_RGBA8, &out_size);
-
-  printf("\nOut Size: %d", out_size);
-  byte* out = new byte[out_size];
-
-/* Decode to 8-bit RGBA */
-  ctx->spng_decode_image(out, out_size, upanui::PngEncoder::PNG_FMT_RGBA8, 0);
-
-  for(int i = 0; i < out_size; i += 4) {
-    byte x = out[i + 2];
-    out[i + 2] = out[i];
-    out[i] = x;
-  }
-
-/* Free context memory */
-  upanui::Image image(ctx->_ihdr.width, ctx->_ihdr.height, (uint32_t*)out);
-
-  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, image, 100, 100, 99, 99);
-
-  delete ctx;
-   /**/
+  upanui::PngEncoder pngEncoder;
+  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(&_binary_test_png_start, (size_t)&_binary_test_png_size));
+  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, *image.get(), 100, 100, image->width(), image->height());
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;

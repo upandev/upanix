@@ -16,8 +16,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="test PNG image decoder">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="change alpha channel range to 0-255">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/images/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mouse_cursor.bmp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -110,7 +113,9 @@
       <workItem from="1676721681662" duration="5287000" />
       <workItem from="1676761257385" duration="8409000" />
       <workItem from="1676893204091" duration="1517000" />
-      <workItem from="1677072973157" duration="1239000" />
+      <workItem from="1677072973157" duration="1904000" />
+      <workItem from="1677299189851" duration="12065000" />
+      <workItem from="1677376639552" duration="2105000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -154,7 +159,14 @@
       <option name="project" value="LOCAL" />
       <updated>1676896791112</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="change alpha channel range to 0-255">
+      <created>1677074296605</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1677074296605</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -178,6 +190,7 @@
     <MESSAGE value="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event" />
     <MESSAGE value="identify root gui console as a rectangular shape object" />
     <MESSAGE value="test PNG image decoder" />
-    <option name="LAST_COMMIT_MESSAGE" value="test PNG image decoder" />
+    <MESSAGE value="change alpha channel range to 0-255" />
+    <option name="LAST_COMMIT_MESSAGE" value="change alpha channel range to 0-255" />
   </component>
 </project>
