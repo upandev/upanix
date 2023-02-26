@@ -1422,9 +1422,6 @@ void graphics_test_clock(int x, int y) {
   exit(0);
 }
 
-extern unsigned _binary_test_png_start;
-extern unsigned _binary_test_png_size;
-
 void graphics_window_app(int x, int y) {
   const int appWidth = 600;
   const int mainHeight = 500;
@@ -1457,7 +1454,7 @@ void graphics_window_app(int x, int y) {
   child4.backgroundColor(0x0FF0FF);
 
   upanui::PngEncoder pngEncoder;
-  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(&_binary_test_png_start, (size_t)&_binary_test_png_size));
+  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(upanui::ImageResource::TEST_PNG));
   auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, *image.get(), 100, 100, image->width(), image->height());
 
   DragMouseHandler mouseHandler;

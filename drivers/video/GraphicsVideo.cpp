@@ -36,10 +36,7 @@
 #include <metrics.h>
 #include <BmpEncoder.h>
 #include <PngEncoder.h>
-
-extern unsigned _binary_mouse_cursor1_bmp_start;
-extern unsigned _binary_mouse_cursor2_png_start;
-extern unsigned _binary_mouse_cursor2_png_size;
+#include <ImageResource.h>
 
 //make below extern as you load bmp files during testing
 unsigned _binary_p16_bmp_start;
@@ -110,12 +107,12 @@ void GraphicsVideo::Initialize() {
 
   printf("\n Initializing mouse cursor image");
   upanui::PngEncoder pngEncoder;
-  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(&_binary_mouse_cursor2_png_start, (size_t)&_binary_mouse_cursor2_png_size));
+  upan::uniq_ptr<upanui::Image> image(&pngEncoder.decode(upanui::ImageResource::MOUSE_CURSOR_PNG));
   image->resize(12, 18);
   _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
 
 //  upanui::BmpEncoder decoder;
-//  upan::uniq_ptr<upanui::Image> image(&decoder.decode(&_binary_mouse_cursor_bmp_start,
+//  upan::uniq_ptr<upanui::Image> image(&decoder.decode(upanui::ImageResource::MOUSE_CURSOR_BMP,
 //                                                      upan::option<uint32_t>(ColorPalettes::CP16::Get(ColorPalettes::CP16::FGColor::FG_RED))));
 //  image->resize(16, 16);
 //  _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));

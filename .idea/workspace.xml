@@ -16,11 +16,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="change alpha channel range to 0-255">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="use png image for mouse cursor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/images/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/mouse_cursor.bmp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -58,6 +57,16 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunManager" selected="Shell Script.Upanix Load &amp; Run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Upanix Load &amp; Run" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="make &amp;&amp; ./runqemu_uefi load &amp;&amp; exit" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
@@ -115,7 +124,7 @@
       <workItem from="1676893204091" duration="1517000" />
       <workItem from="1677072973157" duration="1904000" />
       <workItem from="1677299189851" duration="12065000" />
-      <workItem from="1677376639552" duration="2105000" />
+      <workItem from="1677376639552" duration="6134000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -166,7 +175,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677074296605</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="use png image for mouse cursor">
+      <created>1677385012425</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1677385012425</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -191,6 +207,7 @@
     <MESSAGE value="identify root gui console as a rectangular shape object" />
     <MESSAGE value="test PNG image decoder" />
     <MESSAGE value="change alpha channel range to 0-255" />
-    <option name="LAST_COMMIT_MESSAGE" value="change alpha channel range to 0-255" />
+    <MESSAGE value="use png image for mouse cursor" />
+    <option name="LAST_COMMIT_MESSAGE" value="use png image for mouse cursor" />
   </component>
 </project>
