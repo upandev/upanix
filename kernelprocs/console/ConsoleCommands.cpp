@@ -906,6 +906,7 @@ class DragMouseHandler : public upanui::MouseEventHandler {
     const upanui::MouseData& data = event.getData();
     if (data.leftButtonState() == upanui::MouseData::HOLD) {
       uiObject.xy(uiObject.x() + data.deltaX(), uiObject.y() - data.deltaY());
+      uiObject.parent().height(uiObject.parent().height() + 10);
     }
   }
 };
@@ -1435,7 +1436,7 @@ void graphics_window_app(int x, int y) {
   auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
 
   const int scrollBarWidth = 20;
-  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, mainHeight);
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth);
 
   auto& uiMain = upanui::UIObjectFactory::createRectangleCanvas(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight + mainHeight);
   uiMain.backgroundColor(0xEFE8E6);

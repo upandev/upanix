@@ -37,6 +37,7 @@ namespace upanui {
   class MouseEventHandler;
   class KeyboardEvent;
   class Layout;
+  class VerticalScroller;
 }
 
 class RootGUIConsole : public RootConsole {
@@ -144,6 +145,8 @@ private:
 
     void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
+    void registerVerticalScroller(upanui::VerticalScroller&) override {}
+    void removeVerticalScroller() override {}
 
   private:
     RootFrame& _frame;

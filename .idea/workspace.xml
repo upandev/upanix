@@ -16,9 +16,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="refactor to remove unused header">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="use iconbuttons">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,16 +56,6 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunManager" selected="Shell Script.Upanix Load &amp; Run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Upanix Load &amp; Run" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="make &amp;&amp; ./runqemu_uefi load &amp;&amp; exit" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
@@ -123,7 +113,12 @@
       <workItem from="1676893204091" duration="1517000" />
       <workItem from="1677072973157" duration="1904000" />
       <workItem from="1677299189851" duration="12065000" />
-      <workItem from="1677376639552" duration="17241000" />
+      <workItem from="1677376639552" duration="17489000" />
+      <workItem from="1677593038298" duration="1557000" />
+      <workItem from="1677906715367" duration="8158000" />
+      <workItem from="1677993435855" duration="5513000" />
+      <workItem from="1678109773066" duration="2998000" />
+      <workItem from="1678185776059" duration="1539000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -195,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677410075459</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="use iconbuttons">
+      <created>1677424128604</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1677424128604</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -223,6 +225,7 @@
     <MESSAGE value="use png image for mouse cursor" />
     <MESSAGE value="use predefined image resource for mouse cursor and testing" />
     <MESSAGE value="refactor to remove unused header" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor to remove unused header" />
+    <MESSAGE value="use iconbuttons" />
+    <option name="LAST_COMMIT_MESSAGE" value="use iconbuttons" />
   </component>
 </project>
