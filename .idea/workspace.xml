@@ -16,7 +16,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="use iconbuttons">
+    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="vertical scroller integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
@@ -118,7 +118,10 @@
       <workItem from="1677906715367" duration="8158000" />
       <workItem from="1677993435855" duration="5513000" />
       <workItem from="1678109773066" duration="2998000" />
-      <workItem from="1678185776059" duration="1539000" />
+      <workItem from="1678185776059" duration="3050000" />
+      <workItem from="1678267967037" duration="3557000" />
+      <workItem from="1678460936719" duration="3503000" />
+      <workItem from="1678490871828" duration="2998000" />
     </task>
     <task id="LOCAL-00001" summary="update workspace.xml">
       <created>1674909854044</created>
@@ -197,7 +200,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677424128604</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="vertical scoller integration">
+      <created>1678187954219</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1678187954219</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -226,6 +236,7 @@
     <MESSAGE value="use predefined image resource for mouse cursor and testing" />
     <MESSAGE value="refactor to remove unused header" />
     <MESSAGE value="use iconbuttons" />
-    <option name="LAST_COMMIT_MESSAGE" value="use iconbuttons" />
+    <MESSAGE value="vertical scroller integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="vertical scroller integration" />
   </component>
 </project>

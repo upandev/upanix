@@ -78,6 +78,8 @@ private:
     ~ConsoleUIObject() override = default;
 
     upanui::DrawBuffer& drawBuffer() override { return _drawBuffer; }
+    const upanui::DrawBuffer& drawBuffer() const override { return _drawBuffer; }
+
     void draw() override { _frame.touch(); }
 
   private:
@@ -139,14 +141,14 @@ private:
     void drawTopDown() override {}
     void drawToTop() override {}
 
-    void positionChanged() override {}
-    void sizeChanged() override {}
-    void contentChanged() override {}
-
     void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
     void registerVerticalScroller(upanui::VerticalScroller&) override {}
     void removeVerticalScroller() override {}
+
+    void notifyChange(const ChangeState) override {}
+    void setChangeState(const ChangeState) override {}
+    bool isChangeState(const ChangeState, const bool only) const override { return false; }
 
   private:
     RootFrame& _frame;

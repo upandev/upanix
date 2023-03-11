@@ -906,7 +906,6 @@ class DragMouseHandler : public upanui::MouseEventHandler {
     const upanui::MouseData& data = event.getData();
     if (data.leftButtonState() == upanui::MouseData::HOLD) {
       uiObject.xy(uiObject.x() + data.deltaX(), uiObject.y() - data.deltaY());
-      uiObject.parent().height(uiObject.parent().height() + 10);
     }
   }
 };
