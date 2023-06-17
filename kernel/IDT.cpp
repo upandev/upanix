@@ -155,7 +155,7 @@ namespace {
 	void CoProcExceptionHandler()
 	{
 		AsmUtil_STORE_GPR() ;
-		
+
 		__volatile__ unsigned short usDS = MemUtil_GetDS() ; 
 		__volatile__ unsigned short usES = MemUtil_GetES() ; 
 		__volatile__ unsigned short usFS = MemUtil_GetFS() ; 
@@ -173,10 +173,10 @@ namespace {
 
 		__asm__ __volatile__("CLTS") ;
 
-	//	__asm__ __volatile__("FINIT") ;
+	//	__asm__ __volatile__("FNINIT") ;
 		if(UpanixMain_isCoProcPresent())
 		{
-			__asm__ __volatile__("FINIT") ;
+			__asm__ __volatile__("FNINIT") ;
 		}
 
 		__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;

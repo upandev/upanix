@@ -25,13 +25,18 @@
 
 [GLOBAL FPU_INIT]
 
-FPCW: DW 0
+SECTION .text
+
+FPCW: DD 0x5A5A
 
 NO_CO_PROC		EQU 1
 CO_PROC_87_287	EQU 2
 CO_PROC_387		EQU 3
 
 FPU_INIT: 
+    MOV EAX, CR0            ; eax = CR0
+    AND AL, ~0x6            ; Clear the EM and MP flags (just in case)
+    MOV CR0, EAX            ; Set CR0
 
 	FNINIT					; Must use non-wait form
 
@@ -59,10 +64,10 @@ FPU_INIT:
 
 	FLD1					; Must use default control word from FNINIT
 	FLDZ					; Form infinity
-	TFDIV: DW 0x9BDEF9
-	;FDIV					; 8087/287 says +inf = .inf
-	TFLDST: DW 0x9BD9C0
-	;FLD st					; Form negative infinity
+;	TFDIV: DD 0x9BDEF9
+	FDIV st1, st0					; 8087/287 says +inf = .inf
+;	TFLDST: DD 0x9BD9C0
+	FLD st0					; Form negative infinity
 	FCHS					; 80387 says +inf <> -inf
 	FCOMPP					; See if they are the same and remove them
 	FSTSW [FPCW]				; Look at status from FCOMPP
@@ -95,7 +100,7 @@ FOUND_387:
 FOUND:
 
 	MOV EAX, CR0
-	OR EAX, 0x2 ; Set MP bit 2
+	OR  EAX, 0x2 ; Set MP bit 2
 	MOV CR0, EAX
 
 	JMP EXIT

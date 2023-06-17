@@ -113,6 +113,13 @@ void Cpu::EnableSSE() {
                          "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
                          "mov %%eax, %%cr4;" : : : );
     printf("\n SSE/SSE2 enabled");
+    if(HasSupport(CF_FPU)) {
+      //set NE flag
+      __asm__ __volatile__("mov %%cr0, %%eax;"
+                           "or $0x20, %%ax;"
+                           "mov %%eax, %%cr0;" : : : );
+      printf("\n Builtin FPU found");
+    }
   } else {
     printf("\n SSE/SSE2 is not supported!!");
     while (1);

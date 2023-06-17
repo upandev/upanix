@@ -29,8 +29,8 @@ set(UPANLIB_OUT_DIR ${UPANLIB_SOURCE_DIR}/out)
 
 set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-g++)
 set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-gcc)
-set(CMAKE_LINKER ${CROSS_TOOL_PATH}/i686-elf/bin/ld)
-set(CMAKE_AR ${CROSS_TOOL_PATH}/i686-elf/bin/ar)
+set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/i686-elf-ld)
+set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/i686-elf-ar)
 
 set(ENABLE_CXX_RT ON)
 	
