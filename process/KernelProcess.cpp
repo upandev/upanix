@@ -29,7 +29,7 @@
 
 upan::mutex KernelProcess::_envMutex;
 
-KernelProcess::KernelProcess(const upan::string& name, uint32_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uint32_t>& params)
+KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
   _mainThreadID = _processID;
   ProcessEnv_InitializeForKernelProcess() ;
@@ -63,10 +63,10 @@ void KernelProcess::initGuiFrame() {
   if (_frame.get() == nullptr) {
     FrameBufferInfo frameBufferInfo;
     const auto f = MultiBoot::Instance().VideoFrameBufferInfo();
-    frameBufferInfo._pitch = f->framebuffer_pitch;
-    frameBufferInfo._width = f->framebuffer_width;
-    frameBufferInfo._height = f->framebuffer_height;
-    frameBufferInfo._bpp = f->framebuffer_bpp;
+    frameBufferInfo._pitch = f->_pitch;
+    frameBufferInfo._width = f->_width;
+    frameBufferInfo._height = f->_height;
+    frameBufferInfo._bpp = f->_bpp;
     frameBufferInfo._frameBuffer = (uint32_t*)GraphicsVideo::Instance().allocateFrameBuffer();
     upanui::FrameBuffer frameBuffer(frameBufferInfo);
     upanui::Viewport viewport(0, 0, frameBufferInfo._width, frameBufferInfo._height);

@@ -26,25 +26,25 @@
 
 Cpu::Cpu()
 {
-  uint32_t result = 0;
-  // Test if the CPU supports the CPUID-Command
-  __asm__ __volatile__("pushfl;"
-                       "pushfl;"
-                       "pop %%eax;"
-                       "mov %%eax, %%ecx;"
-                       "xorl $0x200000, %%eax;"
-                       "push %%eax;"
-                       "popfl;"
-                       "pushfl;"
-                       "pop %%eax;"
-                       "xorl %%ecx, %%eax;"
-                       "shrl $21, %%eax;"
-                       "popfl;" : "=m"(result) : : "eax", "ecx", "memory");
-  _cpuIdAvailable = (result == 0);
-  if(_cpuIdAvailable) {
-    printf("\n CPUID is available");
-    EnableSSE();
-  }
+//  uint32_t result = 0;
+//  // Test if the CPU supports the CPUID-Command
+//  __asm__ __volatile__("pushfl;"
+//                       "pushfl;"
+//                       "pop %%eax;"
+//                       "mov %%eax, %%ecx;"
+//                       "xorl $0x200000, %%eax;"
+//                       "push %%eax;"
+//                       "popfl;"
+//                       "pushfl;"
+//                       "pop %%eax;"
+//                       "xorl %%ecx, %%eax;"
+//                       "shrl $21, %%eax;"
+//                       "popfl;" : "=m"(result) : : "eax", "ecx", "memory");
+//  _cpuIdAvailable = (result == 0);
+//  if(_cpuIdAvailable) {
+//    printf("\n CPUID is available");
+//    EnableSSE();
+//  }
 }
 
 bool Cpu::HasSupport(CPU_FEATURE feature)
@@ -103,46 +103,46 @@ void Cpu::MSRwrite(uint32_t msr, uint64_t value)
 }
 
 void Cpu::EnableSSE() {
-  if (HasSupport(CF_SSE) && HasSupport(CF_SSE2)) {
-    printf("\n SSE/SSE2 is supported.");
-    __asm__ __volatile__("mov %%cr0, %%eax;"
-                         "and $0xFFFB, %%ax;" // clear coprocessor emulation CR0.EM
-                         "or $0x2, %%ax;" // set coprocessor monitoring CR0.MP
-                         "mov %%eax, %%cr0;"
-                         "mov %%cr4, %%eax;"
-                         "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
-                         "mov %%eax, %%cr4;" : : : );
-    printf("\n SSE/SSE2 enabled");
-    if(HasSupport(CF_FPU)) {
-      //set NE flag
-      __asm__ __volatile__("mov %%cr0, %%eax;"
-                           "or $0x20, %%ax;"
-                           "mov %%eax, %%cr0;" : : : );
-      printf("\n Builtin FPU found");
-    }
-  } else {
-    printf("\n SSE/SSE2 is not supported!!");
-    while (1);
-  }
+//  if (HasSupport(CF_SSE) && HasSupport(CF_SSE2)) {
+//    printf("\n SSE/SSE2 is supported.");
+//    __asm__ __volatile__("mov %%cr0, %%eax;"
+//                         "and $0xFFFB, %%ax;" // clear coprocessor emulation CR0.EM
+//                         "or $0x2, %%ax;" // set coprocessor monitoring CR0.MP
+//                         "mov %%eax, %%cr0;"
+//                         "mov %%cr4, %%eax;"
+//                         "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
+//                         "mov %%eax, %%cr4;" : : : );
+//    printf("\n SSE/SSE2 enabled");
+//    if(HasSupport(CF_FPU)) {
+//      //set NE flag
+//      __asm__ __volatile__("mov %%cr0, %%eax;"
+//                           "or $0x20, %%ax;"
+//                           "mov %%eax, %%cr0;" : : : );
+//      printf("\n Builtin FPU found");
+//    }
+//  } else {
+//    printf("\n SSE/SSE2 is not supported!!");
+//    while (1);
+//  }
 }
 
 uint32_t Cpu::GetRegValue(Cpu::Register reg) {
   uint32_t val;
   switch(reg) {
     case Register::CR0:
-      __asm__ __volatile__("mov %%cr0, %0" :  "=r"(val) : );
+      //__asm__ __volatile__("mov %%cr0, %0" :  "=r"(val) : );
       break;
     case Register::CR1:
-      __asm__ __volatile__("mov %%cr1, %0" :  "=r"(val) : );
+      //__asm__ __volatile__("mov %%cr1, %0" :  "=r"(val) : );
       break;
     case Register::CR2:
-      __asm__ __volatile__("mov %%cr2, %0" :  "=r"(val) : );
+      //__asm__ __volatile__("mov %%cr2, %0" :  "=r"(val) : );
       break;
     case Register::CR3:
-      __asm__ __volatile__("mov %%cr3, %0" :  "=r"(val) : );
+      //__asm__ __volatile__("mov %%cr3, %0" :  "=r"(val) : );
       break;
     case Register::CR4:
-      __asm__ __volatile__("mov %%cr4, %0" :  "=r"(val) : );
+      //__volatile__("mov %%cr4, %0" :  "=r"(val) : );
       break;
     default:
       throw upan::exception(XLOC, "Unrecognized register: %d", reg);

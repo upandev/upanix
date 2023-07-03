@@ -213,7 +213,7 @@ void ATAPortManager_Probe(ATAPort* pPort)
 
 	pPort->bPIO32Bit = true ; // TODO: Read as kernel param
 
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)pATAIdentifyInfo, MemUtil_GetDS(), (unsigned)&pPort->id, sizeof(ATAIdentifyInfo)) ;
+  memcpy(&pPort->id, pATAIdentifyInfo, sizeof(ATAIdentifyInfo));
 }
 
 byte ATAPortManager_ConfigureDrive(ATAPort* pPort)
@@ -354,14 +354,14 @@ byte ATAPortManager_IORead(ATAPort* pPort, void* pBuffer, unsigned uiLength)
 
 				if(pPort->bPIO32Bit)
 				{
-					unsigned* uiData = (unsigned*)((unsigned)pBuffer + uiTransfered) ;
+					unsigned* uiData = (unsigned*)((uintptr_t)pBuffer + uiTransfered) ;
 
 					for(i = 0; i < 128; i++)
 						ATA_READ_REG32(pPort, ATA_REG_DATA, uiData[i]) ;
 				}
 				else
 				{
-					unsigned short *usData = (unsigned short*)((unsigned)pBuffer + uiTransfered) ;
+					unsigned short *usData = (unsigned short*)((uintptr_t)pBuffer + uiTransfered) ;
 
 					for(i = 0; i < 256; i++)
 						ATA_READ_REG16(pPort, ATA_REG_DATA, usData[i]) ;

@@ -126,7 +126,7 @@ void E1000NICDevice::Initialize() {
   _pciEntry.WritePCIConfig(PCI_COMMAND, 2, usCommand | PCI_COMMAND_IO | PCI_COMMAND_MASTER) ;
   printf("\n Enabled PCI bus master for NIC");
 
-  _irq = IrqManager::Instance().RegisterIRQ(_pciEntry.BusEntity.NonBridge.bInterruptLine, (uint32_t)E1000NICDevice::InterruptHandler);
+  _irq = IrqManager::Instance().RegisterIRQ(_pciEntry.BusEntity.NonBridge.bInterruptLine, (uintptr_t)E1000NICDevice::InterruptHandler);
   IrqManager::Instance().EnableIRQ(*_irq);
 
   regEEPROM = new RegEEPROM(_memIOBase);

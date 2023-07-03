@@ -49,7 +49,7 @@ private:
 public:
   static RootGUIConsole& Instance();
 
-  void resetFrameBuffer(uint32_t frameBufferAddress);
+  void resetFrameBuffer(uintptr_t frameBufferAddress);
   void setFontContext(upanui::usfn::Context*);
   RootFrame& frame() {
     return _frame;

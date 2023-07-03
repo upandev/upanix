@@ -104,9 +104,9 @@ class CommandManager
     void ConfigureEndPoint(unsigned icptr, unsigned slotID);
     void EvaluateContext(unsigned icptr, unsigned slotID);
     void DebugPrint();
-    uint32_t CommandTRBAddress() const
+    uintptr_t CommandTRBAddress() const
     {
-      return (uint32_t)&_ring->_cmd;
+      return (uintptr_t)&_ring->_cmd;
     }
 
   private:

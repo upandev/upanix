@@ -47,6 +47,7 @@ class MemManager
 			static MemManager instance;
 			return instance;
 		}
+		static void RawMapGraphicsLFB();
     void PrintInitStatus() const;
 		ReturnCode MarkPageAsAllocated(unsigned uiPageNumber, ReturnCode prevRetCode) ;
 		unsigned AllocatePhysicalPage();
@@ -84,7 +85,7 @@ class MemManager
 			return ((uiSizeInPages - 1) / PAGE_TABLE_ENTRIES) + 1 ;
 		}
 
-		inline unsigned& GetKernelAUTAddress()
+		inline uintptr_t& GetKernelAUTAddress()
 		{
 			return m_uiKernelAUTAddress ;
 		}
@@ -103,19 +104,19 @@ class MemManager
 		unsigned m_uiKernelHeapSize ;
 		unsigned m_uiKernelHeapStartAddress ;
 
-		unsigned* m_uiPageMap ;
+    uintptr_t* m_uiPageMap ;
 		unsigned m_uiPageMapSize ;
 
-		unsigned* m_uiKernelPagePoolMap;
+    uintptr_t* m_uiKernelPagePoolMap;
 		unsigned m_uiKernelPagePoolMapSize;
 		unsigned m_uiKernelPagePoolStartPage;
 
 		unsigned m_uiResvSize ;
 
-		unsigned* m_uiPDEBase ;
-		unsigned* m_uiPTEBase ;
-		unsigned* m_uipKernelProcessStackPTEBase ;
-		unsigned m_uiKernelAUTAddress ;
+    uintptr_t* m_uiPDEBase ;
+    uintptr_t* m_uiPTEBase ;
+    uintptr_t* m_uipKernelProcessStackPTEBase ;
+    uintptr_t m_uiKernelAUTAddress ;
 
 		int m_iNoOfKernelProcessStackBlocks ;
 		bool m_bAllocationMapForKernelProcessStackBlock[PAGE_TABLE_ENTRIES / PROCESS_KERNEL_STACK_PAGES] ;

@@ -295,7 +295,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 
     pPCIEntry->ReadPCIConfig(PCI_BASE_REGISTERS + 16, 4, &uiPrimaryDMA);
 		
-		if( (!(uiPrimaryDMA & 0x01) != bMMIO) || !(uiPrimaryDMA & uiMask))
+		if( ((uiPrimaryDMA & 0x01) == bMMIO) || !(uiPrimaryDMA & uiMask))
 		{
       printf("\n DMA registers in different mode than Base registers");
       printf("\nDisabling DMA...");
@@ -332,7 +332,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 		pPort->portOperation.Reset = ATAPortOperation_PortReset ;
 		pPort->bMMIO = bMMIO ;
 
-		if(bDMAPossible && bMMIO && (*((byte*)uiDMARegBase + 2) & bDMAMask))
+		if(bDMAPossible && bMMIO && (*(reinterpret_cast<byte*>(uiDMARegBase) + 2) & bDMAMask))
 			pPort->uiSupportedPortSpeed = uiDMASpeedMask ;
 		else if(bDMAPossible && !bMMIO && (PortCom_ReceiveByte(uiDMARegBase + 2) & bDMAMask))
 			pPort->uiSupportedPortSpeed = uiDMASpeedMask ;
@@ -357,7 +357,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 
 	if(bDMAPossible)
 	{
-		HD_PRIMARY_IRQ = IrqManager::Instance().RegisterIRQ(bPrimaryIRQ, (unsigned)&ATADeviceController_PrimaryIRQHandler) ;
+		HD_PRIMARY_IRQ = IrqManager::Instance().RegisterIRQ(bPrimaryIRQ, (uintptr_t)&ATADeviceController_PrimaryIRQHandler) ;
 		if(!HD_PRIMARY_IRQ)
       throw upan::exception(XLOC, "Failed to register HD Primary IRQ %d", bPrimaryIRQ);
 
@@ -365,7 +365,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 
 		if(bPrimaryIRQ != bSecondaryIRQ)
 		{
-			HD_SECONDARY_IRQ = IrqManager::Instance().RegisterIRQ(bSecondaryIRQ, (unsigned)&ATADeviceController_SecondaryIRQHandler) ;
+			HD_SECONDARY_IRQ = IrqManager::Instance().RegisterIRQ(bSecondaryIRQ, (uintptr_t)&ATADeviceController_SecondaryIRQHandler) ;
 			if(!HD_SECONDARY_IRQ)
         throw upan::exception(XLOC, "Failed to register HD Secondary IRQ %d", bSecondaryIRQ);
 

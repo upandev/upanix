@@ -53,11 +53,11 @@ public:
     return _parent.getDLLInfo(id);
   }
 
-  uint32_t getAUTAddress() const override {
+  uintptr_t getAUTAddress() const override {
     return _parent.getAUTAddress();
   }
 
-  void setAUTAddress(uint32_t addr) {
+  void setAUTAddress(uintptr_t addr) {
     _parent.setAUTAddress(addr);
   }
 

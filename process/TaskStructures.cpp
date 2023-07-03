@@ -79,7 +79,7 @@ void TaskState::BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, 
   IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present
 }
 
-void TaskState::BuildForKernel(const unsigned uiTaskAddress, unsigned uiStackTop, const upan::vector<uint32_t>& params) {
+void TaskState::BuildForKernel(const uintptr_t uiTaskAddress, unsigned uiStackTop, const upan::vector<uintptr_t>& params) {
   memset(this, 0, sizeof(TaskState));
 
   EIP = uiTaskAddress ;

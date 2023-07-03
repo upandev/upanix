@@ -19,14 +19,14 @@
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR i686)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
 set(CROSS_TOOL_PATH $ENV{HOME}/opt/cross)
 
-set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-g++)
-set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-gcc)
-set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/i686-elf-ld)
-set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/i686-elf-ar)
+set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-g++)
+set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-gcc)
+set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/x86_64-elf-ld)
+set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/x86_64-elf-ar)
 
 set(ENABLE_CXX_RT ON)
 	

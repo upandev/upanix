@@ -116,10 +116,10 @@ Process& ProcessManager::GetCurrentPAS() {
 
 void ProcessManager::BuildCallGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount)
 {
-	GateDescriptor* gateEntry = (GateDescriptor*)(GDT_BASE_ADDR + usGateSelector) ;
+	GateDescriptor* gateEntry = (GateDescriptor*)(/*GDT_BASE_ADDR + */usGateSelector) ;
 	
-	__asm__ __volatile__("push %ds") ;
-	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
+//	__asm__ __volatile__("push %ds") ;
+//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
 
 	gateEntry->lowerOffset = uiOffset & 0x0000FFFF ;
 	gateEntry->selector = usSelector ;
@@ -127,15 +127,15 @@ void ProcessManager::BuildCallGate(unsigned short usGateSelector, unsigned uiOff
 	gateEntry->options = 0xEC ; // 11101100 --> 1 = Present. 11 = DPL. 01100 = CallGateType 
 	gateEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
 
-	__asm__ __volatile__("pop %ds") ;
+//	__asm__ __volatile__("pop %ds") ;
 }
 
 void ProcessManager::BuildIntGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount)
 {
-	GateDescriptor* gateEntry = (GateDescriptor*)(GDT_BASE_ADDR + usGateSelector) ;
+	GateDescriptor* gateEntry = (GateDescriptor*)(/*GDT_BASE_ADDR + */usGateSelector) ;
 	
-	__asm__ __volatile__("push %ds") ;
-	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
+	//__asm__ __volatile__("push %ds") ;
+//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
 
 	gateEntry->lowerOffset = uiOffset & 0x0000FFFF ;
 	gateEntry->selector = usSelector ;
@@ -144,7 +144,7 @@ void ProcessManager::BuildIntGate(unsigned short usGateSelector, unsigned uiOffs
 	
 	gateEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
 
-	__asm__ __volatile__("pop %ds") ;
+	//__asm__ __volatile__("pop %ds") ;
 }
 
 void ProcessManager::BuildIntTaskState(const unsigned uiTaskAddress, const unsigned uiTSSAddress, const int stack)
@@ -332,7 +332,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 
 	KERNEL_MODE = false ;
 	/* Switch Instruction */
-	__asm__ __volatile__("lcall $0x28, $0x00") ;
+//	__asm__ __volatile__("lcall $0x28, $0x00") ;
 	KERNEL_MODE = true ;
 
 	process.Store();
@@ -504,8 +504,8 @@ bool ProcessManager::IsChildAlive(int iChildProcessID) {
   return !process.isEmpty() && process.value().parentProcessID() == ProcessManager::GetCurrentProcessID();
 }
 
-int ProcessManager::CreateKernelProcess(const upan::string& name, const unsigned uiTaskAddress, int iParentProcessID,
-                                        byte bIsFGProcess, const upan::vector<uint32_t>& params) {
+int ProcessManager::CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID,
+                                        byte bIsFGProcess, const upan::vector<uintptr_t>& params) {
   try {
     upan::uniq_ptr<SchedulableProcess> newPAS(new KernelProcess(name, uiTaskAddress, iParentProcessID, bIsFGProcess, params));
     int pid = newPAS->processID();
@@ -603,13 +603,13 @@ void ProcessManager::FreeProcListMem(PS* pProcList, unsigned uiListSize)
 	for(unsigned i = 0; i < uiListSize; i++)
 	{
 		if(pAddrSpc.isKernelProcess())
-			DMM_DeAllocateForKernel((unsigned)pProcList[i].pname) ;
+			DMM_DeAllocateForKernel((uintptr_t)pProcList[i].pname) ;
 		else
-			DMM_DeAllocate(&pAddrSpc, (unsigned)pProcList[i].pname) ;
+			DMM_DeAllocate(&pAddrSpc, (uintptr_t)pProcList[i].pname) ;
 	}
 
 	if(pAddrSpc.isKernelProcess())
-		DMM_DeAllocateForKernel((unsigned)pProcList) ;
+		DMM_DeAllocateForKernel((uintptr_t)pProcList) ;
 	else
 		DMM_DeAllocate(&pAddrSpc, PROCESS_VIRTUAL_ALLOCATED_ADDRESS(pProcList));
 }
@@ -693,14 +693,10 @@ bool ProcessManager::CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem:
   Process* pDestPAS = &GetCurrentPAS();
 
 	iOldDriveId = pDestPAS->driveID() ;
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&(pDestPAS->processPWD()),
-                    MemUtil_GetDS(), (unsigned)&(mOldPWD),
-                    sizeof(FileSystem::PresentWorkingDirectory)) ;
+  memcpy(&mOldPWD, &(pDestPAS->processPWD()), sizeof(FileSystem::PresentWorkingDirectory));
 
   pDestPAS->setDriveID(pSrcPAS->driveID());
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&(pSrcPAS->processPWD()),
-                    MemUtil_GetDS(), (unsigned)&(pDestPAS->processPWD()),
-                    sizeof(FileSystem::PresentWorkingDirectory)) ;
+  memcpy(&(pDestPAS->processPWD()), &(pSrcPAS->processPWD()), sizeof(FileSystem::PresentWorkingDirectory));
 
 	return true;
 }

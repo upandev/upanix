@@ -88,42 +88,42 @@ unsigned MemUtil_GetSP()
 
  void MemUtil_MoveByte(const unsigned short usSelector, const unsigned int uiOffset, const byte uiValue)
 {
-	__asm__ __volatile__("push %es") ;
-
-	MemUtil_SetES(usSelector) ;
-	__asm__ __volatile__("movb %0, %%es:(%1)" : : "r"(uiValue), "r"(uiOffset)) ;
-	
-	__asm__ __volatile__("pop %es") ;
+//	__asm__ __volatile__("push %es") ;
+//
+//	MemUtil_SetES(usSelector) ;
+//	__asm__ __volatile__("movb %0, %%es:(%1)" : : "r"(uiValue), "r"(uiOffset)) ;
+//
+//	__asm__ __volatile__("pop %es") ;
 }
 
 void MemUtil_CopyMemory(__volatile__ unsigned short usSrcSelector, unsigned uiSrcBuffer,
 					__volatile__ unsigned short usDestSelector, unsigned uiDestBuffer, unsigned uiNoOfBytes)
 {
-	if(uiNoOfBytes == 0)
-		return ;
-
-  IrqGuard g;
-
-	__volatile__ unsigned usDS = MemUtil_GetDS() ;
-	__volatile__ unsigned usES = MemUtil_GetES() ;
-
-	__asm__ __volatile__("movw %%ss:%0, %%ds" : : "m"(usSrcSelector) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%es" : : "m"(usDestSelector) ) ;
-	
-	__asm__	__volatile__
-	(
-		"cld;"
-		"movl %k0,%%ecx;"
-		"movl %k1,%%esi;"
-		"movl %k2,%%edi;"
-		"rep movsb;"
-		:
-		: "rm" (uiNoOfBytes), "rm" (uiSrcBuffer), "rm" (uiDestBuffer)
-		: "%ecx", "%esi", "%edi"
-	) ;
-
-	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
+//	if(uiNoOfBytes == 0)
+//		return ;
+//
+//  IrqGuard g;
+//
+//	__volatile__ unsigned usDS = MemUtil_GetDS() ;
+//	__volatile__ unsigned usES = MemUtil_GetES() ;
+//
+//	__asm__ __volatile__("movw %%ss:%0, %%ds" : : "m"(usSrcSelector) ) ;
+//	__asm__ __volatile__("movw %%ss:%0, %%es" : : "m"(usDestSelector) ) ;
+//
+//	__asm__	__volatile__
+//	(
+//		"cld;"
+//		"movl %k0,%%ecx;"
+//		"movl %k1,%%esi;"
+//		"movl %k2,%%edi;"
+//		"rep movsb;"
+//		:
+//		: "rm" (uiNoOfBytes), "rm" (uiSrcBuffer), "rm" (uiDestBuffer)
+//		: "%ecx", "%esi", "%edi"
+//	) ;
+//
+//	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
+//	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
 }
 
 void

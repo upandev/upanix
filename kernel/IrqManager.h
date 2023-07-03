@@ -86,7 +86,7 @@ class IrqManager
     bool IsApic() const { return _isApic; }
 
 		const IRQ* RegisterIRQ(const int& iIRQNo, unsigned pHandler);
-		bool RegisterIRQ(const IRQ& irq, unsigned pHandler);
+		bool RegisterIRQ(const IRQ& irq, uintptr_t pHandler);
     bool UnregisterIRQ(const IRQ& irq);
 		const IRQ* GetIRQ(const IRQ& irq);
 		const IRQ* GetIRQ(const int& iIRQNo);
@@ -111,7 +111,7 @@ class IrqGuard
     IrqGuard() : _irq(nullptr)
     {
       __asm__ __volatile__("pushf");
-      __asm__ __volatile__("popl %0" : "=m"(_allIntSyncFlag) : );
+      __asm__ __volatile__("pop %0" : "=m"(_allIntSyncFlag) : );
       if(_allIntSyncFlag & 0x0200)
 	      __asm__ __volatile__("cli");
     }

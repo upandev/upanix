@@ -30,17 +30,17 @@ byte SysCallProc_IsPresent(unsigned uiSysCallID)
 
 void SysCallProc_Handle(
 __volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
+__volatile__ uintptr_t uiSysCallID,
 __volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+__volatile__ uintptr_t uiP1,
+__volatile__ uintptr_t uiP2,
+__volatile__ uintptr_t uiP3,
+__volatile__ uintptr_t uiP4,
+__volatile__ uintptr_t uiP5,
+__volatile__ uintptr_t uiP6,
+__volatile__ uintptr_t uiP7,
+__volatile__ uintptr_t uiP8,
+__volatile__ uintptr_t uiP9)
 {
 	switch(uiSysCallID)
 	{

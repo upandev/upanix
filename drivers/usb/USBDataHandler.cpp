@@ -212,12 +212,12 @@ void USBDataHandler_DeAllocConfigDesc(USBStandardConfigDesc* pCD, char bNumConfi
 		{
 			int iI ;
 			for(iI = 0; iI < pCD[index].bNumInterfaces; iI++)
-				DMM_DeAllocateForKernel((unsigned)pCD[index].pInterfaces[iI].pEndPoints) ;
+				DMM_DeAllocateForKernel((uintptr_t)pCD[index].pInterfaces[iI].pEndPoints) ;
 
-			DMM_DeAllocateForKernel((unsigned)pCD[index].pInterfaces) ;
+			DMM_DeAllocateForKernel((uintptr_t)pCD[index].pInterfaces) ;
 		}
 	}
 	
-	DMM_DeAllocateForKernel((unsigned)pCD) ;
+	DMM_DeAllocateForKernel((uintptr_t)pCD) ;
 }
 

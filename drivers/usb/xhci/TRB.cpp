@@ -37,12 +37,12 @@ TransferRing::TransferRing(unsigned size) : _size(size), _cycleState(true), _nex
 
 TransferRing::~TransferRing()
 {
-  DMM_DeAllocateForKernel((unsigned)_trbs);
+  DMM_DeAllocateForKernel((uintptr_t)_trbs);
 }
 
 void TransferRing::UpdateDeEnQPtr(uint32_t dnqPtr)
 {
-  const auto curdqIndex = (dnqPtr - (uint32_t)&_trbs[0]) / sizeof(TRB);
+  const auto curdqIndex = (dnqPtr - (uintptr_t)&_trbs[0]) / sizeof(TRB);
   uint32_t freeSlots = 0;
 
   if(curdqIndex < _dqIndex)
@@ -80,7 +80,7 @@ void TransferRing::AddSetupStageTRB(uint32_t bmRequestType, uint32_t bmRequest,
   trb.SetCycleBit(_cycleState);
 }
 
-void TransferRing::AddDataStageTRB(uint32_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
+void TransferRing::AddDataStageTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
 {
   dataBufferAddr = KERNEL_REAL_ADDRESS(dataBufferAddr);
   int32_t transferLen = len;
@@ -113,7 +113,7 @@ void TransferRing::AddDataStageTRB(uint32_t dataBufferAddr, uint32_t len, DataDi
 //  AddEventDataTRB(statusAddr, true);
 }
 
-uint32_t TransferRing::AddStatusStageTRB(uint32_t dir)
+uintptr_t TransferRing::AddStatusStageTRB(uint32_t dir)
 {
   TRB& trb = NextTRB();
   trb._b1 = 0;
@@ -122,10 +122,10 @@ uint32_t TransferRing::AddStatusStageTRB(uint32_t dir)
   trb._b4 = dir << 16 | INTERRUPT_ON_COMPLETE;
   trb.Type(4);
   trb.SetCycleBit(_cycleState);
-  return (uint32_t)&trb;
+  return (uintptr_t)&trb;
 }
 
-void TransferRing::AddEventDataTRB(uint32_t statusAddr, bool ioc)
+void TransferRing::AddEventDataTRB(uintptr_t statusAddr, bool ioc)
 {
   TRB& trb = NextTRB();
   trb._b1 = statusAddr;
@@ -136,7 +136,7 @@ void TransferRing::AddEventDataTRB(uint32_t statusAddr, bool ioc)
   trb.SetCycleBit(_cycleState);
 }
 
-TRB::Result TransferRing::AddDataTRB(uint32_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
+TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
 {
   dataBufferAddr = KERNEL_REAL_ADDRESS(dataBufferAddr);
   int32_t remainingBytesToTransfer = len;

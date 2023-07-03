@@ -102,7 +102,7 @@ const IRQ* IrqManager::RegisterIRQ(const int& iIRQNo, unsigned pHandler)
 	return pIRQ;
 }
 
-bool IrqManager::RegisterIRQ(const IRQ& irq, unsigned pHandler)
+bool IrqManager::RegisterIRQ(const IRQ& irq, uintptr_t pHandler)
 {
 	if(GetIRQ(irq))
 	{

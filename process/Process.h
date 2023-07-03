@@ -91,11 +91,11 @@ public:
     throw upan::exception(XLOC, "getDLLInfo unsupported");
   }
 
-  virtual uint32_t getAUTAddress() const {
+  virtual uintptr_t getAUTAddress() const {
     throw upan::exception(XLOC, "getAUTAddress unsupported");
   }
 
-  virtual void setAUTAddress(uint32_t addr) {
+  virtual void setAUTAddress(uintptr_t addr) {
     throw upan::exception(XLOC, "setAUTAddress unsupported");
   }
 

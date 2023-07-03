@@ -187,10 +187,10 @@ USBulkDisk::USBulkDisk(USBDevice* device,
 USBulkDisk::~USBulkDisk()
 {
   if(pRawAlignedBuffer)
-		DMM_DeAllocateForKernel((unsigned)pRawAlignedBuffer);
+		DMM_DeAllocateForKernel((uintptr_t)pRawAlignedBuffer);
 
   if(pSCSIDeviceList)
-    DMM_DeAllocateForKernel((unsigned)pSCSIDeviceList);
+    DMM_DeAllocateForKernel((uintptr_t)pSCSIDeviceList);
 
   delete pHostDevice;
 }

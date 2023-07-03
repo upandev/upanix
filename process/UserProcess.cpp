@@ -524,10 +524,10 @@ void UserProcess::allocateGUIFramebuffer() {
 
   FrameBufferInfo frameBufferInfo;
   const auto f = MultiBoot::Instance().VideoFrameBufferInfo();
-  frameBufferInfo._pitch = f->framebuffer_pitch;
-  frameBufferInfo._width = f->framebuffer_width;
-  frameBufferInfo._height = f->framebuffer_height;
-  frameBufferInfo._bpp = f->framebuffer_bpp;
+  frameBufferInfo._pitch = f->_pitch;
+  frameBufferInfo._width = f->_width;
+  frameBufferInfo._height = f->_height;
+  frameBufferInfo._bpp = f->_bpp;
   frameBufferInfo._frameBuffer = (uint32_t*)frameBufferAddress;
   upanui::FrameBuffer frameBuffer(frameBufferInfo);
   upanui::Viewport viewport(0, 0, frameBufferInfo._width, frameBufferInfo._height);
@@ -550,7 +550,7 @@ void UserProcess::initGuiFrame() {
 
 void UserProcess::DeAllocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
-    DMM_DeAllocateForKernel((uint32_t)_frame->frameBuffer().buffer());
+    DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
     const auto guiFramebufferPTEAddress = ((unsigned *) (_taskState.CR3_PDBR - GLOBAL_DATA_SEGMENT_BASE))[PROCESS_GUI_FRAMEBUFFER_PDE_ID] & 0xFFFFF000;
     MemManager::Instance().DeAllocatePhysicalPage(guiFramebufferPTEAddress / PAGE_SIZE);
     GraphicsVideo::Instance().removeFGProcess(processID());

@@ -34,7 +34,7 @@ PS2MouseDriver::PS2MouseDriver() : _qBuffer(10240) {
   _packetSize = 3; //TODO: go with default - 3 bytes per mouse movement
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().MOUSE_IRQ) ;
-	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (unsigned)&PS2MouseDriver::Handler) ;
+	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (uintptr_t)&PS2MouseDriver::Handler) ;
 
 	try {
 //	if(SendCommand2(0xF3))
@@ -189,6 +189,6 @@ void PS2MouseDriver::StartDispatcher() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("moed", (unsigned) &Mouse_Event_Dispatcher,
-                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uint32_t>());
+  ProcessManager::Instance().CreateKernelProcess("moed", (uintptr_t) &Mouse_Event_Dispatcher,
+                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

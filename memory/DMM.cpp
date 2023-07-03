@@ -66,7 +66,7 @@ static void updateCheckSum(AllocationUnitTracker& aut) {
 
 // old allocation algorithm which was maintaining a list of allocated chunks was 40 times slower
 // than the current algorithm which maintains a list of free chunks
-unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber)
+uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber)
 {
   upan::mutex_guard g(processAddressSpace->heapMutex().value());
 
@@ -74,7 +74,7 @@ unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsi
 
   ProcessManager::Instance().SetDMMFlag(ProcessManager::GetCurrentProcessID(), true) ;
 
-  __volatile__ unsigned uiHeapStartAddress = PROCESS_HEAP_START_ADDRESS - GLOBAL_DATA_SEGMENT_BASE ;
+  __volatile__ uintptr_t uiHeapStartAddress = PROCESS_HEAP_START_ADDRESS - GLOBAL_DATA_SEGMENT_BASE ;
 
   AllocationUnitTracker *aut, *prevAut ;
 
@@ -97,11 +97,11 @@ unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsi
   prevAut = NULL;
   while(aut != NULL)
   {
-    unsigned uiAddress = aut->uiAllocatedAddress;
-    unsigned uiMaxSize = aut->uiSize;
-    unsigned uiNextAUTAddress = aut->uiNextAUTAddress;
-    unsigned uiByteStuffForAlign = DMM_GetByteStuffForAlign(uiAddress + sizeof(AllocationUnitTracker), uiAlignNumber);
-    unsigned uiSize = uiSizeInBytes + sizeof(AllocationUnitTracker) + uiByteStuffForAlign;
+    uintptr_t uiAddress = aut->uiAllocatedAddress;
+    uint64_t uiMaxSize = aut->uiSize;
+    uintptr_t uiNextAUTAddress = aut->uiNextAUTAddress;
+    uintptr_t uiByteStuffForAlign = DMM_GetByteStuffForAlign(uiAddress + sizeof(AllocationUnitTracker), uiAlignNumber);
+    uint64_t uiSize = uiSizeInBytes + sizeof(AllocationUnitTracker) + uiByteStuffForAlign;
 
     if(uiSize <= uiMaxSize)
     {
@@ -135,7 +135,7 @@ unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsi
       }
 
       //Make sure that all pages are allocated in the requested mem block
-      unsigned addr = uiAddress + sizeof(AllocationUnitTracker) ;
+      uintptr_t addr = uiAddress + sizeof(AllocationUnitTracker) ;
       UNUSED __volatile__ int x;
       while(addr < (uiAddress + aut->uiSize))
       {
@@ -156,17 +156,17 @@ unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsi
 }
 
 uint32_t dmm_alloc_count = 0;
-unsigned DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber)
+uintptr_t DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber)
 {
   IrqGuard g;
   ++dmm_alloc_count;
 	DMM_CheckAlignNumber(uiAlignNumber);
 	AllocationUnitTracker *aut, *prevAut;
-	unsigned& uiAUTAddress = MemManager::Instance().GetKernelAUTAddress();
+  uintptr_t& uiAUTAddress = MemManager::Instance().GetKernelAUTAddress();
 
 	// Dedicated Head Node. This will avoid Back Loop at Head
 	if(uiAUTAddress == NULL) {
-	  unsigned uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
+    uintptr_t uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
 		aut = (AllocationUnitTracker*)(uiHeapStartAddress);
     aut->uiAllocatedAddress = uiHeapStartAddress;
 		aut->uiSize = MEM_KERNEL_HEAP_SIZE;
@@ -179,12 +179,12 @@ unsigned DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber)
 	aut = (AllocationUnitTracker*)(uiAUTAddress);
   prevAut = NULL;
   while(aut != NULL) {
-    unsigned uiAddress = aut->uiAllocatedAddress;
-    unsigned uiMaxSize = aut->uiSize;
-    unsigned uiNextAUTAddress = aut->uiNextAUTAddress;
-    unsigned uiByteStuffForAlign = DMM_GetByteStuffForAlign(uiAddress + sizeof(AllocationUnitTracker), uiAlignNumber);
-    unsigned uiSize = uiSizeInBytes + sizeof(AllocationUnitTracker) + uiByteStuffForAlign;
-    const uint32_t calcCheckSum = calculateCheckSum(*aut);
+    uintptr_t uiAddress = aut->uiAllocatedAddress;
+    uint64_t uiMaxSize = aut->uiSize;
+    uintptr_t uiNextAUTAddress = aut->uiNextAUTAddress;
+    uintptr_t uiByteStuffForAlign = DMM_GetByteStuffForAlign(uiAddress + sizeof(AllocationUnitTracker), uiAlignNumber);
+    uint64_t uiSize = uiSizeInBytes + sizeof(AllocationUnitTracker) + uiByteStuffForAlign;
+    const uint64_t calcCheckSum = calculateCheckSum(*aut);
     if (calcCheckSum != aut->uiCheckSum) {
       throw upan::exception(XLOC,"heap corrupted!");
     }
@@ -196,7 +196,7 @@ unsigned DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber)
       allocAUT->uiSize = uiSize;
       allocAUT->uiByteStuffForAlign = uiByteStuffForAlign;
 
-      unsigned uiRemaining = uiMaxSize - uiSize;
+      uint64_t uiRemaining = uiMaxSize - uiSize;
       if(uiRemaining > (sizeof(AllocationUnitTracker) + 1))
       {
         auto freeAUT = (AllocationUnitTracker*)(uiAddress + uiSize);
@@ -231,7 +231,7 @@ unsigned DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber)
   throw upan::exception(XLOC, "out of memory!");
 }
 
-byte DMM_DeAllocate(Process* processAddressSpace, unsigned uiAddress)
+byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t uiAddress)
 {
   upan::mutex_guard g(processAddressSpace->heapMutex().value());
   // do this before converting the address to real address (by adding PROCESS_BASE)
@@ -244,9 +244,9 @@ byte DMM_DeAllocate(Process* processAddressSpace, unsigned uiAddress)
   if(uiAddress <= uiHeapStartAddress)
     return DMM_BAD_DEALLOC ;
 
-  AllocationUnitTracker* freeAUT = (AllocationUnitTracker*)(uiAddress - sizeof(AllocationUnitTracker));
-  unsigned uiAllocatedAddress = uiAddress - sizeof(AllocationUnitTracker) - freeAUT->uiByteStuffForAlign;
-  unsigned uiSize = freeAUT->uiSize;
+  auto freeAUT = (AllocationUnitTracker*)(uiAddress - sizeof(AllocationUnitTracker));
+  uintptr_t uiAllocatedAddress = uiAddress - sizeof(AllocationUnitTracker) - freeAUT->uiByteStuffForAlign;
+  uintptr_t uiSize = freeAUT->uiSize;
   freeAUT = (AllocationUnitTracker*)uiAllocatedAddress;
   freeAUT->uiAllocatedAddress = uiAllocatedAddress;
   freeAUT->uiReturnAddress = NULL;
@@ -256,9 +256,9 @@ byte DMM_DeAllocate(Process* processAddressSpace, unsigned uiAddress)
   return DMM_SUCCESS;
 }
 
-byte DMM_GetAllocSize(unsigned uiAddress, int* iSize) {
+byte DMM_GetAllocSize(uintptr_t uiAddress, int* iSize) {
   uiAddress = PROCESS_REAL_ALLOCATED_ADDRESS(uiAddress);
-  unsigned uiHeapStartAddress = PROCESS_HEAP_START_ADDRESS - GLOBAL_DATA_SEGMENT_BASE ;
+  uintptr_t uiHeapStartAddress = PROCESS_HEAP_START_ADDRESS - GLOBAL_DATA_SEGMENT_BASE ;
 
   if (uiAddress == NULL || uiAddress < sizeof(AllocationUnitTracker) || uiAddress == uiHeapStartAddress) {
     *iSize = 0;
@@ -270,24 +270,24 @@ byte DMM_GetAllocSize(unsigned uiAddress, int* iSize) {
   return DMM_SUCCESS;
 }
 
-byte DMM_GetAllocSizeForKernel(unsigned uiAddress, int* iSize) {
+byte DMM_GetAllocSizeForKernel(uintptr_t uiAddress, int* iSize) {
   IrqGuard g;
-  unsigned uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
+  uintptr_t uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
   if (uiAddress == NULL || uiAddress < sizeof(AllocationUnitTracker) || uiAddress == uiHeapStartAddress) {
     *iSize = 0;
     return DMM_FAILURE;
   }
 
-  AllocationUnitTracker* aut = (AllocationUnitTracker *) (uiAddress - sizeof(AllocationUnitTracker));
+  auto aut = (AllocationUnitTracker *) (uiAddress - sizeof(AllocationUnitTracker));
   *iSize = aut->uiSize;
   return DMM_SUCCESS;
 }
 
-byte DMM_DeAllocateForKernel(unsigned uiAddress)
+byte DMM_DeAllocateForKernel(uintptr_t uiAddress)
 {
   IrqGuard g;
-	unsigned& uiAUTAddress = MemManager::Instance().GetKernelAUTAddress() ;
-	unsigned uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
+  uintptr_t& uiAUTAddress = MemManager::Instance().GetKernelAUTAddress() ;
+  uintptr_t uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
 
 	if(uiAddress == NULL)
 		return DMM_SUCCESS ;
@@ -295,10 +295,10 @@ byte DMM_DeAllocateForKernel(unsigned uiAddress)
 	if(uiAddress <= uiHeapStartAddress)
 		return DMM_BAD_DEALLOC ;
 
-  AllocationUnitTracker* freeAUT = (AllocationUnitTracker*)(uiAddress - sizeof(AllocationUnitTracker));
-  unsigned uiAllocatedAddress = uiAddress - sizeof(AllocationUnitTracker) - freeAUT->uiByteStuffForAlign;
-  unsigned uiSize = freeAUT->uiSize;
-  const uint32_t calcCheckSum = calculateCheckSum(*freeAUT);
+  auto freeAUT = (AllocationUnitTracker*)(uiAddress - sizeof(AllocationUnitTracker));
+  uintptr_t uiAllocatedAddress = uiAddress - sizeof(AllocationUnitTracker) - freeAUT->uiByteStuffForAlign;
+  uint64_t uiSize = freeAUT->uiSize;
+  const uint64_t calcCheckSum = calculateCheckSum(*freeAUT);
   if (calcCheckSum != freeAUT->uiCheckSum) {
     throw upan::exception(XLOC,"bad address dealloc %x", uiAddress);
   }
@@ -361,12 +361,11 @@ void DMM_DeAllocatePhysicalPages(Process* processAddressSpace)
 
 unsigned DMM_KernelHeapAllocSize()
 {
-	unsigned uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
+  uintptr_t uiHeapStartAddress = MemManager::Instance().GetKernelHeapStartAddr();
 	AllocationUnitTracker *aut ;
-	unsigned uiSize = 0 ;
+	uint32_t uiSize = 0 ;
 
-	for(aut = (AllocationUnitTracker*)uiHeapStartAddress; aut != NULL; aut = (AllocationUnitTracker*)(aut->uiNextAUTAddress))
-	{
+	for(aut = (AllocationUnitTracker*)uiHeapStartAddress; aut != NULL; aut = (AllocationUnitTracker*)(aut->uiNextAUTAddress))	{
 		uiSize += aut->uiSize;
 	}
 

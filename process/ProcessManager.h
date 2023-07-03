@@ -36,7 +36,8 @@
 
 #include <PIT.h>
 
-#define ProcessManager_EXIT() \
+#define ProcessManager_EXIT()
+/*\
 	__asm__ __volatile__("pusha") ; \
 	__asm__ __volatile__("pushf") ; \
 	__asm__ __volatile__("popl %eax") ; \
@@ -46,8 +47,9 @@
 	__asm__ __volatile__("popf") ; \
 	__asm__ __volatile__("popa") ; \
 	__asm__ __volatile__("iret") 
-	
-#define ProcessManager_RESTORE() \
+	*/
+#define ProcessManager_RESTORE()
+/*
 	__asm__ __volatile__("pusha") ; \
 	__asm__ __volatile__("pushf") ; \
 	__asm__ __volatile__("popl %eax") ; \
@@ -58,7 +60,7 @@
 	__asm__ __volatile__("popa") ; \
 	__asm__ __volatile__("leave") ; \
 	__asm__ __volatile__("ret") ;
-
+*/
 void ProcessManager_Exit();
 void ProcessManager_Yield();
 
@@ -98,7 +100,7 @@ class ProcessManager
     void WakeUpFromKSWait(int iProcessID);
     bool IsAlive(int pid);
     bool IsChildAlive(int iChildProcessID);
-    int CreateKernelProcess(const upan::string& name, const unsigned uiTaskAddress, int iParentProcessID, byte bIsFGProcess, const upan::vector<uint32_t>& params);
+    int CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID, byte bIsFGProcess, const upan::vector<uintptr_t>& params);
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID, int iNumberOfParameters, char** szArgumentList);
     int CreateThreadTask(int parentID, uint32_t threadCaller, uint32_t threadEntryAddress, void* arg);
     void SetDMMFlag(int iProcessID, bool flag);

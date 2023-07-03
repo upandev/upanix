@@ -27,10 +27,10 @@ set(CROSS_TOOL_PATH $ENV{HOME}/opt/cross)
 set(UPANLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../upanlibs)
 set(UPANLIB_OUT_DIR ${UPANLIB_SOURCE_DIR}/out)
 
-set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-g++)
-set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-gcc)
-set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/i686-elf-ld)
-set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/i686-elf-ar)
+set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-g++)
+set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-gcc)
+set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/x86_64-elf-ld)
+set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/x86_64-elf-ar)
 
 set(ENABLE_CXX_RT ON)
 	
@@ -146,17 +146,17 @@ set(CRTFINI_OBJ "${CRTEND_OBJ} ${PROJECT_SOURCE_DIR}/osutils/crtn.o")
 
 set(OTHER_OBJS ${PROJECT_SOURCE_DIR}/memory/Mem.o)
 
-set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> ${CMAKE_CXX_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} ${PROJECT_SOURCE_DIR}/boot/fpu_init.obj ${PROJECT_SOURCE_DIR}/boot/UpanixStart_Main.grub ${CRTINIT_OBJ} <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${CRTFINI_OBJ}")
+set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> ${CMAKE_CXX_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} ${CRTINIT_OBJ} <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${CRTFINI_OBJ}")
 
 #LIBMCPP
 execute_process(COMMAND bash -c "cd ${PROJECT_SOURCE_DIR}; find ./libmcpp -name '*.cpp' | grep -v CMakeFile" OUTPUT_VARIABLE MCPP_SRC)
 string(REPLACE "\n" ";" MCPP_SRC ${MCPP_SRC})
 add_library(mcpp STATIC "${MCPP_SRC}")
+add_custom_command(TARGET mcpp POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:mcpp>)
 
 #UPANIX
 add_executable(${TARGET_BIN} ${OTHER_OBJS} ${UPANIX_SRCS})
 
-#add_dependencies(${TARGET_BIN} c)
 add_dependencies(${TARGET_BIN} mcpp)
 add_dependencies(${TARGET_BIN} osutils)
 add_dependencies(${TARGET_BIN} boot)

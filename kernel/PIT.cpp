@@ -54,7 +54,7 @@ void PIT_Initialize()
 	  PortCom_SendByte(PIT_COUNTER_0_PORT, (uiTimerRate >> 8) & 0xFF) ;	// Clock Divisor MSB
   }
 
-	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (unsigned)&PIT_Handler))
+	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&PIT_Handler))
     status = Failure;
 
   KC::MConsole().LoadMessage("Timer Initialization", status);
@@ -91,12 +91,12 @@ void PIT_Handler()
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %ds") ; 
-	__asm__ __volatile__("popw %fs") ; 
-	__asm__ __volatile__("popw %gs") ; 
+//	__asm__ __volatile__("popw %ds") ;
+//	__asm__ __volatile__("popw %fs") ;
+//	__asm__ __volatile__("popw %gs") ;
 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %es") ; 
+//	__asm__ __volatile__("popw %es") ;
 
 	// 1 Int --> 1ms
 	++PIT_ClockCountForSleep;
@@ -110,23 +110,23 @@ void PIT_Handler()
 		{
 			Process_bContextSwitch = true ;
 
-			__asm__ __volatile__("pushf") ;
-			__asm__ __volatile__("popl %eax") ;
+//			__asm__ __volatile__("pushf") ;
+//			__asm__ __volatile__("popl %eax") ;
 			__asm__ __volatile__("mov $0x4000, %ebx") ;
 			__asm__ __volatile__("or %ebx, %eax") ;
-			__asm__ __volatile__("pushl %eax") ;
-			__asm__ __volatile__("popf") ;
+//			__asm__ __volatile__("pushl %eax") ;
+//			__asm__ __volatile__("popf") ;
 			
 			IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 
 			__asm__ __volatile__("IRET") ;
 		
-			__asm__ __volatile__("pushf") ;
-			__asm__ __volatile__("popl %eax") ;
+//			__asm__ __volatile__("pushf") ;
+//			__asm__ __volatile__("popl %eax") ;
 			__asm__ __volatile__("mov $0xBFFF, %ebx") ;
 			__asm__ __volatile__("and %ebx, %eax") ;
-			__asm__ __volatile__("pushl %eax") ;
-			__asm__ __volatile__("popf") ;
+//			__asm__ __volatile__("pushl %eax") ;
+//			__asm__ __volatile__("popf") ;
 
 			//AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
 			__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;

@@ -48,10 +48,10 @@ public:
   upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const override;
   upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const override;
 
-  uint32_t getAUTAddress() const override {
+  uintptr_t getAUTAddress() const override {
     return _uiAUTAddress;
   }
-  void setAUTAddress(uint32_t addr) {
+  void setAUTAddress(uintptr_t addr) {
     _uiAUTAddress = addr;
   }
 
@@ -95,7 +95,7 @@ private:
   void DeAllocateGUIFramebuffer();
 
 private:
-  uint32_t _uiAUTAddress;
+  uintptr_t _uiAUTAddress;
   uint32_t _noOfPagesForPTE;
   uint32_t _noOfPagesForProcess;
   uint32_t _noOfPagesForDLLPTE;

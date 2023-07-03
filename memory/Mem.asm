@@ -18,45 +18,25 @@
 ;	You should have received a copy of the GNU General Public License
 ;	along with this program.  If not, see <http://www.gnu.org/licenses/
 
-[EXTERN MEM_PDBR]
-[EXTERN CR0_CONTENT]
-[GLOBAL Mem_EnablePaging]
+[BITS 64]
+
 [GLOBAL Mem_FlushTLB]
 [GLOBAL Mem_FlushTLBPage]
 
-Mem_EnablePaging:
-	cli
-
-	mov dword eax, [MEM_PDBR]
-	mov dword cr3, eax
-
-	mov dword eax, cr0
-	or eax, 0x80000000 ; set PG - Paging Enabled bit
-	and eax, 0xFFFEFFFF ; unset WP - Write Protected bit - to allow Supervisor level (kernel) process to write to read-only memory like Graphics linear buffer
-	mov dword cr0, eax
-	mov dword [CR0_CONTENT], eax
-	
-	jmp refresh_mem
-	
-refresh_mem:
-
-	sti
-	ret
-
 Mem_FlushTLB:
-	push dword	eax
-	mov dword	eax, cr3
-	mov dword	cr3, eax
-	pop dword	eax
-	ret
+  push rax
+  mov rax, cr3
+  mov cr3, rax
+  pop rax
+  ret
 
 Mem_FlushTLBPage:
-	push dword	ebp
-	mov dword	ebp, esp
-	push dword	ebx
-	mov dword	ebx, [ebp]
-	invlpg		[ebx]
-	pop dword	ebx
-	pop dword	ebp
+	;push dword	ebp
+	;mov dword	ebp, esp
+	;push dword	ebx
+	;mov dword	ebx, [ebp]
+	;invlpg		[ebx]
+	;pop dword	ebx
+	;pop dword	ebp
 	ret
 

@@ -246,9 +246,9 @@ int KernelService::Spawn()
   szName += upan::string::to_string(iID);
 	iID++ ;
 
-	upan::vector<uint32_t> params;
-	params.push_back((uint32_t)this);
-	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (unsigned) &(KernelService::Server),
+	upan::vector<uintptr_t> params;
+	params.push_back((uintptr_t)this);
+	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &(KernelService::Server),
                                                           ProcessManager::GetCurrentProcessID(), false, params);
 	if(pid < 0) {
 		printf("\n Failed to create Kernel Service Process %s", szName.c_str()) ;

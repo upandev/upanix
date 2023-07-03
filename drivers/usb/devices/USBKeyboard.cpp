@@ -195,7 +195,7 @@ USBKeyboard::USBKeyboard(USBDevice& device, int interfaceIndex) : _device(device
   for(int i = 0; i < 0; ++i)
   {
     byte* report = new byte[STD_USB_KB_REPORT_LEN];
-    _device.SetupInterruptReceiveData((uint32_t)report, STD_USB_KB_REPORT_LEN, this);
+    _device.SetupInterruptReceiveData((uintptr_t)report, STD_USB_KB_REPORT_LEN, this);
   }
 
   uint32_t reportAddress = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
@@ -215,7 +215,7 @@ USBKeyboard::~USBKeyboard()
 
 bool USBKeyboard::TimerTrigger()
 {
-  if(_device.SetupInterruptReceiveData((uint32_t)&_reports[_currentReportIndex], STD_USB_KB_REPORT_LEN, this))
+  if(_device.SetupInterruptReceiveData((uintptr_t)&_reports[_currentReportIndex], STD_USB_KB_REPORT_LEN, this))
     _currentReportIndex = (_currentReportIndex + 1) % _device.GetInterruptQueueSize();
   return true;
 }

@@ -29,7 +29,7 @@ int exec(const char* szFileName, ...)
 {
 	__volatile__ int iProcessID ;
 	__volatile__ int argc ;
-	__volatile__ int* argv = NULL ;
+	__volatile__ char** argv = NULL ;
 
 	__volatile__ int i ;
 	__volatile__ int* ref = (int*)&szFileName + 1 ;
@@ -37,18 +37,18 @@ int exec(const char* szFileName, ...)
 
 	if(argc)
 	{
-		argv = (int*)malloc(sizeof(int) * argc) ;
+		argv = (__volatile__ char**)malloc(sizeof(int) * argc) ;
 		if(!argv)
 			return -1 ;
 
 		for(i = 0; i < argc; i++)
 		{
-			argv[i] = (volatile int)malloc(strlen((char*)(*(ref + i))) + 1) ;
+			argv[i] = (volatile char*)malloc(strlen((char*)(*(ref + i))) + 1) ;
 			strcpy((char*)argv[i], (char*)(*(ref + i))) ;
 		}
 	}
 
-	SysCallProc_Handle(&iProcessID, SYS_CALL_PROCESS_EXEC, false, (unsigned)szFileName, (unsigned)argc, (unsigned)argv, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iProcessID, SYS_CALL_PROCESS_EXEC, false, (uintptr_t)szFileName, (unsigned)argc, (uintptr_t)argv, 4, 5, 6, 7, 8, 9);
 
 	for(i = 0; i < argc; i++)
 		free((void*)argv[i]) ;
@@ -59,7 +59,7 @@ int exec(const char* szFileName, ...)
 int SysProcess_Exec(const char* szFileName, int iNoOfArgs, char *const szArgList[])
 {
 	__volatile__ int iProcessID ;
-	SysCallProc_Handle(&iProcessID, SYS_CALL_PROCESS_EXEC, false, (unsigned)szFileName, (unsigned)iNoOfArgs, (unsigned)szArgList, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iProcessID, SYS_CALL_PROCESS_EXEC, false, (uintptr_t)szFileName, (unsigned)iNoOfArgs, (uintptr_t)szArgList, 4, 5, 6, 7, 8, 9);
 	return iProcessID ;
 }
 
@@ -97,28 +97,28 @@ int SysProcess_GetPID()
 const char* SysProcess_GetEnv(const char* szVar)
 {
 	__volatile__ int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_ENV, false, (unsigned)szVar, 2, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_ENV, false, (uintptr_t)szVar, 2, 3, 4, 5, 6, 7, 8, 9);
 	return (const char*)iRetStatus ;
 }
 
 int SysProcess_SetEnv(const char* szVar, const char* szVal)
 {
 	__volatile__ int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_SET_ENV, false, (unsigned)szVar, (unsigned)szVal, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_SET_ENV, false, (uintptr_t)szVar, (uintptr_t)szVal, 3, 4, 5, 6, 7, 8, 9);
 	return iRetStatus ;
 }
 
 int SysProcess_GetProcList(PS** pProcList, unsigned* uiListSize)
 {
 	__volatile__ int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_PS_LIST, false, (unsigned)pProcList, (unsigned)uiListSize, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_PS_LIST, false, (uintptr_t)pProcList, (uintptr_t)uiListSize, 3, 4, 5, 6, 7, 8, 9);
 	return iRetStatus ;
 }
 
 void SysProcess_FreeProcListMem(PS* pProcList, unsigned uiListSize)
 {
 	__volatile__ int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_FREE_PS_LIST, false, (unsigned)pProcList, uiListSize, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_FREE_PS_LIST, false, (uintptr_t)pProcList, uiListSize, 3, 4, 5, 6, 7, 8, 9);
 }
 
 int SysProcess_IsProcessAlive(int pid) {
@@ -127,9 +127,9 @@ int SysProcess_IsProcessAlive(int pid) {
   return iRetStatus ;
 }
 
-int SysProcess_ThreadExec(uint32_t threadCaller, uint32_t entryAddress, void* arg) {
+int SysProcess_ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
   __volatile__ int iRetStatus ;
-  SysCallProc_Handle(&iRetStatus, SYS_CALL_THREAD_EXEC, false, threadCaller, entryAddress, (uint32_t)arg, 4, 5, 6, 7, 8, 9);
+  SysCallProc_Handle(&iRetStatus, SYS_CALL_THREAD_EXEC, false, threadCaller, entryAddress, (uintptr_t)arg, 4, 5, 6, 7, 8, 9);
   return iRetStatus ;
 }
 

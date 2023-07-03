@@ -28,9 +28,9 @@ KernelThread::KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_
   : Thread(parent) {
   const uint32_t uiStackAddress = AllocateAddressSpace();
   const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;
-  upan::vector<uint32_t> params;
+  upan::vector<uintptr_t> params;
   params.push_back(entryAddress);
-  params.push_back((uint32_t)arg);
+  params.push_back((uintptr_t)arg);
   _taskState.BuildForKernel(threadCaller, uiStackTop, params);
   _processLDT.BuildForKernel();
 

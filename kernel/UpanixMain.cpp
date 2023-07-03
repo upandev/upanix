@@ -69,7 +69,7 @@ byte SPECIAL_TASK ;
 int debug_point ;
 /***********************************************/
 
-void DummyPrint()
+[[noreturn]] void DummyPrint()
 {
   static int i = 1;
   while(true)
@@ -79,7 +79,7 @@ void DummyPrint()
   }
 }
 
-void UpanixMain_KernelProcess() {
+[[noreturn]] void UpanixMain_KernelProcess() {
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
@@ -95,8 +95,8 @@ void UpanixMain_KernelProcess() {
   PS2MouseDriver::Instance().StartDispatcher();
 
 	while(true) {
-    const int pid = ProcessManager::Instance().CreateKernelProcess("console", (unsigned) &Console_StartUpanixConsole,
-                                                                   ProcessManager::GetCurrentProcessID(), true, upan::vector<uint32_t>());
+    const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
+                                                                   ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
     ProcessManager::Instance().WaitOnChild(pid);
   }
@@ -150,7 +150,11 @@ void Initialize() {
 	SPECIAL_TASK = false ;
 
 	MultiBoot::Instance();
+	MemManager::RawMapGraphicsLFB();
+	MultiBoot::Instance().VideoFrameBufferInfo()->_frameBuffer = (uint32_t*) MEM_GRAPHICS_VIDEO_MAP_START;
+	//while(1);
 	RootConsole::Create();
+  while(1);
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
 
 	MemManager::Instance();
@@ -240,21 +244,10 @@ upan::mutex& UpanixMain_GetDMMMutex()
 	return mDMMMutex ;
 }
 
-byte* GetArea()
-{
-	static byte area[0x1000] ;
-	return area ;
-}
-
 void UpanixMain() {
-	byte* bios = (byte*)(0 - GLOBAL_DATA_SEGMENT_BASE) ;
-
-	for(int i = 0; i < 0x500; i++) 
-		GetArea()[i] = bios[i] ;
-
 	Initialize() ;
 
-	ProcessManager::Instance().CreateKernelProcess("kerparent", (unsigned) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uint32_t>());
+	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
 	ProcessManager::Instance().StartScheduler();
 	while(1) ;

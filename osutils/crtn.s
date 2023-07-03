@@ -18,12 +18,13 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program.  If not, see <http://www.gnu.org/licenses/
 /* x86 crtn.s */
+.code64
 .section .init
 	/* gcc will nicely put the contents of crtend.o's .init section here. */
-	popl %ebp
+	pop %rbp
 	ret
 
 .section .fini
 	/* gcc will nicely put the contents of crtend.o's .fini section here. */
-	popl %ebp
+	pop %rbp
 	ret

@@ -153,10 +153,10 @@ const Acpi::Rsdp* Acpi::Rsdp::Search()
     return nullptr;
   }
 
-  printf("\n ACPI info base address: 0x%llx, len: %llu", acpi_mmap->base_addr, acpi_mmap->length);
+  printf("\n ACPI info base address: 0x%llx, len: %llu", acpi_mmap->addr, acpi_mmap->length);
   for(unsigned i = 0; i < (acpi_mmap->length + RSDP_SIG_LEN - 1); i += 16)
   {
-    uint8_t* a = reinterpret_cast<uint8_t*>(acpi_mmap->base_addr + i);
+    uint8_t* a = reinterpret_cast<uint8_t*>(acpi_mmap->addr + i);
     Rsdp* rsdp = reinterpret_cast<Rsdp*>(a);
     if(rsdp->MatchSignature())
     {

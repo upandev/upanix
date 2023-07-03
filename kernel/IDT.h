@@ -39,7 +39,7 @@ class IDT
 	private:
 		void LoadDefaultHadlers() ;
 		void LoadInterruptTasks() ;
-		void LoadEntry(unsigned int uiIDTNO, unsigned int uiOffset, unsigned short int usiSelector, byte bOptions) ;
+		void LoadEntry(unsigned int uiIDTNO, uintptr_t uiOffset, unsigned short int usiSelector, byte bOptions) ;
 
 		typedef struct
 		{

@@ -46,7 +46,7 @@ class EHCIDevice final : public USBDevice
     void CheckConfiguration(byte& bConfigValue);
     bool GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc);
     bool GetStringDescriptorZero();
-    byte SetupBuffer(EHCIQTransferDesc* pTD, unsigned uiAddress, unsigned uiSize);
+    byte SetupBuffer(EHCIQTransferDesc* pTD, uintptr_t uiAddress, unsigned uiSize);
     byte SetupAllocBuffer(EHCIQTransferDesc* pTD, unsigned uiSize);
     void DisplayTransactionState(EHCIQueueHead* pQH, EHCIQTransferDesc* pTDStart);
 

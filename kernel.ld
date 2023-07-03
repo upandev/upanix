@@ -21,106 +21,115 @@
  */
 /* The bootloader will look at this image and start execution at the symbol
    designated as the entry point. */
-ENTRY(_start)
+ENTRY(_bootstrap)
 
 /* Tell where the various sections of the object files will be put in the final
    kernel image. */
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
-	. = 1M;
+  /* Begin putting sections at 1MB, a conventional place for kernels to be
+     loaded at by the bootloader. */
 
-	/* First put the multiboot header, as it is required to be put very early
-	   early in the image or the bootloader won't recognize the file format.
-	   Next we'll put the .text section. */
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text*)
-	}
+  . = 1K;
 
-	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata*)
-	}
+  /* First put the multiboot header, as it is required to be put very early
+     early in the image or the bootloader won't recognize the file format.
+     Next we'll put the .text section. */
 
-	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
-	{
-		*(.data*)
-	}
+  .bootstrap BLOCK(1K) : ALIGN(8)
+  {
+      *(.multiboot)
+    ../boot/UpanixStart_Main.grub (.text)
+  }
 
-	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
-	{
-		*(COMMON)
-		*(.bss*)
-		*(.bootstrap_stack)
-	}
+  . = 1M;
 
-	/* Just make crtstuff happy */
-	.tm_clone_table BLOCK(4K) : ALIGN(4K)
-	{
-		*(.tm_clone_table)
-	}
-	.jcr BLOCK(4K) : ALIGN(4K)
-	{
-		*(.jcr)
-	}
-	.got.plt BLOCK(4K) : ALIGN(4K)
-	{
-		*(.got.plt)
-	}
+  .text BLOCK(4K) : ALIGN(4K)
+  {
+    *(EXCLUDE_FILE(*UpanixStart_Main.grub) .text)
+  }
 
-	.init BLOCK(4K) : ALIGN(4K) 
-	{
-		*(.init)
-	}
+  /* Read-only data. */
+  .rodata BLOCK(4K) : ALIGN(4K)
+  {
+    *(.rodata*)
+  }
 
-	.fini BLOCK(4K) : ALIGN(4K)
-	{
-		*(.fini)
-	}
+  /* Read-write data (initialized) */
+  .data BLOCK(4K) : ALIGN(4K)
+  {
+    *(.data*)
+  }
 
-	/* Global ctors and dtors */
-	.ctors BLOCK(4K) : ALIGN(4K)
-	{
-		*(.ctors*)
-	}
-	
-	.dtors BLOCK(4K) : ALIGN(4K)
-	{
-		*(.dtors*)
-	}
+  /* Read-write data (uninitialized) and stack */
+  .bss BLOCK(4K) : ALIGN(4K)
+  {
+    *(COMMON)
+    *(.bss*)
+    *(.bootstrap_stack)
+  }
 
-	.eh_frame_hdr BLOCK(4K) : ALIGN(4K)
-	{
-		*(.eh_frame_hdr*)
-	}
-	
-	.eh_frame BLOCK(4K) : ALIGN(4K)
-	{
-		*(.eh_frame*)
-	}
-	
-	.gcc_except_table BLOCK(4K) : ALIGN(4K)
-	{
-		*(.gcc_except_table*)
-	}
+  /* Just make crtstuff happy */
+  .tm_clone_table BLOCK(4K) : ALIGN(4K)
+  {
+    *(.tm_clone_table)
+  }
+  .jcr BLOCK(4K) : ALIGN(4K)
+  {
+    *(.jcr)
+  }
+  .got.plt BLOCK(4K) : ALIGN(4K)
+  {
+    *(.got.plt)
+  }
 
-	.debug_info BLOCK(4K) : ALIGN(4K) { *(.debug_info*) }
-	.debug_abbrev BLOCK(4K) : ALIGN(4K) { *(.debug_abbrev*) }
-	.debug_aranges BLOCK(4K) : ALIGN(4K) { *(.debug_aranges*) }
-	.debug_ranges BLOCK(4K) : ALIGN(4K) { *(.debug_ranges*) }
-	.debug_line BLOCK(4K) : ALIGN(4K) { *(.debug_line*) }
-	.debug_str BLOCK(4K) : ALIGN(4K) { *(.debug_str*) }
+  .init BLOCK(4K) : ALIGN(4K)
+  {
+    *(.init)
+  }
 
-	.shstrtab BLOCK(4K) : ALIGN(4K) { *(.shstrtab*) }
-	.symtab BLOCK(4K) : ALIGN(4K) { *(.symtab*) }
-	.strtab BLOCK(4K) : ALIGN(4K) { *(.strtab*) }
+  .fini BLOCK(4K) : ALIGN(4K)
+  {
+    *(.fini)
+  }
 
-	/* The compiler may produce other sections, by default it will put them in
-	   a segment with the same name. Simply add stuff here as needed. */
+  /* Global ctors and dtors */
+  .ctors BLOCK(4K) : ALIGN(4K)
+  {
+    *(.ctors*)
+  }
+
+  .dtors BLOCK(4K) : ALIGN(4K)
+  {
+    *(.dtors*)
+  }
+
+  .eh_frame_hdr BLOCK(4K) : ALIGN(4K)
+  {
+    *(.eh_frame_hdr*)
+  }
+
+  .eh_frame BLOCK(4K) : ALIGN(4K)
+  {
+    *(.eh_frame*)
+  }
+
+  .gcc_except_table BLOCK(4K) : ALIGN(4K)
+  {
+    *(.gcc_except_table*)
+  }
+
+  .debug_info BLOCK(4K) : ALIGN(4K) { *(.debug_info*) }
+  .debug_abbrev BLOCK(4K) : ALIGN(4K) { *(.debug_abbrev*) }
+  .debug_aranges BLOCK(4K) : ALIGN(4K) { *(.debug_aranges*) }
+  .debug_ranges BLOCK(4K) : ALIGN(4K) { *(.debug_ranges*) }
+  .debug_line BLOCK(4K) : ALIGN(4K) { *(.debug_line*) }
+  .debug_str BLOCK(4K) : ALIGN(4K) { *(.debug_str*) }
+
+  .shstrtab BLOCK(4K) : ALIGN(4K) { *(.shstrtab*) }
+  .symtab BLOCK(4K) : ALIGN(4K) { *(.symtab*) }
+  .strtab BLOCK(4K) : ALIGN(4K) { *(.strtab*) }
+
+  /* The compiler may produce other sections, by default it will put them in
+     a segment with the same name. Simply add stuff here as needed. */
 }

@@ -36,6 +36,12 @@ extern "C" {
 	unsigned MEM_PDBR ;
 }
 
+#define PML4_INDEX(ADDR) (((ADDR) >> 39) & 0x1FF)
+#define PDP_INDEX(ADDR) (((ADDR) >> 30) & 0x1FF)
+#define PD_INDEX(ADDR) (((ADDR) >> 21) & 0x1FF)
+#define PT_INDEX(ADDR) (((ADDR) >> 12) & 0x1FF)
+#define PAGE_INDEX(ADDR) ((ADDR) & 0xFFF)
+
 void MemManager::PageFaultHandlerTaskGate()
 {
 	AsmUtil_STORE_GPR() ;
@@ -48,19 +54,19 @@ void MemManager::PageFaultHandlerTaskGate()
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %ds") ; 
-	__asm__ __volatile__("popw %fs") ; 
-	__asm__ __volatile__("popw %gs") ; 
+//	__asm__ __volatile__("popw %ds") ;
+//	__asm__ __volatile__("popw %fs") ;
+//	__asm__ __volatile__("popw %gs") ;
 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %es") ; 
+//	__asm__ __volatile__("popw %es") ;
 
 //	__volatile__ unsigned MM_errCode ;
 //	__volatile__ unsigned CS ;
 //	__volatile__ unsigned IP ;
 //
 	__volatile__ unsigned uiFaultyAddress ;
-	__asm__ __volatile__("mov %%cr2, %0" : "=r"(uiFaultyAddress) : ) ;
+//	__asm__ __volatile__("mov %%cr2, %0" : "=r"(uiFaultyAddress) : ) ;
 
 	if (IS_KERNEL()) {
     printf("\n Page Fault in Kernel! FIX THIS !!! @ %u", uiFaultyAddress);
@@ -109,7 +115,7 @@ MemManager::MemManager() :
         if(BuildPagePoolMap()) {
           if (MarkACPIInfoRegionAsAllocated()) {
             MemMapGraphicsLFB(0x0);
-            Mem_EnablePaging();
+            Mem_FlushTLB();
 
             KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
             return;
@@ -135,7 +141,7 @@ bool MemManager::MarkACPIInfoRegionAsAllocated() {
   }
 
   const uint32_t noOfPages = ((acpiMmap->length + PAGE_SIZE) / PAGE_SIZE) - 1;
-  uint32_t addr = acpiMmap->base_addr;
+  uint32_t addr = acpiMmap->addr;
 
   ReturnCode markPageRetCode = Success;
   for(int i = 0; i < noOfPages; ++i) {
@@ -175,6 +181,31 @@ void MemManager::MemMapGraphicsLFB(uint32_t memTypeFlag)
   RootGUIConsole::Instance().resetFrameBuffer(MEM_GRAPHICS_VIDEO_MAP_START);
 }
 
+void MemManager::RawMapGraphicsLFB() {
+  auto f = MultiBoot::Instance().VideoFrameBufferInfo();
+  const uint32_t lfbSize = f->_width * f->_height * f->_bpp / 8;
+  const uint32_t noOfPages = (lfbSize / PAGE_SIZE) + 1;
+  const uint32_t availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
+  if(noOfPages > availablePages) {
+    //PANIC
+    while(true);
+  }
+  uint64_t lfbaddress = (uint64_t)f->_frameBuffer;
+  uint64_t mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
+
+  for(unsigned i = 0; i < noOfPages; ++i) {
+    const uint64_t addr = lfbaddress + PAGE_SIZE * i;
+
+    auto pdpEntry = (uint64_t*)(PML4_TABLE[PML4_INDEX(mapAddress)] & ~0xFFF);
+    auto pdEntry = (uint64_t*)(pdpEntry[PDP_INDEX(mapAddress)] & ~0xFFF);
+    auto ptEntry = (uint64_t*)(pdEntry[PD_INDEX(mapAddress)] & ~0xFFF);
+    // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
+    ptEntry[PT_INDEX(mapAddress)] = (addr & ~0xFFF) | 0x3;
+    mapAddress += PAGE_SIZE;
+  }
+  Mem_FlushTLB();
+}
+
 void MemManager::InitPage(unsigned uiPage)
 {
 	uiPage = uiPage * PAGE_SIZE;
@@ -183,7 +214,7 @@ void MemManager::InitPage(unsigned uiPage)
 
 bool MemManager::BuildRawPageMap()
 {
-  m_uiPageMap = (unsigned*)MEM_PAGE_MAP_START ;
+  m_uiPageMap = (uintptr_t*)MEM_PAGE_MAP_START ;
   m_uiPageMapSize = (((RAM_SIZE / PAGE_SIZE) / 8) / 4) ;
   m_uiResvSize = (((MEM_KERNEL_RESV_SIZE / PAGE_SIZE) / 8) / 4) ;
   m_uiNoOfResvPages = MEM_KERNEL_RESV_SIZE / PAGE_SIZE;
@@ -207,7 +238,7 @@ bool MemManager::BuildRawPageMap()
 
 bool MemManager::BuildPagePoolMap()
 {
-  m_uiKernelPagePoolMap = (unsigned*)(MEM_KERNEL_PAGE_POOL_MAP_START - GLOBAL_DATA_SEGMENT_BASE);
+  m_uiKernelPagePoolMap = (uintptr_t*)(MEM_KERNEL_PAGE_POOL_MAP_START - GLOBAL_DATA_SEGMENT_BASE);
   m_uiKernelPagePoolMapSize = MEM_KERNEL_PAGE_POOL_SIZE / PAGE_SIZE / 8 / 4;
   m_uiKernelPagePoolStartPage = (MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE) / PAGE_SIZE;
 
@@ -236,8 +267,8 @@ bool MemManager::BuildPageTable()
 	m_uiNoOfPages = RAM_SIZE / PAGE_SIZE ;
 	uiNoOfPDEEntries = m_uiNoOfPages / PAGE_TABLE_ENTRIES ;
 
-	m_uiPDEBase = (unsigned*)MEM_PDE_START ; 
-	m_uiPTEBase = (unsigned*)MEM_PTE_START ;
+	m_uiPDEBase = (uintptr_t*)MEM_PDE_START ;
+	m_uiPTEBase = (uintptr_t*)MEM_PTE_START ;
 	
 	if((uiNoOfPDEEntries * 4) > (MEM_PDE_END - MEM_PDE_START))
 	{
@@ -273,7 +304,7 @@ bool MemManager::BuildPageTable()
 	}
 
 	/***** Initialize Kernel Processes Stack Pages Table Entries *****/
-	m_uipKernelProcessStackPTEBase = (unsigned*)(MEM_PTE_START + KERNEL_PROCESS_PDE_ID * PAGE_TABLE_SIZE);
+	m_uipKernelProcessStackPTEBase = (uintptr_t*)(MEM_PTE_START + KERNEL_PROCESS_PDE_ID * PAGE_TABLE_SIZE);
 	m_iNoOfKernelProcessStackBlocks = PAGE_TABLE_ENTRIES / PROCESS_KERNEL_STACK_PAGES ;
 	
 	for(int i = 0; i < m_iNoOfKernelProcessStackBlocks; i++)

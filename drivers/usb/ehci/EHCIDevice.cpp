@@ -71,11 +71,11 @@ bool EHCIDevice::SetConfiguration(byte bConfigValue) {
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return false;
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	auto pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
 	pDevRequest->bRequestType = 0x00 ;
 	pDevRequest->bRequest = 9 ;
 	pDevRequest->usWValue = bConfigValue ;
@@ -142,7 +142,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 
 		if(!(status = GetDescriptor(usDescValue, 0, iLen, pBuffer)))
 		{
-			DMM_DeAllocateForKernel((unsigned)pBuffer) ;
+			DMM_DeAllocateForKernel((uintptr_t)pBuffer) ;
 			break ;
 		}
 
@@ -173,9 +173,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 			if(iCopyLen > iIntLen)
 				iCopyLen = iIntLen ;
 
-			MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)pInt, 
-								MemUtil_GetDS(), (unsigned)&(pCD[index].pInterfaces[iI]),
-								iCopyLen) ;
+      memcpy(&(pCD[index].pInterfaces[iI]), pInt, iCopyLen);
 
 			pCD[index].pInterfaces[iI].DebugPrint();
 
@@ -202,9 +200,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 				if(iECopyLen > iELen)
 					iECopyLen = iELen ;
 
-				MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)pEndPt, 
-									MemUtil_GetDS(), (unsigned)&(pCD[index].pInterfaces[iI].pEndPoints[iE]),
-									iECopyLen) ;
+        memcpy(&(pCD[index].pInterfaces[iI].pEndPoints[iE]), pEndPt, iECopyLen);
 
 				pCD[index].pInterfaces[iI].pEndPoints[iE].DebugPrint();
 			}
@@ -212,8 +208,8 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 			pInterfaceBuffer = (USBStandardInterface*)((char*)pEndPtBuffer + iNumEndPoints * sizeof(USBStandardEndPt)) ;
 		}
 
-		DMM_DeAllocateForKernel((unsigned)pBuffer) ;
-		pBuffer = NULL ;
+		DMM_DeAllocateForKernel((uintptr_t)pBuffer) ;
+		pBuffer = nullptr ;
 	}
 
 	if(!status)
@@ -242,7 +238,7 @@ bool EHCIDevice::GetStringDescriptorZero()
 
 	if(!GetDescriptor(usDescValue, 0, iLen, pStringDescZero))
 	{
-		DMM_DeAllocateForKernel((unsigned)pStringDescZero) ;
+		DMM_DeAllocateForKernel((uintptr_t)pStringDescZero) ;
 		return false;
 	}
 
@@ -251,7 +247,7 @@ bool EHCIDevice::GetStringDescriptorZero()
 	USBDataHandler_CopyStrDescZero(_pStrDescZero, pStringDescZero) ;
 	USBDataHandler_DisplayStrDescZero(_pStrDescZero);
 
-	DMM_DeAllocateForKernel((unsigned)pStringDescZero) ;
+	DMM_DeAllocateForKernel((uintptr_t)pStringDescZero) ;
 
 	return true;
 }
@@ -302,7 +298,7 @@ byte EHCIDevice::GetMaxLun()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
     throw upan::exception(XLOC, "Failed to setup buffer");
 	}
 
@@ -320,14 +316,14 @@ byte EHCIDevice::GetMaxLun()
 	
 	if(SetupAllocBuffer(pTD1, 1) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
-		DMM_DeAllocateForKernel((unsigned)pTD1) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
     throw upan::exception(XLOC, "Failed to setup buffer");
 	}
 
 	// It is important to store the data buffer address now for later read as the data buffer address
 	// in TD will be incremented by Host Controller with the number of bytes read
-	unsigned uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
 
 	EHCIQTransferDesc* pTD2 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
 	pTD1->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD2) ;
@@ -346,7 +342,7 @@ byte EHCIDevice::GetMaxLun()
     throw upan::exception(XLOC, "EHCI transaction failed");
 	}
 	
-	byte bLUN = *((char*)uiDataBuffer) ;
+	byte bLUN = *reinterpret_cast<char*>(uiDataBuffer);
 
   aTransaction.Clear();
 
@@ -363,7 +359,7 @@ bool EHCIDevice::CommandReset()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return false ;
 	}
 
@@ -408,7 +404,7 @@ bool EHCIDevice::ClearHaltEndPoint(USBulkDisk* pDisk, bool bIn)
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return false ;
 	}
 
@@ -503,7 +499,7 @@ bool EHCIDevice::BulkRead(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		if(toggle % 2)
 			pDisk->bEndPointInToggle ^= 1 ;
 
-		unsigned uiBufAddr = (unsigned)(pDisk->pRawAlignedBuffer + (iIndex * EHCI_MAX_BYTES_PER_TD)) ;
+    uintptr_t uiBufAddr = (uintptr_t)(pDisk->pRawAlignedBuffer + (iIndex * EHCI_MAX_BYTES_PER_TD)) ;
 		if(SetupBuffer(pTD, uiBufAddr, uiCurReadLen)	!= EHCIController_SUCCESS)
 		{
 			printf("\n EHCI Transfer Buffer setup failed") ;
@@ -511,7 +507,7 @@ bool EHCIDevice::BulkRead(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		}
 
 		if(iIndex > 0)
-			_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((unsigned)pTD) ;
+			_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((uintptr_t)pTD) ;
 	}
 
 	_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = 1 ;
@@ -597,7 +593,7 @@ bool EHCIDevice::BulkWrite(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		if(toggle % 2)
 			pDisk->bEndPointOutToggle ^= 1 ;
 
-		unsigned uiBufAddr = (unsigned)(pDisk->pRawAlignedBuffer + (iIndex * EHCI_MAX_BYTES_PER_TD)) ;
+    uintptr_t uiBufAddr = (uintptr_t)(pDisk->pRawAlignedBuffer + (iIndex * EHCI_MAX_BYTES_PER_TD)) ;
 		if(SetupBuffer(pTD, uiBufAddr, uiCurWriteLen) != EHCIController_SUCCESS)
 		{
 			printf("\n EHCI Transfer Buffer setup failed") ;
@@ -605,7 +601,7 @@ bool EHCIDevice::BulkWrite(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		}
 
 		if(iIndex > 0)
-			_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((unsigned)pTD) ;
+			_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((uintptr_t)pTD) ;
 	}
 
 	_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = 1 ;
@@ -638,7 +634,7 @@ bool EHCIDevice::SetAddress()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return EHCIController_FAILURE ;
 	}
 
@@ -707,7 +703,7 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return false;
 	}
 
@@ -728,14 +724,14 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 	
 	if(SetupAllocBuffer(pTD1, iLen) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
-		DMM_DeAllocateForKernel((unsigned)pTD1) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
 		return false;
 	}
 
 	// It is important to store the data buffer address now for later read as the data buffer address
 	// in TD will be incremented by Host Controller with the number of bytes read
-	unsigned uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
 
 	EHCIQTransferDesc* pTD2 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
 	pTD1->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD2) ;
@@ -753,8 +749,8 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
     aTransaction.Clear();
 		return false;
 	}
-	
-	MemUtil_CopyMemory(MemUtil_GetDS(), uiDataBuffer, MemUtil_GetDS(), (unsigned)pDestDesc, iLen) ;
+
+  memcpy(pDestDesc, (const void*)uiDataBuffer, iLen);
 
   aTransaction.Clear();
 
@@ -770,7 +766,7 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
 		return false;
 	}
 
@@ -788,8 +784,8 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 	
 	if(SetupAllocBuffer(pTD1, 1) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((unsigned)pTDStart) ;
-		DMM_DeAllocateForKernel((unsigned)pTD1) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
 		return false;
 	}
 
@@ -799,7 +795,7 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 	pTD2->uiAltpTDPointer = 1 ;
 	pTD2->uipTDToken = (3 << 10) | (1 << 7) ;
 
-	unsigned uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
 
 	EHCITransaction aTransaction(_pControlQH, pTDStart);
 
@@ -812,14 +808,14 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 		return false;
 	}
 	
-	bConfigValue = *((char*)(uiDataBuffer)) ;
+	bConfigValue = *reinterpret_cast<char*>(uiDataBuffer);
 		
   aTransaction.Clear();
 
 	return true;
 }
 
-byte EHCIDevice::SetupBuffer(EHCIQTransferDesc* pTD, unsigned uiAddress, unsigned uiSize)
+byte EHCIDevice::SetupBuffer(EHCIQTransferDesc* pTD, uintptr_t uiAddress, unsigned uiSize)
 {
 	unsigned uiFirstPagePart = PAGE_SIZE - (uiAddress % PAGE_SIZE) ;
 
@@ -871,7 +867,7 @@ void EHCIDevice::DisplayTransactionState(EHCIQueueHead* pQH, EHCIQTransferDesc* 
 
 	EHCIQTransferDesc* pTDCur = pTDStart ;
 	unsigned i = 1 ;
-	for(;(unsigned)pTDCur > 1;)
+	for(;(uintptr_t)pTDCur > 1;)
 	{
 		printf("\n TD %d Token: %x", i++, pTDCur->uipTDToken) ;
 		pTDCur = (EHCIQTransferDesc*)KERNEL_VIRTUAL_ADDRESS(pTDCur->uiNextpTDPointer) ;

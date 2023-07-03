@@ -61,10 +61,10 @@ void KernelUtil::TightLoopWait(unsigned loop)
 }
 
 void KernelUtil::ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask& task) {
-  upan::vector<uint32_t> params;
+  upan::vector<uintptr_t> params;
   params.push_back(uiTimeInMilliSec);
-  params.push_back((uint32_t)&task);
-  ProcessManager::Instance().CreateKernelProcess(szName, (unsigned) &SystemTimer, ProcessManager::GetCurrentProcessID(), false, params);
+  params.push_back((uintptr_t)&task);
+  ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &SystemTimer, ProcessManager::GetCurrentProcessID(), false, params);
 }
 
 void KernelUtil::SystemTimer(unsigned uiTimeInMilliSec, TimerTask* task)

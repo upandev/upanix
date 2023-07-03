@@ -27,7 +27,7 @@ class TaskState
 {
 public:
   void BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, unsigned uiEntryAdddress, unsigned uiProcessEntryStackSize);
-  void BuildForKernel(const unsigned uiTaskAddress, unsigned uiStackTop, const upan::vector<uint32_t>& params);
+  void BuildForKernel(const uintptr_t uiTaskAddress, unsigned uiStackTop, const upan::vector<uintptr_t>& params);
 
   unsigned short	backlink ;
   unsigned short	FILLER1 ;

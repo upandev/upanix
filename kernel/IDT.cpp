@@ -34,20 +34,20 @@
 	MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
 	MemUtil_SetES(SYS_DATA_SELECTOR_DEFINED) ;
 
-#define GEN_HANDLER(handler_msg) \
-	MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
-	MemUtil_SetES(SYS_DATA_SELECTOR_DEFINED) ; \
-\
-	KC::MConsole().Message(handler_msg, ' ') ; \
-\
-/*	MemUtil_MoveByte(SYS_LINEAR_SELECTOR_DEFINED, 0xb8000, '0') ; */\
-/*	MemUtil_MoveByte(SYS_LINEAR_SELECTOR_DEFINED, 0xb8001, 14) ; */\
-\
-	PIT_SetContextSwitch(false) ; \
-/*	__asm__ __volatile__("HLT") ;*/\
-	ProcessManager_EXIT() ; \
-/*	dummy */\
-	__asm__ __volatile__("HLT") ;\
+#define GEN_HANDLER(handler_msg)
+//	MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
+//	MemUtil_SetES(SYS_DATA_SELECTOR_DEFINED) ; \
+//\
+//	KC::MConsole().Message(handler_msg, ' ') ; \
+//\
+///*	MemUtil_MoveByte(SYS_LINEAR_SELECTOR_DEFINED, 0xb8000, '0') ; */\
+///*	MemUtil_MoveByte(SYS_LINEAR_SELECTOR_DEFINED, 0xb8001, 14) ; */\
+//\
+//	PIT_SetContextSwitch(false) ; \
+///*	__asm__ __volatile__("HLT") ;*/\
+//	ProcessManager_EXIT() ; \
+///*	dummy */\
+//	__asm__ __volatile__("HLT") ;\
 
 namespace {
 	/************ Default Handlers *****************/
@@ -164,12 +164,12 @@ namespace {
 		__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 		__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 		__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-		__asm__ __volatile__("popw %ds") ; 
-		__asm__ __volatile__("popw %fs") ; 
-		__asm__ __volatile__("popw %gs") ; 
+//		__asm__ __volatile__("popw %ds") ;
+//		__asm__ __volatile__("popw %fs") ;
+//		__asm__ __volatile__("popw %gs") ;
 
 		__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-		__asm__ __volatile__("popw %es") ; 
+//		__asm__ __volatile__("popw %es") ;
 
 		__asm__ __volatile__("CLTS") ;
 
@@ -197,7 +197,7 @@ IDT::IDT()
 {
 	const int MAX_IDT_ENTRIES = 50;
 	for(unsigned i = 0; i < MAX_IDT_ENTRIES; i++)
-		LoadEntry(i, (unsigned)&DefaultHandler, SYS_CODE_SELECTOR, 0x8E) ;
+		LoadEntry(i, (uintptr_t)&DefaultHandler, SYS_CODE_SELECTOR, 0x8E) ;
 
 	LoadDefaultHadlers() ;
 	LoadInterruptTasks() ;
@@ -219,9 +219,9 @@ void IDT::LoadInterruptTasks()
 //	ProcessManager_BuildIntTaskState(INT_GATE_SELECTOR, (unsigned)&MemManager_PageFaultHandlerTask, SYS_CODE_SELECTOR, 0) ;
 //	LoadEntry(0xE, 0x0, INT_GATE_SELECTOR, 0xEE) ;
 
-	LoadEntry(0x7, (unsigned)&CoProcExceptionHandler, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x7, (uintptr_t)&CoProcExceptionHandler, SYS_CODE_SELECTOR, 0x8E) ;
 
-	LoadEntry(0xE, (unsigned)&MemManager::PageFaultHandlerTaskGate, SYS_CODE_SELECTOR, 0xEE) ;
+	LoadEntry(0xE, (uintptr_t)&MemManager::PageFaultHandlerTaskGate, SYS_CODE_SELECTOR, 0xEE) ;
 
 	//ProcessManager_BuildIntTaskState((unsigned)&KernelService_Request, INT_TSS_LINEAR_ADDRESS_SV, MEM_KERNEL_SERVICE_STACK) ;
 	//LoadEntry(0x11, 0x0, INT_TSS_SELECTOR_SV, 0xE5) ;
@@ -229,33 +229,33 @@ void IDT::LoadInterruptTasks()
 
 void IDT::LoadDefaultHadlers()
 {
-	LoadEntry(0x0, (unsigned)&DefaultHandler0, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x1, (unsigned)&DefaultHandler1, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x2, (unsigned)&DefaultHandler2, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x3, (unsigned)&DefaultHandler3, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x4, (unsigned)&DefaultHandler4, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x5, (unsigned)&DefaultHandler5, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x6, (unsigned)&DefaultHandler6, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x8, (unsigned)&DefaultHandler8, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x9, (unsigned)&DefaultHandler9, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xA, (unsigned)&DefaultHandlerA, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xB, (unsigned)&DefaultHandlerB, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xC, (unsigned)&DefaultHandlerC, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xD, (unsigned)&DefaultHandlerD, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xE, (unsigned)&DefaultHandlerE, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0xF, (unsigned)&DefaultHandlerF, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(0x10, (unsigned)&DefaultHandler10, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x0, (uintptr_t)&DefaultHandler0, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x1, (uintptr_t)&DefaultHandler1, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x2, (uintptr_t)&DefaultHandler2, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x3, (uintptr_t)&DefaultHandler3, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x4, (uintptr_t)&DefaultHandler4, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x5, (uintptr_t)&DefaultHandler5, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x6, (uintptr_t)&DefaultHandler6, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x8, (uintptr_t)&DefaultHandler8, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x9, (uintptr_t)&DefaultHandler9, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xA, (uintptr_t)&DefaultHandlerA, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xB, (uintptr_t)&DefaultHandlerB, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xC, (uintptr_t)&DefaultHandlerC, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xD, (uintptr_t)&DefaultHandlerD, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xE, (uintptr_t)&DefaultHandlerE, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0xF, (uintptr_t)&DefaultHandlerF, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x10, (uintptr_t)&DefaultHandler10, SYS_CODE_SELECTOR, 0x8E) ;
 
 	//Spurious IRQ
-	LoadEntry(0x27, (unsigned)&DefaultHandlerForException0x27, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x27, (uintptr_t)&DefaultHandlerForException0x27, SYS_CODE_SELECTOR, 0x8E) ;
 }
 
-void IDT::LoadEntry(unsigned uiIDTNo, unsigned uiOffset, unsigned short usSelector, byte bOptions)
+void IDT::LoadEntry(unsigned uiIDTNo, uintptr_t uiOffset, unsigned short usSelector, byte bOptions)
 {
-	IDT::IDTEntry* idtEntry = (IDT::IDTEntry*)(IDT_BASE_ADDR) + uiIDTNo ;
+	IDT::IDTEntry* idtEntry = reinterpret_cast<IDT::IDTEntry*>(IDT_BASE_ADDR) + uiIDTNo ;
 	
-	__asm__ __volatile__("push %ds") ;
-	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
+//	__asm__ __volatile__("push %ds") ;
+//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
 
 	idtEntry->lowerOffset = uiOffset & 0x0000FFFF ;
 	idtEntry->selector = usSelector ;
@@ -263,6 +263,6 @@ void IDT::LoadEntry(unsigned uiIDTNo, unsigned uiOffset, unsigned short usSelect
 	idtEntry->options = bOptions ;
 	idtEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
 
-	__asm__ __volatile__("pop %ds") ;
+//	__asm__ __volatile__("pop %ds") ;
 }
 

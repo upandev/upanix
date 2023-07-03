@@ -81,7 +81,7 @@ PS2KeyboardDriver::PS2KeyboardDriver() : _isShiftKey(false), _isCapsLock(false),
   KeyboardHandler::Instance();
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
-  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (unsigned)&KBDriver_Handler);
+  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (uintptr_t)&KBDriver_Handler);
   IrqManager::Instance().EnableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
 
   PortCom_ReceiveByte(PS2Controller::DATA_PORT);

@@ -102,12 +102,12 @@ __volatile__ unsigned uiP9)
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
 	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %ds") ; 
-	__asm__ __volatile__("popw %fs") ; 
-	__asm__ __volatile__("popw %gs") ; 
+//	__asm__ __volatile__("popw %ds") ;
+//	__asm__ __volatile__("popw %fs") ;
+//	__asm__ __volatile__("popw %gs") ;
 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %es") ; 
+//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
+//	__asm__ __volatile__("popw %es") ;
 
 	__volatile__ int iRetVal = 0;
 

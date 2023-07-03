@@ -33,33 +33,33 @@
 #define DMM_BAD_ALIGN			2
 #define DMM_FAILURE				3
 
-#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) (((uint32_t)(RealAddress) + GLOBAL_DATA_SEGMENT_BASE) - PROCESS_BASE)
-#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) (((uint32_t)(VirtualAddress) + PROCESS_BASE) - GLOBAL_DATA_SEGMENT_BASE)
+#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) (((uintptr_t)(RealAddress) + GLOBAL_DATA_SEGMENT_BASE) - PROCESS_BASE)
+#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) (((uintptr_t)(VirtualAddress) + PROCESS_BASE) - GLOBAL_DATA_SEGMENT_BASE)
 
 typedef struct
 {
-	uint32_t uiAllocatedAddress;
-  uint32_t uiReturnAddress;
-  uint32_t uiSize;
-  uint32_t uiCheckSum;
+  uintptr_t uiAllocatedAddress;
+  uintptr_t uiReturnAddress;
+  uint64_t uiSize;
+  uint64_t uiCheckSum;
   union
   {
-    uint32_t uiNextAUTAddress;
-    uint32_t uiByteStuffForAlign;
+    uintptr_t uiNextAUTAddress;
+    uint64_t uiByteStuffForAlign;
   };
 } PACKED AllocationUnitTracker ; // AUT
 
 class Process;
 class SchedulableProcess;
 
-unsigned DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
-unsigned DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
+uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
+uintptr_t DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
 
-byte DMM_DeAllocate(Process* processAddressSpace, unsigned uiAddress);
-byte DMM_DeAllocateForKernel(unsigned uiAddress);
+byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t uiAddress);
+byte DMM_DeAllocateForKernel(uintptr_t uiAddress);
 
-byte DMM_GetAllocSize(unsigned uiAddress, int* iSize);
-byte DMM_GetAllocSizeForKernel(unsigned uiAddress, int* iSize);
+byte DMM_GetAllocSize(uintptr_t uiAddress, int* iSize);
+byte DMM_GetAllocSizeForKernel(uintptr_t uiAddress, int* iSize);
 void DMM_DeAllocatePhysicalPages(Process* processAddressSpace);
 
 unsigned DMM_KernelHeapAllocSize() ;

@@ -31,7 +31,7 @@
 //But it is a process in that if the parent process dies before child, then child kernel process will continue to execute under the root kernel process
 class KernelProcess : public AutonomousProcess {
 public:
-  KernelProcess(const upan::string& name, uint32_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uint32_t>& params);
+  KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params);
 
   bool isKernelProcess() const override {
     return true;

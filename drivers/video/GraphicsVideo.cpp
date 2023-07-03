@@ -66,17 +66,17 @@ GraphicsVideo& GraphicsVideo::Instance() {
   return *_instance;
 }
 
-GraphicsVideo::GraphicsVideo(const framebuffer_info_t& fbinfo)
+GraphicsVideo::GraphicsVideo(const FrameBufferInfo& fbinfo)
   : _needRefresh(false), _initialized(false),
     _mouseCursor(nullptr), _mouseChange(0), _mousePrevX(0), _mousePrevY(0) {
-  _flatLFBAddress = fbinfo.framebuffer_addr;
-  _mappedLFBAddress = fbinfo.framebuffer_addr;
-  _zBuffer = fbinfo.framebuffer_addr;
+  _flatLFBAddress = (uint64_t)fbinfo._frameBuffer;
+  _mappedLFBAddress = (uint64_t)fbinfo._frameBuffer;
+  _zBuffer = (uint64_t)fbinfo._frameBuffer;
 
-  _height = fbinfo.framebuffer_height;
-  _width = fbinfo.framebuffer_width;
-  _pitch = fbinfo.framebuffer_pitch;
-  _bpp = fbinfo.framebuffer_bpp;
+  _height = fbinfo._height;
+  _width = fbinfo._width;
+  _pitch = fbinfo._pitch;
+  _bpp = fbinfo._bpp;
   _bytesPerPixel = _bpp / 8;
   _lfbSize = _height * _width * _bytesPerPixel;
   _lfbPageCount = ((_lfbSize - 1) / PAGE_SIZE) + 1;
@@ -219,13 +219,11 @@ void GraphicsVideo::NeedRefresh() {
 }
 
 void GraphicsVideo::FillRect(unsigned sx, unsigned sy, unsigned width, unsigned height, unsigned color) {
-  unsigned y_offset;
-  for(unsigned y = sy; y < (sy + height) && y < _height; ++y)
-  {
+  uint32_t y_offset;
+  for(uint32_t y = sy; y < (sy + height) && y < _height; ++y) {
     y_offset = y * _pitch;
-    for(unsigned x = sx; x < (sx + width) && x < _width; ++x)
-    {
-      auto p = (unsigned*)(_zBuffer + y_offset + x * _bytesPerPixel);
+    for(uint32_t x = sx; x < (sx + width) && x < _width; ++x) {
+      auto p = (uint32_t*)(_zBuffer + y_offset + x * _bytesPerPixel);
       *p = (color | upanui::GCoreFunctions::ALPHA_MASK);
     }
   }
@@ -426,7 +424,7 @@ upan::option<int> GraphicsVideo::getDisplayFGProcess() {
   return upan::option<int>(_fgProcesses[_fgProcesses.size() - 1]);
 }
 
-uint32_t GraphicsVideo::allocateFrameBuffer() {
+uint64_t GraphicsVideo::allocateFrameBuffer() {
   auto addr = DMM_AllocateForKernel(_lfbPageCount * PAGE_SIZE, PAGE_SIZE);
   memset((void*)addr, 0, _lfbSize);
   return addr;

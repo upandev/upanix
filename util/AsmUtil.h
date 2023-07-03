@@ -34,6 +34,7 @@
 //unsigned IDEPrimary_GPRStack[NO_OF_GPR] ;
 //unsigned IDESecondary_GPRStack[NO_OF_GPR] ;
 
+/*
 #define AsmUtil_STORE_GPR() \
 __volatile__ uint32_t __gpr_stack[NO_OF_GPR];  \
 __asm__ __volatile__("movl %%eax, %%ss:%0" : "=m"(__gpr_stack[0]): ) ; \
@@ -74,13 +75,13 @@ AsmUtil_DECLARE_KERNEL_DS_BACK_VAR \
 MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
 MemUtil_SetES(SYS_LINEAR_SELECTOR_DEFINED) ; \
 MemUtil_SetFS(SYS_DATA_SELECTOR_DEFINED) ; \
-MemUtil_SetGS(SYS_DATA_SELECTOR_DEFINED) ; 
+MemUtil_SetGS(SYS_DATA_SELECTOR_DEFINED) ;
 
 #define AsmUtil_NODEC_SET_KERNEL_DATA_SEGMENTS \
 MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
 MemUtil_SetES(SYS_LINEAR_SELECTOR_DEFINED) ; \
 MemUtil_SetFS(SYS_DATA_SELECTOR_DEFINED) ; \
-MemUtil_SetGS(SYS_DATA_SELECTOR_DEFINED) ; 
+MemUtil_SetGS(SYS_DATA_SELECTOR_DEFINED) ;
 
 #define AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS \
 MemUtil_SetFS(AsmUtil_usFS) ; \
@@ -97,5 +98,17 @@ MemUtil_SetDS(AsmUtil_usDS) ;
 #define __RESTOR_DS_ES \
 	MemUtil_SetDS(__uiDS) ; \
 	MemUtil_SetES(__uiES) ;
+*/
+
+#define AsmUtil_STORE_GPR()
+#define AsmUtil_RESTORE_GPR()
+#define AsmUtil_UNLOAD_KERNEL_SEGS()
+#define AsmUtil_DECLARE_KERNEL_DS_BACK_VAR
+#define AsmUtil_SET_KERNEL_DATA_SEGMENTS
+
+#define AsmUtil_NODEC_SET_KERNEL_DATA_SEGMENTS
+#define AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
+#define __SET_DS_ES_TO_DATA
+#define __RESTOR_DS_ES
 
 #endif
