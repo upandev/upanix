@@ -193,19 +193,19 @@ namespace {
 	/************ Default Handlers *****************/
 }
 
-IDT::IDT()
-{
-	const int MAX_IDT_ENTRIES = 50;
-	for(unsigned i = 0; i < MAX_IDT_ENTRIES; i++)
-		LoadEntry(i, (uintptr_t)&DefaultHandler, SYS_CODE_SELECTOR, 0x8E) ;
+IDT::IDT() {
+  const int MAX_IDT_ENTRIES = 50;
+  for (unsigned i = 0; i < MAX_IDT_ENTRIES; ++i) {
+    LoadEntry(i, (uintptr_t) &DefaultHandler, SYS_CODE_SELECTOR, 0x8E);
+  }
 
 	LoadDefaultHadlers() ;
 	LoadInterruptTasks() ;
 
 	IDT::IDTRegister IDTR ;
 
-	IDTR.limit = MAX_IDT_ENTRIES * sizeof(IDT::IDTEntry) ;
-	IDTR.base = IDT_BASE_ADDR ;
+	IDTR._limit = MAX_IDT_ENTRIES * sizeof(IDT::IDTEntry) ;
+	IDTR._base = IDT_BASE_ADDR ;
 
 	__asm__ __volatile__("LIDT (%0)" : : "r"(&IDTR)) ;
   KC::MConsole().LoadMessage("IDT Initialization", Success) ;
@@ -250,19 +250,14 @@ void IDT::LoadDefaultHadlers()
 	LoadEntry(0x27, (uintptr_t)&DefaultHandlerForException0x27, SYS_CODE_SELECTOR, 0x8E) ;
 }
 
-void IDT::LoadEntry(unsigned uiIDTNo, uintptr_t uiOffset, unsigned short usSelector, byte bOptions)
-{
-	IDT::IDTEntry* idtEntry = reinterpret_cast<IDT::IDTEntry*>(IDT_BASE_ADDR) + uiIDTNo ;
+void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options) {
+	IDT::IDTEntry* idtEntry = reinterpret_cast<IDT::IDTEntry*>(IDT_BASE_ADDR) + idtNo;
 	
-//	__asm__ __volatile__("push %ds") ;
-//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
-
-	idtEntry->lowerOffset = uiOffset & 0x0000FFFF ;
-	idtEntry->selector = usSelector ;
-	idtEntry->unused = 0 ;
-	idtEntry->options = bOptions ;
-	idtEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
-
-//	__asm__ __volatile__("pop %ds") ;
+	idtEntry->_lowerOffset1 = offset & 0xFFFF;
+  idtEntry->_lowerOffset2 = (offset >> 16) & 0xFFFF;
+  idtEntry->_higherOffset = (offset >> 32) & 0xFFFFFFFF;
+	idtEntry->_selector = selector;
+	idtEntry->_reserved = 0;
+	idtEntry->_options = options;
 }
 

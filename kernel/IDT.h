@@ -39,23 +39,24 @@ class IDT
 	private:
 		void LoadDefaultHadlers() ;
 		void LoadInterruptTasks() ;
-		void LoadEntry(unsigned int uiIDTNO, uintptr_t uiOffset, unsigned short int usiSelector, byte bOptions) ;
+		void LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options);
 
-		typedef struct
-		{
-				unsigned short limit ;
-				unsigned base ;
+		typedef struct {
+				uint16_t _limit;
+				uint64_t _base;
 		} PACKED IDTRegister ;
 
-		typedef struct 
-		{
-			unsigned short int lowerOffset ;	
-			unsigned short int selector ;
-			byte unused ;
-			byte options ; /*	constant:5;	 5 bits
-							 dpl:2;		 2 bits
-							 present:1;	 1 bit		*/
-			unsigned short int upperOffset ;
+		typedef struct {
+			uint16_t _lowerOffset1;
+			uint16_t _selector;
+
+			uint8_t _ist:3;
+      uint8_t _reserved1:5;
+      uint8_t _options; //present(1 bit), dpl(2 bits), 0, gate-type(4 bits)
+
+      uint16_t _lowerOffset2;
+      uint32_t _higherOffset;
+      uint32_t _reserved;
 		} PACKED IDTEntry ;
 	friend class IrqManager;
 };

@@ -15,29 +15,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="changes towards converting to 64bit OS">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="got 64bit OS working till mem manager initialization with graphics">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/boot/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/fpu_init.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/fpu_init.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KHardware.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KHardware.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/IDT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -149,7 +133,7 @@
       <workItem from="1685687919023" duration="2283000" />
       <workItem from="1685693558568" duration="18318000" />
       <workItem from="1687080901318" duration="29899000" />
-      <workItem from="1688169083627" duration="67584000" />
+      <workItem from="1688169083627" duration="70725000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -158,7 +142,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688394036378</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="got 64bit OS working till mem manager initialization with graphics">
+      <created>1688880757090</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1688880757090</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,6 +178,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="changes towards converting to 64bit OS" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes towards converting to 64bit OS" />
+    <MESSAGE value="got 64bit OS working till mem manager initialization with graphics" />
+    <option name="LAST_COMMIT_MESSAGE" value="got 64bit OS working till mem manager initialization with graphics" />
   </component>
 </project>

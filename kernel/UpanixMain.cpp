@@ -163,12 +163,13 @@ void Initialize() {
 
 	//defined in osutils/crti.s - this is C++ init to call global objects' constructor
 	_cxx_global_init();
-  while(1);
+
 	//	TestException(); while(1);
   try {
     upan::metrics::create();
 
     IDT::Instance();
+    while(1);
     Cpu::Instance();
     Acpi::Instance();
     Pat::Instance();
