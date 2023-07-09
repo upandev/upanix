@@ -359,7 +359,7 @@ void UserProcess::InitializeProcessSpaceForOS(const unsigned uiPDEAddress)
 {
   for(uint32_t i = 0; i < PROCESS_SPACE_FOR_OS; ++i)
   {
-    unsigned kernelPTEAddress = (((unsigned*)(MEM_PDBR - GLOBAL_DATA_SEGMENT_BASE))[i]) & 0xFFFFF000;
+    unsigned kernelPTEAddress = (((unsigned*)(MEM_PML4 - GLOBAL_DATA_SEGMENT_BASE))[i]) & 0xFFFFF000;
     unsigned uiPTEAddress = (((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[i]) & 0xFFFFF000 ;
     for(uint32_t  j = 0; j < PAGE_TABLE_ENTRIES; ++j)
     {

@@ -150,23 +150,20 @@ void Initialize() {
 	SPECIAL_TASK = false ;
 
 	MultiBoot::Instance();
-	MemManager::RawMapGraphicsLFB();
-	MultiBoot::Instance().VideoFrameBufferInfo()->_frameBuffer = (uint32_t*) MEM_GRAPHICS_VIDEO_MAP_START;
-	//while(1);
 	RootConsole::Create();
-  while(1);
+  MemManager::Instance();
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
 
-	MemManager::Instance();
   ProcessManager::Instance();
 
   //KernelRootProcess must be initialized to setup kernel FD table with stdin/out/err before using stdio functions like printf.
   KernelRootProcess::Instance();
   MultiBoot::Instance().Print();
   MemManager::Instance().PrintInitStatus();
+
 	//defined in osutils/crti.s - this is C++ init to call global objects' constructor
 	_cxx_global_init();
-
+  while(1);
 	//	TestException(); while(1);
   try {
     upan::metrics::create();

@@ -97,7 +97,7 @@ void E1000NICDevice::Initialize() {
   if(ioSize % PAGE_SIZE)
     ++pagesToMap;
 
-  unsigned uiPDEAddress = MEM_PDBR ;
+  unsigned uiPDEAddress = MEM_PML4 ;
   unsigned memMapBaseAddress = NET_E1000_MMIO_BASE_ADDR;
   printf("\n Total pages to Map: %d", pagesToMap);
   ReturnCode markPageRetCode = Success;

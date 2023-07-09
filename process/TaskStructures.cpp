@@ -102,7 +102,7 @@ void TaskState::BuildForKernel(const uintptr_t uiTaskAddress, unsigned uiStackTo
 
   LDT = 0x50 ;
 
-  CR3_PDBR = MEM_PDBR ;
+  CR3_PDBR = MEM_PML4 ;
   EFLAGS = 0x202 ;
   DEBUG_T_BIT = 0x00 ;
   IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present

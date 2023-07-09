@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _PROC_CONST_H_
-#define _PROC_CONST_H_
+#pragma once
 
 #define MAX_NO_PROCESS 3500
 
@@ -40,5 +39,3 @@
 #define PROCESS_STACK_TOP_ADDRESS ((PROCESS_STACK_PDE_ID + 1) * PAGE_SIZE * PAGE_TABLE_ENTRIES)
 
 #define NO_PROCESS_ID -1
-
-#endif

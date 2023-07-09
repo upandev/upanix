@@ -122,7 +122,7 @@ class MultiBoot {
 		uint64_t GetRamSize() const { return _ramSize; }
 		uint32_t GetBootDeviceID() const { return _bootDevId; }
     uint32_t GetBootPartitionID() const { return _bootPartitionId; }
-    FrameBufferInfo* VideoFrameBufferInfo() {
+    const FrameBufferInfo* VideoFrameBufferInfo() const {
 		  return _hasFrameBufferInfo ? &_framebufferInfo : nullptr;
 		}
     const multiboot_mmap_entry* GetACPIInfoMemMap() const {
@@ -130,6 +130,7 @@ class MultiBoot {
     }
     void Print();
 	private:
+    void InitializeGraphicsPageMap();
     static const int MAX_MMAP_ENTRIES = 64;
 
     uint32_t _bootDevId;

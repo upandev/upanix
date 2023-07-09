@@ -21,6 +21,7 @@
  */
 #include <MultiBoot.h>
 #include <PortCom.h>
+#include <MemManager.h>
 
 MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
                         _acpi_mmap(nullptr), _mmap_size(0), _hasFrameBufferInfo(false) {
@@ -53,7 +54,7 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
           _mmap[i].length = mmap->length;
           _mmap[i].type = mmap->type;
           _ramSize += mmap->length;
-          if (i == MULTIBOOT_MEMORY_ACPI_RECLAIMABLE) {
+          if (mmap->type == MULTIBOOT_MEMORY_ACPI_RECLAIMABLE) {
             _acpi_mmap = &_mmap[i];
           }
           ++i;
@@ -74,6 +75,35 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
       break;
     }
   }
+
+  if (_hasFrameBufferInfo) {
+    InitializeGraphicsPageMap();
+  }
+}
+
+void MultiBoot::InitializeGraphicsPageMap() {
+  const uint32_t lfbSize = _framebufferInfo._width * _framebufferInfo._height * _framebufferInfo._bpp / 8;
+  const uint32_t noOfPages = (lfbSize / PAGE_SIZE) + 1;
+  const uint32_t availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
+  if (noOfPages > availablePages) {
+    //PANIC
+    while (true);
+  }
+  uint64_t lfbaddress = (uint64_t)_framebufferInfo._frameBuffer;
+  uint64_t mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
+
+  for (unsigned i = 0; i < noOfPages; ++i) {
+    const uint64_t addr = lfbaddress + PAGE_SIZE * i;
+
+    auto pdpEntry = (uint64_t *) (MEM_PML4_TABLE[PML4_INDEX(mapAddress)] & ~0xFFF);
+    auto pdEntry = (uint64_t *) (pdpEntry[PDP_INDEX(mapAddress)] & ~0xFFF);
+    auto ptEntry = (uint64_t *) (pdEntry[PD_INDEX(mapAddress)] & ~0xFFF);
+    // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
+    ptEntry[PT_INDEX(mapAddress)] = (addr & ~0xFFF) | 0x3;
+    mapAddress += PAGE_SIZE;
+  }
+  Mem_FlushTLB();
+  _framebufferInfo._frameBuffer = (uint32_t*)MEM_GRAPHICS_VIDEO_MAP_START;
 }
 
 void MultiBoot::Print() {

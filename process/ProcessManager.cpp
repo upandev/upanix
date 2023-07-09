@@ -57,11 +57,11 @@ ProcessManager::ProcessManager() {
 
   PIT_SetContextSwitch(false) ;
 
-	TaskState* sysTSS = (TaskState*)(SYS_TSS_BASE_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
-  memset(sysTSS, 0, sizeof(TaskState));
-	sysTSS->CR3_PDBR = MEM_PDBR ;
-	sysTSS->DEBUG_T_BIT = 0 ;
-	sysTSS->IO_MAP_BASE = 103 ;
+//	TaskState* sysTSS = (TaskState*)(SYS_TSS_BASE_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
+//  memset(sysTSS, 0, sizeof(TaskState));
+//	sysTSS->CR3_PDBR = MEM_PML4 ;
+//	sysTSS->DEBUG_T_BIT = 0 ;
+//	sysTSS->IO_MAP_BASE = 103 ;
 
   ProcessLoader::Instance();
 
@@ -164,7 +164,7 @@ void ProcessManager::BuildIntTaskState(const unsigned uiTaskAddress, const unsig
 	taskState->GS = 0x18 ;
 	taskState->LDT = 0x0 ;
 
-	taskState->CR3_PDBR = MEM_PDBR ;
+	taskState->CR3_PDBR = MEM_PML4 ;
 	taskState->EFLAGS = 0x202 ;
 	taskState->DEBUG_T_BIT = 0x00 ;
 	taskState->IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present

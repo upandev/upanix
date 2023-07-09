@@ -52,7 +52,7 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
   unsigned pagesToMap = ioSize / PAGE_SIZE;
   if(ioSize % PAGE_SIZE)
     ++pagesToMap;
-	unsigned uiPDEAddress = MEM_PDBR ;
+	unsigned uiPDEAddress = MEM_PML4 ;
   const unsigned uiMappedIOAddr = KERNEL_VIRTUAL_ADDRESS(_memMapBaseAddress + (uiIOAddr % PAGE_SIZE));
   printf("\n Total pages to Map: %d", pagesToMap);
   ReturnCode markPageRetCode = Success;

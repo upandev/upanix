@@ -64,7 +64,7 @@ EHCIController::EHCIController(PCIEntry* pPCIEntry, int iMemMapIndex)
 	// Further, mapping is necessary because the IOAddr can be any virtual address
 	// within 4 GB space potentially being an address outside the RAM size
 	// i.e, PDE/PTE limit
-	unsigned uiPDEAddress = MEM_PDBR ;
+	unsigned uiPDEAddress = MEM_PML4 ;
 	unsigned uiMapAddress = EHCI_MMIO_BASE_ADDR + iMemMapIndex * PAGE_SIZE;
 	unsigned uiPDEIndex = ((uiMapAddress >> 22) & 0x3FF) ;
 	unsigned uiPTEIndex = ((uiMapAddress >> 12) & 0x3FF) ;

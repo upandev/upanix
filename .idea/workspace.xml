@@ -15,105 +15,29 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" />
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="changes towards converting to 64bit OS">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/Boot.asm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/boot/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/boot/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/Setup.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart.asm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/grub.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/boot/grub.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootFrame.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootFrame.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATAPortManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATAPortManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATATimingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATATimingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATATimingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATATimingManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/boot/fpu_init.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/fpu_init.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KHardware.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KHardware.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/RawNetPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/RawNetPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/RawNetPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/RawNetPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDataHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDataHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDataHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDataHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/uhci/UHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIStructures.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel.ld" beforeDir="false" afterPath="$PROJECT_DIR$/kernel.ld" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Acpi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Cpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/memory/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/Mem.asm" beforeDir="false" afterPath="$PROJECT_DIR$/memory/Mem.asm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemUtil.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/crti.s" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/crti.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/crtn.s" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/crtn.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/proc_init.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/realmode.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolchain.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/toolchain.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/AsmUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/AsmUtil.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +47,6 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Default" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -149,10 +72,16 @@
     <property name="cidr.known.project.marker" value="true" />
     <property name="cmake.loaded.for.project" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/CMakeLists.txt" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="preferences.fileTypes" />
     <property name="settings.editor.splitter.proportion" value="0.25050917" />
   </component>
-  <component name="RunManager" selected="CMake Application.upanix.elf">
+  <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -183,12 +112,28 @@
         <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="run" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/run" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/zsh" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="CMake Application.boot" />
       <item itemvalue="CMake Application.mcpp" />
       <item itemvalue="CMake Application.mem" />
       <item itemvalue="CMake Application.osutils" />
       <item itemvalue="CMake Application.upanix.elf" />
+      <item itemvalue="Shell Script.run" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -204,11 +149,44 @@
       <workItem from="1685687919023" duration="2283000" />
       <workItem from="1685693558568" duration="18318000" />
       <workItem from="1687080901318" duration="29899000" />
-      <workItem from="1688169083627" duration="35677000" />
+      <workItem from="1688169083627" duration="67584000" />
     </task>
+    <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
+      <created>1688394036377</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1688394036378</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="changes towards converting to 64bit OS" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes towards converting to 64bit OS" />
   </component>
 </project>

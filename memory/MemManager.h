@@ -29,10 +29,8 @@
 
 #define KERNEL_PROCESS_PDE_ID	1022
 
-extern "C"
-{
-	extern unsigned MEM_PDBR ;
-	void Mem_EnablePaging() ;
+extern "C" {
+	extern uint64_t MEM_PML4 ;
 	void Mem_FlushTLB() ;
 	void Mem_FlushTLBPage(unsigned uiPageNumber) ;
 }
@@ -47,13 +45,12 @@ class MemManager
 			static MemManager instance;
 			return instance;
 		}
-		static void RawMapGraphicsLFB();
     void PrintInitStatus() const;
 		ReturnCode MarkPageAsAllocated(unsigned uiPageNumber, ReturnCode prevRetCode) ;
 		unsigned AllocatePhysicalPage();
 		void DeAllocatePhysicalPage(const unsigned uiPageNumber) ;
 		unsigned AllocatePageForKernel();
-		void DeAllocatePageForKernel(unsigned uiPageNumber);
+		void DeAllocatePageForKernel(unsigned pageNumber);
 
     //uint32_t AllocatePhysicalPage(const uint32_t noOfPages = 1);
     //void DeAllocatePhysicalPage(uint32_t pageNo, const uint32_t noOfPages = 1);
@@ -66,7 +63,7 @@ class MemManager
 		static void InitPage(unsigned uiPage) ;
 		static void PageFaultHandlerTaskGate() ;
 
-		inline unsigned GetKernelHeapStartAddr() { return m_uiKernelHeapStartAddress ; }
+		inline unsigned GetKernelHeapStartAddr() { return MEM_KERNEL_HEAP_START; }
 		inline unsigned GetRamSize() { return RAM_SIZE; }
 
 		int AllocateKernelStack();
@@ -87,7 +84,7 @@ class MemManager
 
 		inline uintptr_t& GetKernelAUTAddress()
 		{
-			return m_uiKernelAUTAddress ;
+			return _kernelAUTAddress ;
 		}
     void MemMapGraphicsLFB(uint32_t memTypeFlag);
 
@@ -96,32 +93,28 @@ class MemManager
 		bool BuildPagePoolMap();
 		bool BuildPageTable() ;
     bool MarkACPIInfoRegionAsAllocated();
-    int GetFreeKernelProcessStackBlockID() ;
 
 	private:
-		unsigned m_uiNoOfPages ;
-		unsigned m_uiNoOfResvPages ;
-		unsigned m_uiKernelHeapSize ;
-		unsigned m_uiKernelHeapStartAddress ;
+    uint32_t _noOfPages ;
+    uint32_t _kernelReservedPages ;
+    uint32_t _kernelHeapMapSize ;
 
-    uintptr_t* m_uiPageMap ;
-		unsigned m_uiPageMapSize ;
+    uint64_t* _pageMap ;
+		uint32_t _pageMapSize ;
 
-    uintptr_t* m_uiKernelPagePoolMap;
-		unsigned m_uiKernelPagePoolMapSize;
-		unsigned m_uiKernelPagePoolStartPage;
+    uint64_t* _kernelPagePoolMap;
+    uint32_t _kernelPagePoolMapSize;
+    uint32_t _kernelPagePoolStartPage;
 
-		unsigned m_uiResvSize ;
+    uint32_t _kernelReservedMapSize ;
 
-    uintptr_t* m_uiPDEBase ;
     uintptr_t* m_uiPTEBase ;
     uintptr_t* m_uipKernelProcessStackPTEBase ;
-    uintptr_t m_uiKernelAUTAddress ;
+    uintptr_t _kernelAUTAddress ;
 
-		int m_iNoOfKernelProcessStackBlocks ;
-		bool m_bAllocationMapForKernelProcessStackBlock[PAGE_TABLE_ENTRIES / PROCESS_KERNEL_STACK_PAGES] ;
+		bool _allocMapForKernelProcessStackBlock[NO_OF_KERNEL_STACK_BLOCKS];
 
-		const unsigned RAM_SIZE ;
+		const uint64_t RAM_SIZE ;
 };
 
 #endif

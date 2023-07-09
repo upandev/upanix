@@ -18,9 +18,8 @@
 ;	You should have received a copy of the GNU General Public License
 ;	along with this program.  If not, see <http://www.gnu.org/licenses/
 
-[BITS 32]
+[BITS 64]
 
-[EXTERN CR0_CONTENT]
 [EXTERN CO_PROC_FPU_TYPE]
 
 [GLOBAL FPU_INIT]
@@ -34,9 +33,9 @@ CO_PROC_87_287	EQU 2
 CO_PROC_387		EQU 3
 
 FPU_INIT: 
-    MOV EAX, CR0            ; eax = CR0
+    MOV RAX, CR0            ; eax = CR0
     AND AL, ~0x6            ; Clear the EM and MP flags (just in case)
-    MOV CR0, EAX            ; Set CR0
+    MOV CR0, RAX            ; Set CR0
 
 	FNINIT					; Must use non-wait form
 
@@ -99,9 +98,9 @@ FOUND_387:
 
 FOUND:
 
-	MOV EAX, CR0
-	OR  EAX, 0x2 ; Set MP bit 2
-	MOV CR0, EAX
+	MOV RAX, CR0
+	OR  RAX, 0x2 ; Set MP bit 2
+	MOV CR0, RAX
 
 	JMP EXIT
 

@@ -88,7 +88,7 @@ public:
   }
 
   uint32_t pdbr() const override {
-    return MEM_PDBR;
+    return MEM_PML4;
   }
 
   void setDriveID(int driveID) override {

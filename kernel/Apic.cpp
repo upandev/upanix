@@ -193,7 +193,7 @@ void Apic::Initialize()
 
 uint32_t* Apic::MmapBase(uint32_t vAddr, uint32_t pAddr)
 {
-  static const unsigned PDE_ADDRESS = MEM_PDBR;
+  static const unsigned PDE_ADDRESS = MEM_PML4;
   unsigned uiPDEIndex = ((vAddr >> 22) & 0x3FF);
   unsigned uiPTEIndex = ((vAddr >> 12) & 0x3FF);
   unsigned uiPTEAddress = (((unsigned*)(KERNEL_VIRTUAL_ADDRESS(PDE_ADDRESS)))[uiPDEIndex]) & 0xFFFFF000 ;
