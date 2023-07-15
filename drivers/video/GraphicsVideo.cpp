@@ -91,19 +91,14 @@ void GraphicsVideo::Initialize() {
   if (_initialized) {
     return;
   }
-
-  if (_lfbPageCount > PAGE_TABLE_ENTRIES) {
-    throw upan::exception(XLOC, "Max pages available for user process GUI framebuffer is %u, requested: %u", PAGE_TABLE_ENTRIES, _lfbPageCount);
-  }
-
   const auto wc = Pat::Instance().writeCombiningPageTableFlag();
   if (wc >= 0) {
+    printf("\n PAT write-combining flag: 0x%x", wc);
     //remap the video framebuffer address space with write-combining flag
-    MemManager::Instance().MemMapGraphicsLFB(wc);
-    Mem_FlushTLB();
+    MultiBoot::Instance().InitializeGraphicsPageMap(wc);
   }
 
-  printf("\n Initializing mouse cursor image");
+  printf("\n Initializing mouse cursor image\n");
   upan::uniq_ptr<upanui::Image> image(&upanui::PngImageResource::MOUSE_CURSOR.create());
   image->resize(12, 18);
   _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
@@ -127,7 +122,7 @@ void GraphicsVideo::Initialize() {
   }
 
   _initialized = true;
-}
+  KC::MConsole().LoadMessage("Graphics Initialization", Success);}
 
 
 void GraphicsVideo::CreateRefreshTask() {

@@ -31,13 +31,13 @@ unsigned DMM_uiTotalKernelAllocation = 0 ;
 
 /*************** static (private) functions ********************/
 
-static unsigned DMM_GetByteStuffForAlign(unsigned uiAddress, unsigned uiAlignNumber)
+static uint32_t DMM_GetByteStuffForAlign(uint64_t uiAddress, uint32_t uiAlignNumber)
 {
-	unsigned uiByteStuffForAlign = 0 ;
+  uint32_t uiByteStuffForAlign = 0 ;
 
 	if(uiAlignNumber != 0)
 	{
-		unsigned uiAlignMod = uiAddress % uiAlignNumber ;
+    uint32_t uiAlignMod = uiAddress % uiAlignNumber ;
 		if(uiAlignMod != 0)
 			uiByteStuffForAlign = uiAlignNumber - uiAlignMod ;
 	}
@@ -45,7 +45,7 @@ static unsigned DMM_GetByteStuffForAlign(unsigned uiAddress, unsigned uiAlignNum
 	return uiByteStuffForAlign ;
 }
 
-void DMM_CheckAlignNumber(unsigned uiAlignNumber)
+void DMM_CheckAlignNumber(uint32_t uiAlignNumber)
 {
   if(uiAlignNumber == 0)
     return;
@@ -54,7 +54,7 @@ void DMM_CheckAlignNumber(unsigned uiAlignNumber)
   throw upan::exception(XLOC, "%u is not 2^ power aligned address", uiAlignNumber);
 }
 
-static uint32_t calculateCheckSum(AllocationUnitTracker& aut) {
+static uint64_t calculateCheckSum(AllocationUnitTracker& aut) {
   return aut.uiAllocatedAddress ^ aut.uiSize ^ aut.uiReturnAddress ^ aut.uiNextAUTAddress;
 }
 
@@ -66,7 +66,7 @@ static void updateCheckSum(AllocationUnitTracker& aut) {
 
 // old allocation algorithm which was maintaining a list of allocated chunks was 40 times slower
 // than the current algorithm which maintains a list of free chunks
-uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber)
+uintptr_t DMM_Allocate(Process* processAddressSpace, uint32_t uiSizeInBytes, uint32_t uiAlignNumber)
 {
   upan::mutex_guard g(processAddressSpace->heapMutex().value());
 
@@ -111,7 +111,7 @@ uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, uns
       allocAUT->uiSize = uiSize;
       allocAUT->uiByteStuffForAlign = uiByteStuffForAlign;
 
-      unsigned uiRemaining = uiMaxSize - uiSize;
+      uint32_t uiRemaining = uiMaxSize - uiSize;
       if(uiRemaining > (sizeof(AllocationUnitTracker) + 1))
       {
         AllocationUnitTracker* freeAUT = (AllocationUnitTracker*)(uiAddress + uiSize);

@@ -100,9 +100,7 @@ void MemManager::PageFaultHandlerTaskGate()
 	__asm__ __volatile__("iret") ;
 }
 
-MemManager::MemManager() :
-  _kernelAUTAddress(NULL),
-  RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
+MemManager::MemManager() : _kernelAUTAddress(NULL), RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
   if(BuildRawPageMap()) {
     if(BuildPageTable()) {
       if (BuildPagePoolMap()) {
@@ -122,7 +120,7 @@ MemManager::MemManager() :
 void MemManager::PrintInitStatus() const {
   printf("\n\tRAM SIZE = %d", RAM_SIZE) ;
   printf("\n\tNo. of Pages = %d", _noOfPages) ;
-  printf("\n\tNo. of Resv Pages = %d", _kernelReservedPages) ;
+  printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
 }
 
 bool MemManager::MarkACPIInfoRegionAsAllocated() {
@@ -144,32 +142,6 @@ bool MemManager::MarkACPIInfoRegionAsAllocated() {
   }
 
   return true;
-}
-
-void MemManager::MemMapGraphicsLFB(uint32_t memTypeFlag)
-{
-  unsigned noOfPages = (GraphicsVideo::Instance().LFBSize() / PAGE_SIZE) + 1;
-  unsigned availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
-  if(noOfPages > availablePages)
-  {
-    printf("\n Insufficient graphics video buffer. Required pages: %u", noOfPages);
-    while(1);
-  }
-  unsigned lfbaddress = GraphicsVideo::Instance().FlatLFBAddress();
-  unsigned mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
-  ReturnCode markPageRetCode = Success;
-  for(unsigned i = 0; i < noOfPages; ++i) {
-    unsigned addr = lfbaddress + PAGE_SIZE * i;
-    unsigned uiPDEIndex = ((mapAddress >> 22) & 0x3FF);
-    unsigned uiPTEAddress = (((unsigned*)(MEM_PML4 - GLOBAL_DATA_SEGMENT_BASE))[uiPDEIndex]) & 0xFFFFF000;
-    unsigned uiPTEIndex = ((mapAddress >> 12) & 0x3FF);
-    // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPTEIndex] = (addr & 0xFFFFF000) | 0x5 | (memTypeFlag & 0xFF);
-    markPageRetCode = MarkPageAsAllocated(addr / PAGE_SIZE, markPageRetCode);
-    mapAddress += PAGE_SIZE;
-  }
-  GraphicsVideo::Instance().MappedLFBAddress(MEM_GRAPHICS_VIDEO_MAP_START);
-  RootGUIConsole::Instance().resetFrameBuffer(MEM_GRAPHICS_VIDEO_MAP_START);
 }
 
 void MemManager::InitPage(uint32_t pageNum) {
@@ -273,6 +245,14 @@ bool MemManager::BuildPageTable() {
   }
 
 	return true ;
+}
+
+void MemManager::Mmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag) {
+  auto pdpEntry = (uint64_t *) (MEM_PML4_TABLE[PML4_INDEX(vAddr)] & ~0xFFF);
+  auto pdEntry = (uint64_t *) (pdpEntry[PDP_INDEX(vAddr)] & ~0xFFF);
+  auto ptEntry = (uint64_t *) (pdEntry[PD_INDEX(vAddr)] & ~0xFFF);
+  // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
+  ptEntry[PT_INDEX(vAddr)] = (pAddr & ~0xFFF) | pageFlag;
 }
 
 int MemManager::AllocateKernelStack() {

@@ -26,6 +26,7 @@
 #include "PortCom.h"
 #include "ConsoleCommands.h"
 
+// Memory Type Range Registers
 Mtrr::Mtrr() {
   _isSupported = Cpu::Instance().HasSupport(CF_MSR) && Cpu::Instance().HasSupport(CF_MTRR);
   if (_isSupported) {

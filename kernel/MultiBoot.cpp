@@ -22,9 +22,11 @@
 #include <MultiBoot.h>
 #include <PortCom.h>
 #include <MemManager.h>
+#include <GraphicsVideo.h>
+#include <RootGUIConsole.h>
 
 MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
-                        _acpi_mmap(nullptr), _mmap_size(0), _hasFrameBufferInfo(false) {
+                        _acpi_mmap(nullptr), _mmap_size(0), _hasFrameBufferInfo(false), _rawFrameBufferAddress(0) {
   if (MULTIBOOT2_BOOTLOADER_MAGIC_VAL != MULTIBOOT2_BOOTLOADER_MAGIC) {
     // Unsupported boot loader -> Only multiboot2 complaint boot loading is supported.
     while (true);
@@ -65,7 +67,8 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
 
       case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
         auto fb_tag = (multiboot_tag_framebuffer *) tag;
-        _framebufferInfo._frameBuffer = (uint32_t *) fb_tag->common.framebuffer_addr;
+        _rawFrameBufferAddress = fb_tag->common.framebuffer_addr;
+        _framebufferInfo._frameBuffer = (uint32_t *)_rawFrameBufferAddress;
         _framebufferInfo._pitch = fb_tag->common.framebuffer_pitch;
         _framebufferInfo._width = fb_tag->common.framebuffer_width;
         _framebufferInfo._height = fb_tag->common.framebuffer_height;
@@ -77,33 +80,40 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
   }
 
   if (_hasFrameBufferInfo) {
-    InitializeGraphicsPageMap();
+    InitializeGraphicsPageMap(-1);
   }
 }
 
-void MultiBoot::InitializeGraphicsPageMap() {
+void MultiBoot::InitializeGraphicsPageMap(int memTypeFlag) {
   const uint32_t lfbSize = _framebufferInfo._width * _framebufferInfo._height * _framebufferInfo._bpp / 8;
-  const uint32_t noOfPages = (lfbSize / PAGE_SIZE) + 1;
+  const uint32_t noOfPages = ((lfbSize - 1) / PAGE_SIZE) + 1;
   const uint32_t availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
   if (noOfPages > availablePages) {
+    if (memTypeFlag >= 0) {
+      printf("\n Insufficient graphics video buffer. Required pages: %u", noOfPages);
+    }
     //PANIC
     while (true);
   }
-  uint64_t lfbaddress = (uint64_t)_framebufferInfo._frameBuffer;
+  uint64_t lfbaddress = _rawFrameBufferAddress;
   uint64_t mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
+
+  const uint16_t wcFlag = memTypeFlag >= 0 ? memTypeFlag & 0xFF : 0;
+  const uint32_t pageFlag = 0x3 | (wcFlag & 0xFF);
 
   for (unsigned i = 0; i < noOfPages; ++i) {
     const uint64_t addr = lfbaddress + PAGE_SIZE * i;
-
-    auto pdpEntry = (uint64_t *) (MEM_PML4_TABLE[PML4_INDEX(mapAddress)] & ~0xFFF);
-    auto pdEntry = (uint64_t *) (pdpEntry[PDP_INDEX(mapAddress)] & ~0xFFF);
-    auto ptEntry = (uint64_t *) (pdEntry[PD_INDEX(mapAddress)] & ~0xFFF);
-    // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
-    ptEntry[PT_INDEX(mapAddress)] = (addr & ~0xFFF) | 0x3;
+    MemManager::Mmap(mapAddress, addr, pageFlag);
     mapAddress += PAGE_SIZE;
   }
   Mem_FlushTLB();
-  _framebufferInfo._frameBuffer = (uint32_t*)MEM_GRAPHICS_VIDEO_MAP_START;
+
+  if (memTypeFlag >= 0) {
+    GraphicsVideo::Instance().MappedLFBAddress(MEM_GRAPHICS_VIDEO_MAP_START);
+    RootGUIConsole::Instance().resetFrameBuffer(MEM_GRAPHICS_VIDEO_MAP_START);
+  } else {
+    _framebufferInfo._frameBuffer = (uint32_t*)MEM_GRAPHICS_VIDEO_MAP_START;
+  }
 }
 
 void MultiBoot::Print() {

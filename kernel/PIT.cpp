@@ -79,76 +79,79 @@ bool PIT_DisableTaskSwitch() {
   return upan::atomic::op::swap(Process_iTaskSwitch, 0) == 1;
 }
 
-void PIT_Handler()
-{
-	AsmUtil_STORE_GPR() ;
-
-	__volatile__ unsigned short usDS = MemUtil_GetDS() ; 
-	__volatile__ unsigned short usES = MemUtil_GetES() ; 
-	__volatile__ unsigned short usFS = MemUtil_GetFS() ; 
-	__volatile__ unsigned short usGS = MemUtil_GetGS() ;
-
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
+void PIT_Handler() {
+//	AsmUtil_STORE_GPR() ;
+//
+//	__volatile__ unsigned short usDS = MemUtil_GetDS() ;
+//	__volatile__ unsigned short usES = MemUtil_GetES() ;
+//	__volatile__ unsigned short usFS = MemUtil_GetFS() ;
+//	__volatile__ unsigned short usGS = MemUtil_GetGS() ;
+//
+//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
+//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
+//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
 //	__asm__ __volatile__("popw %ds") ;
 //	__asm__ __volatile__("popw %fs") ;
 //	__asm__ __volatile__("popw %gs") ;
 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
+//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
 //	__asm__ __volatile__("popw %es") ;
 
 	// 1 Int --> 1ms
 	++PIT_ClockCountForSleep;
-	if((PIT_ClockCountForSleep % 10) == 0 && PIT_IsTaskSwitch())
-	{
-		__volatile__ unsigned uiTaskReg = 0;
-		__asm__ __volatile__("STR %ax") ;
-		__asm__ __volatile__("movw %%ax, %0" : "=m"(uiTaskReg) :) ;
+	//if ((PIT_ClockCountForSleep % 1000) == 0)
+	  printf("\n TIMER INT");
 
-		if(uiTaskReg == USER_TSS_SELECTOR) 
-		{
-			Process_bContextSwitch = true ;
-
-//			__asm__ __volatile__("pushf") ;
-//			__asm__ __volatile__("popl %eax") ;
-			__asm__ __volatile__("mov $0x4000, %ebx") ;
-			__asm__ __volatile__("or %ebx, %eax") ;
-//			__asm__ __volatile__("pushl %eax") ;
-//			__asm__ __volatile__("popf") ;
-			
-			IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
-
-			__asm__ __volatile__("IRET") ;
-		
-//			__asm__ __volatile__("pushf") ;
-//			__asm__ __volatile__("popl %eax") ;
-			__asm__ __volatile__("mov $0xBFFF, %ebx") ;
-			__asm__ __volatile__("and %ebx, %eax") ;
-//			__asm__ __volatile__("pushl %eax") ;
-//			__asm__ __volatile__("popf") ;
-
-			//AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-			__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-			__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
-			__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
-			__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
-	
-			AsmUtil_RESTORE_GPR() ;
-
-			__asm__ __volatile__("leave") ;
-			__asm__ __volatile__("IRET") ;
-		}
-	}
+//	if((PIT_ClockCountForSleep % 10) == 0 && PIT_IsTaskSwitch())
+//	{
+//		__volatile__ unsigned uiTaskReg = 0;
+//		__asm__ __volatile__("STR %ax") ;
+//		__asm__ __volatile__("movw %%ax, %0" : "=m"(uiTaskReg) :) ;
+//
+//		if(uiTaskReg == USER_TSS_SELECTOR)
+//		{
+//			Process_bContextSwitch = true ;
+//
+////			__asm__ __volatile__("pushf") ;
+////			__asm__ __volatile__("popl %eax") ;
+//			__asm__ __volatile__("mov $0x4000, %ebx") ;
+//			__asm__ __volatile__("or %ebx, %eax") ;
+////			__asm__ __volatile__("pushl %eax") ;
+////			__asm__ __volatile__("popf") ;
+//
+//			IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
+//
+//			__asm__ __volatile__("IRET") ;
+//
+////			__asm__ __volatile__("pushf") ;
+////			__asm__ __volatile__("popl %eax") ;
+//			__asm__ __volatile__("mov $0xBFFF, %ebx") ;
+//			__asm__ __volatile__("and %ebx, %eax") ;
+////			__asm__ __volatile__("pushl %eax") ;
+////			__asm__ __volatile__("popf") ;
+//
+//			//AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
+//			__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
+//			__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
+//			__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
+//			__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
+//
+//			AsmUtil_RESTORE_GPR() ;
+//
+//			__asm__ __volatile__("leave") ;
+//			__asm__ __volatile__("IRETQ") ;
+//		}
+//	}
 
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 
-	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
-
-	AsmUtil_RESTORE_GPR() ;
+//	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
+//	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
+//	__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
+//	__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
+//
+//	AsmUtil_RESTORE_GPR() ;
+//
 
 	__asm__ __volatile__("leave") ;
 	__asm__ __volatile__("IRET") ;

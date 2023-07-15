@@ -60,6 +60,7 @@ class MemManager
 		unsigned GetFlatAddress(unsigned uiVirtualAddress) ;
 		void DisplayNoOfAllocPages() ;
 
+    static void Mmap(uint64_t vAddr, uint64_t pAddr, uint32_t pageFlag);
 		static void InitPage(unsigned uiPage) ;
 		static void PageFaultHandlerTaskGate() ;
 
@@ -86,7 +87,6 @@ class MemManager
 		{
 			return _kernelAUTAddress ;
 		}
-    void MemMapGraphicsLFB(uint32_t memTypeFlag);
 
 	private:
 		bool BuildRawPageMap() ;

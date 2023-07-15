@@ -62,8 +62,8 @@ typedef struct DMA_Request
 {
 	DMA_CHANNEL DMAChannelNo ;
 	byte bDeviceID ;
-	unsigned int uiPhysicalAddress ;
-	unsigned int uiWordCount ;
+	uint32_t uiPhysicalAddress ;
+	uint32_t uiWordCount ;
 	DMA_MODE DMAMode ;
 } DMA_Request ;
 

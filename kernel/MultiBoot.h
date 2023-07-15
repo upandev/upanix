@@ -125,12 +125,15 @@ class MultiBoot {
     const FrameBufferInfo* VideoFrameBufferInfo() const {
 		  return _hasFrameBufferInfo ? &_framebufferInfo : nullptr;
 		}
+		uint64_t GetRawFrameBufferAddress() const {
+		  return _rawFrameBufferAddress;
+		}
     const multiboot_mmap_entry* GetACPIInfoMemMap() const {
       return _acpi_mmap;
     }
     void Print();
+    void InitializeGraphicsPageMap(int memTypeFlag);
 	private:
-    void InitializeGraphicsPageMap();
     static const int MAX_MMAP_ENTRIES = 64;
 
     uint32_t _bootDevId;
@@ -140,5 +143,6 @@ class MultiBoot {
     multiboot_mmap_entry _mmap[MAX_MMAP_ENTRIES];
     uint32_t _mmap_size;
     bool _hasFrameBufferInfo;
+    uint64_t _rawFrameBufferAddress;
     FrameBufferInfo _framebufferInfo;
 };

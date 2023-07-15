@@ -66,7 +66,7 @@ class Apic : public IrqManager
     uint32_t PhyApicBase() const { return _phyApicBase; }
 
   private:
-    uint32_t* MmapBase(uint32_t vAddr, uint32_t pAddr);
+    uint32_t* MmapBase(uint64_t vAddr, uint64_t pAddr);
     uint32_t IoApicRead(uint8_t index);
     void IoApicWrite(uint8_t index, uint32_t val);
     void RemapVector(uint8_t vector, uint32_t mapped, bool level /*f:edge t:level*/, bool low /*f:high t:low*/, bool disabled);
@@ -76,7 +76,7 @@ class Apic : public IrqManager
     void DisableIRQ(const IRQ&);
 
   private:
-    uint32_t _phyApicBase;
+    uint64_t _phyApicBase;
     __volatile__ uint32_t* _apicBase;
     __volatile__ uint32_t* _ioApicBase;
 

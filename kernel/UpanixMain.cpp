@@ -69,16 +69,6 @@ byte SPECIAL_TASK ;
 int debug_point ;
 /***********************************************/
 
-[[noreturn]] void DummyPrint()
-{
-  static int i = 1;
-  while(true)
-  {
-    ProcessManager::Instance().Sleep(1000);
-    printf("\n COUNTER: %d", ++i);
-  }
-}
-
 [[noreturn]] void UpanixMain_KernelProcess() {
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
@@ -169,30 +159,25 @@ void Initialize() {
     upan::metrics::create();
 
     IDT::Instance();
-    while(1);
     Cpu::Instance();
     Acpi::Instance();
     Pat::Instance();
     Mtrr::Instance();
     DMA_Initialize();
     StdIRQ::Instance();
-
-    SysCall_Initialize();
-
+    //TODO: SysCall_Initialize();
     KC::MKernelService();
-
     GraphicsVideo::Instance().Initialize();
 
   /* Start - Peripheral Device Initialization */
   //TODO: An Abstract Bus Handler which should internally take care of different
   //types of bus like ISA, PCI etc... 
     PCIBusHandler::Instance().Initialize();
-
     IrqManager::Initialize();
-
     PIT_Initialize();
     IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
-
+    __asm__ __volatile__("sti");
+    while(1);
     DiskDriveManager::Instance();
 
     PS2Controller::Instance();

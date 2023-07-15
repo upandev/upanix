@@ -15,13 +15,27 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="got 64bit OS working till mem manager initialization with graphics">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="IDT setup for 64bit OS">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Acpi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Acpi.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Cpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Mtrr.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Mtrr.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Pat.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Pat.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/DMA.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMA.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,11 +75,6 @@
     <property name="settings.editor.splitter.proportion" value="0.25050917" />
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -133,7 +142,8 @@
       <workItem from="1685687919023" duration="2283000" />
       <workItem from="1685693558568" duration="18318000" />
       <workItem from="1687080901318" duration="29899000" />
-      <workItem from="1688169083627" duration="70725000" />
+      <workItem from="1688169083627" duration="76239000" />
+      <workItem from="1689170475032" duration="12538000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -149,7 +159,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688880757090</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="IDT setup for 64bit OS">
+      <created>1688898298017</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1688898298017</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -175,10 +192,12 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="changes towards converting to 64bit OS" />
     <MESSAGE value="got 64bit OS working till mem manager initialization with graphics" />
-    <option name="LAST_COMMIT_MESSAGE" value="got 64bit OS working till mem manager initialization with graphics" />
+    <MESSAGE value="IDT setup for 64bit OS" />
+    <option name="LAST_COMMIT_MESSAGE" value="IDT setup for 64bit OS" />
   </component>
 </project>

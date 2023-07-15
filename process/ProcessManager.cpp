@@ -52,8 +52,9 @@ int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
 
 ProcessManager::ProcessManager() {
-  for(int i = 0; i < MAX_RESOURCE; i++)
-    _resourceList[i] = false ;
+  for (bool& i : _resourceList) {
+    i = false;
+  }
 
   PIT_SetContextSwitch(false) ;
 
