@@ -50,13 +50,12 @@
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
+uint32_t ProcessManager::_taskSwitch = 1;
 
 ProcessManager::ProcessManager() {
   for (bool& i : _resourceList) {
     i = false;
   }
-
-  PIT_SetContextSwitch(false) ;
 
 //	TaskState* sysTSS = (TaskState*)(SYS_TSS_BASE_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
 //  memset(sysTSS, 0, sizeof(TaskState));
@@ -204,7 +203,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 	    return;
   	case WAIT_SLEEP:
 		{
-      if(PIT_GetClockCount() >= stateInfo.SleepTime())
+      if(PIT::Instance().GetClockCount() >= stateInfo.SleepTime())
 			{
         stateInfo.SleepTime(0) ;
 				process.setStatus(RUN);
@@ -214,7 +213,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 				if(false)
 				{
           printf("\n Sleep Time: %u", stateInfo.SleepTime()) ;
-					printf("\n PIT Tick Count: %u", PIT_GetClockCount()) ;
+					printf("\n PIT Tick Count: %u", PIT::Instance().GetClockCount()) ;
 					printf("\n") ;
 				}
 				return ;
@@ -232,7 +231,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
     case WAIT_INT_WITH_TIMEOUT:
     {
       if(!WakeupProcessOnInterrupt(process)) {
-        if(PIT_GetClockCount() < stateInfo.SleepTime()) {
+        if(PIT::Instance().GetClockCount() < stateInfo.SleepTime()) {
           return;
         }
         stateInfo.SleepTime(0) ;
@@ -329,7 +328,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 
 	process.Load();
 
-	PIT_SetContextSwitch(false) ;
+	PIT::Instance().SetContextSwitch(false) ;
 
 	KERNEL_MODE = false ;
 	/* Switch Instruction */
@@ -338,7 +337,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 
 	process.Store();
 
-  if(PIT_IsContextSwitch() == false || process.status() == TERMINATED) {
+  if(!PIT::Instance().IsContextSwitch() || process.status() == TERMINATED) {
     process.Destroy();
   }
 
@@ -364,12 +363,14 @@ void ProcessManager::StartScheduler() {
 	}
 }
 
-void ProcessManager::EnableTaskSwitch() {
-	PIT_EnableTaskSwitch();
+//return true if it was previously disabled and now enabled
+bool ProcessManager::EnableTaskSwitch() {
+  return upan::atomic::op::swap(_taskSwitch, 1) == 0;
 }
 
-void ProcessManager::DisableTaskSwitch() {
-  PIT_DisableTaskSwitch();
+//return true if it was previously enabled and now disabled
+bool ProcessManager::DisableTaskSwitch() {
+  return upan::atomic::op::swap(_taskSwitch, 0) == 1;
 }
 
 void ProcessManager::Sleep(__volatile__ unsigned uiSleepTime) // in Mili Seconds
@@ -383,7 +384,7 @@ void ProcessManager::Sleep(__volatile__ unsigned uiSleepTime) // in Mili Seconds
 	ProcessManager::DisableTaskSwitch() ;
 
 	auto& p = GetCurrentPAS();
-  p.stateInfo().SleepTime(PIT_GetClockCount() + PIT_RoundSleepTime(uiSleepTime));
+  p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(uiSleepTime));
 	p.setStatus(WAIT_SLEEP);
 
 	ProcessManager_Yield() ;
@@ -418,7 +419,7 @@ void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout
 
   auto& p = GetCurrentPAS();
   p.stateInfo().Irq(&irq);
-  p.stateInfo().SleepTime(PIT_GetClockCount() + PIT_RoundSleepTime(timeout));
+  p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeout));
   p.setStatus(WAIT_INT_WITH_TIMEOUT);
 
   ProcessManager_Yield();
@@ -629,13 +630,13 @@ bool ProcessManager::IsKernelProcess(int iProcessID) {
 
 void ProcessManager_Exit() {
   ProcessManager::DisableTaskSwitch();
-	PIT_SetContextSwitch(false);
+	PIT::Instance().SetContextSwitch(false);
 	ProcessManager_EXIT();
 }
 
 void ProcessManager_Yield() {
   ProcessManager::DisableTaskSwitch();
-  PIT_SetContextSwitch(true);
+  PIT::Instance().SetContextSwitch(true);
   ProcessManager_EXIT();
   ProcessManager_RESTORE();
 }
@@ -718,7 +719,7 @@ bool ProcessManager::WakeupProcessOnInterrupt(SchedulableProcess& p)
 }
 
 bool ProcessManager::DoPollWait() {
-	return (KERNEL_MODE || !PIT_IsTaskSwitch()) ;
+	return (KERNEL_MODE || !IsTaskSwitch()) ;
 }
 
 bool ProcessManager::ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor)

@@ -127,7 +127,7 @@ class IrqGuard
     }
   private:
     const IRQ* _irq;
-    uint32_t _allIntSyncFlag;
+    uint64_t _allIntSyncFlag;
 };
 
 #endif

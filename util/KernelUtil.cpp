@@ -26,11 +26,11 @@
 
 void KernelUtil::Wait(__volatile__ unsigned uiTimeInMilliSec)
 {
-	uiTimeInMilliSec = PIT_RoundSleepTime(uiTimeInMilliSec) ;
-	__volatile__ unsigned uiStartTime = PIT_GetClockCount() ;
+	uiTimeInMilliSec = PIT::Instance().RoundSleepTime(uiTimeInMilliSec) ;
+	__volatile__ unsigned uiStartTime = PIT::Instance().GetClockCount() ;
 
 	IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
-	while((PIT_GetClockCount() - uiStartTime) < uiTimeInMilliSec)
+	while((PIT::Instance().GetClockCount() - uiStartTime) < uiTimeInMilliSec)
 	{
 		__asm__ __volatile__("nop") ;
 		__asm__ __volatile__("nop") ;

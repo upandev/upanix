@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#pragma once
 
 #include <Global.h>
 
@@ -59,18 +58,25 @@ In MODES 2 and 3 (which are periodic) the Counter reloads itself with the initia
 
 class IRQ ;
 
-void PIT_Initialize();
-void PIT_Handler();
+class PIT {
+private:
+  PIT();
+public:
+  static PIT& Instance() {
+    static PIT instance;
+    return instance;
+  }
 
-unsigned PIT_GetClockCount();
+  void Handler();
 
-unsigned char PIT_IsContextSwitch();
-void PIT_SetContextSwitch(bool flag);
+  uint32_t GetClockCount() const { return _clockCountForSleep; }
+  bool IsContextSwitch() const { return _contextSwitch; }
+  void SetContextSwitch(bool flag) { _contextSwitch = flag; }
 
-bool PIT_IsTaskSwitch();
-bool PIT_EnableTaskSwitch();
-bool PIT_DisableTaskSwitch();
+  uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
 
-unsigned PIT_RoundSleepTime(__volatile__ unsigned uiSleepTime);
-
-#endif
+private:
+  uint32_t _clockCountForSleep ;
+  bool _contextSwitch ;
+  uint32_t _taskSwitch ;
+};

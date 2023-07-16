@@ -101,6 +101,7 @@ void MemManager::PageFaultHandlerTaskGate()
 }
 
 MemManager::MemManager() : _kernelAUTAddress(NULL), RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
+  KC::MConsole().Message("\n MemManager Init\n", ' ');
   if(BuildRawPageMap()) {
     if(BuildPageTable()) {
       if (BuildPagePoolMap()) {

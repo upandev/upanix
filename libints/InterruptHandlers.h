@@ -19,46 +19,19 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _IDT_H_
-#define _IDT_H_
 
-#include <Global.h>
+/* Intel 8253 Programmable Interval Timer */
 
-class IDT
-{
-	private:
-		IDT();
+#pragma once
 
-	public:
-		static IDT& Instance()
-		{
-			static IDT instance;
-			return instance;
-		}
+#include <stdint.h>
 
-	private:
-		void LoadDefaultHadlers() ;
-		void LoadInterruptTasks() ;
-		void LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options);
+typedef struct{
+  uint64_t   rip;
+  uint64_t   cs;
+  uint64_t   rflags;
+  uint64_t   rsp;
+  uint64_t   ss;
+} __attribute__((__packed__)) InterruptState;
 
-		typedef struct {
-				uint16_t _limit;
-				uint64_t _base;
-		} PACKED IDTRegister ;
-
-		typedef struct {
-			uint16_t _lowerOffset;
-			uint16_t _selector;
-
-			uint8_t _ist:3;
-      uint8_t _reserved1:5;
-      uint8_t _options; //present(1 bit), dpl(2 bits), 0, gate-type(4 bits)
-
-      uint16_t _midOffset;
-      uint32_t _higherOffset;
-      uint32_t _reserved;
-		} PACKED IDTEntry ;
-	friend class IrqManager;
-};
-
-#endif
+void timer_interrupt_handler(InterruptState* state);

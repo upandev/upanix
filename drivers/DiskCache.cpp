@@ -55,7 +55,7 @@ void LFUSectorManager::Run()
 	if(m_bReleaseListBuilt)
 		return ;
 
-	m_uiCurrent = PIT_GetClockCount() ;
+	m_uiCurrent = PIT::Instance().GetClockCount() ;
 	m_uiBuildCount = 0 ;
 
 	_mCache._tree.InOrderTraverse(*this) ;

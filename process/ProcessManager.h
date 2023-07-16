@@ -126,8 +126,10 @@ class ProcessManager
       _upanixKernelProcessID = pid;
     }
 
-    static void EnableTaskSwitch() ;
-    static void DisableTaskSwitch() ;
+    static bool EnableTaskSwitch() ;
+    static bool DisableTaskSwitch() ;
+    static bool IsTaskSwitch() { return _taskSwitch == 1; }
+
   private:
     void DoContextSwitch(SchedulableProcess& process);
     void Destroy(SchedulableProcess& pas);
@@ -149,17 +151,18 @@ class ProcessManager
     //This is required even before initializing the ProcessManager for fetching
     static int _currentProcessID;
     static int _upanixKernelProcessID;
+    static uint32_t _taskSwitch;
 };
 
 class ProcessSwitchLock {
 public:
   ProcessSwitchLock() : _isOwner(false) {
-    _isOwner = PIT_DisableTaskSwitch();
+    _isOwner = ProcessManager::DisableTaskSwitch();
   }
 
   ~ProcessSwitchLock() {
     if (_isOwner) {
-      PIT_EnableTaskSwitch();
+      ProcessManager::EnableTaskSwitch();
     }
   }
 

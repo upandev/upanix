@@ -253,8 +253,8 @@ void IDT::LoadDefaultHadlers()
 void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options) {
 	IDT::IDTEntry* idtEntry = reinterpret_cast<IDT::IDTEntry*>(IDT_BASE_ADDR) + idtNo;
 	
-	idtEntry->_lowerOffset1 = offset & 0xFFFF;
-  idtEntry->_lowerOffset2 = (offset >> 16) & 0xFFFF;
+	idtEntry->_lowerOffset = offset & 0xFFFF;
+  idtEntry->_midOffset = (offset >> 16) & 0xFFFF;
   idtEntry->_higherOffset = (offset >> 32) & 0xFFFFFFFF;
 	idtEntry->_selector = selector;
 	idtEntry->_reserved = 0;

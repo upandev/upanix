@@ -37,10 +37,10 @@ void SysUtil_Reboot()
 int SysUtil_GetTimeOfDay(struct timeval* pTV)
 {
 	int iRetStatus ;
-	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_TOD, false, (unsigned)pTV, 2, 3, 4, 5, 6, 7, 8, 9);
+	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_TOD, false, (uint64_t)pTV, 2, 3, 4, 5, 6, 7, 8, 9);
 	return iRetStatus ;
 }
 
 uint32_t SysUtil_GetTimeSinceBoot() {
-  return PIT_GetClockCount();
+  return PIT::Instance().GetClockCount();
 }

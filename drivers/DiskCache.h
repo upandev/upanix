@@ -63,7 +63,7 @@ class DiskCacheValue : public BTreeValue
 		byte m_bSectorBuffer[ SEC_SIZE ] ;
 
 	public:
-		DiskCacheValue() : m_uiLastAccess(PIT_GetClockCount()), m_uiHitCount(1)
+		DiskCacheValue() : m_uiLastAccess(PIT::Instance().GetClockCount()), m_uiHitCount(1)
     { 
     }
 
@@ -76,14 +76,14 @@ class DiskCacheValue : public BTreeValue
 		{
 			memcpy(pDest, m_bSectorBuffer, SEC_SIZE) ;
 			m_uiHitCount++ ;
-			m_uiLastAccess = PIT_GetClockCount() ;
+			m_uiLastAccess = PIT::Instance().GetClockCount() ;
 		}
 
 		void Write(const byte* pSrc)
 		{
 			memcpy(m_bSectorBuffer, pSrc, SEC_SIZE) ;
 			m_uiHitCount++ ;
-			m_uiLastAccess = PIT_GetClockCount() ;
+			m_uiLastAccess = PIT::Instance().GetClockCount() ;
 		}
 } ;
 

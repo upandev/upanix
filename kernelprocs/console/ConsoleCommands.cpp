@@ -1549,7 +1549,7 @@ class RankInOrderVisitor : public BTree::InOrderVisitor
 		const unsigned m_uiCurrent ;
 
 	public:
-		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(PIT_GetClockCount()) { }
+		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(PIT::Instance().GetClockCount()) { }
 
 		void operator()(const BTreeKey& rKey, BTreeValue* pValue) 
 		{
@@ -1582,7 +1582,7 @@ typedef struct
 ReadStat read_stat[256] ;
 void _UpdateReadStat(unsigned len, bool bFirst)
 {
-	unsigned uiTime = PIT_GetClockCount() ;
+	unsigned uiTime = PIT::Instance().GetClockCount() ;
 	static bool bInit = false ;
 	if(!bInit)
 	{

@@ -50,6 +50,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
 include_directories(${PROJECT_SOURCE_DIR}/bin)
 include_directories(${PROJECT_SOURCE_DIR}/kernel)
 include_directories(${PROJECT_SOURCE_DIR}/process)
@@ -105,6 +107,7 @@ include_directories(${UPANLIB_SOURCE_DIR}/libm/include)
 include_directories(${UPANLIB_SOURCE_DIR}/libm/include/bits)
 
 include_directories(${PROJECT_SOURCE_DIR}/libmcpp/cal)
+include_directories(${PROJECT_SOURCE_DIR}/libints)
 
 include_directories(${UPANLIB_SOURCE_DIR}/libcxxrt)
 
@@ -154,6 +157,13 @@ string(REPLACE "\n" ";" MCPP_SRC ${MCPP_SRC})
 add_library(mcpp STATIC "${MCPP_SRC}")
 add_custom_command(TARGET mcpp POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:mcpp>)
 
+#LIBINTS
+execute_process(COMMAND bash -c "cd ${PROJECT_SOURCE_DIR}; find ./libints -name '*.cpp' | grep -v CMakeFile" OUTPUT_VARIABLE INTS_SRC)
+string(REPLACE "\n" ";" INTS_SRC ${INTS_SRC})
+add_library(ints STATIC "${INTS_SRC}")
+add_custom_command(TARGET ints POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:ints>)
+target_compile_options(ints PRIVATE -mgeneral-regs-only -mno-red-zone)
+
 #UPANIX
 add_executable(${TARGET_BIN} ${OTHER_OBJS} ${UPANIX_SRCS})
 
@@ -164,6 +174,7 @@ add_dependencies(${TARGET_BIN} mem)
 
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libcxxrt.a)
 target_link_libraries(${TARGET_BIN} mcpp)
+target_link_libraries(${TARGET_BIN} ints)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libgcceh.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libustd.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libupanui_interop.a)

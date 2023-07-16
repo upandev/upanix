@@ -174,7 +174,7 @@ void Initialize() {
   //types of bus like ISA, PCI etc... 
     PCIBusHandler::Instance().Initialize();
     IrqManager::Initialize();
-    PIT_Initialize();
+    PIT::Instance();
     IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
     __asm__ __volatile__("sti");
     while(1);
