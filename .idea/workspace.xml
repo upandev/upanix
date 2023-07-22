@@ -16,24 +16,32 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="PAT, IRQ, Graphics Init for 64bit">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Handling interrupts in 64 bit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DiskCache.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/IDT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/RTC.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/RTC.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/RTC.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/RTC.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/memoryspike.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.h" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -158,7 +166,7 @@
       <workItem from="1687080901318" duration="29899000" />
       <workItem from="1688169083627" duration="76239000" />
       <workItem from="1689170475032" duration="12538000" />
-      <workItem from="1689461946146" duration="11628000" />
+      <workItem from="1689461946146" duration="35020000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -188,7 +196,14 @@
       <option name="project" value="LOCAL" />
       <updated>1689462151507</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Handling interrupts in 64 bit">
+      <created>1689487629329</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1689487629329</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -221,6 +236,7 @@
     <MESSAGE value="got 64bit OS working till mem manager initialization with graphics" />
     <MESSAGE value="IDT setup for 64bit OS" />
     <MESSAGE value="PAT, IRQ, Graphics Init for 64bit" />
-    <option name="LAST_COMMIT_MESSAGE" value="PAT, IRQ, Graphics Init for 64bit" />
+    <MESSAGE value="Handling interrupts in 64 bit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Handling interrupts in 64 bit" />
   </component>
 </project>

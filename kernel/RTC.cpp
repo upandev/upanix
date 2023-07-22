@@ -25,6 +25,7 @@
 # include <AsmUtil.h>
 # include <MemConstants.h>
 # include <MemUtil.h>
+# include <InterruptHandlers.h>
 
 #define RTC_COMMAND_PORT		0x70
 #define RTC_DATA_PORT			0x71
@@ -39,8 +40,6 @@
 #define RTC_RGSTR_STATUSA		0x0A
 #define RTC_RGSTR_STATUSB		0x0B
 #define RTC_RGSTR_STATUSC		0x0C
-
-void RTC_Handler() ;
 
 bool RTC::Initialize()
 {
@@ -69,7 +68,7 @@ bool RTC::Initialize()
 	PortCom_SendByte(RTC_COMMAND_PORT, RTC_RGSTR_STATUSC) ;
 	PortCom_SendByte(RTC_DATA_PORT, bStatusC) ;
 
-  return IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().RTC_IRQ, (unsigned)&RTC_Handler);
+  return IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().RTC_IRQ, (uintptr_t)&rtc_interrupt_handler);
 //	IrqManager::Instance().EnableIRQ(StdIRQ::Instance().RTC_IRQ) ;
 }
 
@@ -102,21 +101,9 @@ void RTC::GetDateTime(RTCDateTime& rRTCDateTime)
 	rRTCDateTime._hour = BCD_TO_DECIMAL(PortCom_ReceiveByte(RTC_DATA_PORT)) ;
 }
 
-void RTC_Handler()
-{
-	AsmUtil_STORE_GPR() ;
-	// Not required as DataSegment is not being accessed. But lets play it safe...
-	AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
-	PortCom_SendByte(RTC_COMMAND_PORT, RTC_RGSTR_STATUSC) ;
-	PortCom_ReceiveByte(RTC_DATA_PORT) ;
-	
+void RTC::Handler() {
+	PortCom_SendByte(RTC_COMMAND_PORT, RTC_RGSTR_STATUSC);
+	PortCom_ReceiveByte(RTC_DATA_PORT);
 	IrqManager::Instance().SendEOI(StdIRQ::Instance().RTC_IRQ);
-
-	AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-	AsmUtil_RESTORE_GPR() ;
-
-	asm("leave") ;
-	asm("IRET") ;
 }
 

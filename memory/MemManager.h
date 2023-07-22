@@ -47,22 +47,19 @@ class MemManager
 		}
     void PrintInitStatus() const;
 		ReturnCode MarkPageAsAllocated(unsigned uiPageNumber, ReturnCode prevRetCode) ;
-		unsigned AllocatePhysicalPage();
-		void DeAllocatePhysicalPage(const unsigned uiPageNumber) ;
+		uint64_t AllocatePhysicalPage();
+		void DeAllocatePhysicalPage(uint64_t uiPageNumber) ;
 		unsigned AllocatePageForKernel();
 		void DeAllocatePageForKernel(unsigned pageNumber);
 
-    //uint32_t AllocatePhysicalPage(const uint32_t noOfPages = 1);
-    //void DeAllocatePhysicalPage(uint32_t pageNo, const uint32_t noOfPages = 1);
-		ReturnCode AllocatePage(int iProcessID, unsigned uiFaultyAddress) ;
-		ReturnCode DeAllocatePage(const unsigned uiAddress) ;
+		ReturnCode AllocatePage(int iProcessID, uintptr_t faultyAddress) ;
+    uintptr_t GetFlatAddress(uintptr_t virtualAddress) ;
 		void DisplayNoOfFreePages() ;
-		unsigned GetFlatAddress(unsigned uiVirtualAddress) ;
 		void DisplayNoOfAllocPages() ;
 
     static void Mmap(uint64_t vAddr, uint64_t pAddr, uint32_t pageFlag);
-		static void InitPage(unsigned uiPage) ;
-		static void PageFaultHandlerTaskGate() ;
+		static void InitPage(uint64_t uiPage) ;
+		static void PageFaultHandlerTaskGate(uint64_t errorCode) ;
 
 		inline unsigned GetKernelHeapStartAddr() { return MEM_KERNEL_HEAP_START; }
 		inline unsigned GetRamSize() { return RAM_SIZE; }
@@ -108,7 +105,6 @@ class MemManager
 
     uint32_t _kernelReservedMapSize ;
 
-    uintptr_t* m_uiPTEBase ;
     uintptr_t* m_uipKernelProcessStackPTEBase ;
     uintptr_t _kernelAUTAddress ;
 

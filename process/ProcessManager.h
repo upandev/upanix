@@ -129,6 +129,8 @@ class ProcessManager
     static bool EnableTaskSwitch() ;
     static bool DisableTaskSwitch() ;
     static bool IsTaskSwitch() { return _taskSwitch == 1; }
+    static bool IsContextSwitch() { return _contextSwitch; }
+    static void SetContextSwitch(bool flag) { _contextSwitch = flag; }
 
   private:
     void DoContextSwitch(SchedulableProcess& process);
@@ -152,6 +154,7 @@ class ProcessManager
     static int _currentProcessID;
     static int _upanixKernelProcessID;
     static uint32_t _taskSwitch;
+    static bool _contextSwitch;
 };
 
 class ProcessSwitchLock {

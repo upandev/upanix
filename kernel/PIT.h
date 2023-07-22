@@ -70,13 +70,8 @@ public:
   void Handler();
 
   uint32_t GetClockCount() const { return _clockCountForSleep; }
-  bool IsContextSwitch() const { return _contextSwitch; }
-  void SetContextSwitch(bool flag) { _contextSwitch = flag; }
-
   uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
 
 private:
   uint32_t _clockCountForSleep ;
-  bool _contextSwitch ;
-  uint32_t _taskSwitch ;
 };

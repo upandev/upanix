@@ -28,7 +28,7 @@
 #include <atomicop.h>
 #include <InterruptHandlers.h>
 
-PIT::PIT() : _clockCountForSleep(0), _contextSwitch(false), _taskSwitch(1) {
+PIT::PIT() : _clockCountForSleep(0) {
   ReturnCode status = Success;
   IrqGuard g;
   if(!IrqManager::Instance().IsApic()) {

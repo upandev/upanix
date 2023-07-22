@@ -25,14 +25,11 @@
 #include <XHCIManager.h>
 #include <IrqManager.h>
 #include <KeyboardHandler.h>
+#include <InterruptHandlers.h>
 
 static const IRQ* XHCI_IRQ = nullptr;
 
-static void XHCI_IRQHandler()
-{
-  AsmUtil_STORE_GPR();
-  AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
+void XHCIManager::Handler() {
   //printf("\n XHCI IRQ");
   if(XHCIManager::Instance().Initialized() && XHCIManager::Instance().GetEventMode() == XHCIManager::Interrupt)
   {
@@ -41,24 +38,15 @@ static void XHCI_IRQHandler()
   }
 
   IrqManager::Instance().SendEOI(*XHCI_IRQ);
-
-  AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-  AsmUtil_RESTORE_GPR();
-
-  asm("leave");
-  asm("IRET");
 }
 
 XHCIManager::XHCIManager() : _initialized(false)
 {
-  XHCI_IRQ = IrqManager::Instance().RegisterIRQ(XHCI_IRQ_NO, (unsigned)XHCI_IRQHandler);
-  if(XHCI_IRQ)
-  {
+  XHCI_IRQ = IrqManager::Instance().RegisterIRQ(XHCI_IRQ_NO, (uintptr_t)xhci_interrupt_handler);
+  if(XHCI_IRQ) {
     _eventMode = EventMode::Interrupt;
     IrqManager::Instance().DisableIRQ(*XHCI_IRQ);
-  }
-  else
-  {
+  } else {
     _eventMode = EventMode::Poll;
     printf("Failed to register XHCI IRQ: %d", XHCI_IRQ_NO);
   }

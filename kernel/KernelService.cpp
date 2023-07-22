@@ -52,12 +52,12 @@ void KernelService::FlatAddress::Execute()
 	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(m_uiAddress) ;
 }
 
-KernelService::PageFault::PageFault(unsigned uiFaultyAddress) : m_uiFaultyAddress(uiFaultyAddress)
+KernelService::PageFault::PageFault(uintptr_t faultyAddress) : _faultyAddress(faultyAddress)
 {
 }
 
 void KernelService::PageFault::Execute() {
-  m_bStatus = MemManager::Instance().AllocatePage(GetRequestProcessID(), m_uiFaultyAddress) == Success;
+  m_bStatus = MemManager::Instance().AllocatePage(GetRequestProcessID(), _faultyAddress) == Success;
 }
 
 KernelService::ProcessExec::ProcessExec(int iNoOfArgs, const char* szFile, const char** szArgs)
@@ -130,11 +130,11 @@ unsigned KernelService::RequestFlatAddress(unsigned uiVirtualAddress)
 //This request to allocate a page upon page-fault is triggered via PageFault interrupt 0xE
 //So, this function is called from an interrupt handler - and hence, there won't be any other interrupts while
 //this interrupt is active ==> No PIT interrupts ==> No task switch
-bool KernelService::RequestPageFault(unsigned uiFaultyAddress) {
-  if (uiFaultyAddress < PAGE_SIZE) {
-    printf("\nPageFault at lower address: %x!!\n", uiFaultyAddress);
+bool KernelService::RequestPageFault(uintptr_t faultyAddress) {
+  if (faultyAddress < PAGE_SIZE) {
+    printf("\nPageFault at lower address: %x!!\n", faultyAddress);
   }
-	KernelService::PageFault* pRequest = new KernelService::PageFault(uiFaultyAddress) ;
+	KernelService::PageFault* pRequest = new KernelService::PageFault(faultyAddress) ;
 
 	AddRequest(pRequest) ;
 	ProcessManager::Instance().WaitOnKernelService() ;

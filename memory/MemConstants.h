@@ -127,9 +127,6 @@ constexpr uint32_t MEM_KERNEL_PAGE_POOL_SIZE = 0x1000000; // 16 MB
 
 constexpr uint32_t MEM_KERNEL_RESV_SIZE = MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE + MEM_KERNEL_PAGE_POOL_SIZE;
 
-#define PROCESS_HEAP_START_ADDRESS 0x80000000 // 2 GB
-#define PROCESS_HEAP_SIZE 0x40000000 // 1 GB
-
 /***** These addresses are Relative to Kernel Base ===> Their Phy Addr = Addr + Kernel Base ******/
 #define MEM_PTE_START		0x1000000 // 16 MB
 #define MEM_PTE_END			0x1400000 // 20 MB
@@ -146,8 +143,11 @@ constexpr uint32_t MEM_KERNEL_RESV_SIZE = MEM_KERNEL_HEAP_START + MEM_KERNEL_HEA
 
 #define PROCESS_KERNEL_SHARE_SPACE		0x153C400 // 21 MB + 241 KB
 
-#define PML4_INDEX(ADDR) (((ADDR) >> 39) & 0x1FF)
-#define PDP_INDEX(ADDR) (((ADDR) >> 30) & 0x1FF)
-#define PD_INDEX(ADDR) (((ADDR) >> 21) & 0x1FF)
-#define PT_INDEX(ADDR) (((ADDR) >> 12) & 0x1FF)
+constexpr uint64_t PAGE_CONFIG_MASK = 0x1FF;
+constexpr uint64_t PAGE_MASK = ~PAGE_CONFIG_MASK;
+
+#define PML4_INDEX(ADDR) (((ADDR) >> 39) & PAGE_CONFIG_MASK)
+#define PDP_INDEX(ADDR) (((ADDR) >> 30) & PAGE_CONFIG_MASK)
+#define PD_INDEX(ADDR) (((ADDR) >> 21) & PAGE_CONFIG_MASK)
+#define PT_INDEX(ADDR) (((ADDR) >> 12) & PAGE_CONFIG_MASK)
 #define PAGE_INDEX(ADDR) ((ADDR) & 0xFFF)

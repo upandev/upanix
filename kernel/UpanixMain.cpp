@@ -177,7 +177,6 @@ void Initialize() {
     PIT::Instance();
     IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
     __asm__ __volatile__("sti");
-    while(1);
     DiskDriveManager::Instance();
 
     PS2Controller::Instance();
@@ -190,13 +189,12 @@ void Initialize() {
   /*End - Peripheral Device Initialization */
 
     RTC::Initialize() ;
-    
     //USB
     USBController::Instance();
     //UHCIManager::Instance();
     //EHCIManager::Instance();
     XHCIManager::Instance().Initialize();
-
+    while(1);
     USBDiskDriver::Register();
     USBKeyboardDriver::Register();
 

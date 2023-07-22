@@ -63,7 +63,7 @@ class KernelService
 		// RequestFactory
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
 		unsigned RequestFlatAddress(unsigned uiAddress) ;
-		bool RequestPageFault(unsigned uiFaultyAddress) ;
+		bool RequestPageFault(uintptr_t faultyAddress) ;
 		int RequestProcessExec(const char* szFile, int iNoOfArgs, const char** szArgs) ;
 		int RequestThreadExec(uint32_t threadCaller, uint32_t entryAddresss, void* arg);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
@@ -103,11 +103,11 @@ class KernelService
 		class PageFault : public Request
 		{
 			private:
-				unsigned m_uiFaultyAddress ;
+				uintptr_t _faultyAddress ;
 				bool m_bStatus ;
 
 			public:
-				PageFault(unsigned uiFaultyAddress) ;
+				PageFault(uintptr_t faultyAddress) ;
         void Execute() ;
 				inline bool GetStatus() { return m_bStatus ; }
 		} ;

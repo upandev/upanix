@@ -51,6 +51,7 @@
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
 uint32_t ProcessManager::_taskSwitch = 1;
+bool ProcessManager::_contextSwitch = false;
 
 ProcessManager::ProcessManager() {
   for (bool& i : _resourceList) {
@@ -328,7 +329,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 
 	process.Load();
 
-	PIT::Instance().SetContextSwitch(false) ;
+	ProcessManager::SetContextSwitch(false) ;
 
 	KERNEL_MODE = false ;
 	/* Switch Instruction */
@@ -337,7 +338,7 @@ void ProcessManager::DoContextSwitch(SchedulableProcess& process) {
 
 	process.Store();
 
-  if(!PIT::Instance().IsContextSwitch() || process.status() == TERMINATED) {
+  if(!ProcessManager::IsContextSwitch() || process.status() == TERMINATED) {
     process.Destroy();
   }
 
@@ -629,14 +630,20 @@ bool ProcessManager::IsKernelProcess(int iProcessID) {
 }
 
 void ProcessManager_Exit() {
+  if (IS_KERNEL()) {
+    __asm__ __volatile__("HLT");
+  }
   ProcessManager::DisableTaskSwitch();
-	PIT::Instance().SetContextSwitch(false);
+	ProcessManager::SetContextSwitch(false);
 	ProcessManager_EXIT();
 }
 
 void ProcessManager_Yield() {
+  if (IS_KERNEL()) {
+    __asm__ __volatile__("HLT");
+  }
   ProcessManager::DisableTaskSwitch();
-  PIT::Instance().SetContextSwitch(true);
+  ProcessManager::SetContextSwitch(true);
   ProcessManager_EXIT();
   ProcessManager_RESTORE();
 }

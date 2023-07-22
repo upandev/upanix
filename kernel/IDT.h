@@ -37,8 +37,7 @@ class IDT
 		}
 
 	private:
-		void LoadDefaultHadlers() ;
-		void LoadInterruptTasks() ;
+		void LoadHandlers() ;
 		void LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options);
 
 		typedef struct {

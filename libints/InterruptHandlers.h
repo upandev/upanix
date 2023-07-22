@@ -35,3 +35,31 @@ typedef struct{
 } __attribute__((__packed__)) InterruptState;
 
 void timer_interrupt_handler(InterruptState* state);
+void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void keyboard_interrupt_handler(InterruptState* state);
+void mouse_interrupt_handler(InterruptState* state);
+void rtc_interrupt_handler(InterruptState* state);
+void xhci_interrupt_handler(InterruptState* state);
+
+void isr_0x27_interrupt_handler(InterruptState* state);
+void isr_default_interrupt_handler(InterruptState* state);
+void isr_0_interrupt_handler(InterruptState* state);
+void isr_1_interrupt_handler(InterruptState* state);
+void isr_2_interrupt_handler(InterruptState* state);
+void isr_3_interrupt_handler(InterruptState* state);
+void isr_4_interrupt_handler(InterruptState* state);
+void isr_5_interrupt_handler(InterruptState* state);
+void isr_6_interrupt_handler(InterruptState* state);
+void isr_7_interrupt_handler(InterruptState* state);
+void isr_8_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_9_interrupt_handler(InterruptState* state);
+void isr_10_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_11_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_12_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_13_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_16_interrupt_handler(InterruptState* state);
+void isr_17_interrupt_handler(InterruptState* state, uint64_t errorCode);
+void isr_18_interrupt_handler(InterruptState* state);
+void isr_19_interrupt_handler(InterruptState* state);
+void isr_20_interrupt_handler(InterruptState* state);
+void isr_21_interrupt_handler(InterruptState* state, uint64_t errorCode);
