@@ -190,7 +190,7 @@ void Apic::Initialize()
 }
 
 uint32_t* Apic::MmapBase(uint64_t vAddr, uint64_t pAddr) {
-  MemManager::Mmap(vAddr, pAddr, 0x3);
+  MemManager::KernelPageTableMmap(vAddr, pAddr, 0x3);
 	Mem_FlushTLB();
   return (uint32_t*)(vAddr + (pAddr % PAGE_SIZE));
 }

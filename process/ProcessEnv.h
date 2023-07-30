@@ -31,8 +31,6 @@
 #define ENV_VAR_LENGTH 256
 #define NO_OF_ENVS (PAGE_SIZE / ENV_VAR_LENGTH)
 
-#define LD_LIBRARY_PATH_ENV "LD_LIBRARY_PATH"
-#define PATH_ENV			"PATH"
 
 typedef struct
 {

@@ -851,7 +851,7 @@ void Directory_Change(const char* szFileName, int iDriveID, Process* processAddr
 
 	processAddressSpace->setDriveID(iDriveID);
 
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)(((FileSystem::Node*)bDirectoryBuffer) + bSectorPos), MemUtil_GetDS(), (unsigned)&pwd.DirEntry, sizeof(FileSystem::Node)) ;
+  memcpy(&pwd.DirEntry, (((FileSystem::Node*)bDirectoryBuffer) + bSectorPos), sizeof(FileSystem::Node));
   pwd.uiSectorNo = uiSectorNo ;
   pwd.bSectorEntryPosition = bSectorPos ;
 	
@@ -890,19 +890,13 @@ void Directory_Change(const char* szFileName, int iDriveID, Process* processAddr
 	strcat(szPWD, "@") ;
 	strcat(szPWD, szTempPwd) ;
 
-	ProcessEnv_Set("PWD", szPWD) ;
-
+	processAddressSpace->setEnv("PWD", szPWD);
 }
 
 void Directory_PresentWorkingDirectory(Process* processAddressSpace, char** uiReturnDirPathAddress)
 {
-	char* szPWD ;
 	char* pAddress ;
-
-	szPWD = ProcessEnv_Get("PWD") ;
-
-	if(szPWD == NULL)
-    throw upan::exception(XLOC, "PWD is not set");
+  const char* szPWD = processAddressSpace->getEnv("PWD").valueOrThrow(XLOC, "PWD is not set").c_str();
 
 	if(processAddressSpace->isKernelProcess())
 	{

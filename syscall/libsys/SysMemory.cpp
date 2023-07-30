@@ -36,7 +36,7 @@ int SysMemory_Free(void* uiAddress)
   return 0;
 }
 
-int SysMemory_GetAllocSize(void* uiAddress, int* size)
+int SysMemory_GetAllocSize(void* address, size_t* size)
 {
-  return DMM_GetAllocSizeForKernel((uintptr_t)uiAddress, size);
+  return DMM_GetAllocSizeForKernel((uintptr_t)address, size);
 }

@@ -55,8 +55,8 @@ class ELFParser
 		~ELFParser() ;
 
     void CopyProcessImage(byte* bProcessImage, unsigned uiProcessBase, unsigned uiMaxImageSize) const;
-		unsigned CopyELFSecStrTable(char* szSecStrTable) ;
-		unsigned CopyELFSectionHeader(ELF32SectionHeader* pSectionHeader) ;
+		char* CopyELFSecStrTable();
+    ELF32SectionHeader* CopyELFSectionHeader();
 
     upan::result<uint32_t*> GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr);
     upan::result<uint32_t> GetNoOfGOTEntries();

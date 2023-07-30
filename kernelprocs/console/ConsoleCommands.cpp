@@ -1539,8 +1539,6 @@ class DisplayCache : public BTree::InOrderVisitor
 		mutable bool m_bAbort ;
 } ;
 
-extern unsigned DMM_uiTotalKernelAllocation ;
-
 class RankInOrderVisitor : public BTree::InOrderVisitor
 {
 	private:

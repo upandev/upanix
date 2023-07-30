@@ -22,9 +22,21 @@
 #pragma once
 
 #include <ProcessConstants.h>
+#include <ElfSectionHeader.h>
 
 class ProcessDLLInfo {
 public:
+  class ELFInfo {
+  public:
+    ELFInfo() : _elfSectionHeaders(nullptr), _elfSecStrTable(nullptr) {}
+    ~ELFInfo() {
+      delete []_elfSectionHeaders;
+      delete _elfSectionHeaders;
+    }
+    ELFSectionHeader::ELF32SectionHeader* _elfSectionHeaders;
+    char* _elfSecStrTable;
+  };
+
   ProcessDLLInfo(int id, uint32_t loadAddress, uint32_t noOfPages) : _id(id), _loadAddress(loadAddress), _noOfPages(noOfPages) {
   }
 
@@ -38,9 +50,8 @@ public:
   uint32_t loadAddressForProcess() const {
     return _loadAddress - PROCESS_BASE;
   }
-  uint32_t elfSectionHeaderAddress() const {
-    // Last Page is for Elf Section Header
-    return loadAddressForKernel() + (_noOfPages - 1) * PAGE_SIZE;
+  ELFInfo& elfInfo() {
+    return _elfInfo;
   }
   uint32_t noOfPages() const { return _noOfPages; }
 
@@ -48,4 +59,5 @@ private:
   int _id;
   uint32_t _loadAddress;
   uint32_t _noOfPages;
+  ELFInfo _elfInfo;
 };

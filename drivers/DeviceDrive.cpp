@@ -578,13 +578,10 @@ byte DiskDriveManager::Change(const upan::string& szDriveName)
 	if(pDiskDrive == NULL)
 		return DeviceDrive_ERR_INVALID_DRIVE_NAME ;
 
-	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
-
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&(pDiskDrive->_fileSystem.FSpwd),
-                    MemUtil_GetDS(), (unsigned)&ProcessManager::Instance().GetCurrentPAS().processPWD(),
-                    sizeof(FileSystem::PresentWorkingDirectory)) ;
-
-  ProcessEnv_Set("PWD", (const char*)pDiskDrive->_fileSystem.FSpwd.DirEntry.Name()) ;
+	auto& pas = ProcessManager::Instance().GetCurrentPAS();
+	pas.setDriveID(pDiskDrive->Id());
+  memcpy(&pas.processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
+  pas.setEnv("PWD", (const char*)pDiskDrive->_fileSystem.FSpwd.DirEntry.Name()) ;
 
 	return DeviceDrive_SUCCESS ;
 }

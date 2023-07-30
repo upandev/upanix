@@ -102,32 +102,6 @@ bool DynamicLinkLoader_GetSymbolOffsetFromProcess(ELFParser& elfParser, const ch
 
 /**********************************************************************************************/
 
-uint32_t DynamicLinkLoader_Initialize(unsigned uiPDEAddress) {
-	const uint32_t uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
-  unsigned realELFSectionHeadeAddr = (uiFreePageNo * PAGE_SIZE - GLOBAL_DATA_SEGMENT_BASE) ;
-
-	const auto uiPDEIndex = ((PROCESS_SEC_HEADER_ADDR >> 22) & 0x3FF) ;
-  const auto uiPTEIndex = ((PROCESS_SEC_HEADER_ADDR >> 12) & 0x3FF) ;
-
-  const auto uiPTEAddress = (((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPDEIndex]) & 0xFFFFF000 ;
-
-	((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPTEIndex] = ((uiFreePageNo * PAGE_SIZE) & 0xFFFFF000) | 0x3 ;
-
-	Mem_FlushTLB();
-
-  return realELFSectionHeadeAddr;
-}
-
-void DynamicLinkLoader_UnInitialize(Process* processAddressSpace)
-{
-	unsigned uiPDEAddress = processAddressSpace->pdbr();
-	auto uiPDEIndex = ((PROCESS_SEC_HEADER_ADDR >> 22) & 0x3FF) ;
-  auto uiPTEIndex = ((PROCESS_SEC_HEADER_ADDR >> 12) & 0x3FF) ;
-  auto uiPTEAddress = ((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPDEIndex] & 0xFFFFF000 ;
-  auto uiPageNumber = (((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPTEIndex] & 0xFFFFF000) / PAGE_SIZE ;
-	MemManager::Instance().DeAllocatePhysicalPage(uiPageNumber) ;
-}
-
 void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsigned uiRelocationOffset, __volatile__ int* iDynamicSymAddress) {
   //multithread syncrhonization
   upan::mutex_guard g(processAddressSpace->dllMutex().value());
@@ -142,21 +116,19 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 
 	unsigned uiBaseAddress ;
 
-	if(iID >= 0)
-	{
-		const ProcessDLLInfo& dllInfo = processAddressSpace->getDLLInfo(iID).value();
+	if(iID >= 0) {
+		ProcessDLLInfo& dllInfo = processAddressSpace->getDLLInfo(iID).value();
     uiBaseAddress = dllInfo.rawLoadAddress();
     pELFHeader = (ELF32Header*)dllInfo.loadAddressForKernel();
-    pELFSectionHeader = (ELF32SectionHeader*)dllInfo.elfSectionHeaderAddress();
-  }
-	else
-	{
+    pELFSectionHeader = dllInfo.elfInfo()._elfSectionHeaders;
+    pSecHeaderStrTable = dllInfo.elfInfo()._elfSecStrTable;
+  } else {
 		uiBaseAddress = PROCESS_BASE ;
 		pELFHeader = (ELF32Header*)(GLOBAL_REL_ADDR(processAddressSpace->getProcessBase(), uiBaseAddress)) ;
-		pELFSectionHeader = (ELF32SectionHeader*)(PROCESS_SEC_HEADER_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
-	}
+    pELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
+    pSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
 
-	pSecHeaderStrTable = (char*)((unsigned)pELFSectionHeader + (pELFHeader->e_shnum * sizeof(ELF32SectionHeader))) ;
+  }
 
 	ELFParser mELFParser(pELFHeader, pELFSectionHeader, pSecHeaderStrTable) ;
 
@@ -175,8 +147,8 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 	char* szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
 
 	pProcessELFHeader = (ELF32Header*)(GLOBAL_REL_ADDR(processAddressSpace->getProcessBase(), PROCESS_BASE)) ;
-	pProcessELFSectionHeader = (ELF32SectionHeader*)(PROCESS_SEC_HEADER_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
-	pProcessSecHeaderStrTable = (char*)((unsigned)pProcessELFSectionHeader + (pProcessELFHeader->e_shnum * sizeof(ELF32SectionHeader))) ;
+	pProcessELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
+	pProcessSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
 
 	ELFParser mProgELFParser(pProcessELFHeader, pProcessELFSectionHeader, pProcessSecHeaderStrTable) ;
 
@@ -274,7 +246,7 @@ bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* sz
     dllImage.reset((byte*)dllInfo.value().loadAddressForKernel());
 
     ELF32Header* pELFHeader = (ELF32Header*)(dllImage.get()) ;
-    ELF32SectionHeader* pELFSectionHeader = (ELF32SectionHeader*)dllInfo.value().elfSectionHeaderAddress();
+    ELF32SectionHeader* pELFSectionHeader = dllInfo.value().elfInfo()._elfSectionHeaders;
     pELFParser.reset(new ELFParser(pELFHeader, pELFSectionHeader, NULL));
 	}
 

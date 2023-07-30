@@ -94,11 +94,11 @@ int SysProcess_GetPID()
 	return iProcessID ;
 }
 
-const char* SysProcess_GetEnv(const char* szVar)
+int SysProcess_GetEnv(const char* szVar, char* retVal)
 {
 	__volatile__ int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_ENV, false, (uintptr_t)szVar, 2, 3, 4, 5, 6, 7, 8, 9);
-	return (const char*)iRetStatus ;
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_GET_ENV, false, (uintptr_t)szVar, (uintptr_t)retVal, 3, 4, 5, 6, 7, 8, 9);
+	return iRetStatus ;
 }
 
 int SysProcess_SetEnv(const char* szVar, const char* szVal)

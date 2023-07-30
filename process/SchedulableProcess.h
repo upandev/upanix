@@ -56,9 +56,6 @@ public:
   virtual upan::option<upan::mutex&> pageAllocMutex() {
     return upan::option<upan::mutex&>::empty();
   }
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>::empty();
-  }
 
   virtual SchedulableProcess& forSchedule() {
     throw upan::exception(XLOC, "forSchedule unsupported");
@@ -83,14 +80,14 @@ public:
   uint32_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }
 
+  bool isDmmFlag() const override { return _dmmFlag; }
+  void setDmmFlag(bool dmmFlag) override { _dmmFlag = dmmFlag; }
+
   int processID() const override { return _processID; }
   int parentProcessID() const override { return _parentProcessID; }
   int mainThreadID() const { return _mainThreadID; }
 
   void setParentProcessID(int parentProcessID) { _parentProcessID = parentProcessID; }
-
-  bool isDmmFlag() const { return _dmmFlag; }
-  void setDmmFlag(bool dmmFlag) { _dmmFlag = dmmFlag; }
 
   PROCESS_STATUS status() const { return _status; }
   PROCESS_STATUS setStatus(PROCESS_STATUS status) override {

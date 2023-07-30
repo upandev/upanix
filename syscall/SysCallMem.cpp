@@ -76,9 +76,9 @@ __volatile__ unsigned uiP9)
 			//P2 => Ret Size
 			{
         ProcessSwitchLock pLock;
-				int* pRetAllocSize = KERNEL_ADDR(bDoAddrTranslation, int*, uiP2) ;
+				auto pRetAllocSize = KERNEL_ADDR(bDoAddrTranslation, size_t*, uiP2) ;
 				*piRetVal = 0 ;
-				if(DMM_GetAllocSize(uiP1, pRetAllocSize) != DMM_SUCCESS) {
+				if(!DMM_GetAllocSize(uiP1, pRetAllocSize)) {
           *piRetVal = -1;
         }
 			}

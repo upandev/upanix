@@ -46,18 +46,22 @@ public:
     return _parent.MapDLLPagesToProcess(noOfPagesForDLL, dllName);
   }
 
-  upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const override {
+  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+    return _parent.getELFInfo();
+  }
+
+  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override {
     return _parent.getDLLInfo(dllName);
   }
-  upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const override {
+  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override {
     return _parent.getDLLInfo(id);
   }
 
-  uintptr_t getAUTAddress() const override {
+  AllocationUnitTracker* getAUTAddress() const override {
     return _parent.getAUTAddress();
   }
 
-  void setAUTAddress(uintptr_t addr) {
+  void setAUTAddress(AllocationUnitTracker* addr) {
     _parent.setAUTAddress(addr);
   }
 

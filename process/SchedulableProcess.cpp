@@ -115,7 +115,6 @@ void SchedulableProcess::Destroy() {
 
   heapMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
   pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-  envMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
 
   //TODO: release all the mutex held by the process or an individual thread
 

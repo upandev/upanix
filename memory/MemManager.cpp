@@ -49,13 +49,14 @@ void MemManager::PageFaultHandlerTaskGate(uint64_t errorCode) {
 	}
 }
 
-MemManager::MemManager() : _kernelAUTAddress(NULL), RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
+MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
   KC::MConsole().Message("\n MemManager Init\n", ' ');
   if(BuildRawPageMap()) {
     if(BuildPageTable()) {
       if (BuildPagePoolMap()) {
         if (MarkACPIInfoRegionAsAllocated()) {
           Mem_FlushTLB();
+          DMM_InitAUTForKernel();
           KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
           return;
         }
@@ -199,12 +200,60 @@ bool MemManager::BuildPageTable() {
 	return true ;
 }
 
-void MemManager::Mmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag) {
-  auto pdpEntry = (uint64_t *) (MEM_PML4_TABLE[PML4_INDEX(vAddr)] & ~0xFFF);
-  auto pdEntry = (uint64_t *) (pdpEntry[PDP_INDEX(vAddr)] & ~0xFFF);
-  auto ptEntry = (uint64_t *) (pdEntry[PD_INDEX(vAddr)] & ~0xFFF);
+void MemManager::KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag) {
+  auto pdpTable = PAGE_TABLE(MEM_PML4_TABLE, PML4_INDEX(vAddr));
+  auto pdTable = PAGE_TABLE(pdpTable, PDP_INDEX(vAddr));
+  auto ptTable = PAGE_TABLE(pdTable, PD_INDEX(vAddr));
   // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
-  ptEntry[PT_INDEX(vAddr)] = (pAddr & ~0xFFF) | pageFlag;
+  ptTable[PT_INDEX(vAddr)] = (pAddr & ~0xFFF) | pageFlag;
+}
+
+uint64_t* MemManager::GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress) {
+  auto pml4Index = PML4_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+    auto pdpPage = AllocatePhysicalPage();
+    pml4Table[pml4Index] = (pdpPage * PAGE_SIZE) | 0x7;
+  }
+
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+  auto pdpIndex = PDP_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+    auto pdPage = AllocatePhysicalPage();
+    pdpTable[pdpIndex] = (pdPage * PAGE_SIZE) | 0x7;
+  }
+
+  auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+  auto pdIndex = PD_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
+    auto ptPage = AllocatePhysicalPage();
+    pdTable[pdIndex] = (ptPage * PAGE_SIZE) | 0x7;
+  }
+
+  return PAGE_TABLE(pdTable, pdIndex);
+}
+
+void MemManager::MapAddress(Process& process, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size) {
+  auto pml4Table = (uint64_t*)process.pdbr();
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE, realAddress += PAGE_MASK) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = realAddress | 0x7;
+    }
+  }
+}
+
+void MemManager::UnMapAddress(Process& process, uintptr_t virtualAddress, uintptr_t size) {
+  auto pml4Table = (uint64_t*)process.pdbr();
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = 0;
+    }
+  }
 }
 
 int MemManager::AllocateKernelStack() {
@@ -253,7 +302,9 @@ uint64_t MemManager::AllocatePhysicalPage() {
 			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
 				if((pageMapEntry & 0x1) == 0x0) {
           _pageMap[pageMapPosition] |= (0x1 << pageOffset) ;
-          return (pageMapPosition * 64) + pageOffset;
+          uint64_t pageNumber = (pageMapPosition * 64) + pageOffset;
+          memset((void*)(pageNumber * PAGE_SIZE), 0, PAGE_SIZE);
+          return pageNumber;
 				}
         pageMapEntry >>= 1 ;
 			}
@@ -327,41 +378,13 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
     return Failure;
   }
 
-  uint64_t *pml4 = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pdbr();
-  const auto pml4Index = PML4_INDEX(faultyAddress);
-  const auto pdpIndex = PDP_INDEX(faultyAddress);
-  const auto pdIndex = PD_INDEX(faultyAddress);
+  auto pml4Table = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pdbr();
+  auto ptTable = GetPTTable(pml4Table, faultyAddress);
   const auto ptIndex = PT_INDEX(faultyAddress);
-
-  auto pdp = pml4[pml4Index];
-  if ((pdp & 0x1) == 0) {
-    auto pdpPage = AllocatePhysicalPage();
-    InitPage(pdpPage);
-    pml4[pml4Index] = (pdpPage * PAGE_SIZE) | 0x7;
-  }
-
-  auto pdpTable = (uint64_t*)(pml4[pml4Index] & PAGE_MASK);
-  auto pd = pdpTable[pdpIndex];
-  if ((pd & 0x1) == 0) {
-    auto pdPage = AllocatePhysicalPage();
-    InitPage(pdPage);
-    pdpTable[pdpIndex] = (pdPage * PAGE_SIZE) | 0x7;
-  }
-
-  auto pdTable = (uint64_t*)(pdpTable[pdpIndex] & PAGE_MASK);
-  auto pt = pdTable[pdIndex];
-  if ((pt & 0x1) == 0) {
-    auto ptPage = AllocatePhysicalPage();
-    InitPage(ptPage);
-    pdTable[pdIndex] = (ptPage * PAGE_SIZE) | 0x7;
-  }
-
-  auto ptTable = (uint64_t*)(pdTable[pdIndex] & PAGE_MASK);
   auto address = ptTable[ptIndex];
 
   if ((address & 0x1) == 0) {
     auto page = AllocatePhysicalPage();
-    InitPage(page);
     ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
   } else if ((address & 0x7) == 0x7) {
     // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
@@ -374,36 +397,31 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
 }
 
 uintptr_t MemManager::GetFlatAddress(uintptr_t virtualAddress) {
-  uint64_t *pml4 = (uint64_t *) ProcessManager::Instance().GetCurrentPAS().pdbr();
+  auto pml4Table= (uint64_t *) ProcessManager::Instance().GetCurrentPAS().pdbr();
   const auto pml4Index = PML4_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+    return NULL;
+  }
+
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
   const auto pdpIndex = PDP_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+    return NULL;
+  }
+
+  auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
   const auto pdIndex = PD_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
+    return NULL;
+  }
+
+  auto ptTable = PAGE_TABLE(pdTable, pdIndex);
   const auto ptIndex = PT_INDEX(virtualAddress);
-
-  auto pdp = pml4[pml4Index];
-  if ((pdp & 0x1) == 0) {
-    return NULL;
-  }
-  pdp &= PAGE_MASK;
-  auto pd = ((uint64_t *) pdp)[pdpIndex];
-  if ((pd & 0x1) == 0) {
+  if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
     return NULL;
   }
 
-  pd &= PAGE_MASK;
-  auto pt = ((uint64_t *) pd)[pdIndex];
-  if ((pt & 0x1) == 0) {
-    return NULL;
-  }
-
-  pt &= PAGE_MASK;
-  auto address = ((uint64_t *) pt)[ptIndex];
-  if ((address & 0x1) == 0) {
-    return NULL;
-  }
-
-  address &= PAGE_MASK;
-  return address + PAGE_INDEX(virtualAddress);
+  return PAGE_ADDRESS(ptTable, ptIndex) + PAGE_INDEX(virtualAddress);
 }
 
 void MemManager::DisplayNoOfFreePages() {

@@ -301,18 +301,17 @@ void ELFParser::CopyProcessImage(byte* bProcessImage, unsigned uiProcessBase, un
 	}
 }
 
-unsigned ELFParser::CopyELFSecStrTable(char* szSecStrTable)
-{
-	unsigned uiSize = m_pSectionHeader[ m_pHeader->e_shstrndx ].sh_size ;
-	memcpy(szSecStrTable, m_pSecHeaderStrTable, uiSize) ;
-	return uiSize ;
+char* ELFParser::CopyELFSecStrTable() {
+	uint32_t uiSize = m_pSectionHeader[ m_pHeader->e_shstrndx ].sh_size ;
+	auto secStrTable = new char[uiSize];
+	memcpy(secStrTable, m_pSecHeaderStrTable, uiSize) ;
+	return secStrTable;
 }
 
-unsigned ELFParser::CopyELFSectionHeader(ELF32SectionHeader* pSectionHeader)
-{
-	unsigned uiSize = sizeof(ELF32SectionHeader) * m_pHeader->e_shnum ;
-	memcpy(pSectionHeader, m_pSectionHeader, uiSize) ;
-	return uiSize ;
+ELF32SectionHeader* ELFParser::CopyELFSectionHeader() {
+	auto sectionHeaders = new ELF32SectionHeader[m_pHeader->e_shnum];
+  memcpy(sectionHeaders, m_pSectionHeader, sizeof(ELF32SectionHeader) * m_pHeader->e_shnum);
+	return sectionHeaders;
 }
 
 bool ELFParser::CheckMagicSignature(const ELF32Header* pELFHeader)

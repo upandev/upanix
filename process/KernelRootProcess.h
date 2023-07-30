@@ -71,10 +71,6 @@ public:
     return false;
   }
 
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
-  }
-
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }
@@ -138,7 +134,13 @@ public:
     throw upan::exception(XLOC, "KernelRootProcess is always GuiBase process - can't modify this flag");
   }
 
+  void setEnv(const upan::string& key, const upan::string& value) override;
+  upan::option<upan::string> getEnv(const upan::string& key) override;
+  const ProcessEnvMap& envMap() override {
+    return _envMap;
+  }
+
 private:
-  upan::mutex _envMutex;
   IODescriptorTable _iodTable;
+  ProcessEnvMap _envMap;
 };

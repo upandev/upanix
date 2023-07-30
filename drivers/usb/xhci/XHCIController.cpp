@@ -43,7 +43,7 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
 
 	uiIOAddr = uiIOAddr & PCI_ADDRESS_MEMORY_32_MASK;
 	unsigned ioSize = pPCIEntry->GetPCIMemSize(0);
-	printf(", Raw MMIO BaseAddr: %x, IOSize: %d, Mmap Address: %x", uiIOAddr, ioSize, _memMapBaseAddress);
+	printf(", Raw MMIO BaseAddr: %x, IOSize: %d, KernelPageTableMmap Address: %x", uiIOAddr, ioSize, _memMapBaseAddress);
 
   const unsigned availableMemMapSize = XHCI_MMIO_BASE_ADDR_END - _memMapBaseAddress;
 	if(ioSize > availableMemMapSize)

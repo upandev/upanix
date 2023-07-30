@@ -33,36 +33,34 @@
 #define DMM_BAD_ALIGN			2
 #define DMM_FAILURE				3
 
-#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) (((uintptr_t)(RealAddress) + GLOBAL_DATA_SEGMENT_BASE) - PROCESS_BASE)
-#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) (((uintptr_t)(VirtualAddress) + PROCESS_BASE) - GLOBAL_DATA_SEGMENT_BASE)
+#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) ((uintptr_t)(RealAddress) - PROCESS_BASE)
+#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) ((uintptr_t)(VirtualAddress) + PROCESS_BASE)
 
-typedef struct
-{
-  uintptr_t uiAllocatedAddress;
-  uintptr_t uiReturnAddress;
-  uint64_t uiSize;
-  uint64_t uiCheckSum;
-  union
-  {
-    uintptr_t uiNextAUTAddress;
-    uint64_t uiByteStuffForAlign;
+typedef struct AllocationUnitTracker {
+  AllocationUnitTracker* allocatedAddress;
+  uintptr_t returnAddress;
+  uint64_t size;
+  uint64_t checkSum;
+  union {
+    AllocationUnitTracker* nextAUTAddress;
+    uint32_t byteStuffForAlign;
   };
 } PACKED AllocationUnitTracker ; // AUT
 
 class Process;
 class SchedulableProcess;
 
-uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
-uintptr_t DMM_AllocateForKernel(unsigned uiSizeInBytes, unsigned uiAlignNumber = 0);
+uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned sizeInBytes, unsigned alignNumber = 0);
 
-byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t uiAddress);
-byte DMM_DeAllocateForKernel(uintptr_t uiAddress);
+void DMM_InitAUTForKernel();
+uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber = 0);
 
-byte DMM_GetAllocSize(uintptr_t uiAddress, int* iSize);
-byte DMM_GetAllocSizeForKernel(uintptr_t uiAddress, int* iSize);
+byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t address);
+bool DMM_DeAllocateForKernel(uintptr_t address);
+
+bool DMM_GetAllocSize(uintptr_t address, size_t* size);
+bool DMM_GetAllocSizeForKernel(uintptr_t address, size_t* size);
 void DMM_DeAllocatePhysicalPages(Process* processAddressSpace);
-
 unsigned DMM_KernelHeapAllocSize() ;
-unsigned DMM_GetKernelHeapSize() ;
 
 #endif

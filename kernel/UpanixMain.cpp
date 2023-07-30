@@ -234,13 +234,11 @@ void UpanixMain() {
 	while(1) ;
 }
 
-bool UpanixMain_IsKernelDebugOn()
-{
-	const char* szVal = getenv("UPANIX_KDEBUG") ;
-	if(szVal != NULL)
-		if(strcmp(szVal, "1") == 0)
-			return true ;
-
+bool UpanixMain_IsKernelDebugOn() {
+  char szVal[MAX_ENV_VAL_LEN];
+	if(!getenv("UPANIX_KDEBUG", szVal)) {
+    return strcmp(szVal, "1") == 0;
+  }
 	return false ;
 }
 

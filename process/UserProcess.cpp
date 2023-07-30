@@ -47,7 +47,7 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
                          bool isFGProcess, int noOfParams, char** args)
     : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
   _mainThreadID = _processID;
-  _uiAUTAddress = NULL;
+  autAddress = NULL;
 
   Load(noOfParams, args);
 
@@ -64,8 +64,7 @@ UserThread& UserProcess::CreateThread(uint32_t threadCaller, uint32_t entryAddre
   return *new UserThread(*this, threadCaller, entryAddress, arg);
 }
 
-void UserProcess::Load(int iNumberOfParameters, char** szArgumentList)
-{
+void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
   ELFParser mELFParser(_name.c_str());
 
   unsigned uiMinMemAddr, uiMaxMemAddr;
@@ -94,9 +93,8 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList)
   _noOfPagesForPTE = MemManager::Instance().GetPTESizeInPages(_noOfPagesForProcess + uiPageOverlapForProcessBase) + PROCESS_SPACE_FOR_OS;
 
   const uint32_t uiPDEAddress = AllocateAddressSpace();
-  unsigned pRealELFSectionHeadeAddr = DynamicLinkLoader_Initialize(uiPDEAddress);
-  unsigned uiCopySize = mELFParser.CopyELFSectionHeader((ELF32SectionHeader*)pRealELFSectionHeadeAddr) ;
-  mELFParser.CopyELFSecStrTable((char*)(pRealELFSectionHeadeAddr + uiCopySize)) ;
+  _elfInfo._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
+  _elfInfo._elfSecStrTable = mELFParser.CopyELFSecStrTable();
 
   upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * uiMemImageSize]);
 
@@ -169,8 +167,6 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList)
 
   const uint32_t uiProcessEntryStackSize = PushProgramInitStackData(iNumberOfParameters, szArgumentList) ;
   const uint32_t uiEntryAdddress = mELFParser.GetProgramStartAddress();// uiMinMemAddr + uiProcessImageSize ;
-
-  ProcessEnv_Initialize(uiPDEAddress, _parentProcessID);
 
   const uint32_t stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_BASE;
   _taskState.BuildForUser(stackTopAddress, uiPDEAddress, uiEntryAdddress, uiProcessEntryStackSize);
@@ -269,12 +265,11 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
     throw upan::exception(XLOC, "Failed to allocate memory for DLL via kernal service");
   }
 
-  const ProcessDLLInfo& dllInfo = getDLLInfo(szJustDLLName).value();
+  ProcessDLLInfo& dllInfo = getDLLInfo(szJustDLLName).value();
   const uint32_t uiDLLLoadAddress = dllInfo.loadAddressForProcess();
-  const uint32_t pRealELFSectionHeaderAddr = dllInfo.elfSectionHeaderAddress();
 
-  unsigned uiCopySize = mELFParser.CopyELFSectionHeader((ELF32SectionHeader*)pRealELFSectionHeaderAddr) ;
-  mELFParser.CopyELFSecStrTable((char*)(pRealELFSectionHeaderAddr + uiCopySize)) ;
+  dllInfo.elfInfo()._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
+  dllInfo.elfInfo()._elfSecStrTable = mELFParser.CopyELFSecStrTable();
 
   upan::uniq_ptr<byte[]> bDLLImage(new byte[sizeof(char) * uiMemImageSize]);
 
@@ -393,11 +388,8 @@ void UserProcess::DeAllocateResources() {
   DeAllocateGUIFramebuffer();
 
   DeAllocateDLLPages() ;
-  DynamicLinkLoader_UnInitialize(this) ;
 
   DMM_DeAllocatePhysicalPages(this) ;
-
-  ProcessEnv_UnInitialize(*this) ;
 
   DeAllocateAddressSpace();
 }
@@ -495,17 +487,17 @@ void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::str
   _totalNoOfPagesForDLL += noOfPagesForDLL;
 }
 
-upan::option<const ProcessDLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) const {
+upan::option<ProcessDLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) {
   auto it = _dllInfoMap.find(dllName);
   if (it == _dllInfoMap.end()) {
-    return upan::option<const ProcessDLLInfo&>::empty();
+    return upan::option<ProcessDLLInfo&>::empty();
   }
-  return upan::option<const ProcessDLLInfo&>(it->second);
+  return upan::option<ProcessDLLInfo&>(it->second);
 }
 
-upan::option<const ProcessDLLInfo&> UserProcess::getDLLInfo(int id) const {
+upan::option<ProcessDLLInfo&> UserProcess::getDLLInfo(int id) {
   if (id < 0 || id >= _loadedDLLs.size()) {
-    return upan::option<const ProcessDLLInfo&>::empty();
+    return upan::option<ProcessDLLInfo&>::empty();
   }
   return getDLLInfo(_loadedDLLs[id]);
 }
@@ -516,12 +508,10 @@ void UserProcess::onLoad() {
 
 void UserProcess::allocateGUIFramebuffer() {
   auto frameBufferAddress = GraphicsVideo::Instance().allocateFrameBuffer();
-  const auto guiFramebufferPTEAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
-  for (uint32_t i = 0; i < GraphicsVideo::Instance().LFBPageCount(); ++i) {
-    ((unsigned *) (guiFramebufferPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[i] = ((frameBufferAddress + (i * PAGE_SIZE)) & 0xFFFFF000) | 0x7;
-  }
-  ((unsigned *) (_taskState.CR3_PDBR - GLOBAL_DATA_SEGMENT_BASE))[PROCESS_GUI_FRAMEBUFFER_PDE_ID] = (guiFramebufferPTEAddress & 0xFFFFF000) | 0x7;
-
+  MemManager::Instance().MapAddress(*this,
+                                    PROCESS_GUI_FRAMEBUFFER_ADDRESS,
+                                    frameBufferAddress,
+                                    GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
   FrameBufferInfo frameBufferInfo;
   const auto f = MultiBoot::Instance().VideoFrameBufferInfo();
   frameBufferInfo._pitch = f->_pitch;
@@ -551,8 +541,7 @@ void UserProcess::initGuiFrame() {
 void UserProcess::DeAllocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
     DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
-    const auto guiFramebufferPTEAddress = ((unsigned *) (_taskState.CR3_PDBR - GLOBAL_DATA_SEGMENT_BASE))[PROCESS_GUI_FRAMEBUFFER_PDE_ID] & 0xFFFFF000;
-    MemManager::Instance().DeAllocatePhysicalPage(guiFramebufferPTEAddress / PAGE_SIZE);
+    MemManager::Instance().UnMapAddress(*this, PROCESS_GUI_FRAMEBUFFER_ADDRESS, GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
     GraphicsVideo::Instance().removeFGProcess(processID());
   }
 }

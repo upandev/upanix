@@ -26,6 +26,7 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
+#include "DMM.h"
 
 #define KERNEL_PROCESS_PDE_ID	1022
 
@@ -57,12 +58,15 @@ class MemManager
 		void DisplayNoOfFreePages() ;
 		void DisplayNoOfAllocPages() ;
 
-    static void Mmap(uint64_t vAddr, uint64_t pAddr, uint32_t pageFlag);
+    static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);
+    uint64_t* GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress);
+    void MapAddress(Process& process, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size);
+    void UnMapAddress(Process& process, uintptr_t virtualAddress, uintptr_t size);
+
 		static void InitPage(uint64_t uiPage) ;
 		static void PageFaultHandlerTaskGate(uint64_t errorCode) ;
 
-		inline unsigned GetKernelHeapStartAddr() { return MEM_KERNEL_HEAP_START; }
-		inline unsigned GetRamSize() { return RAM_SIZE; }
+		inline uint64_t GetRamSize() { return RAM_SIZE; }
 
 		int AllocateKernelStack();
 		void DeAllocateKernelStack(int stackBlockId);
@@ -78,11 +82,6 @@ class MemManager
 		static inline unsigned GetPTESizeInPages(unsigned uiSizeInPages)
 		{
 			return ((uiSizeInPages - 1) / PAGE_TABLE_ENTRIES) + 1 ;
-		}
-
-		inline uintptr_t& GetKernelAUTAddress()
-		{
-			return _kernelAUTAddress ;
 		}
 
 	private:
@@ -106,7 +105,6 @@ class MemManager
     uint32_t _kernelReservedMapSize ;
 
     uintptr_t* m_uipKernelProcessStackPTEBase ;
-    uintptr_t _kernelAUTAddress ;
 
 		bool _allocMapForKernelProcessStackBlock[NO_OF_KERNEL_STACK_BLOCKS];
 

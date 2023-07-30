@@ -103,7 +103,7 @@ void MultiBoot::InitializeGraphicsPageMap(int memTypeFlag) {
 
   for (unsigned i = 0; i < noOfPages; ++i) {
     const uint64_t addr = lfbaddress + PAGE_SIZE * i;
-    MemManager::Mmap(mapAddress, addr, pageFlag);
+    MemManager::KernelPageTableMmap(mapAddress, addr, pageFlag);
     mapAddress += PAGE_SIZE;
   }
   Mem_FlushTLB();

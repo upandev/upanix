@@ -137,18 +137,18 @@ void GenericUtil_ReadInput(char* szInputBuffer, const int iMaxReadLength, byte b
 
 bool GenericUtil_GetFullFilePathFromEnv(const char* szPathEnvVar, const char* szPathEnvDefVal, const char* szFileName, char* szFullFilePath)
 {
-	char* s = ProcessEnv_Get(szPathEnvVar) ;
-	char szEnvValue[256] ;
-	
-	if(s == NULL)
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
+  char szEnvValue[MAX_ENV_VAL_LEN] ;
+  const auto& val = pas.getEnv(szPathEnvVar);
+	if(val.isEmpty())
 	{
-		//Deafult Env Path
+		//Default Env Path
 		strcpy(szEnvValue, szPathEnvDefVal) ;
 	}
 	else
 	{
 		//Deafult Env Path
-		strcpy(szEnvValue, s) ;
+		strcpy(szEnvValue, val.value().c_str()) ;
 		strcat(szEnvValue, szPathEnvDefVal) ;
 	}
 

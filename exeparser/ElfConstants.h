@@ -26,7 +26,7 @@
 #include <MemManager.h>
 #include <stdint.h>
 
-#define GLOBAL_REL_ADDR(paddr, base_addr) (paddr + base_addr - GLOBAL_DATA_SEGMENT_BASE) 
+#define GLOBAL_REL_ADDR(paddr, base_addr) (paddr + base_addr)
 
 typedef unsigned Elf32_Addr ;
 typedef unsigned Elf32_Off ;

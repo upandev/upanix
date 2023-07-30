@@ -27,12 +27,9 @@
 #include <GraphicsVideo.h>
 #include <DMM.h>
 
-upan::mutex KernelProcess::_envMutex;
-
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
   _mainThreadID = _processID;
-  ProcessEnv_InitializeForKernelProcess() ;
   _processBase = GLOBAL_DATA_SEGMENT_BASE;
   const uint32_t uiStackAddress = AllocateAddressSpace();
   const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;

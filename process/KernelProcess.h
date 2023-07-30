@@ -41,10 +41,6 @@ public:
 
   KernelThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
 
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
-  }
-
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }
@@ -72,8 +68,6 @@ private:
   int kernelStackBlockId;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
-  //common mutex for all kernel processes
-  static upan::mutex _envMutex;
   //interop variable
   upanui::GraphicsContext* _graphicsContext;
 };

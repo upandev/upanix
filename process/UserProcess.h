@@ -45,14 +45,17 @@ public:
 
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override;
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
-  upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const override;
-  upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const override;
-
-  uintptr_t getAUTAddress() const override {
-    return _uiAUTAddress;
+  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+    return _elfInfo;
   }
-  void setAUTAddress(uintptr_t addr) {
-    _uiAUTAddress = addr;
+  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override;
+  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override;
+
+  AllocationUnitTracker* getAUTAddress() const override {
+    return autAddress;
+  }
+  void setAUTAddress(AllocationUnitTracker* addr) {
+    autAddress = addr;
   }
 
   IODescriptorTable& iodTable() override {
@@ -64,9 +67,6 @@ public:
   }
   upan::option<upan::mutex&> pageAllocMutex() override {
     return upan::option<upan::mutex&>(_pageFaultMutex);
-  }
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
   }
   upan::option<upan::mutex&> dllMutex() override {
     return upan::option<upan::mutex&>(_dllMutex);
@@ -95,7 +95,7 @@ private:
   void DeAllocateGUIFramebuffer();
 
 private:
-  uintptr_t _uiAUTAddress;
+  AllocationUnitTracker* autAddress;
   uint32_t _noOfPagesForPTE;
   uint32_t _noOfPagesForProcess;
   uint32_t _noOfPagesForDLLPTE;
@@ -106,9 +106,9 @@ private:
   DLLInfoMap _dllInfoMap;
   upan::mutex _heapMutex;
   upan::mutex _pageFaultMutex;
-  upan::mutex _envMutex;
   upan::mutex _dllMutex;
   upan::mutex _addressSpaceMutex;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
+  ProcessDLLInfo::ELFInfo _elfInfo;
 };

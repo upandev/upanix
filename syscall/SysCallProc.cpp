@@ -122,14 +122,14 @@ __volatile__ uintptr_t uiP9)
 			//P1 - Env Var
 			{
 				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
-        const char* szVal = ProcessEnv_Get(szVar) ;
-
-        if(szVal != NULL)
-				{
-					if(bDoAddrTranslation)
-            szVal = (char*)((uint32_t)szVal + GLOBAL_DATA_SEGMENT_BASE - PROCESS_BASE) ;
+				const auto& val = ProcessManager::Instance().GetCurrentPAS().getEnv(szVar);
+				if (val.isEmpty()) {
+				  *piRetVal = -1;
+				} else {
+          char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
+          strcpy(szVal, val.value().c_str());
+          *piRetVal = 0;
 				}
-        *piRetVal = (uint32_t)szVal;
 			}
 			break ;
 
@@ -141,9 +141,11 @@ __volatile__ uintptr_t uiP9)
 				char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
 
 				*piRetVal = 0 ;
-				if(ProcessEnv_Set(szVar, szVal) != ProcessEnv_SUCCESS)
-				{
-					*piRetVal = -1 ;
+				try {
+				  ProcessManager::Instance().GetCurrentPAS().setEnv(szVar, szVal);
+				} catch(const upan::exception& e) {
+				  e.Print();
+				  *piRetVal = -1;
 				}
 			}
 			break ;

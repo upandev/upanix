@@ -32,6 +32,7 @@
 #include <KeyboardData.h>
 #include <MouseData.h>
 #include <GraphicsContext.h>
+#include <DMM.h>
 
 class ProcessGroup;
 class IODescriptorTable;
@@ -46,6 +47,13 @@ public:
   virtual uint32_t getProcessBase() const = 0;
   virtual int userID() const = 0;
   virtual bool isChildThread() const = 0;
+
+  virtual bool isDmmFlag() const {
+    throw upan::exception(XLOC, "isDmmFlag unsupported");
+  }
+  virtual void setDmmFlag(bool dmmFlag) {
+    throw upan::exception(XLOC, "setDmmFlag unsupported");
+  }
 
   virtual int processID() const = 0;
   virtual int parentProcessID() const = 0;
@@ -63,7 +71,6 @@ public:
   virtual void setProcessGroup(ProcessGroup* processGroup) = 0;
 
   virtual IODescriptorTable& iodTable() = 0;
-  virtual upan::option<upan::mutex&> envMutex() = 0;
   virtual upan::option<upan::mutex&> heapMutex() {
     return upan::option<upan::mutex&>::empty();
   }
@@ -83,19 +90,23 @@ public:
     throw upan::exception(XLOC, "MapDLLPagesToProcess unsupported");
   }
 
-  virtual upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const {
+  virtual const ProcessDLLInfo::ELFInfo& getELFInfo() const {
+    throw upan::exception(XLOC, "getELFInfo unsupported");
+  }
+
+  virtual upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) {
     throw upan::exception(XLOC, "getDLLInfo unsupported");
   }
 
-  virtual upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const {
+  virtual upan::option<ProcessDLLInfo&> getDLLInfo(int id) {
     throw upan::exception(XLOC, "getDLLInfo unsupported");
   }
 
-  virtual uintptr_t getAUTAddress() const {
+  virtual AllocationUnitTracker* getAUTAddress() const {
     throw upan::exception(XLOC, "getAUTAddress unsupported");
   }
 
-  virtual void setAUTAddress(uintptr_t addr) {
+  virtual void setAUTAddress(AllocationUnitTracker* addr) {
     throw upan::exception(XLOC, "setAUTAddress unsupported");
   }
 
@@ -127,5 +138,16 @@ public:
   }
   virtual void setGraphicsContext(upanui::GraphicsContext*) {
     throw upan::exception(XLOC, "setGraphicsContext unsupported");
+  }
+  virtual void setEnv(const upan::string& key, const upan::string& value) {
+    throw upan::exception(XLOC, "setEnv unsupported");
+  }
+  virtual upan::option<upan::string> getEnv(const upan::string& key) {
+    throw upan::exception(XLOC, "setEnv unsupported");
+  }
+
+  typedef upan::map<upan::string, upan::string> ProcessEnvMap;
+  virtual const ProcessEnvMap& envMap() {
+    throw upan::exception(XLOC, "envMap unsupported");
   }
 };
