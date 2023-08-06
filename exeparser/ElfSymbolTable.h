@@ -19,49 +19,45 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _ELF_SYM_TAB_HEADER_H_
-#define _ELF_SYM_TAB_HEADER_H_
+#pragma once
 
 #include <ElfConstants.h>
 
-#define ELF32_ST_BIND(st_info) ( (st_info) >> 4 )
-#define ELF32_ST_TYPE(st_info) ( (st_info) & 0xf )
-#define ELF32_ST_INFO(bind, type) ( ((bind) << 4) + ((type) & 0xf) )
+#define ELF64_ST_BIND(st_info) ( (st_info) >> 4 )
+#define ELF64_ST_TYPE(st_info) ( (st_info) & 0xf )
+#define ELF64_ST_INFO(bind, type) ( ((bind) << 4) + ((type) & 0xf) )
 
-namespace ELFSymbolTable
-{
+namespace ElfSymbolTable {
 	typedef	struct	{
-		Elf32_Word		st_name;
-		Elf32_Addr		st_value;
-		Elf32_Word		st_size;
-		unsigned char	st_info;
-		unsigned char	st_other;
-		Elf32_Half		st_shndx;
-	} PACKED ELF32SymbolEntry ;
+		Elf64_Word		st_name;
+    unsigned char	st_info;
+    unsigned char	st_other;
+    Elf64_Half		st_shndx;
+    Elf64_Addr		st_value;
+		Elf64_Xword		st_size;
+	} PACKED Elf64_Sym;
 
 	typedef struct {
-		unsigned uiTableSize ;
-		ELF32SymbolEntry* SymTabEntries ;
-	} PACKED ELFSymbolTableList ;
+		unsigned table_size;
+		Elf64_Sym* symTabEntries;
+	} PACKED ElfSymTables;
 
 	/**** Symbol Binding Types *******/
-	static const unsigned STB_LOCAL = 0 ;
-	static const unsigned STB_GLOBAL = 1 ;
-	static const unsigned STB_WEAK = 2 ;
-	static const unsigned STB_LOPROC = 13 ;
-	static const unsigned STB_HIPROC = 15 ;
+	static const unsigned STB_LOCAL = 0;
+	static const unsigned STB_GLOBAL = 1;
+	static const unsigned STB_WEAK = 2;
+	static const unsigned STB_LOPROC = 13;
+	static const unsigned STB_HIPROC = 15;
 
 	/***** Symbol Types *******/
-	static const unsigned STT_NOTYPE = 0 ;
-	static const unsigned STT_OBJECT = 1 ;
-	static const unsigned STT_FUNC = 2 ;
-	static const unsigned STT_SECTION = 3 ;
-	static const unsigned STT_FILE = 4 ;
-	static const unsigned STT_LOPROC = 13 ;
-	static const unsigned STT_HIPROC = 15 ;
+	static const unsigned STT_NOTYPE = 0;
+	static const unsigned STT_OBJECT = 1;
+	static const unsigned STT_FUNC = 2;
+	static const unsigned STT_SECTION = 3;
+	static const unsigned STT_FILE = 4;
+	static const unsigned STT_LOPROC = 13;
+	static const unsigned STT_HIPROC = 15;
 
-	static const unsigned STN_UNDEF = 0 ;
+	static const unsigned STN_UNDEF = 0;
 
-} ;
-
-#endif
+};

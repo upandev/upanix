@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <KernelProcess.h>
-#include <ProcessEnv.h>
 #include <UserManager.h>
 #include <ProcessManager.h>
 #include <KernelThread.h>
@@ -45,12 +44,12 @@ KernelThread& KernelProcess::CreateThread(uint32_t threadCaller, uint32_t entryA
   return *new KernelThread(*this, threadCaller, entryAddress, arg);
 }
 
-uint32_t KernelProcess::AllocateAddressSpace() {
+uint64_t* KernelProcess::AllocateAddressSpace() {
   kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
   return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
 }
 
-void KernelProcess::DeAllocateResources() {
+void KernelProcess::DeallocateResources() {
   MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
   DeAllocateGUIFramebuffer();
   upanui::GraphicsContext::Destroy();

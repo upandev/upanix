@@ -65,8 +65,8 @@ public:
     return _processGroup->IsFGProcessGroup();
   }
 
-  uint32_t pdbr() const override {
-    return _taskState.CR3_PDBR;
+  uint64_t* pdbr() const override {
+    return (uint64_t*)_taskState.CR3_PDBR;
   }
 
   void Load();
@@ -119,17 +119,16 @@ private:
   __inline__ void FXRestore();
 
 protected:
-  virtual void DeAllocateResources() = 0;
+  virtual void DeallocateResources() = 0;
   virtual void DestroyThreads() {
   }
 
   class Common {
   public:
-    static uint32_t AllocatePDE();
-    static void UpdatePDEWithStackPTE(uint32_t pdeAddress, uint32_t stackPTEAddress);
-    static uint32_t AllocatePTEForStack();
-    static void AllocateStackSpace(uint32_t pteAddress);
-    static void DeAllocateStackSpace(uint32_t stackPTEAddress);
+    static void SetStackPDTable(uint64_t* pml4Table, uint64_t value);
+    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress);
+    static uint64_t AllocateStackSpace();
+    static void DeAllocateStackSpace(uint64_t stackPDAddress);
   };
 
 protected:

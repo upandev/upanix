@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _MEM_MANAGER_H_
-#define _MEM_MANAGER_H_
+#pragma once
 
 #include <Global.h>
 #include <MemConstants.h>
@@ -54,14 +53,22 @@ class MemManager
 		void DeAllocatePageForKernel(unsigned pageNumber);
 
 		ReturnCode AllocatePage(int iProcessID, uintptr_t faultyAddress) ;
-    uintptr_t GetFlatAddress(uintptr_t virtualAddress) ;
+    uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
+    uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
 		void DisplayNoOfFreePages() ;
 		void DisplayNoOfAllocPages() ;
 
     static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);
     uint64_t* GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress);
-    void MapAddress(Process& process, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size);
-    void UnMapAddress(Process& process, uintptr_t virtualAddress, uintptr_t size);
+    uint64_t* GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
+
+    void AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void DeallocateAddressSpace(uint64_t* pml4Table);
+    void DeallocatePDAddressSpace(uint64_t* pdTable);
+
+    void MapAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size);
+    void UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
 
 		static void InitPage(uint64_t uiPage) ;
 		static void PageFaultHandlerTaskGate(uint64_t errorCode) ;
@@ -110,5 +117,3 @@ class MemManager
 
 		const uint64_t RAM_SIZE ;
 };
-
-#endif

@@ -21,25 +21,29 @@
  */
 #pragma once
 
+#include <MemConstants.h>
+
 #define MAX_NO_PROCESS 3500
 
 #define PROCESS_KERNEL_STACK_PAGES 8
-#define PROCESS_CG_STACK_PAGES 8
-#define NO_OF_PAGES_FOR_STARTUP_ARGS 1
 
-#define PROCESS_SPACE_FOR_OS (MEM_KERNEL_RESV_SIZE / 4 / 1024 / 1024)
-#define PROCESS_BASE (PROCESS_SPACE_FOR_OS * PAGE_TABLE_ENTRIES * PAGE_SIZE)
+//4MB stack starting (backwards) at 512 GB
+constexpr uint64_t PROCESS_STACK_TOP_ADDRESS = 512 GB;
+constexpr uint64_t PROCESS_CG_STACK_SIZE = 8 * PAGE_SIZE;
+constexpr uint64_t PROCESS_INIT_STACK_SIZE = PAGE_SIZE;
+constexpr uint64_t PROCESS_STACK_SIZE = 4 MB;
 
-//4MB stack starting (backwards) at 4GB
-constexpr uintptr_t PROCESS_STACK_TOP_ADDRESS = 4UL * 1024 * 1024 * 1024;
-constexpr uint64_t PROCESS_STACK_SIZE = 4 * 1024 * 1024;
+constexpr uint64_t PROCESS_SPACE_FOR_OS = MEM_KERNEL_RESV_SIZE;
+constexpr uint64_t PROCESS_BASE = PROCESS_SPACE_FOR_OS;
 
 //Each process gets a max of 4MB for graphics UI framebuffer
-constexpr uint64_t PROCESS_GUI_FRAMEBUFFER_SIZE = 4 * 1024 * 1024;
-constexpr uintptr_t PROCESS_GUI_FRAMEBUFFER_ADDRESS = PROCESS_STACK_TOP_ADDRESS - PROCESS_STACK_SIZE - PROCESS_GUI_FRAMEBUFFER_SIZE;
+constexpr uintptr_t PROCESS_GUI_FRAMEBUFFER_ADDRESS = 510 GB;
+constexpr uint64_t PROCESS_GUI_FRAMEBUFFER_SIZE = 4 MB;
 
 //Each process gets a max of 2GB heap
-constexpr uintptr_t PROCESS_HEAP_START_ADDRESS = PROCESS_STACK_TOP_ADDRESS;
-constexpr uint64_t PROCESS_HEAP_SIZE = 2 * 1024 * 1024;
+constexpr uintptr_t PROCESS_HEAP_START_ADDRESS = 508 GB;
+constexpr uint64_t PROCESS_HEAP_SIZE = 2 GB;
+
+constexpr uintptr_t PROCESS_DLL_START_ADDRESS = 8 GB;
 
 #define NO_PROCESS_ID -1

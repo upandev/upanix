@@ -34,349 +34,278 @@
 #include <BufferedReader.h>
 #include <uniq_ptr.h>
 
-ELFParser::ELFParser(ELF32Header* pELFHeader, ELF32SectionHeader* pELFSectionHeader, char* pSecHeaderStrTable) :
-	m_uiSymTabCount(0),
-	m_pBR(NULL),
-	m_pHeader(pELFHeader),
-	m_pSectionHeader(pELFSectionHeader),
-	m_pSecHeaderStrTable(pSecHeaderStrTable),
-	m_pProgramHeader(NULL),
-	m_pSectionTableMap(NULL),
-	m_pSymbolTable(NULL)
-{
+ElfParser::ElfParser(Elf64_Ehdr* pELFHeader, Elf64_Shdr* pELFSectionHeader, char* pSecHeaderStrTable) :
+        m_uiSymTabCount(0),
+        _bufferedReader(nullptr),
+        _header(pELFHeader),
+        _sectionHeader(pELFSectionHeader),
+        m_pSecHeaderStrTable(pSecHeaderStrTable),
+        _programHeader(nullptr),
+        _sectionTableMap(nullptr),
+        m_pSymbolTable(nullptr) {
 }
 
-ELFParser::ELFParser(const upan::string& szFileName) :
-	m_uiSymTabCount(0),
-	m_pBR(NULL),
-	m_pHeader(NULL),
-	m_pSectionHeader(NULL),
-	m_pSecHeaderStrTable(NULL),
-	m_pProgramHeader(NULL),
-	m_pSectionTableMap(NULL),
-	m_pSymbolTable(NULL)
-{
-  upan::uniq_ptr<BufferedReader> pBR(new BufferedReader(szFileName, 0, .5 * 1024 * 1024));
-  m_pBR = pBR.get();
+ElfParser::ElfParser(const upan::string& szFileName) :
+        m_uiSymTabCount(0),
+        _bufferedReader(new BufferedReader(szFileName, 0, .5 * 1024 * 1024)),
+        _header(nullptr),
+        _sectionHeader(nullptr),
+        m_pSecHeaderStrTable(nullptr),
+        _programHeader(nullptr),
+        _sectionTableMap(nullptr),
+        m_pSymbolTable(nullptr) {
   ReadHeader();
   ReadProgramHeaders();
   ReadSectionHeaders();
   ReadSecHeaderStrTable();
   ReadSymbolTables();
-  pBR.release();
 }
 
-ELFParser::~ELFParser()
-{
-  if(m_pBR)
-  {
-    delete m_pBR ;
-    DeAllocateSymbolTable() ;
+ElfParser::~ElfParser() {
+  if(_bufferedReader.get()) {
+    DeAllocateSymbolTable();
     delete[] m_pSecHeaderStrTable;
-    delete[] m_pSectionHeader;
-    delete[] m_pSectionTableMap;
-    delete[] m_pProgramHeader;
-    delete m_pHeader;
+    delete[] _sectionHeader;
+    delete[] _sectionTableMap;
+    delete[] _programHeader;
+    delete _header;
   }
 }
 
-void ELFParser::AllocateSymbolTable()
-{
-	m_uiSymTabCount = 0 ;
+void ElfParser::AllocateSymbolTable() {
+	m_uiSymTabCount = 0;
 
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-	{
-		if(m_pSectionHeader[i].sh_type == ELFSectionHeader::SHT_SYMTAB)
-			m_uiSymTabCount++ ;
+	for(int i = 0; i < _header->e_shnum; i++) {
+		if(_sectionHeader[i].sh_type == ElfSectionHeader::SHT_SYMTAB)
+			m_uiSymTabCount++;
 	}
 
-	m_pSymbolTable = new ELFSymbolTableList[ m_uiSymTabCount ] ;
+	m_pSymbolTable = new ElfSymTables[ m_uiSymTabCount ];
 
-	unsigned uiSymTabIndex = 0 ;
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-	{
-		if(m_pSectionHeader[i].sh_type == ELFSectionHeader::SHT_SYMTAB)
-		{
-			m_pSymbolTable[uiSymTabIndex].uiTableSize = (m_pSectionHeader[i].sh_size / m_pSectionHeader[i].sh_entsize) ;
-
-			m_pSymbolTable[uiSymTabIndex].SymTabEntries = new ELFSymbolTable::ELF32SymbolEntry[ m_pSymbolTable[uiSymTabIndex].uiTableSize ] ;
-
-			uiSymTabIndex++ ;
+	unsigned uiSymTabIndex = 0;
+	for(int i = 0; i < _header->e_shnum; i++) {
+		if(_sectionHeader[i].sh_type == ElfSectionHeader::SHT_SYMTAB) {
+			m_pSymbolTable[uiSymTabIndex].table_size = (_sectionHeader[i].sh_size / _sectionHeader[i].sh_entsize);
+			m_pSymbolTable[uiSymTabIndex].symTabEntries = new ElfSymbolTable::Elf64_Sym[ m_pSymbolTable[uiSymTabIndex].table_size ];
+			uiSymTabIndex++;
 		}
 	}
 }
 
-void ELFParser::DeAllocateSymbolTable()
-{
+void ElfParser::DeAllocateSymbolTable() {
 	for(unsigned i = 0; i < m_uiSymTabCount; i++)
-		delete[] (m_pSymbolTable[i].SymTabEntries) ;
-	
-	delete[] m_pSymbolTable ;
+		delete[] (m_pSymbolTable[i].symTabEntries);
+	delete[] m_pSymbolTable;
 }
 
-void ELFParser::ReadHeader()
-{
-  m_pHeader = new ELF32Header;
-  m_pBR->Seek(0);
-  const unsigned n = m_pBR->Read((char*)m_pHeader, sizeof(ELF32Header));
+void ElfParser::ReadHeader() {
+  _header = new Elf64_Ehdr;
+  _bufferedReader->Seek(0);
+  const unsigned n = _bufferedReader->Read((char*)_header, sizeof(Elf64_Ehdr));
 
-	if(n < sizeof(ELF32Header))
-    throw upan::exception(XLOC, "elf file header size %u is less than ELF32Header size %u", n, sizeof(ELF32Header));
+	if(n < sizeof(Elf64_Ehdr))
+    throw upan::exception(XLOC, "elf file header size %u is less than Elf64_Ehdr size %u", n, sizeof(Elf64_Ehdr));
 
-	if(!CheckMagicSignature(m_pHeader))
+	if(!CheckMagicSignature(_header))
     throw upan::exception(XLOC, "Invalid ELF 32 magic signature");
 }
 
-void ELFParser::ReadProgramHeaders()
-{
+void ElfParser::ReadProgramHeaders() {
 	/* e_phentsize is not used as this Parser is only for 32 bit elf files.
 	   and ElfProgHeader size is 32 bytes */
 
-  m_pProgramHeader = new ELF32ProgramHeader[ m_pHeader->e_phnum ] ;
+  _programHeader = new Elf64_Phdr[ _header->e_phnum ];
 
-  m_pBR->Seek(m_pHeader->e_phoff);
+  _bufferedReader->Seek(_header->e_phoff);
 
-  const unsigned n = m_pBR->Read((char*)m_pProgramHeader, sizeof(ELF32ProgramHeader) * m_pHeader->e_phnum);
+  const unsigned n = _bufferedReader->Read((char*)_programHeader, sizeof(Elf64_Phdr) * _header->e_phnum);
 
-	if(n < sizeof(ELF32ProgramHeader) * m_pHeader->e_phnum)
-    throw upan::exception(XLOC, "Invalid program header size: %u - expected: %u", n, sizeof(ELF32ProgramHeader) * m_pHeader->e_phnum);
+	if(n < sizeof(Elf64_Phdr) * _header->e_phnum)
+    throw upan::exception(XLOC, "Invalid program header size: %u - expected: %u", n, sizeof(Elf64_Phdr) * _header->e_phnum);
 }
 
-void ELFParser::ReadSectionHeaders()
-{
+void ElfParser::ReadSectionHeaders() {
 	/* e_shentsize if not used as this Parser is only for 32 bit elf files.
 	   and ElfSectionHeader size is 40 bytes */
 	   
-  m_pSectionHeader = new ELF32SectionHeader[ m_pHeader->e_shnum ] ;
-  m_pSectionTableMap = new int[ m_pHeader->e_shnum ] ;
+  _sectionHeader = new Elf64_Shdr[ _header->e_shnum ];
+  _sectionTableMap = new int[ _header->e_shnum ];
 
-  for(int i = 0; i < m_pHeader->e_shnum; i++)
-    m_pSectionTableMap[i] = -1 ;
+  for(int i = 0; i < _header->e_shnum; i++)
+    _sectionTableMap[i] = -1;
 
+  _bufferedReader->Seek(_header->e_shoff);
 
-  m_pBR->Seek(m_pHeader->e_shoff);
+  const auto n = _bufferedReader->Read((char*)_sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
 
-  const unsigned n = m_pBR->Read((char*)m_pSectionHeader, sizeof(ELF32SectionHeader) * m_pHeader->e_shnum);
-
-	if(n < sizeof(ELF32SectionHeader) * m_pHeader->e_shnum)
-    upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(ELF32SectionHeader) * m_pHeader->e_shnum);
+	if(n < sizeof(Elf64_Shdr) * _header->e_shnum)
+    upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(Elf64_Shdr) * _header->e_shnum);
 }
 
-void ELFParser::ReadSecHeaderStrTable()
-{
-  const unsigned uiSecSize = m_pSectionHeader[m_pHeader->e_shstrndx].sh_size ;
-  const unsigned uiSecOffset = m_pSectionHeader[m_pHeader->e_shstrndx].sh_offset ;
+void ElfParser::ReadSecHeaderStrTable() {
+  const auto uiSecSize = _sectionHeader[_header->e_shstrndx].sh_size;
+  const auto uiSecOffset = _sectionHeader[_header->e_shstrndx].sh_offset;
 
-  m_pSecHeaderStrTable = new char[ uiSecSize ] ;
+  m_pSecHeaderStrTable = new char[ uiSecSize ];
 
-  m_pBR->Seek(uiSecOffset);
+  _bufferedReader->Seek(uiSecOffset);
 
-  unsigned n = m_pBR->Read((char*)m_pSecHeaderStrTable, uiSecSize);
+  auto n = _bufferedReader->Read((char*)m_pSecHeaderStrTable, uiSecSize);
 
 	if(n < uiSecSize)
     upan::exception(XLOC, "Invalid elf section header string table size: %u - expected: %u", n, uiSecSize);
 }
 
-void ELFParser::ReadSymbolTables()
-{
-	AllocateSymbolTable() ;
+void ElfParser::ReadSymbolTables() {
+	AllocateSymbolTable();
 
-	unsigned uiSymTabIndex = 0 ;
-  for(uint32_t i = 0; i < m_pHeader->e_shnum; i++)
-	{
-		if(m_pSectionHeader[i].sh_type == ELFSectionHeader::SHT_SYMTAB)
-		{
-      m_pBR->Seek(m_pSectionHeader[i].sh_offset);
-      const uint32_t n = m_pBR->Read((char*)(m_pSymbolTable[uiSymTabIndex].SymTabEntries), sizeof(ELFSymbolTable::ELF32SymbolEntry) * m_pSymbolTable[uiSymTabIndex].uiTableSize);
+	unsigned uiSymTabIndex = 0;
+  for(uint32_t i = 0; i < _header->e_shnum; i++) {
+		if(_sectionHeader[i].sh_type == ElfSectionHeader::SHT_SYMTAB) {
+      _bufferedReader->Seek(_sectionHeader[i].sh_offset);
+      const auto n = _bufferedReader->Read((char*)(m_pSymbolTable[uiSymTabIndex].symTabEntries), sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
 
-			if(n < sizeof(ELFSymbolTable::ELF32SymbolEntry) * m_pSymbolTable[uiSymTabIndex].uiTableSize)
-        throw upan::exception(XLOC, "Invalid elf symbol table size: %u - excpected: %u", n, sizeof(ELFSymbolTable::ELF32SymbolEntry) * m_pSymbolTable[uiSymTabIndex].uiTableSize);
+			if(n < sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size)
+        throw upan::exception(XLOC, "Invalid elf symbol table size: %u - excpected: %u", n, sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
 
-			m_pSectionTableMap[i] = uiSymTabIndex ;
+      _sectionTableMap[i] = uiSymTabIndex;
       ++uiSymTabIndex;
 		}
 	}
 }
 
-upan::result<uint32_t*> ELFParser::GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName)
-{
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-		if(strcmp(ELFSectionHeader::GetSectionName(m_pSecHeaderStrTable, m_pSectionHeader[i].sh_name), szSectionName) == 0)
-      return upan::good((uint32_t*)(bProcessImage + m_pSectionHeader[i].sh_addr - uiMinMemAddr));
-
-  return upan::result<uint32_t*>::bad("%s section not found in process image", szSectionName);
+upan::result<uint64_t*> ElfParser::GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName) {
+	for(int i = 0; i < _header->e_shnum; i++) {
+    if (strcmp(ElfSectionHeader::GetSectionName(m_pSecHeaderStrTable, _sectionHeader[i].sh_name), szSectionName) == 0) {
+      return upan::good((Elf64_Off *) (bProcessImage + _sectionHeader[i].sh_addr - uiMinMemAddr));
+    }
+  }
+  return upan::result<Elf64_Off*>::bad("%s section not found in process image", szSectionName);
 }
 
-upan::result<uint32_t> ELFParser::GetNoOfGOTEntriesBySectionName(const char* szSectionName)
-{
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-		if(strcmp(ELFSectionHeader::GetSectionName(m_pSecHeaderStrTable, m_pSectionHeader[i].sh_name), szSectionName) == 0)
-      return upan::good(m_pSectionHeader[i].sh_size / m_pSectionHeader[i].sh_entsize);
+upan::result<uint32_t> ElfParser::GetNoOfGOTEntriesBySectionName(const char* szSectionName) {
+	for(int i = 0; i < _header->e_shnum; i++) {
+    if (strcmp(ElfSectionHeader::GetSectionName(m_pSecHeaderStrTable, _sectionHeader[i].sh_name), szSectionName) == 0) {
+      return upan::good((uint32_t) (_sectionHeader[i].sh_size / _sectionHeader[i].sh_entsize));
+    }
+  }
   return upan::result<uint32_t>::bad("no GOT entries found for %s section", szSectionName);
 }
 
-void ELFParser::GetMemImageSize(unsigned* uiMinMemAddr, unsigned* uiMaxMemAddr) const
-{
-	*uiMinMemAddr = 0 ;
-	*uiMaxMemAddr = 0 ;
+void ElfParser::GetMemImageSize(uint64_t& minMemAddr, uint64_t& maxMemAddr) const {
+	minMemAddr = 0;
+	maxMemAddr = 0;
 
-	bool bFirstTime = true ;
+	bool bFirstTime = true;
 
-	for(unsigned i = 0; i < m_pHeader->e_phnum; i++)
-	{
-		if(m_pProgramHeader[i].p_type == ELFProgramHeader::PT_LOAD)
-		{
-			if(bFirstTime == true)
-			{
-				bFirstTime = false ;
-				*uiMinMemAddr = m_pProgramHeader[i].p_vaddr ;
+	for(unsigned i = 0; i < _header->e_phnum; i++) {
+		if(_programHeader[i].p_type == ElfProgramHeader::PT_LOAD) {
+			if(bFirstTime == true) {
+				bFirstTime = false;
+				minMemAddr = _programHeader[i].p_vaddr;
 			}
-
-			*uiMaxMemAddr = m_pProgramHeader[i].p_vaddr + m_pProgramHeader[i].p_memsz ;
+			maxMemAddr = _programHeader[i].p_vaddr + _programHeader[i].p_memsz;
 		}
 	}
 }
 
-unsigned ELFParser::GetProgramStartAddress() 
-{
-	return m_pHeader->e_entry ;
+uint64_t ElfParser::GetProgramStartAddress() {
+	return _header->e_entry;
 }
 
-upan::result<uint32_t*> ELFParser::GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr)
-{
+upan::result<uint64_t*> ElfParser::GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr) {
   auto res = GetAddressBySectionName(bProcessImage, uiMinMemAddr, ".got.plt");
   if(res.isBad())
-    res = GetAddressBySectionName(bProcessImage, uiMinMemAddr, ".got") ;
+    res = GetAddressBySectionName(bProcessImage, uiMinMemAddr, ".got");
   return res;
 }
 
-upan::result<uint32_t> ELFParser::GetNoOfGOTEntries()
-{
+upan::result<uint32_t> ElfParser::GetNoOfGOTEntries() {
   auto res = GetNoOfGOTEntriesBySectionName(".got.plt");
   if(res.isBad())
     res = GetNoOfGOTEntriesBySectionName(".got");
   return res;
 }
 
-upan::result<ELF32SectionHeader*> ELFParser::GetSectionHeaderByType(unsigned uiType)
-{
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-		if(m_pSectionHeader[i].sh_type == uiType)
-      return upan::good(&m_pSectionHeader[i]);
-  return upan::result<ELF32SectionHeader*>::bad("Failed to find elf section header for type: %u", uiType);
+upan::result<Elf64_Shdr*> ElfParser::GetSectionHeaderByType(unsigned uiType) {
+	for(int i = 0; i < _header->e_shnum; i++) {
+    if (_sectionHeader[i].sh_type == uiType) {
+      return upan::good(&_sectionHeader[i]);
+    }
+  }
+  return upan::result<Elf64_Shdr*>::bad("Failed to find elf section header for type: %u", uiType);
 }
 
-upan::result<ELF32SectionHeader*> ELFParser::GetSectionHeaderByTypeAndName(unsigned uiType, const char* szLikeName)
-{
-	for(int i = 0; i < m_pHeader->e_shnum; i++)
-		if(strstr((m_pSecHeaderStrTable + m_pSectionHeader[i].sh_name), szLikeName) && m_pSectionHeader[i].sh_type == uiType)
-      return upan::good(&m_pSectionHeader[i]);
-  return upan::result<ELF32SectionHeader*>::bad("Failed to find elf section header for type: %u, name: %s", uiType, szLikeName);
+upan::result<Elf64_Shdr*> ElfParser::GetSectionHeaderByTypeAndName(unsigned uiType, const char* szLikeName) {
+	for(int i = 0; i < _header->e_shnum; i++) {
+    if (strstr((m_pSecHeaderStrTable + _sectionHeader[i].sh_name), szLikeName) && _sectionHeader[i].sh_type == uiType) {
+      return upan::good(&_sectionHeader[i]);
+    }
+  }
+  return upan::result<Elf64_Shdr*>::bad("Failed to find elf section header for type: %u, name: %s", uiType, szLikeName);
 }
 
-upan::result<ELF32SectionHeader*> ELFParser::GetSectionHeaderByIndex(unsigned uiIndex)
-{
-	if(uiIndex >= m_pHeader->e_shnum)
-    return upan::result<ELF32SectionHeader*>::bad("Failed to find elf section header for index: %u", uiIndex);
-  return upan::good(&m_pSectionHeader[uiIndex]);
+upan::result<Elf64_Shdr*> ElfParser::GetSectionHeaderByIndex(unsigned uiIndex) {
+	if(uiIndex >= _header->e_shnum)
+    return upan::result<Elf64_Shdr*>::bad("Failed to find elf section header for index: %u", uiIndex);
+  return upan::good(&_sectionHeader[uiIndex]);
 }
 
-void ELFParser::CopyProcessImage(byte* bProcessImage, unsigned uiProcessBase, unsigned uiMaxImageSize) const
-{
-	for(unsigned i = 0; i < m_pHeader->e_phnum; i++)
-	{
-		if(m_pProgramHeader[i].p_type == ELFProgramHeader::PT_LOAD)
-		{
-      m_pBR->Seek(m_pProgramHeader[i].p_offset);
-      const uint32_t uiOffset = m_pProgramHeader[i].p_vaddr - uiProcessBase ;
+void ElfParser::CopyProcessImage(byte* processImage, uint64_t processBase, uint64_t maxImageSize) const {
+	for(unsigned i = 0; i < _header->e_phnum; i++) {
+		if(_programHeader[i].p_type == ElfProgramHeader::PT_LOAD) {
+      _bufferedReader->Seek(_programHeader[i].p_offset);
+      const auto offset = _programHeader[i].p_vaddr - processBase;
 
-			if(uiOffset >= uiMaxImageSize)
-        throw upan::exception(XLOC, "process load virtual address %x is larger than max image size %x", uiOffset, uiMaxImageSize);
+			if(offset >= maxImageSize)
+        throw upan::exception(XLOC, "process load virtual address %x is larger than max image size %x", offset, maxImageSize);
 
-      const uint32_t n = m_pBR->Read((char*)bProcessImage + uiOffset, m_pProgramHeader[i].p_filesz);
+      const uint32_t n = _bufferedReader->Read((char*)processImage + offset, _programHeader[i].p_filesz);
 
-			if(n < m_pProgramHeader[i].p_filesz)
-        throw upan::exception(XLOC, "Invalid elf file size: %u - expected: %u", n, m_pProgramHeader[i].p_filesz);
+			if(n < _programHeader[i].p_filesz)
+        throw upan::exception(XLOC, "Invalid elf file size: %u - expected: %u", n, _programHeader[i].p_filesz);
 		}
 	}
 }
 
-char* ELFParser::CopyELFSecStrTable() {
-	uint32_t uiSize = m_pSectionHeader[ m_pHeader->e_shstrndx ].sh_size ;
-	auto secStrTable = new char[uiSize];
-	memcpy(secStrTable, m_pSecHeaderStrTable, uiSize) ;
+char* ElfParser::CopyELFSecStrTable() {
+	auto size = _sectionHeader[ _header->e_shstrndx ].sh_size;
+	auto secStrTable = new char[size];
+	memcpy(secStrTable, m_pSecHeaderStrTable, size);
 	return secStrTable;
 }
 
-ELF32SectionHeader* ELFParser::CopyELFSectionHeader() {
-	auto sectionHeaders = new ELF32SectionHeader[m_pHeader->e_shnum];
-  memcpy(sectionHeaders, m_pSectionHeader, sizeof(ELF32SectionHeader) * m_pHeader->e_shnum);
+Elf64_Shdr* ElfParser::CopyELFSectionHeader() {
+	auto sectionHeaders = new Elf64_Shdr[_header->e_shnum];
+  memcpy(sectionHeaders, _sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
 	return sectionHeaders;
 }
 
-bool ELFParser::CheckMagicSignature(const ELF32Header* pELFHeader)
-{
-	return (pELFHeader->e_ident[ELFHeader::EI_MAG0] == 0x7F 
-		&& pELFHeader->e_ident[ELFHeader::EI_MAG1] == 'E'
-		&& pELFHeader->e_ident[ELFHeader::EI_MAG2] == 'L'
-		&& pELFHeader->e_ident[ELFHeader::EI_MAG3] == 'F'
-		&& (pELFHeader->e_type == ELFHeader::ET_EXEC || pELFHeader->e_type == ELFHeader::ET_DYN)) ;
+bool ElfParser::CheckMagicSignature(const Elf64_Ehdr* pELFHeader) {
+	return (pELFHeader->e_ident[ElfHeader::EI_MAG0] == 0x7F
+		&& pELFHeader->e_ident[ElfHeader::EI_MAG1] == 'E'
+		&& pELFHeader->e_ident[ElfHeader::EI_MAG2] == 'L'
+		&& pELFHeader->e_ident[ElfHeader::EI_MAG3] == 'F'
+		&& (pELFHeader->e_type == ElfHeader::ET_EXEC || pELFHeader->e_type == ElfHeader::ET_DYN));
 }
 
-/*
-static void ElfHacker_KC::MDisplay().e_ident_Field(const Elf_Header* elfHeader)
-{
-	printf("\n e_ident:") ;
-	printf("\n\t\tEI_MAG0 = 0x%X (%d)", elfHeader->e_ident[EI_MAG0], elfHeader->e_ident[EI_MAG0]) ;
-	printf("\n\t\tEI_MAG1 = %c", elfHeader->e_ident[EI_MAG1]) ; 
-	printf("\n\t\tEI_MAG2 = %c", elfHeader->e_ident[EI_MAG2]) ;
-	printf("\n\t\tEI_MAG3 = %c", elfHeader->e_ident[EI_MAG3]) ;
-	printf("\n\t\tEI_CLASS = %s", Elf_Classes[elfHeader->e_ident[EI_CLASS]]) ; 
-	printf("\n\t\tEI_DATA = %s", Elf_DataEncoding[elfHeader->e_ident[EI_DATA]]) ;
-	printf("\n\t\tEI_VERSION = %s", Elf_Versions[elfHeader->e_ident[EI_VERSION]]) ;
-	printf("\n\t\tEI_PAD = %d\n", elfHeader->e_ident[EI_PAD]) ;
-}
-{
-	ElfHacker_KC::MDisplay().e_ident_Field(&ElfHacker_elfHeader) ;
-	printf("\n\te_tpye = %s", Elf_eType[ElfHacker_elfHeader.e_type]) ;
-	printf("\n\te_machine = %s", Elf_eMachine[ElfHacker_elfHeader.e_machine]) ;
-	printf("\n\te_version = %d", ElfHacker_elfHeader.e_version) ;
-	printf("\n\te_entry = 0x%X (%d)", ElfHacker_elfHeader.e_entry, ElfHacker_elfHeader.e_entry) ;
-	printf("\n\te_phoff = %d", ElfHacker_elfHeader.e_phoff) ;
-	printf("\n\te_shoff = %d", ElfHacker_elfHeader.e_shoff) ;
-	printf("\n\te_flags = %d", ElfHacker_elfHeader.e_flags) ;
-	printf("\n\te_ehsize = %d", ElfHacker_elfHeader.e_ehsize) ;
-	printf("\n\te_phentsize = %d", ElfHacker_elfHeader.e_phentsize) ;
-	printf("\n\te_phnum = %d", ElfHacker_elfHeader.e_phnum) ;
-	printf("\n\te_shentsize = %d", ElfHacker_elfHeader.e_shentsize) ;
-	printf("\n\te_shnum = %d", ElfHacker_elfHeader.e_shnum) ;
-	printf("\n\te_shstrndx = %d", ElfHacker_elfHeader.e_shstrndx) ;
-
-}*/
-
-namespace ELFProgramHeader
-{
-	const char* GetProgHeaderType(unsigned uiPType)
-	{
+namespace ElfProgramHeader {
+	const char* GetProgHeaderType(unsigned uiPType) {
 		if(0 <= uiPType && uiPType < MAX_PROG_TYPES)
-			return ProgramHeaderType[uiPType] ;
-
-		return (uiPType <= PT_LOPROC || uiPType >= PT_HIPROC) ? "Processor-Specific" : "Invalid Program Header Type" ;
+			return ProgramHeaderType[uiPType];
+		return (uiPType <= PT_LOPROC || uiPType >= PT_HIPROC) ? "Processor-Specific" : "Invalid Program Header Type";
 	}
-} ;
+};
 
-namespace ELFSectionHeader
-{
-	const char* GetSecHeaderType(unsigned uiSType)
-	{
+namespace ElfSectionHeader {
+	const char* GetSecHeaderType(unsigned uiSType) {
 		if(0 <= uiSType && uiSType < MAX_SEC_HEADER_TYPES)
-			return SectionHeaderType[ uiSType ] ;
+			return SectionHeaderType[ uiSType ];
 
-		return (uiSType > SHT_LOPROC && uiSType <= SHT_HIPROC) ? "Processor-Specific" : "Invalid Section Header Type" ;
+		return (uiSType > SHT_LOPROC && uiSType <= SHT_HIPROC) ? "Processor-Specific" : "Invalid Section Header Type";
 	}
 
-	const char* GetSectionName(const char* szStrTable, int iIndex)
-	{
-		return szStrTable + iIndex ;
+	const char* GetSectionName(const char* szStrTable, int iIndex) {
+		return szStrTable + iIndex;
 	}
-} ;
+};

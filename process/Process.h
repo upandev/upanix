@@ -60,7 +60,7 @@ public:
 
   virtual FILE_USER_TYPE fileUserType(const FileSystem::Node&) const = 0;
   virtual bool hasFilePermission(const FileSystem::Node&, byte mode) const = 0;
-  virtual uint32_t pdbr() const = 0;
+  virtual uint64_t* pdbr() const = 0;
 
   virtual void setDriveID(int driveID) = 0;
   virtual FileSystem::PresentWorkingDirectory& processPWD() = 0;
@@ -76,10 +76,6 @@ public:
   }
   virtual upan::option<upan::mutex&> dllMutex() {
     throw upan::exception(XLOC, "dllMutex unsupported");
-  }
-
-  virtual uint32_t startPDEForDLL() const {
-    throw upan::exception(XLOC, "startPDEForDLL unsupported");
   }
 
   virtual void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) {

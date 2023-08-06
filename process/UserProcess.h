@@ -39,10 +39,6 @@ public:
   void onLoad() override;
   UserThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
 
-  uint32_t startPDEForDLL() const override {
-    return _startPDEForDLL;
-  }
-
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override;
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
   const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
@@ -52,10 +48,10 @@ public:
   upan::option<ProcessDLLInfo&> getDLLInfo(int id) override;
 
   AllocationUnitTracker* getAUTAddress() const override {
-    return autAddress;
+    return _autAddress;
   }
   void setAUTAddress(AllocationUnitTracker* addr) {
-    autAddress = addr;
+    _autAddress = addr;
   }
 
   IODescriptorTable& iodTable() override {
@@ -79,29 +75,19 @@ public:
   void allocateGUIFramebuffer();
 
 private:
-  void Load(int noOfParams, char** szArgumentList);
-  uint32_t AllocateAddressSpace();
-  void CopyElfImage(unsigned uiPDEAddr, byte* bProcessImage, unsigned uiMemImageSize);
-  uint32_t PushProgramInitStackData(int iNumberOfParameters, char** szArgumentList);
-  void AllocatePTE(const unsigned uiPDEAddress);
-  void InitializeProcessSpaceForOS(const unsigned uiPDEAddress);
-  void InitializeProcessSpaceForProcess(const unsigned uiPDEAddress);
+  void Load(int bssSectionHeader, char** szArgumentList);
+  uint64_t* AllocateAddressSpace();
+  void CopyElfImage(uint64_t* pml4Table, byte* bProcessImage, unsigned uiMemImageSize);
+  uint32_t PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList);
 
-  void DeAllocateResources() override;
-  void DeAllocateDLLPages();
-  void DeAllocateAddressSpace();
-  void DeAllocateProcessSpace();
-  void DeAllocatePTE();
-  void DeAllocateGUIFramebuffer();
+  void DeallocateResources() override;
+  void DeallocateGUIFramebuffer();
 
 private:
-  AllocationUnitTracker* autAddress;
-  uint32_t _noOfPagesForPTE;
-  uint32_t _noOfPagesForProcess;
-  uint32_t _noOfPagesForDLLPTE;
+  AllocationUnitTracker* _autAddress;
+  uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;
-  uint32_t _startPDEForDLL;
-  uint32_t _stackPTEAddress;
+  uint32_t _stackPDAddress;
   upan::vector<upan::string> _loadedDLLs;
   DLLInfoMap _dllInfoMap;
   upan::mutex _heapMutex;

@@ -32,7 +32,6 @@
 #include <StringUtil.h>
 #include <KernelService.h>
 #include <FileOperations.h>
-#include <ProcessEnv.h>
 
 #include <SysCallDisplay.h>
 #include <SysCallFile.h>

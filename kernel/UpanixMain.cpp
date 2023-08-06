@@ -241,10 +241,3 @@ bool UpanixMain_IsKernelDebugOn() {
   }
 	return false ;
 }
-
-bool UpanixMain_isCoProcPresent()
-{
-	if(CO_PROC_FPU_TYPE == NO_CO_PROC)
-		return false ;
-	return true ;
-}

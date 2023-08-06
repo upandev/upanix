@@ -33,7 +33,7 @@ public:
       delete []_elfSectionHeaders;
       delete _elfSectionHeaders;
     }
-    ELFSectionHeader::ELF32SectionHeader* _elfSectionHeaders;
+    ElfSectionHeader::Elf64_Shdr* _elfSectionHeaders;
     char* _elfSecStrTable;
   };
 
@@ -41,13 +41,10 @@ public:
   }
 
   int id() const { return _id; }
-  uint32_t rawLoadAddress() const {
+  uint64_t loadAddress() const {
     return _loadAddress;
   }
-  uint32_t loadAddressForKernel() const {
-    return _loadAddress - GLOBAL_DATA_SEGMENT_BASE;
-  }
-  uint32_t loadAddressForProcess() const {
+  uint64_t loadAddressForProcess() const {
     return _loadAddress - PROCESS_BASE;
   }
   ELFInfo& elfInfo() {
@@ -57,7 +54,7 @@ public:
 
 private:
   int _id;
-  uint32_t _loadAddress;
+  uint64_t _loadAddress;
   uint32_t _noOfPages;
   ELFInfo _elfInfo;
 };

@@ -34,10 +34,6 @@ public:
 
   void onLoad() override;
 
-  uint32_t startPDEForDLL() const override {
-    return _parent.startPDEForDLL();
-  }
-
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override {
     _parent.LoadELFDLL(szDLLName, szJustDLLName);
   }
@@ -78,9 +74,9 @@ public:
   }
 
 private:
-  uint32_t PushProgramInitStackData(uint32_t entryAddress, void* arg);
-  void DeAllocateResources() override;
+  uint32_t PushProgramInitStackData(uint32_t entryAddress, void *arg);
+  void DeallocateResources() override;
 
 private:
-  uint32_t _stackPTEAddress;
+  uint32_t _stackPDAddress;
 };

@@ -19,39 +19,38 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _ELF_PROG_HEADER_H_
-#define _ELF_PROG_HEADER_H_
+#pragma once
 
 #include <ElfConstants.h>
 
-namespace ELFProgramHeader
-{
+namespace ElfProgramHeader {
 	typedef struct {
-		uint32_t	p_type ;
-		Elf32_Off	p_offset ;
-		Elf32_Addr	p_vaddr ;
-		Elf32_Addr	p_paddr ;
-		uint32_t	p_filesz ;
-		uint32_t	p_memsz ;
-		uint32_t	p_flags ;
-		uint32_t	p_align ;
-	} PACKED ELF32ProgramHeader ;
+		Elf64_Word	p_type;
+    Elf64_Word	p_flags;
+		Elf64_Off	  p_offset;
+		Elf64_Addr	p_vaddr;
+		Elf64_Addr	p_paddr;
+		Elf64_Xword p_filesz;
+    Elf64_Xword p_memsz;
 
-	static const unsigned PT_NULL = 0 ;
-	static const unsigned PT_LOAD = 1 ;
-	static const unsigned PT_DYNAMIC = 2 ;
-	static const unsigned PT_INTERP = 3 ;
-	static const unsigned PT_NOTE = 4 ;
-	static const unsigned PT_SHLIB = 5 ;
-	static const unsigned PT_PHDR = 6 ;
-	static const unsigned PT_LOPROC = 0x70000000 ;
-	static const unsigned PT_HIPROC = 0x7fffffff  ;
+    Elf64_Xword p_align;
+	} PACKED Elf64_Phdr;
 
-	static const unsigned PF_R = 0x4  ;
-	static const unsigned PF_W = 0x2 ;
-	static const unsigned PF_X = 0x1 ;
+	static const unsigned PT_NULL = 0;
+	static const unsigned PT_LOAD = 1;
+	static const unsigned PT_DYNAMIC = 2;
+	static const unsigned PT_INTERP = 3;
+	static const unsigned PT_NOTE = 4;
+	static const unsigned PT_SHLIB = 5;
+	static const unsigned PT_PHDR = 6;
+	static const unsigned PT_LOPROC = 0x70000000;
+	static const unsigned PT_HIPROC = 0x7fffffff ;
 
-	static const unsigned MAX_PROG_TYPES = 7 ;
+	static const unsigned PF_R = 0x4 ;
+	static const unsigned PF_W = 0x2;
+	static const unsigned PF_X = 0x1;
+
+	static const unsigned MAX_PROG_TYPES = 7;
 	namespace {
 		static const char ProgramHeaderType[MAX_PROG_TYPES][30] = {
 				"Null Program Header",
@@ -61,10 +60,8 @@ namespace ELFProgramHeader
 				"Auxiliary Info",
 				"SHLIB Unspecified",
 				"Program Header Info"
-		} ;
-	} ;
+		};
+	};
 
-	const char* GetProgHeaderType(unsigned uiPType) ;
-} ;
-
-#endif
+	const char* GetProgHeaderType(unsigned uiPType);
+};

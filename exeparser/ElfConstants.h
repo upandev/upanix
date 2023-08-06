@@ -20,19 +20,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _ELF_CONST_H_
-#define _ELF_CONST_H_
+#pragma once
 
 #include <MemManager.h>
 #include <stdint.h>
 
 #define GLOBAL_REL_ADDR(paddr, base_addr) (paddr + base_addr)
 
-typedef unsigned Elf32_Addr ;
-typedef unsigned Elf32_Off ;
-typedef unsigned Elf32_Word ;
-typedef unsigned short Elf32_Half ;
-
-typedef int Elf32_Sword ;
-
-#endif
+typedef uint64_t Elf64_Addr;
+typedef uint64_t Elf64_Off;
+typedef uint16_t Elf64_Half;
+typedef uint32_t Elf64_Word;
+typedef int32_t Elf64_Sword;
+typedef uint64_t Elf64_Xword;
+typedef int64_t Elf64_Sxword;

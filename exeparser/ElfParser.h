@@ -19,78 +19,76 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _ELF_PARSER_H_
-#define _ELF_PARSER_H_
+#pragma once
 
 #include <ElfHeader.h>
 #include <ElfProgHeader.h>
 #include <ElfSectionHeader.h>
 #include <ElfSymbolTable.h>
 #include <result.h>
+#include <uniq_ptr.h>
 
-class BufferedReader ;
-using ELFHeader::ELF32Header ;
-using ELFSectionHeader::ELF32SectionHeader ;
-using ELFSymbolTable::ELFSymbolTableList ;
-using ELFProgramHeader::ELF32ProgramHeader ;
+class BufferedReader;
+using ElfHeader::Elf64_Ehdr;
+using ElfSectionHeader::Elf64_Shdr;
+using ElfSymbolTable::ElfSymTables;
+using ElfProgramHeader::Elf64_Phdr;
 
-class ELFParser
-{
+class ElfParser {
 	private:
-		unsigned m_uiSymTabCount ;
+		unsigned m_uiSymTabCount;
 
-    BufferedReader* m_pBR ;
+    mutable upan::uniq_ptr<BufferedReader> _bufferedReader;
 
-		ELF32Header* m_pHeader ;
-		ELF32SectionHeader* m_pSectionHeader ;
-		char* m_pSecHeaderStrTable ;
+		Elf64_Ehdr* _header;
+		Elf64_Shdr* _sectionHeader;
+		char* m_pSecHeaderStrTable;
 
-		ELF32ProgramHeader* m_pProgramHeader ;
-		int* m_pSectionTableMap ;
-		ELFSymbolTableList* m_pSymbolTable ;
+		Elf64_Phdr* _programHeader;
+		int* _sectionTableMap;
+		ElfSymTables* m_pSymbolTable;
 
 	public:
-		ELFParser(ELF32Header* pELFHeader, ELF32SectionHeader* pELFSectionHeader, char* pSecHeaderStrTable) ;
-		ELFParser(const upan::string& szFileName) ;
-		~ELFParser() ;
+		ElfParser(Elf64_Ehdr* pELFHeader, Elf64_Shdr* pELFSectionHeader, char* pSecHeaderStrTable);
+		ElfParser(const upan::string& szFileName);
+		~ElfParser();
 
-    void CopyProcessImage(byte* bProcessImage, unsigned uiProcessBase, unsigned uiMaxImageSize) const;
+    void CopyProcessImage(byte* processImage, uint64_t processBase, uint64_t maxImageSize) const;
 		char* CopyELFSecStrTable();
-    ELF32SectionHeader* CopyELFSectionHeader();
+    Elf64_Shdr* CopyELFSectionHeader();
 
-    upan::result<uint32_t*> GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr);
+    upan::result<uint64_t*> GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr);
     upan::result<uint32_t> GetNoOfGOTEntries();
 
-    void GetMemImageSize(unsigned* uiMinMemAddr, unsigned* uiMaxMemAddr) const;
-		unsigned GetProgramStartAddress() ;
+    void GetMemImageSize(uint64_t& minMemAddr, uint64_t& maxMemAddr) const;
+		uint64_t GetProgramStartAddress();
 
-    upan::result<ELF32SectionHeader*> GetSectionHeaderByType(unsigned uiType);
-    upan::result<ELF32SectionHeader*> GetSectionHeaderByTypeAndName(unsigned uiType, const char* szLikeName);
-    upan::result<ELF32SectionHeader*> GetSectionHeaderByIndex(unsigned uiIndex);
+    upan::result<Elf64_Shdr*> GetSectionHeaderByType(unsigned uiType);
+    upan::result<Elf64_Shdr*> GetSectionHeaderByTypeAndName(unsigned uiType, const char* szLikeName);
+    upan::result<Elf64_Shdr*> GetSectionHeaderByIndex(unsigned uiIndex);
 
-		inline const ELF32Header* GetHeader() const { return m_pHeader ; }
-		inline ELF32Header* GetHeader() { return m_pHeader ; }
+		inline const Elf64_Ehdr* GetHeader() const { return _header; }
+		inline Elf64_Ehdr* GetHeader() { return _header; }
 
-		inline const ELF32SectionHeader* GetSectionHeader() const { return m_pSectionHeader ; }
-		inline ELF32SectionHeader* GetSectionHeader() { return m_pSectionHeader ; }
+		inline const Elf64_Shdr* GetSectionHeader() const { return _sectionHeader; }
+		inline Elf64_Shdr* GetSectionHeader() { return _sectionHeader; }
 
-		inline const char* GetSecHeaderStrTable() const { return m_pSecHeaderStrTable ; }
-		inline char* GetSecHeaderStrTable() { return m_pSecHeaderStrTable ; }
+		inline const char* GetSecHeaderStrTable() const { return m_pSecHeaderStrTable; }
+		inline char* GetSecHeaderStrTable() { return m_pSecHeaderStrTable; }
 
 	private:
-		void AllocateSymbolTable() ;
-		void DeAllocateSymbolTable() ;
+		void AllocateSymbolTable();
+		void DeAllocateSymbolTable();
 
-    void ReadHeader() ;
-    void ReadProgramHeaders() ;
-    void ReadSectionHeaders() ;
-    void ReadSecHeaderStrTable() ;
-    void ReadSymbolTables() ;
+    void ReadHeader();
+    void ReadProgramHeaders();
+    void ReadSectionHeaders();
+    void ReadSecHeaderStrTable();
+    void ReadSymbolTables();
 
-    upan::result<uint32_t*> GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName);
+    upan::result<Elf64_Off*> GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName);
     upan::result<uint32_t> GetNoOfGOTEntriesBySectionName(const char* szSectionName);
 
-		bool CheckMagicSignature(const ELF32Header* pELFHeader) ;
-} ;
+		bool CheckMagicSignature(const Elf64_Ehdr* pELFHeader);
+};
 
-#endif 

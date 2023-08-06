@@ -223,6 +223,10 @@ uint64_t* MemManager::GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress) 
   }
 
   auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+  return GetPTTableFromPD(pdTable, virtualAddress);
+}
+
+uint64_t* MemManager::GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddress) {
   auto pdIndex = PD_INDEX(virtualAddress);
   if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
     auto ptPage = AllocatePhysicalPage();
@@ -232,20 +236,75 @@ uint64_t* MemManager::GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress) 
   return PAGE_TABLE(pdTable, pdIndex);
 }
 
-void MemManager::MapAddress(Process& process, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size) {
-  auto pml4Table = (uint64_t*)process.pdbr();
+void MemManager::AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
   const auto maxVirtualAddress = virtualAddress + size;
-  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE, realAddress += PAGE_MASK) {
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
     auto ptTable = GetPTTable(pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
-      ptTable[ptIndex] = realAddress | 0x7;
+      ptTable[ptIndex] = AllocatePhysicalPage() * PAGE_SIZE | pageConfig;
     }
   }
 }
 
-void MemManager::UnMapAddress(Process& process, uintptr_t virtualAddress, uintptr_t size) {
-  auto pml4Table = (uint64_t*)process.pdbr();
+void MemManager::AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTableFromPD(pdTable, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = AllocatePhysicalPage() * PAGE_SIZE | pageConfig;
+    }
+  }
+}
+
+void MemManager::DeallocateAddressSpace(uint64_t* pml4Table) {
+  for(int pml4Index = 0; pml4Index < ENTRIES_PER_PAGE_TABLE; ++pml4Index) {
+    if (PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+      auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+      for(int pdpIndex = 0; pdpIndex < ENTRIES_PER_PAGE_TABLE; ++pdpIndex) {
+        if (PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+          auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+          DeallocatePDAddressSpace(pdTable);
+        }
+      }
+      DeAllocatePhysicalPage(PAGE_ADDRESS(pml4Table, pml4Index));
+    }
+  }
+  DeAllocatePhysicalPage((uint64_t)pml4Table / PAGE_SIZE);
+}
+
+void MemManager::DeallocatePDAddressSpace(uint64_t* pdTable) {
+  for(int pdIndex = 0; pdIndex < ENTRIES_PER_PAGE_TABLE; ++pdIndex) {
+    if (PAGE_IS_PRESENT(pdTable, pdIndex)) {
+      auto ptTable = PAGE_TABLE(pdTable, pdIndex);
+      for(int ptIndex = 0; ptIndex < ENTRIES_PER_PAGE_TABLE; ++ptIndex) {
+        if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+          DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+        }
+      }
+      DeAllocatePhysicalPage(PAGE_ADDRESS(pdTable, pdIndex));
+    }
+  }
+  DeAllocatePhysicalPage((uint64_t)pdTable / PAGE_SIZE);
+}
+
+void MemManager::MapAddressSpace(uint64_t* pml4Table,
+                                 uint32_t pageConfig,
+                                 uintptr_t virtualAddress,
+                                 uintptr_t realAddress,
+                                 uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE, realAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = realAddress | pageConfig;
+    }
+  }
+}
+
+void MemManager::UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size) {
   const auto maxVirtualAddress = virtualAddress + size;
   for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
     auto ptTable = GetPTTable(pml4Table, virtualAddress);
@@ -396,8 +455,7 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
   return Success;
 }
 
-uintptr_t MemManager::GetFlatAddress(uintptr_t virtualAddress) {
-  auto pml4Table= (uint64_t *) ProcessManager::Instance().GetCurrentPAS().pdbr();
+uintptr_t MemManager::GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) {
   const auto pml4Index = PML4_INDEX(virtualAddress);
   if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
     return NULL;
@@ -410,6 +468,10 @@ uintptr_t MemManager::GetFlatAddress(uintptr_t virtualAddress) {
   }
 
   auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+  return GetFlatAddressFromPD(pdTable, virtualAddress);
+}
+
+uintptr_t MemManager::GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress) {
   const auto pdIndex = PD_INDEX(virtualAddress);
   if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
     return NULL;

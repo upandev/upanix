@@ -25,7 +25,6 @@
 # include <DynamicLinkLoader.h>
 # include <UserManager.h>
 # include <GenericUtil.h>
-# include <ProcessEnv.h>
 # include <MemManager.h>
 
 KernelService::DLLAllocCopy::DLLAllocCopy(unsigned uiNoOfPages, const upan::string& dllName) : _noOfPagesForDLL(uiNoOfPages), _dllName(dllName) {
@@ -47,9 +46,9 @@ KernelService::FlatAddress::FlatAddress(unsigned uiVirtualAddress) : m_uiAddress
 { 
 }
 
-void KernelService::FlatAddress::Execute()
-{
-	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(m_uiAddress) ;
+void KernelService::FlatAddress::Execute() {
+  auto& pas = ProcessManager::Instance().GetSchedulableProcess(GetRequestProcessID()).value();
+	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pdbr(), m_uiAddress) ;
 }
 
 KernelService::PageFault::PageFault(uintptr_t faultyAddress) : _faultyAddress(faultyAddress)

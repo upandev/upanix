@@ -24,17 +24,15 @@
 #include <ProcessConstants.h>
 #include <MemManager.h>
 
-void TaskState::BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, unsigned uiEntryAdddress, unsigned uiProcessEntryStackSize)
-{
+void TaskState::BuildForUser(uint64_t stackStartAddress, uint64_t pml4Address, uint64_t entryAdddress, unsigned processEntryStackSize) {
   int pr = 100 ;
   memset(this, 0, sizeof(TaskState)) ;
 
-  CR3_PDBR = uiPDEAddress ;
-  EIP = uiEntryAdddress ;
-  ESP = stackStartAddress - PROCESS_CG_STACK_PAGES * PAGE_SIZE - uiProcessEntryStackSize ;
+  CR3_PDBR = pml4Address ;
+  EIP = entryAdddress ;
+  ESP = stackStartAddress - PROCESS_CG_STACK_SIZE - processEntryStackSize ;
 
-  if(pr == 1) //GDT - Low Priority
-  {
+  if(pr == 1) { //GDT - Low Priority
     ES = 0x50 | 0x3 ;
 
     CS = 0x40 | 0x3 ;
@@ -44,9 +42,7 @@ void TaskState::BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, 
     FS = 0x48 | 0x3 ;
     GS = 0x48 | 0x3 ;
     LDT = 0x0 ;
-  }
-  else if(pr == 2) //GDT - High Priority
-  {
+  } else if(pr == 2) {//GDT - High Priority
     ES = 0x8 ;
 
     CS = 0x10 ;
@@ -57,12 +53,9 @@ void TaskState::BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, 
     GS = 0x18 ;
     LDT = 0x0 ;
   }
-  else //LDT
-  {
+  else { //LDT
     ES = 0x8 | 0x7 ;
-
     CS = 0x10 | 0x7 ;
-
     DS = 0x18 | 0x7 ;
     FS = 0x18 | 0x7 ;
     GS = 0x18 | 0x7 ;
@@ -70,7 +63,7 @@ void TaskState::BuildForUser(uint32_t stackStartAddress, unsigned uiPDEAddress, 
     SS = 0x20 | 0x7 ;
 
     SS0 = 0x28 | 0x4 ;
-    ESP0 = PROCESS_BASE + stackStartAddress - GLOBAL_DATA_SEGMENT_BASE ;
+    ESP0 = PROCESS_BASE + stackStartAddress;
     LDT = 0x50 ;
   }
 

@@ -60,8 +60,8 @@ public:
   }
 
 private:
-  void DeAllocateResources() override;
-  uint32_t AllocateAddressSpace();
+  void DeallocateResources() override;
+  uint64_t* AllocateAddressSpace();
   void DeAllocateGUIFramebuffer();
 
 private:

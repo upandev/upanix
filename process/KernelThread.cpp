@@ -37,11 +37,11 @@ KernelThread::KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_
   _parent.addToThreadScheduler(*this);
 }
 
-uint32_t KernelThread::AllocateAddressSpace() {
+uint64_t* KernelThread::AllocateAddressSpace() {
   kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
   return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
 }
 
-void KernelThread::DeAllocateResources() {
+void KernelThread::DeallocateResources() {
   MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
 }

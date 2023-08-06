@@ -21,10 +21,10 @@
  */
 # include <GenericUtil.h>
 # include <KeyboardHandler.h>
-# include <ProcessEnv.h>
 # include <StringUtil.h>
 # include <FileOperations.h>
 # include <DMM.h>
+#include <ProcessManager.h>
 
 class StrPathTokenizer : public StringTokenizer
 {

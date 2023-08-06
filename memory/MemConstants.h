@@ -21,8 +21,6 @@
  */
 #pragma once
 
-#include <ProcessConstants.h>
-
 #define SYS_LINEAR_SELECTOR_DEFINED 0x8
 #define SYS_DATA_SELECTOR_DEFINED 0x18
 
@@ -47,6 +45,7 @@ extern uintptr_t IDT_BASE_ADDR;
 extern uintptr_t SYS_TSS_BASE_ADDR;
 extern uintptr_t USER_TSS_BASE_ADDR;
 
+#define GB * 1024UL * 1024 * 1024
 #define MB * 1024 * 1024
 #define KB * 1024
 
@@ -55,7 +54,7 @@ extern uintptr_t USER_TSS_BASE_ADDR;
 #define PAGE_TABLE_ENTRIES 1024u // 1 KB
 #define PAGE_TABLE_SIZE 4096 // 4 KB
 
-#define MAX_PAGES_PER_PROCESS 0x400000 // 4 MB
+constexpr uint64_t MAX_PROCESS_SPACE_SIZE = 8 MB;
 
 #define MEM_REAL_MODE_AREA_START	0x00000	
 #define MEM_REAL_MODE_CODE			0x8000
@@ -103,9 +102,9 @@ constexpr uint64_t PAGE_TABLE_END = 0x3012000;
 constexpr uint64_t MEM_PAGE_MAP_START = PAGE_TABLE_END;
 constexpr uint64_t MEM_PAGE_MAP_END = MEM_PAGE_MAP_START + 0x20000; // + 128 KB
 
-constexpr uint64_t MEM_KERNEL_STACK_POOL_START = PAGE_TABLE_END;
+constexpr uint64_t MEM_KERNEL_STACK_POOL_START = MEM_PAGE_MAP_END;
 constexpr uint32_t MEM_KERNEL_STACK_POOL_SIZE = 4 MB;
-constexpr uint32_t NO_OF_KERNEL_STACK_BLOCKS = MEM_KERNEL_STACK_POOL_SIZE / (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE);
+constexpr uint32_t NO_OF_KERNEL_STACK_BLOCKS = MEM_KERNEL_STACK_POOL_SIZE / (8 * PAGE_SIZE);
 
 /* kernel page heap/pool */
 constexpr uint64_t MEM_KERNEL_PAGE_POOL_MAP_START = MEM_KERNEL_STACK_POOL_START + MEM_KERNEL_STACK_POOL_SIZE; // 52 MB + 128KB

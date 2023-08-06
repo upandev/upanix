@@ -45,8 +45,7 @@
 ProcessLoader::ProcessLoader() : PROCESS_DLL_FILE(upan::string(OSIN_PATH) + __PROCESS_DLL_FILE) {
 }
 
-byte* ProcessLoader::LoadInitSection(unsigned& uiSectionSize, const upan::string& szSectionName)
-{
+byte* ProcessLoader::LoadInitSection(unsigned& uiSectionSize, const upan::string& szSectionName) {
   const FileSystem::Node& DirEntry = FileOperations_GetDirEntry(szSectionName.c_str());
 	
   if(DirEntry.IsDirectory())
@@ -68,20 +67,16 @@ byte* ProcessLoader::LoadInitSection(unsigned& uiSectionSize, const upan::string
   return bSectionImage.release();
 }
 
-byte* ProcessLoader::LoadDLLInitSection(unsigned& uiSectionSize)
-{
+byte* ProcessLoader::LoadDLLInitSection(unsigned& uiSectionSize) {
   return LoadInitSection(uiSectionSize, PROCESS_DLL_FILE);
 }
 
-using namespace ELFSectionHeader ;
+using namespace ElfSectionHeader ;
 
-unsigned ProcessLoader_GetCeilAlignedAddress(unsigned uiAddress, unsigned uiAlign)
-{
-	while(true)
-	{
+uint64_t ProcessLoader_GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign) {
+	while(true) {
 		if((uiAddress % uiAlign) == 0)
 			return uiAddress ;
-	
 		uiAddress++ ;
 	}
 	return 0 ;

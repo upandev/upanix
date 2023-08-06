@@ -44,8 +44,8 @@ public:
   void onLoad() override {}
 
 private:
-  void DeAllocateResources() override;
-  uint32_t AllocateAddressSpace();
+  void DeallocateResources() override;
+  uint64_t* AllocateAddressSpace();
 
 private:
   int kernelStackBlockId;
