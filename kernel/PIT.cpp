@@ -26,7 +26,10 @@
 #include <PIC.h>
 #include <PortCom.h>
 #include <atomicop.h>
-#include <InterruptHandlers.h>
+
+extern "C" {
+  void _timer_interrupt_handler();
+}
 
 PIT::PIT() : _clockCountForSleep(0) {
   ReturnCode status = Success;
@@ -38,7 +41,7 @@ PIT::PIT() : _clockCountForSleep(0) {
 	  PortCom_SendByte(PIT_COUNTER_0_PORT, (uiTimerRate >> 8) & 0xFF) ;	// Clock Divisor MSB
   }
 
-	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&timer_interrupt_handler))
+	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&_timer_interrupt_handler))
     status = Failure;
 
   KC::MConsole().LoadMessage("Timer Initialization", status);

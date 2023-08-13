@@ -10,6 +10,7 @@
     <generated>
       <config projectName="Upanix" targetName="mcpp" />
       <config projectName="Upanix" targetName="ints" />
+      <config projectName="Upanix" targetName="interrupt_handlers" />
       <config projectName="Upanix" targetName="boot" />
       <config projectName="Upanix" targetName="mem" />
       <config projectName="Upanix" targetName="osutils" />
@@ -22,49 +23,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="more changes to process memory management in migrating to 64bit">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfDynamicSection.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfDynamicSection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfHeader.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfHeader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfProgHeader.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfProgHeader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfSectionHeader.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfSectionHeader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/tee" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.h" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessDLLInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessEnv.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessLoader.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessLoader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/GenericUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/GenericUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,12 +79,17 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="interrupt_handlers" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="interrupt_handlers" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -168,6 +141,7 @@
     </configuration>
     <list>
       <item itemvalue="CMake Application.boot" />
+      <item itemvalue="CMake Application.interrupt_handlers" />
       <item itemvalue="CMake Application.ints" />
       <item itemvalue="CMake Application.mcpp" />
       <item itemvalue="CMake Application.mem" />
@@ -191,7 +165,8 @@
       <workItem from="1687080901318" duration="29899000" />
       <workItem from="1688169083627" duration="76239000" />
       <workItem from="1689170475032" duration="12538000" />
-      <workItem from="1689461946146" duration="99231000" />
+      <workItem from="1689461946146" duration="101171000" />
+      <workItem from="1691579315317" duration="9597000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -242,7 +217,14 @@
       <option name="project" value="LOCAL" />
       <updated>1690679180441</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping">
+      <created>1691311095014</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1691311095014</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -278,6 +260,7 @@
     <MESSAGE value="Handling interrupts in 64 bit" />
     <MESSAGE value="more changes to memory management in migrating to 64bit" />
     <MESSAGE value="more changes to process memory management in migrating to 64bit" />
-    <option name="LAST_COMMIT_MESSAGE" value="more changes to process memory management in migrating to 64bit" />
+    <MESSAGE value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
   </component>
 </project>

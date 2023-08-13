@@ -29,8 +29,11 @@
 #include <RTC.h>
 #include <XHCIManager.h>
 
-__attribute__((interrupt)) void timer_interrupt_handler(InterruptState* state) {
+extern "C" {
+TaskContext *timer_interrupt_handler(TaskContext *state) {
   PIT::Instance().Handler();
+  return state;
+}
 }
 
 __attribute__((interrupt)) void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode) {
