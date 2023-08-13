@@ -25,12 +25,9 @@
 #include <KernelService.h>
 #include <MultiBoot.h>
 #include <MemUtil.h>
-#include <AsmUtil.h>
-#include <IDT.h>
 #include <mutex.h>
 #include <exception.h>
-#include <GraphicsVideo.h>
-#include <RootGUIConsole.h>
+#include <stdlib.h>
 
 extern "C" { 
 	uint64_t MEM_PML4 ;
@@ -150,40 +147,40 @@ bool MemManager::BuildPageTable() {
     return false ;
 	}
 
-  const auto noOfInitPages = MEM_INIT_PAGE_MAP_SIZE / PAGE_SIZE;
+  const auto noOfInitPages = I_DIVIDE_AND_CEIL(MEM_INIT_PAGE_MAP_SIZE, PAGE_SIZE);
 	for (uint32_t i = noOfInitPages; i < noOfPTTableEntries; ++i) {
 	  MEM_PT_TABLE[i] = (i * PAGE_SIZE) | 0x3;
 	}
 
-	const auto noOfPTs = noOfPTTableEntries / ENTRIES_PER_PAGE_TABLE;
+	const auto noOfPTs = I_DIVIDE_AND_CEIL(noOfPTTableEntries, ENTRIES_PER_PAGE_TABLE);
   if (noOfPTs > MEM_PD_SIZE) {
     KC::MConsole().Message("\n PD table size insufficient\n", 'A') ;
     return false ;
   }
 
-  const auto noOfInitPTs = noOfInitPages / ENTRIES_PER_PAGE_TABLE;
+  const auto noOfInitPTs = I_DIVIDE_AND_CEIL(noOfInitPages, ENTRIES_PER_PAGE_TABLE);
   for (uint32_t i = noOfInitPTs; i < noOfPTs; ++i) {
     MEM_PD_TABLE[i] = ((uint64_t)MEM_PT_TABLE + i * PAGE_SIZE) | 0x3;
   }
 
-  const auto noOfPDs = noOfPTs / ENTRIES_PER_PAGE_TABLE;
+  const auto noOfPDs = I_DIVIDE_AND_CEIL(noOfPTs, ENTRIES_PER_PAGE_TABLE);
   if (noOfPDs > MEM_PDP_SIZE) {
     KC::MConsole().Message("\n PDP table size insufficient\n", 'A') ;
     return false ;
   }
 
-  const auto noOfInitPDs = noOfInitPTs / ENTRIES_PER_PAGE_TABLE;
+  const auto noOfInitPDs = I_DIVIDE_AND_CEIL(noOfInitPTs, ENTRIES_PER_PAGE_TABLE);
   for (uint32_t i = noOfInitPDs; i < noOfPDs; ++i) {
     MEM_PDP_TABLE[i] = ((uint64_t)MEM_PD_TABLE + i * PAGE_SIZE) | 0x3;
   }
 
-  const auto noOfPDPs = noOfPDs / ENTRIES_PER_PAGE_TABLE;
+  const auto noOfPDPs = I_DIVIDE_AND_CEIL(noOfPDs, ENTRIES_PER_PAGE_TABLE);
   if (noOfPDPs > MEM_PML4_SIZE) {
     KC::MConsole().Message("\n PML4 table size insufficient\n", 'A') ;
     return false ;
   }
 
-  const auto noOfInitPDPs = noOfInitPDs / ENTRIES_PER_PAGE_TABLE;
+  const auto noOfInitPDPs = I_DIVIDE_AND_CEIL(noOfInitPDs, ENTRIES_PER_PAGE_TABLE);
   for (uint32_t i = noOfInitPDPs; i < noOfPDPs; ++i) {
     MEM_PML4_TABLE[i] = ((uint64_t)MEM_PDP_TABLE + i * PAGE_SIZE) | 0x3;
   }

@@ -106,8 +106,8 @@ class MemManager
 		uint32_t _pageMapSize ;
 
     uint64_t* _kernelPagePoolMap;
-    uint32_t _kernelPagePoolMapSize;
-    uint32_t _kernelPagePoolStartPage;
+    uint64_t _kernelPagePoolMapSize;
+    uint64_t _kernelPagePoolStartPage;
 
     uint32_t _kernelReservedMapSize ;
 
