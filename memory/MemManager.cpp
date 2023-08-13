@@ -38,7 +38,7 @@ void MemManager::PageFaultHandlerTaskGate(uint64_t errorCode) {
 	__asm__ __volatile__("mov %%cr2, %0" : "=r"(faultyAddress) : ) ;
 
 	if (IS_KERNEL()) {
-    printf("\n Page Fault in Kernel! FIX THIS !!! @ %ul", faultyAddress);
+    printf("\n Page Fault in Kernel! FIX THIS !!! @ %lx", faultyAddress);
     while(1);
   }
 	if(!KC::MKernelService().RequestPageFault(faultyAddress)) {
@@ -295,9 +295,7 @@ void MemManager::MapAddressSpace(uint64_t* pml4Table,
   for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE, realAddress += PAGE_SIZE) {
     auto ptTable = GetPTTable(pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
-    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
-      ptTable[ptIndex] = realAddress | pageConfig;
-    }
+    ptTable[ptIndex] = realAddress | pageConfig;
   }
 }
 
@@ -410,7 +408,7 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
 
   if (ProcessManager::Instance().IsKernelProcess(iProcessID)) {
     printf("\n Page Fault in Kernel! FIX THIS !!!");
-    printf("\n Page Fault Address/Page: %x / %u", faultyAddress, virtualPageNo);
+    printf("\n Page Fault Address/Page: %lx / %u", faultyAddress, virtualPageNo);
     __asm__ __volatile__ ("HLT");
     while (true);
   }
@@ -446,7 +444,7 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
     // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
   } else {
     /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
-    printf("\n Segmentation/Permission Fault @ Address: 0x%;;x", faultyAddress);
+    printf("\n Segmentation/Permission Fault @ Address: 0x%lx", faultyAddress);
     return Failure;
   }
   return Success;

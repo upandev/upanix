@@ -110,8 +110,7 @@ typedef enum {
 // Vendor IDs
 #define INTEL_VENDOR_ID 0x8086
 
-class PCIEntry
-{
+class PCIEntry {
   public:
 	unsigned uiBusNumber;
 	unsigned uiDeviceNumber;
@@ -243,6 +242,7 @@ class PCIEntry
 		} CardBus;
 	} BusEntity;
 
+  uint64_t GetIOMapAddress();
   void ReadPCIConfig(unsigned uiPCIEntryOffset, unsigned uiPCIEntrySize, void* pValue) const;
   void WritePCIConfig(unsigned uiPCIEntryOffset, unsigned uiPCIEntrySize, unsigned uiValue) const;
   unsigned GetPCIMemSize(int iAddressIndex) const;

@@ -195,6 +195,7 @@ void Initialize() {
     //EHCIManager::Instance();
     XHCIManager::Instance().Initialize();
     while(1);
+
     USBDiskDriver::Register();
     USBKeyboardDriver::Register();
 

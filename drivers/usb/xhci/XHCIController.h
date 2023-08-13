@@ -50,7 +50,7 @@ class XHCIController
   private:
     void Start();
     void InitInterruptHandler();
-    void LoadXCaps(unsigned base);
+    void LoadXCaps(uint64_t base);
     void PerformBiosToOSHandoff();
     EventTRB InitiateCommand();
     EventTRB InitiateTransfer(uint32_t trbId, uint32_t slotID, uint32_t ep);
