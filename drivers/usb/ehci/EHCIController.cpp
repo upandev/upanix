@@ -43,12 +43,9 @@ EHCIController::EHCIController(PCIEntry* pPCIEntry, int iMemMapIndex)
 //	if(!pPCIEntry->BusEntity.NonBridge.bInterruptLine)
   //  throw upan::exception(XLOC, "EHCI device with no IRQ. Check BIOS/PCI settings!");
 
-	unsigned uiIOAddr = pPCIEntry->BusEntity.NonBridge.uiBaseAddress0;
-	printf("\n PCI BaseAddr: %x", uiIOAddr);
-
-	uiIOAddr = uiIOAddr & PCI_ADDRESS_MEMORY_32_MASK;
+	uint64_t uiIOAddr = pPCIEntry->GetIOMapAddress();
 	unsigned uiIOSize = pPCIEntry->GetPCIMemSize(0);
-	printf(", Raw MMIO BaseAddr: %x, IOSize: %d", uiIOAddr, uiIOSize);
+	printf(", Raw MMIO BaseAddr: 0x%lx, IOSize: %d", uiIOAddr, uiIOSize);
 
 	if(uiIOSize > PAGE_SIZE)
     throw upan::exception(XLOC, "EHCI IO Size greater then 1 Page (4096b) not supported currently !");
@@ -62,23 +59,15 @@ EHCIController::EHCIController(PCIEntry* pPCIEntry, int iMemMapIndex)
 	// EHCI_MMIO_BASE_ADDR and EHCI_MMIO_BASE_ADDR + 32 * PAGE_SIZE fall
 	// within the same PTE Entry
 	// Further, mapping is necessary because the IOAddr can be any virtual address
-	// within 4 GB space potentially being an address outside the RAM size
-	// i.e, PDE/PTE limit
-	unsigned uiPDEAddress = MEM_PML4 ;
-	unsigned uiMapAddress = EHCI_MMIO_BASE_ADDR + iMemMapIndex * PAGE_SIZE;
-	unsigned uiPDEIndex = ((uiMapAddress >> 22) & 0x3FF) ;
-	unsigned uiPTEIndex = ((uiMapAddress >> 12) & 0x3FF) ;
-
-	unsigned uiPTEAddress = (((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPDEIndex]) & 0xFFFFF000 ;
-	// This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-	((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPTEIndex] = (uiIOAddr & 0xFFFFF000) | 0x5 ;
+	// outside the RAM size
+	uint64_t uiMapAddress = EHCI_MMIO_BASE_ADDR + iMemMapIndex * PAGE_SIZE;
+	MemManager::Instance().MapAddressSpace(MEM_PML4_TABLE, 0x7, uiMapAddress, uiIOAddr, uiIOSize);
 	Mem_FlushTLB();
 	
-	if(MemManager::Instance().MarkPageAsAllocated(uiIOAddr / PAGE_SIZE, Success) != Success)
-	{
+	if(MemManager::Instance().MarkPageAsAllocated(uiIOAddr / PAGE_SIZE, Success) != Success) {
 	}
 
-	uiMapAddress = uiMapAddress + (uiIOAddr % PAGE_SIZE) - GLOBAL_DATA_SEGMENT_BASE ;
+	uiMapAddress = uiMapAddress + (uiIOAddr % PAGE_SIZE);
 	_pCapRegs = (EHCICapRegisters*)uiMapAddress;
 	byte bCapLen = _pCapRegs->bCapLength ;
 	_pOpRegs = (EHCIOpRegisters*)(uiMapAddress + bCapLen) ;

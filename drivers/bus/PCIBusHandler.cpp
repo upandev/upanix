@@ -322,9 +322,9 @@ uint64_t PCIEntry::GetIOMapAddress() {
   printf("\n PCI BaseAddr Type: %d", addrType);
   if (addrType == 2) {
     uint64_t bar1 = BusEntity.NonBridge.uiBaseAddress1;
-    return ((bar1 & PCI_ADDRESS_MEMORY_32_MASK) << 32) | ((bar0 & PCI_ADDRESS_MEMORY_32_MASK) << 32);
+    return ((bar1 & PCI_ADDRESS_MEMORY_32_MASK) << 32) | (bar0 & PCI_ADDRESS_MEMORY_32_MASK);
   } else {
-    return (bar0 & PCI_ADDRESS_MEMORY_32_MASK) << 32;
+    return bar0 & PCI_ADDRESS_MEMORY_32_MASK;
   }
 }
 
