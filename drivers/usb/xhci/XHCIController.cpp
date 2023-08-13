@@ -230,7 +230,7 @@ void XHCIController::LoadXCaps(uint64_t base) {
     } else {
       printf("\n Unhandled Extended CapID: %d", capId);
     }
-    unsigned nextOffset = (((xCapReg >> 8) & 0xFF) << 2) & 0x3FC;
+    unsigned nextOffset = ((xCapReg >> 8) & 0xFF) << 2;
     if(!nextOffset)
       break;
     base += nextOffset;

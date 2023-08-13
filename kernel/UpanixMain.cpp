@@ -174,7 +174,7 @@ void Initialize() {
   //types of bus like ISA, PCI etc... 
     PCIBusHandler::Instance().Initialize();
     IrqManager::Initialize();
-    PIT::Instance();
+    PIT::Instance().Initialize();
     IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
     __asm__ __volatile__("sti");
     DiskDriveManager::Instance();
@@ -194,7 +194,6 @@ void Initialize() {
     //UHCIManager::Instance();
     //EHCIManager::Instance();
     XHCIManager::Instance().Initialize();
-    while(1);
 
     USBDiskDriver::Register();
     USBKeyboardDriver::Register();
@@ -206,6 +205,7 @@ void Initialize() {
     SessionManager_Initialize() ;
 
     Console::Instance();
+    while(1);
   }
   catch(const upan::exception& ex)
   {

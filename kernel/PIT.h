@@ -67,6 +67,7 @@ public:
     return instance;
   }
 
+  void Initialize();
   void Handler();
 
   uint32_t GetClockCount() const { return _clockCountForSleep; }

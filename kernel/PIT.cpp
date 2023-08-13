@@ -32,6 +32,9 @@ extern "C" {
 }
 
 PIT::PIT() : _clockCountForSleep(0) {
+}
+
+void PIT::Initialize() {
   ReturnCode status = Success;
   IrqGuard g;
   if(!IrqManager::Instance().IsApic()) {
