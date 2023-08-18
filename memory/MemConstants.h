@@ -31,10 +31,7 @@ extern uint32_t SYS_LINEAR_SELECTOR ;
 extern uint16_t SYS_DATA_SELECTOR ;
 extern uint32_t SYS_TSS_SELECTOR ;
 extern uint32_t USER_TSS_SELECTOR ;
-extern uint32_t INT_TSS_SELECTOR_SV ;
-extern uint32_t INT_TSS_SELECTOR_PF ;
 extern uint32_t CALL_GATE_SELECTOR ;
-extern uint32_t INT_GATE_SELECTOR ;
 
 extern uint32_t CR0_CONTENT ;
 extern byte CO_PROC_FPU_TYPE ;
@@ -42,8 +39,7 @@ extern byte CO_PROC_FPU_TYPE ;
 extern uintptr_t GDT_BASE_ADDR;
 extern uintptr_t LDT_BASE_ADDR;
 extern uintptr_t IDT_BASE_ADDR;
-extern uintptr_t SYS_TSS_BASE_ADDR;
-extern uintptr_t USER_TSS_BASE_ADDR;
+extern uintptr_t TSS_BASE_ADDR;
 
 #define GB * 1024UL * 1024 * 1024
 #define MB * 1024 * 1024

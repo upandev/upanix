@@ -33,6 +33,7 @@
 #include <IODescriptorTable.h>
 #include <ProcessGroup.h>
 #include <Process.h>
+#include <InterruptHandlers.h>
 
 class SchedulableProcess : public Process
 {
@@ -129,6 +130,10 @@ protected:
     static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress);
     static uint64_t AllocateStackSpace();
     static void DeAllocateStackSpace(uint64_t stackPDAddress);
+
+    static uint64_t KernelVirtaulStackBase(int stackBlockId);
+    static int AllocateKernelStackSpace();
+    static void DeallocateKernelStackSpace(int stackBlockId);
   };
 
 protected:
@@ -142,6 +147,7 @@ protected:
   int _driveID;
   int _userID;
   ProcessStateInfo& _stateInfo;
+  TaskContext _taskContext;
   TaskState _taskState;
   ProcessLDT _processLDT;
   FileSystem::PresentWorkingDirectory _processPWD;

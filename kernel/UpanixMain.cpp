@@ -205,7 +205,6 @@ void Initialize() {
     SessionManager_Initialize() ;
 
     Console::Instance();
-    while(1);
   }
   catch(const upan::exception& ex)
   {
@@ -228,7 +227,7 @@ upan::mutex& UpanixMain_GetDMMMutex()
 
 void UpanixMain() {
 	Initialize() ;
-
+	while(1);
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
 	ProcessManager::Instance().StartScheduler();

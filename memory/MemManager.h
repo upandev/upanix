@@ -64,6 +64,7 @@ class MemManager
 
     void AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
     void AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
     void DeallocateAddressSpace(uint64_t* pml4Table);
     void DeallocatePDAddressSpace(uint64_t* pdTable);
 
@@ -77,9 +78,6 @@ class MemManager
 
 		int AllocateKernelStack();
 		void DeAllocateKernelStack(int stackBlockId);
-    inline uint32_t GetKernelStackAddress(int stackBlockId) {
-      return KERNEL_PROCESS_PDE_ID * PAGE_TABLE_ENTRIES * PAGE_SIZE + stackBlockId * PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE;
-		}
 
 		static inline unsigned GetProcessSizeInPages(unsigned uiSizeInBytes)
 		{

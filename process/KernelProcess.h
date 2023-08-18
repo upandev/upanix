@@ -61,11 +61,10 @@ public:
 
 private:
   void DeallocateResources() override;
-  uint64_t* AllocateAddressSpace();
   void DeAllocateGUIFramebuffer();
 
 private:
-  int kernelStackBlockId;
+  int _stackBlockId;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   //interop variable

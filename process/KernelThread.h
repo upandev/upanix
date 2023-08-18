@@ -45,8 +45,7 @@ public:
 
 private:
   void DeallocateResources() override;
-  uint64_t* AllocateAddressSpace();
 
 private:
-  int kernelStackBlockId;
+  int _stackBlockId;
 };

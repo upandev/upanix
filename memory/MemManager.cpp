@@ -255,6 +255,17 @@ void MemManager::AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, 
   }
 }
 
+void MemManager::DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+    }
+  }
+}
+
 void MemManager::DeallocateAddressSpace(uint64_t* pml4Table) {
   for(int pml4Index = 0; pml4Index < ENTRIES_PER_PAGE_TABLE; ++pml4Index) {
     if (PAGE_IS_PRESENT(pml4Table, pml4Index)) {

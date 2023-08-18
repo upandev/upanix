@@ -155,13 +155,13 @@ void SchedulableProcess::Load() {
   onLoad();
   FXRestore();
   MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
+  //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
 }
 
 void SchedulableProcess::Store() {
   FXSave();
   MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
-  MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
+  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
 }
 
 FILE_USER_TYPE SchedulableProcess::fileUserType(const FileSystem::Node &node) const
@@ -228,6 +228,21 @@ uint64_t SchedulableProcess::Common::AllocateStackSpace() {
 
 void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress) {
   MemManager::Instance().DeallocatePDAddressSpace((uint64_t*)stackPDAddress);
+}
+
+uint64_t SchedulableProcess::Common::KernelVirtaulStackBase(int stackBlockId) {
+  return PROCESS_KERNEL_STACK_BASE + stackBlockId * PROCESS_KERNEL_STACK_SIZE;
+}
+
+int SchedulableProcess::Common::AllocateKernelStackSpace() {
+  int stackBlockId = MemManager::Instance().AllocateKernelStack();
+  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  return stackBlockId;
+}
+
+void SchedulableProcess::Common::DeallocateKernelStackSpace(int stackBlockId) {
+  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().DeAllocateKernelStack(stackBlockId);
 }
 
 ProcessStateInfo::ProcessStateInfo() :

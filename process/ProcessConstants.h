@@ -25,10 +25,8 @@
 
 #define MAX_NO_PROCESS 3500
 
-#define PROCESS_KERNEL_STACK_PAGES 8
-
 //4MB stack starting (backwards) at 512 GB
-constexpr uint64_t PROCESS_STACK_TOP_ADDRESS = 512 GB;
+extern const uint64_t PROCESS_STACK_TOP_ADDRESS;
 constexpr uint64_t PROCESS_CG_STACK_SIZE = 8 * PAGE_SIZE;
 constexpr uint64_t PROCESS_INIT_STACK_SIZE = PAGE_SIZE;
 constexpr uint64_t PROCESS_STACK_SIZE = 4 MB;
@@ -45,5 +43,8 @@ constexpr uintptr_t PROCESS_HEAP_START_ADDRESS = 508 GB;
 constexpr uint64_t PROCESS_HEAP_SIZE = 2 GB;
 
 constexpr uintptr_t PROCESS_DLL_START_ADDRESS = 8 GB;
+
+constexpr uintptr_t PROCESS_KERNEL_STACK_BASE = 511 GB;
+constexpr uint32_t PROCESS_KERNEL_STACK_SIZE = 32 KB;
 
 #define NO_PROCESS_ID -1

@@ -46,6 +46,7 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
     : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
   _mainThreadID = _processID;
   _autAddress = nullptr;
+  _pml4Table = nullptr;
 
   Load(noOfParams, args);
 
@@ -88,7 +89,7 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
     throw upan::exception(XLOC, "process requires %lu space that's larger than supported %lu", _processSpaceSize, MAX_PROCESS_SPACE_SIZE);
   }
 
-  auto pml4Table = AllocateAddressSpace();
+  AllocateAddressSpace();
   _elfInfo._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
   _elfInfo._elfSecStrTable = mELFParser.CopyELFSecStrTable();
 
@@ -113,7 +114,7 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
     memset(bss, 0, bssSectionHeader->sh_size);
   });
 
-  CopyElfImage(pml4Table, bProcessImage.get(), uiMemImageSize);
+  CopyElfImage(bProcessImage.get(), uiMemImageSize);
 
   /* Find init and term stdio functions in libc if any */
   /*** This code is not required anymore because init and term is now handled in crt0.s - which calls init_standard_library and exit functions */
@@ -159,7 +160,7 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
   const uint64_t uiEntryAdddress = mELFParser.GetProgramStartAddress();// minMemAddr + processImageSize ;
 
   const uint64_t stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_BASE;
-  _taskState.BuildForUser(stackTopAddress, (uint64_t)pml4Table, uiEntryAdddress, uiProcessEntryStackSize);
+  _taskState.BuildForUser(stackTopAddress, (uint64_t)_pml4Table, uiEntryAdddress, uiProcessEntryStackSize);
 }
 
 uint32_t UserProcess::PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList) {
@@ -196,7 +197,7 @@ uint32_t UserProcess::PushProgramInitStackData(int iNumberOfParameters, char **s
   return processEntryStackSize;
 }
 
-void UserProcess::CopyElfImage(uint64_t* pml4Table, byte* processImage, unsigned memImageSize) {
+void UserProcess::CopyElfImage(byte* processImage, unsigned memImageSize) {
   uint64_t copySize = memImageSize;
   uint64_t offset = 0;
 
@@ -204,7 +205,7 @@ void UserProcess::CopyElfImage(uint64_t* pml4Table, byte* processImage, unsigned
   const uint64_t endAddress = virtualAddress + _processSpaceSize;
 
   for(; virtualAddress < endAddress; virtualAddress += PAGE_SIZE, offset += PAGE_SIZE, copySize -= PAGE_SIZE) {
-    auto ptTable = MemManager::Instance().GetPTTable(pml4Table, virtualAddress);
+    auto ptTable = MemManager::Instance().GetPTTable(_pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
       throw upan::exception(XLOC, "page table not allocated at proces space address: 0x%lx", virtualAddress);
@@ -292,16 +293,14 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 
-uint64_t* UserProcess::AllocateAddressSpace() {
-  auto pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+void UserProcess::AllocateAddressSpace() {
+  _pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
   //Map kernel space into the process
-  MemManager::Instance().MapAddressSpace(pml4Table, 0x5, 0, 0, PROCESS_SPACE_FOR_OS);
+  MemManager::Instance().MapAddressSpace(_pml4Table, 0x5, 0, 0, PROCESS_SPACE_FOR_OS);
   //Allocate process space
-  MemManager::Instance().AllocateAddressSpace(pml4Table, 0x7, _processBase + PROCESS_BASE, _processSpaceSize);
+  MemManager::Instance().AllocateAddressSpace(_pml4Table, 0x7, _processBase + PROCESS_BASE, _processSpaceSize);
 
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
-
-  return pml4Table;
 }
 
 void UserProcess::DeallocateResources() {

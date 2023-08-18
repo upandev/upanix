@@ -25,15 +25,22 @@
 #include <KernelThread.h>
 #include <GraphicsVideo.h>
 #include <DMM.h>
+#include <InterruptHandlers.h>
 
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
   _mainThreadID = _processID;
-  _processBase = GLOBAL_DATA_SEGMENT_BASE;
-  const uint32_t uiStackAddress = AllocateAddressSpace();
-  const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;
-  _taskState.BuildForKernel(taskAddress, uiStackTop, params);
-  _processLDT.BuildForKernel();
+  _processBase = 0;
+  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  const uint64_t uiStackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_BASE - 1;
+
+  _taskContext.interruptState.cs = SYS_CODE_SELECTOR;
+  _taskContext.interruptState.rip = taskAddress;
+  _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
+  _taskContext.interruptState.rsp = uiStackTop;
+  _taskContext.interruptState.rflags = 0x202;
+  //_taskState.BuildForKernel(taskAddress, uiStackTop, params);
+  //_processLDT.BuildForKernel();
   _userID = ROOT_USER_ID ;
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
@@ -44,13 +51,8 @@ KernelThread& KernelProcess::CreateThread(uint32_t threadCaller, uint32_t entryA
   return *new KernelThread(*this, threadCaller, entryAddress, arg);
 }
 
-uint64_t* KernelProcess::AllocateAddressSpace() {
-  kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
-  return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
-}
-
 void KernelProcess::DeallocateResources() {
-  MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
+  SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
   DeAllocateGUIFramebuffer();
   upanui::GraphicsContext::Destroy();
 }
@@ -79,7 +81,7 @@ void KernelProcess::initGuiFrame() {
 
 void KernelProcess::DeAllocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
-    DMM_DeAllocateForKernel((uint32_t)_frame->frameBuffer().buffer());
+    DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
     GraphicsVideo::Instance().removeFGProcess(_processID);
   }
 }

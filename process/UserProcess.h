@@ -76,8 +76,8 @@ public:
 
 private:
   void Load(int bssSectionHeader, char** szArgumentList);
-  uint64_t* AllocateAddressSpace();
-  void CopyElfImage(uint64_t* pml4Table, byte* bProcessImage, unsigned uiMemImageSize);
+  void AllocateAddressSpace();
+  void CopyElfImage(byte* bProcessImage, unsigned uiMemImageSize);
   uint32_t PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList);
 
   void DeallocateResources() override;
@@ -97,4 +97,5 @@ private:
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   ProcessDLLInfo::ELFInfo _elfInfo;
+  uint64_t* _pml4Table;
 };

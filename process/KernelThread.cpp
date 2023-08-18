@@ -26,22 +26,23 @@
 
 KernelThread::KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg)
   : Thread(parent) {
-  const uint32_t uiStackAddress = AllocateAddressSpace();
-  const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;
+  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  const uint64_t uiStackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_BASE - 1;
   upan::vector<uintptr_t> params;
   params.push_back(entryAddress);
   params.push_back((uintptr_t)arg);
-  _taskState.BuildForKernel(threadCaller, uiStackTop, params);
-  _processLDT.BuildForKernel();
+
+  _taskContext.interruptState.rip = threadCaller;
+  _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
+  _taskContext.interruptState.rsp = uiStackTop;
+  _taskContext.interruptState.rflags = 0x202;
+
+  //_taskState.BuildForKernel(threadCaller, uiStackTop, params);
+  //_processLDT.BuildForKernel();
 
   _parent.addToThreadScheduler(*this);
 }
 
-uint64_t* KernelThread::AllocateAddressSpace() {
-  kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
-  return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
-}
-
 void KernelThread::DeallocateResources() {
-  MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
+  SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
 }
