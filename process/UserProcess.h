@@ -37,7 +37,7 @@ public:
   }
 
   void onLoad() override;
-  UserThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
+  UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override;
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;

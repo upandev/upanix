@@ -67,12 +67,12 @@ void KernelUtil::ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec
   ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &SystemTimer, ProcessManager::GetCurrentProcessID(), false, params);
 }
 
-void KernelUtil::SystemTimer(unsigned uiTimeInMilliSec, TimerTask* task)
+void KernelUtil::SystemTimer(unsigned timeInMilliSec, TimerTask* task)
 {
 	do
 	{
-		ProcessManager::Instance().Sleep(uiTimeInMilliSec) ;
+		ProcessManager::Instance().Sleep(timeInMilliSec) ;
   } while(task->TimerTrigger()) ;
-	ProcessManager_EXIT() ;
+	ProcessManager_Exit();
 }
 

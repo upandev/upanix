@@ -58,7 +58,7 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
   _userID = userID == DERIVE_FROM_PARENT && !parentProcess.isEmpty() ? parentProcess.value().userID() : _userID;
 }
 
-UserThread& UserProcess::CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) {
+UserThread& UserProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
   return *new UserThread(*this, threadCaller, entryAddress, arg);
 }
 

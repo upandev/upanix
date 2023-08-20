@@ -29,7 +29,7 @@ class AutonomousProcess : public SchedulableProcess {
 public:
   AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess);
 
-  virtual Thread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) = 0;
+  virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) = 0;
 
   SchedulableProcess& forSchedule() override;
   void DestroyThreads() override;

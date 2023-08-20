@@ -23,22 +23,39 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="upgrade EHCI controler initialization to support 64bit kernel">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="kernel process and thread modified for 64bit kernel">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.h" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -172,7 +189,7 @@
       <workItem from="1688169083627" duration="76239000" />
       <workItem from="1689170475032" duration="12538000" />
       <workItem from="1689461946146" duration="101171000" />
-      <workItem from="1691579315317" duration="41049000" />
+      <workItem from="1691579315317" duration="77242000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -265,7 +282,14 @@
       <option name="project" value="LOCAL" />
       <updated>1691932153889</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="kernel process and thread modified for 64bit kernel">
+      <created>1692369730041</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1692369730041</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -307,6 +331,7 @@
     <MESSAGE value="XHCI controller initializing upgraded for 64bit kernel" />
     <MESSAGE value="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop." />
     <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
-    <option name="LAST_COMMIT_MESSAGE" value="upgrade EHCI controler initialization to support 64bit kernel" />
+    <MESSAGE value="kernel process and thread modified for 64bit kernel" />
+    <option name="LAST_COMMIT_MESSAGE" value="kernel process and thread modified for 64bit kernel" />
   </component>
 </project>

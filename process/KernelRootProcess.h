@@ -103,6 +103,10 @@ public:
     throw upan::exception(XLOC, "stateInfo() unsupported");
   }
 
+  PROCESS_STATUS status() const {
+    throw upan::exception(XLOC, "status() unsupported");
+  }
+
   PROCESS_STATUS setStatus(PROCESS_STATUS status) {
     throw upan::exception(XLOC, "setStatus() unsupported");
   }

@@ -193,14 +193,16 @@ bool GraphicsVideo::TimerTrigger() {
       });
     }
   }
-
   _mousePrevX = _mouseCursor->x();
   _mousePrevY = _mouseCursor->y();
 
   DrawMouseCursor();
+
   lfbStats.start();
-  optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
+  //optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
+  memcpy((void*)_mappedLFBAddress, (void*)_zBuffer, _lfbSize);
   lfbStats.end();
+
   gvtStats.end();
 
   return true;

@@ -24,7 +24,7 @@
 #include <ProcessManager.h>
 
 //thread must have a parent
-UserThread::UserThread(AutonomousProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg)
+UserThread::UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
   const auto stackArgSize = PushProgramInitStackData(arg, nullptr);

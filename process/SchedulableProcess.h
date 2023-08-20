@@ -70,8 +70,8 @@ public:
     return (uint64_t*)_taskState.CR3_PDBR;
   }
 
-  void Load();
-  void Store();
+  void Load(TaskContext& taskState);
+  void Store(TaskContext& taskState);
   void Destroy();
   void Release();
 
@@ -90,7 +90,7 @@ public:
 
   void setParentProcessID(int parentProcessID) { _parentProcessID = parentProcessID; }
 
-  PROCESS_STATUS status() const { return _status; }
+  PROCESS_STATUS status() const override { return _status; }
   PROCESS_STATUS setStatus(PROCESS_STATUS status) override {
     return (PROCESS_STATUS) upan::atomic::op::swap((__volatile__ uint32_t &) (_status), static_cast<int>(status));
   }

@@ -26,6 +26,7 @@
 #include <PIC.h>
 #include <PortCom.h>
 #include <atomicop.h>
+#include <ProcessManager.h>
 
 extern "C" {
   void _timer_interrupt_handler();
@@ -50,53 +51,12 @@ void PIT::Initialize() {
   KC::MConsole().LoadMessage("Timer Initialization", status);
 }
 
-void PIT::Handler() {
+void PIT::Handler(TaskContext& taskContext) {
 	// 1 Int --> 1ms
 	++_clockCountForSleep;
-	if ((_clockCountForSleep % 1000) == 0)
-	  printf("\n TIMER INT %d", _clockCountForSleep);
-
-//	if((PIT_ClockCountForSleep % 10) == 0 && PIT_IsTaskSwitch())
-//	{
-//		__volatile__ unsigned uiTaskReg = 0;
-//		__asm__ __volatile__("STR %ax") ;
-//		__asm__ __volatile__("movw %%ax, %0" : "=m"(uiTaskReg) :) ;
-//
-//		if(uiTaskReg == USER_TSS_SELECTOR)
-//		{
-//			Process_bContextSwitch = true ;
-//
-////			__asm__ __volatile__("pushf") ;
-////			__asm__ __volatile__("popl %eax") ;
-//			__asm__ __volatile__("mov $0x4000, %ebx") ;
-//			__asm__ __volatile__("or %ebx, %eax") ;
-////			__asm__ __volatile__("pushl %eax") ;
-////			__asm__ __volatile__("popf") ;
-//
-//			IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
-//
-//			__asm__ __volatile__("IRET") ;
-//
-////			__asm__ __volatile__("pushf") ;
-////			__asm__ __volatile__("popl %eax") ;
-//			__asm__ __volatile__("mov $0xBFFF, %ebx") ;
-//			__asm__ __volatile__("and %ebx, %eax") ;
-////			__asm__ __volatile__("pushl %eax") ;
-////			__asm__ __volatile__("popf") ;
-//
-//			//AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-//			__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-//			__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
-//			__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
-//			__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
-//
-//			AsmUtil_RESTORE_GPR() ;
-//
-//			__asm__ __volatile__("leave") ;
-//			__asm__ __volatile__("IRETQ") ;
-//		}
-//	}
-
+	if ((_clockCountForSleep % 10) == 0) {
+	  ProcessManager::Instance().ContextSwitch(taskContext);
+	}
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 }
 

@@ -24,17 +24,22 @@
 #include <KernelProcess.h>
 #include <MemManager.h>
 
-KernelThread::KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg)
+KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
-  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
-  const uint64_t uiStackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_BASE - 1;
-  upan::vector<uintptr_t> params;
-  params.push_back(entryAddress);
-  params.push_back((uintptr_t)arg);
 
+  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  //we know number of params to thread function is only 3 which is less than PROCESS_ARGUMENTS_ON_REGS_X86_64 (6)
+  //so, there is no need to use stack for passing any arguments
+  //the only (auto)argument on stack is return address
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_SIZE - sizeof(uintptr_t);
+
+  _taskContext.rdi = entryAddress;
+  _taskContext.rsi = (uintptr_t)arg;
+
+  _taskContext.interruptState.cs = SYS_CODE_SELECTOR;
   _taskContext.interruptState.rip = threadCaller;
   _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
-  _taskContext.interruptState.rsp = uiStackTop;
+  _taskContext.interruptState.rsp = stackTop;
   _taskContext.interruptState.rflags = 0x202;
 
   //_taskState.BuildForKernel(threadCaller, uiStackTop, params);

@@ -26,7 +26,7 @@
 
 class UserThread : public Thread {
 public:
-  UserThread(AutonomousProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg);
+  UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
 
   bool isKernelProcess() const override {
     return false;

@@ -65,11 +65,11 @@ class KernelService
 		unsigned RequestFlatAddress(unsigned uiAddress) ;
 		bool RequestPageFault(uintptr_t faultyAddress) ;
 		int RequestProcessExec(const char* szFile, int iNoOfArgs, const char** szArgs) ;
-		int RequestThreadExec(uint32_t threadCaller, uint32_t entryAddresss, void* arg);
+		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
 
 	private:
-		static void Server(KernelService* pService) ;
+    [[noreturn]] static void Server(KernelService* pService) ;
 
 		void AddRequest(Request* pRequest) ;
 		Request* GetRequest() ;
@@ -129,13 +129,13 @@ class KernelService
 
 		class ThreadExec : public Request {
 		private:
-		  uint32_t _threadCaller;
-		  uint32_t _entryAddress;
+      uintptr_t _threadCaller;
+      uintptr_t _entryAddress;
 		  void* _arg;
 		  int _threadID;
 
 		public:
-		  ThreadExec(uint32_t threadCaller, uint32_t entryAddress, void* arg)
+		  ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
 		    : _threadCaller(threadCaller), _entryAddress(entryAddress), _arg(arg), _threadID(-1) {}
 		  void Execute() override;
 		  int GetThreadID() const {

@@ -31,15 +31,33 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
   _mainThreadID = _processID;
   _processBase = 0;
+
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
-  const uint64_t uiStackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_BASE - 1;
+
+  const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
+
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId)
+          + PROCESS_KERNEL_STACK_SIZE
+          - (noOfStackParams + 1) * sizeof(uintptr_t);
+
+  //the first stack param is return address - which is pushed as per x86 64 ABI
+  for(int i = 1; i <= noOfStackParams; ++i) {
+    ((uintptr_t*)stackTop)[i] = params[i - 1 + PROCESS_ARGUMENTS_ON_REGS_X86_64];
+  }
+
+  if (params.size() >= 1) _taskContext.rdi = params[0];
+  if (params.size() >= 2) _taskContext.rsi = params[1];
+  if (params.size() >= 3) _taskContext.rdx = params[2];
+  if (params.size() >= 4) _taskContext.rcx = params[3];
+  if (params.size() >= 5) _taskContext.r8 = params[4];
+  if (params.size() >= 6) _taskContext.r9 = params[5];
 
   _taskContext.interruptState.cs = SYS_CODE_SELECTOR;
   _taskContext.interruptState.rip = taskAddress;
   _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
-  _taskContext.interruptState.rsp = uiStackTop;
+  _taskContext.interruptState.rsp = stackTop;
   _taskContext.interruptState.rflags = 0x202;
-  //_taskState.BuildForKernel(taskAddress, uiStackTop, params);
+  //_taskState.BuildForKernel(taskAddress, stackTop, params);
   //_processLDT.BuildForKernel();
   _userID = ROOT_USER_ID ;
 
@@ -47,7 +65,7 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
 }
 
-KernelThread& KernelProcess::CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) {
+KernelThread& KernelProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
   return *new KernelThread(*this, threadCaller, entryAddress, arg);
 }
 

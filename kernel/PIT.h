@@ -22,6 +22,7 @@
 #pragma once
 
 #include <Global.h>
+#include <InterruptHandlers.h>
 
 #define TIMECOUNTER_i8254_FREQU 1193182 // Input Frequency of PIT
 // Counter 0, 1, 2
@@ -68,7 +69,7 @@ public:
   }
 
   void Initialize();
-  void Handler();
+  void Handler(TaskContext&);
 
   uint32_t GetClockCount() const { return _clockCountForSleep; }
   uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);

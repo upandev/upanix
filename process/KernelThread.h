@@ -27,7 +27,7 @@ class KernelProcess;
 
 class KernelThread : public Thread {
 public:
-  KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg);
+  KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
 
   bool isKernelProcess() const override {
     return true;

@@ -78,9 +78,11 @@ int debug_point ;
 
 	KernelRootProcess::Instance().initGuiFrame();
 	RootGUIConsole::Instance().ClearScreen();
+
   GraphicsVideo::Instance().CreateRefreshTask();
 
   KC::MConsole().StartCursorBlink();
+
   KeyboardHandler::Instance().StartDispatcher();
   PS2MouseDriver::Instance().StartDispatcher();
 
@@ -88,6 +90,7 @@ int debug_point ;
     const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
                                                                    ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
+
     ProcessManager::Instance().WaitOnChild(pid);
   }
 	ProcessManager_EXIT() ;
@@ -226,11 +229,11 @@ upan::mutex& UpanixMain_GetDMMMutex()
 }
 
 void UpanixMain() {
-	Initialize() ;
-	while(1);
+	Initialize();
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
-	ProcessManager::Instance().StartScheduler();
+  KERNEL_MODE = false;
+	ProcessManager::Instance().EnableTaskSwitch();
 	while(1) ;
 }
 

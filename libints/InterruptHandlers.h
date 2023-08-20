@@ -57,6 +57,7 @@ typedef struct {
 extern "C" {
   TaskContext *timer_interrupt_handler(TaskContext *state);
 }
+
 void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode);
 void keyboard_interrupt_handler(InterruptState* state);
 void mouse_interrupt_handler(InterruptState* state);

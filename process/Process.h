@@ -66,6 +66,7 @@ public:
   virtual FileSystem::PresentWorkingDirectory& processPWD() = 0;
   virtual const FileSystem::PresentWorkingDirectory& processPWD() const = 0;
   virtual ProcessStateInfo& stateInfo() = 0;
+  virtual PROCESS_STATUS status() const = 0;
   virtual PROCESS_STATUS setStatus(PROCESS_STATUS status) = 0;
   virtual ProcessGroup* processGroup() = 0;
   virtual void setProcessGroup(ProcessGroup* processGroup) = 0;

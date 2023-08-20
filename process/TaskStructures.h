@@ -44,7 +44,7 @@ public:
   unsigned short	SS2 ;
   unsigned short	FILLER4 ;
 
-  unsigned		CR3_PDBR ;
+  uint64_t 		CR3_PDBR ;
   unsigned		EIP ;
   unsigned		EFLAGS ;
 

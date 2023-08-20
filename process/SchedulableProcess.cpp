@@ -65,7 +65,7 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
 }
 
 SchedulableProcess::~SchedulableProcess() {
-  DMM_DeAllocateForKernel(reinterpret_cast<unsigned int>(_sseRegs));
+  DMM_DeAllocateForKernel(reinterpret_cast<uint64_t>(_sseRegs));
   delete &_stateInfo;
 }
 
@@ -151,16 +151,18 @@ void SchedulableProcess::FXRestore() {
   __asm__ __volatile__("fxrstor (%0)" : : "r"(_sseRegs));
 }
 
-void SchedulableProcess::Load() {
+void SchedulableProcess::Load(TaskContext& taskContext) {
   onLoad();
   FXRestore();
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
+  taskContext = _taskContext;
+  //MemUtil_CopyMemory(MemUtil_GetDS(), (uint64_t)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
   //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
 }
 
-void SchedulableProcess::Store() {
+void SchedulableProcess::Store(TaskContext& taskContext) {
+  _taskContext = taskContext;
   FXSave();
-  MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
+  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
   //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
 }
 

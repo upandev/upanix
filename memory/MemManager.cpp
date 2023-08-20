@@ -152,7 +152,11 @@ bool MemManager::BuildPageTable() {
 	  MEM_PT_TABLE[i] = (i * PAGE_SIZE) | 0x3;
 	}
 
-	const auto noOfPTs = I_DIVIDE_AND_CEIL(noOfPTTableEntries, ENTRIES_PER_PAGE_TABLE);
+  for (uint32_t i = noOfPTTableEntries; i < MEM_PT_SIZE; ++i) {
+    MEM_PT_TABLE[i] = 0x0;
+  }
+
+  const auto noOfPTs = I_DIVIDE_AND_CEIL(noOfPTTableEntries, ENTRIES_PER_PAGE_TABLE);
   if (noOfPTs > MEM_PD_SIZE) {
     KC::MConsole().Message("\n PD table size insufficient\n", 'A') ;
     return false ;
@@ -161,6 +165,10 @@ bool MemManager::BuildPageTable() {
   const auto noOfInitPTs = I_DIVIDE_AND_CEIL(noOfInitPages, ENTRIES_PER_PAGE_TABLE);
   for (uint32_t i = noOfInitPTs; i < noOfPTs; ++i) {
     MEM_PD_TABLE[i] = ((uint64_t)MEM_PT_TABLE + i * PAGE_SIZE) | 0x3;
+  }
+
+  for (uint32_t i = noOfPTs; i < MEM_PD_SIZE; ++i) {
+    MEM_PD_TABLE[i] = 0x0;
   }
 
   const auto noOfPDs = I_DIVIDE_AND_CEIL(noOfPTs, ENTRIES_PER_PAGE_TABLE);
@@ -174,6 +182,10 @@ bool MemManager::BuildPageTable() {
     MEM_PDP_TABLE[i] = ((uint64_t)MEM_PD_TABLE + i * PAGE_SIZE) | 0x3;
   }
 
+  for (uint32_t i = noOfPDs; i < MEM_PDP_SIZE; ++i) {
+    MEM_PDP_TABLE[i] = 0x0;
+  }
+
   const auto noOfPDPs = I_DIVIDE_AND_CEIL(noOfPDs, ENTRIES_PER_PAGE_TABLE);
   if (noOfPDPs > MEM_PML4_SIZE) {
     KC::MConsole().Message("\n PML4 table size insufficient\n", 'A') ;
@@ -185,7 +197,7 @@ bool MemManager::BuildPageTable() {
     MEM_PML4_TABLE[i] = ((uint64_t)MEM_PDP_TABLE + i * PAGE_SIZE) | 0x3;
   }
 
-  for (uint32_t i = noOfPDPs; i < 512; ++i) {
+  for (uint32_t i = noOfPDPs; i < MEM_PML4_SIZE; ++i) {
     MEM_PML4_TABLE[i] = 0x0;
   }
 
@@ -229,7 +241,6 @@ uint64_t* MemManager::GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddre
     auto ptPage = AllocatePhysicalPage();
     pdTable[pdIndex] = (ptPage * PAGE_SIZE) | 0x7;
   }
-
   return PAGE_TABLE(pdTable, pdIndex);
 }
 

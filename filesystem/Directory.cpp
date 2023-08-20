@@ -895,7 +895,7 @@ void Directory_Change(const char* szFileName, int iDriveID, Process* processAddr
 void Directory_PresentWorkingDirectory(Process* processAddressSpace, char** uiReturnDirPathAddress)
 {
 	char* pAddress ;
-  const char* szPWD = processAddressSpace->getEnv("PWD").valueOrThrow(XLOC, "PWD is not set").c_str();
+  const char* szPWD = processAddressSpace->getEnv("PWD").valueOrElse("").c_str();
 
 	if(processAddressSpace->isKernelProcess())
 	{

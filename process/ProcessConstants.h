@@ -47,4 +47,6 @@ constexpr uintptr_t PROCESS_DLL_START_ADDRESS = 8 GB;
 constexpr uintptr_t PROCESS_KERNEL_STACK_BASE = 511 GB;
 constexpr uint32_t PROCESS_KERNEL_STACK_SIZE = 32 KB;
 
+constexpr uint32_t PROCESS_ARGUMENTS_ON_REGS_X86_64 = 6;
+
 #define NO_PROCESS_ID -1

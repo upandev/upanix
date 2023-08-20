@@ -101,7 +101,8 @@ __volatile__ uintptr_t uiP9)
 
 	  case SYS_CALL_PROCESS_YIELD:
       {
-        ProcessManager_Yield();
+        ProcessManager::Instance().Sleep(1) ;
+        //ProcessManager_Yield();
       }
       break;
 

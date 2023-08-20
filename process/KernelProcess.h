@@ -39,7 +39,7 @@ public:
 
   void onLoad() override {}
 
-  KernelThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
+  KernelThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
   IODescriptorTable& iodTable() override {
     return _iodTable;

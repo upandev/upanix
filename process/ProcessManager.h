@@ -84,14 +84,13 @@ class ProcessManager
 
     PS* GetProcList(unsigned& uiListSize);
     void FreeProcListMem(PS* pProcList, unsigned uiListSize);
-    void StartScheduler();
     void AddToSchedulerList(SchedulableProcess& process);
     void AddToProcessMap(SchedulableProcess& process);
     void RemoveFromProcessMap(SchedulableProcess& process);
     bool WakeupProcessOnInterrupt(SchedulableProcess& process);
     bool IsResourceBusy(__volatile__ RESOURCE_KEYS uiType);
     void SetResourceBusy(RESOURCE_KEYS uiType, bool bVal);
-    void Sleep(unsigned uiSleepTime);
+    void Sleep(volatile unsigned int sleepTime);
     void WaitOnInterrupt(const IRQ&);
     void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
     int GetCurProcId();
@@ -102,7 +101,7 @@ class ProcessManager
     bool IsChildAlive(int iChildProcessID);
     int CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID, byte bIsFGProcess, const upan::vector<uintptr_t>& params);
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID, int iNumberOfParameters, char** szArgumentList);
-    int CreateThreadTask(int parentID, uint32_t threadCaller, uint32_t threadEntryAddress, void* arg);
+    int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg);
     void SetDMMFlag(int iProcessID, bool flag);
     bool IsDMMOn(int iProcessID);
     void WaitOnChild(int iChildProcessID);
@@ -115,6 +114,7 @@ class ProcessManager
     bool ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor);
     void WaitForEvent();
     void EventCompleted(int pid);
+    void ContextSwitch(TaskContext &);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;
@@ -128,12 +128,12 @@ class ProcessManager
 
     static bool EnableTaskSwitch() ;
     static bool DisableTaskSwitch() ;
-    static bool IsTaskSwitch() { return _taskSwitch == 1; }
+    static bool IsTaskSwitchEnabled() { return _taskSwitch == 1; }
     static bool IsContextSwitch() { return _contextSwitch; }
     static void SetContextSwitch(bool flag) { _contextSwitch = flag; }
 
   private:
-    void DoContextSwitch(SchedulableProcess& process);
+    void PrepareToRun(SchedulableProcess& process);
     void Destroy(SchedulableProcess& pas);
     bool DoPollWait();
     void BuildIntTaskState(const unsigned uiTaskAddress, const unsigned uiTSSAddress, const int stack);
@@ -149,6 +149,7 @@ class ProcessManager
 
     typedef upan::list<SchedulableProcess*> ProcessSchedulerList;
     ProcessSchedulerList _processSchedulerList;
+    ProcessSchedulerList::list_iterator _processSchedulerIt;
 
     //This is required even before initializing the ProcessManager for fetching
     static int _currentProcessID;

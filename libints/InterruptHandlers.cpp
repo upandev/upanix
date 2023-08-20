@@ -30,10 +30,10 @@
 #include <XHCIManager.h>
 
 extern "C" {
-TaskContext *timer_interrupt_handler(TaskContext *state) {
-  PIT::Instance().Handler();
-  return state;
-}
+  TaskContext* timer_interrupt_handler(TaskContext* state) {
+    PIT::Instance().Handler(*state);
+    return state;
+  }
 }
 
 __attribute__((interrupt)) void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode) {

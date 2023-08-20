@@ -175,7 +175,7 @@ int KernelService::RequestProcessExec(const char* szFile, int iNoOfArgs, const c
 	return iNewProcId ;
 }
 
-int KernelService::RequestThreadExec(uint32_t threadCaller, uint32_t entryAddresss, void* arg) {
+int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t  entryAddresss, void* arg) {
   auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg);
 
   AddRequest(pRequest) ;
@@ -213,9 +213,9 @@ KernelService::Request* KernelService::GetRequest()
 	return pRequest ;
 }
 
-void KernelService::Server(KernelService* pService)
+[[noreturn]] void KernelService::Server(KernelService* pService)
 {
-	while(true)
+  while(true)
 	{
 		Request* pRequest = pService->GetRequest() ;
 		if(!pRequest)
@@ -243,7 +243,7 @@ int KernelService::Spawn()
 
   upan::string szName(szKS);
   szName += upan::string::to_string(iID);
-	iID++ ;
+	++iID;
 
 	upan::vector<uintptr_t> params;
 	params.push_back((uintptr_t)this);
