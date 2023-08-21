@@ -39,7 +39,7 @@ class KernelUtil
     static void ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask&) ;
 
 	private:
-    static void SystemTimer(unsigned uiTimeInMilliSec, TimerTask* task) ;
+    static void SystemTimer(unsigned timeInMilliSec, TimerTask* task) ;
 } ;
 
 #endif

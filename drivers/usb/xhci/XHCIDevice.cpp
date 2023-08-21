@@ -348,7 +348,7 @@ void XHCIDevice::SetIdle()
   _inputContext->SendCommand(requestType, 0x0A, 0, _bInterfaceNumber, 0, TransferType::NO_DATA_STAGE, nullptr);
 }
 
-bool XHCIDevice::SetupInterruptReceiveData(uint32_t bufferAddress, uint32_t len, USBInterruptDataHandler* handler)
+bool XHCIDevice::SetupInterruptReceiveData(uintptr_t bufferAddress, uint32_t len, USBInterruptDataHandler* handler)
 {
   _inputContext->SetInterruptDataHandler(handler);
   return _inputContext->ReceiveInterruptData(bufferAddress, len);

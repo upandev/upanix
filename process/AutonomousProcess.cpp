@@ -161,3 +161,26 @@ void AutonomousProcess::setGuiBase(bool val) {
   }
   getGuiFrame().value().touch();
 }
+
+void AutonomousProcess::setEnv(const upan::string& key, const upan::string& value) {
+  upan::mutex_guard g(_envMutex);
+  if (_envMap.size() == MAX_ENV_KEYS) {
+    throw upan::exception(XLOC, "max %d env variables are allowed", MAX_ENV_KEYS);
+  }
+  if (key.length() > MAX_ENV_KEY_LEN) {
+    throw upan::exception(XLOC, "Env key must be <= %d characters", MAX_ENV_KEY_LEN);
+  }
+  if (value.length() >  MAX_ENV_VAL_LEN) {
+    throw upan::exception(XLOC, "Env value must be <= %d characters", MAX_ENV_VAL_LEN);
+  }
+  _envMap[key] = value;
+}
+
+upan::option<upan::string> AutonomousProcess::getEnv(const upan::string& key) {
+  upan::mutex_guard g(_envMutex);
+  auto it = _envMap.find(key);
+  if (it == _envMap.end()) {
+    return upan::option<upan::string>::empty();
+  }
+  return upan::option<upan::string>(it->second);
+}

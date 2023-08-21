@@ -29,7 +29,7 @@ class AutonomousProcess : public SchedulableProcess {
 public:
   AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess);
 
-  virtual Thread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) = 0;
+  virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) = 0;
 
   SchedulableProcess& forSchedule() override;
   void DestroyThreads() override;
@@ -50,6 +50,11 @@ public:
   }
 
   void setGuiBase(bool v) override;
+  void setEnv(const upan::string& key, const upan::string& value) override;
+  upan::option<upan::string> getEnv(const upan::string& key) override;
+  const ProcessEnvMap& envMap() override {
+    return _envMap;
+  }
 
 private:
   typedef upan::list<Thread*> ThreadSchedulerList;
@@ -59,4 +64,7 @@ private:
   IODescriptor* _uiKeyboardEventStreamFD;
   IODescriptor* _uiMouseEventStreamFD;
   bool _isGuiBase;
+
+  upan::mutex _envMutex;
+  ProcessEnvMap _envMap;
 };

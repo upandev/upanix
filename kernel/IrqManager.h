@@ -86,7 +86,7 @@ class IrqManager
     bool IsApic() const { return _isApic; }
 
 		const IRQ* RegisterIRQ(const int& iIRQNo, unsigned pHandler);
-		bool RegisterIRQ(const IRQ& irq, unsigned pHandler);
+		bool RegisterIRQ(const IRQ& irq, uintptr_t pHandler);
     bool UnregisterIRQ(const IRQ& irq);
 		const IRQ* GetIRQ(const IRQ& irq);
 		const IRQ* GetIRQ(const int& iIRQNo);
@@ -108,26 +108,25 @@ class IrqGuard
     {
       IrqManager::Instance().DisableIRQ(*_irq);
     }
-    IrqGuard() : _irq(nullptr)
-    {
-      __asm__ __volatile__("pushf");
-      __asm__ __volatile__("popl %0" : "=m"(_allIntSyncFlag) : );
-      if(_allIntSyncFlag & 0x0200)
-	      __asm__ __volatile__("cli");
+    IrqGuard() : _irq(nullptr) {
+      __asm__ __volatile__("pushf;"
+                           "pop %0" : "=m"(_allIntSyncFlag) : );
+      if(_allIntSyncFlag & 0x0200) {
+        __asm__ __volatile__("cli");
+      }
     }
-    ~IrqGuard()
-    {
-      if(_irq)
+    ~IrqGuard() {
+      if(_irq) {
         IrqManager::Instance().EnableIRQ(*_irq);
-      else
-      {
-        if(_allIntSyncFlag & 0x0200)
-	        __asm__ __volatile__("sti");
+      } else {
+        if(_allIntSyncFlag & 0x0200) {
+          __asm__ __volatile__("sti");
+        }
       }
     }
   private:
     const IRQ* _irq;
-    uint32_t _allIntSyncFlag;
+    uint64_t _allIntSyncFlag;
 };
 
 #endif

@@ -19,22 +19,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _DYNAMIC_LINK_LOADER_H_
-#define _DYNAMIC_LINK_LOADER_H_
+#pragma once
 
 #include <ProcessManager.h>
 #include <KernelService.h>
 
-#define DynamicLinkLoader_SUCCESS						0
-#define DynamicLinkLoader_ERR_TABLE_SIZE_UNDER_FLOW		1
-#define DynamicLinkLoader_ERR_SYM_NOT_FOUND				2
-#define DynamicLinkLoader_ERR_NOT_PIC					3
-#define DynamicLinkLoader_ERR_LIB_EFOUND				4
-#define DynamicLinkLoader_FAILURE						5
-
-uint32_t DynamicLinkLoader_Initialize(unsigned uiPDEAddress) ;
-void DynamicLinkLoader_UnInitialize(Process* processAddressSpace) ;
 bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* szSymName, unsigned* uiDynSymOffset, Process* processAddressSpace) ;
 void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsigned uiRelocationOffset, __volatile__ int* iDynamicSymAddress) ;
-
-#endif

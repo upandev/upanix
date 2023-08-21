@@ -24,24 +24,30 @@
 #include <KernelProcess.h>
 #include <MemManager.h>
 
-KernelThread::KernelThread(KernelProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg)
+KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
-  const uint32_t uiStackAddress = AllocateAddressSpace();
-  const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;
-  upan::vector<uint32_t> params;
-  params.push_back(entryAddress);
-  params.push_back((uint32_t)arg);
-  _taskState.BuildForKernel(threadCaller, uiStackTop, params);
-  _processLDT.BuildForKernel();
+
+  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  //we know number of params to thread function is only 3 which is less than PROCESS_ARGUMENTS_ON_REGS_X86_64 (6)
+  //so, there is no need to use stack for passing any arguments
+  //the only (auto)argument on stack is return address
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId) + PROCESS_KERNEL_STACK_SIZE - sizeof(uintptr_t);
+
+  _taskContext.rdi = entryAddress;
+  _taskContext.rsi = (uintptr_t)arg;
+
+  _taskContext.interruptState.cs = SYS_CODE_SELECTOR;
+  _taskContext.interruptState.rip = threadCaller;
+  _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
+  _taskContext.interruptState.rsp = stackTop;
+  _taskContext.interruptState.rflags = 0x202;
+
+  //_taskState.BuildForKernel(threadCaller, uiStackTop, params);
+  //_processLDT.BuildForKernel();
 
   _parent.addToThreadScheduler(*this);
 }
 
-uint32_t KernelThread::AllocateAddressSpace() {
-  kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
-  return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
-}
-
-void KernelThread::DeAllocateResources() {
-  MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
+void KernelThread::DeallocateResources() {
+  SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
 }

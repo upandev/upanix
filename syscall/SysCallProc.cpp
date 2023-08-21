@@ -30,17 +30,17 @@ byte SysCallProc_IsPresent(unsigned uiSysCallID)
 
 void SysCallProc_Handle(
 __volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
+__volatile__ uintptr_t uiSysCallID,
 __volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+__volatile__ uintptr_t uiP1,
+__volatile__ uintptr_t uiP2,
+__volatile__ uintptr_t uiP3,
+__volatile__ uintptr_t uiP4,
+__volatile__ uintptr_t uiP5,
+__volatile__ uintptr_t uiP6,
+__volatile__ uintptr_t uiP7,
+__volatile__ uintptr_t uiP8,
+__volatile__ uintptr_t uiP9)
 {
 	switch(uiSysCallID)
 	{
@@ -101,7 +101,8 @@ __volatile__ unsigned uiP9)
 
 	  case SYS_CALL_PROCESS_YIELD:
       {
-        ProcessManager_Yield();
+        ProcessManager::Instance().Sleep(1) ;
+        //ProcessManager_Yield();
       }
       break;
 
@@ -122,14 +123,14 @@ __volatile__ unsigned uiP9)
 			//P1 - Env Var
 			{
 				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
-        const char* szVal = ProcessEnv_Get(szVar) ;
-
-        if(szVal != NULL)
-				{
-					if(bDoAddrTranslation)
-            szVal = (char*)((uint32_t)szVal + GLOBAL_DATA_SEGMENT_BASE - PROCESS_BASE) ;
+				const auto& val = ProcessManager::Instance().GetCurrentPAS().getEnv(szVar);
+				if (val.isEmpty()) {
+				  *piRetVal = -1;
+				} else {
+          char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
+          strcpy(szVal, val.value().c_str());
+          *piRetVal = 0;
 				}
-        *piRetVal = (uint32_t)szVal;
 			}
 			break ;
 
@@ -141,9 +142,11 @@ __volatile__ unsigned uiP9)
 				char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
 
 				*piRetVal = 0 ;
-				if(ProcessEnv_Set(szVar, szVal) != ProcessEnv_SUCCESS)
-				{
-					*piRetVal = -1 ;
+				try {
+				  ProcessManager::Instance().GetCurrentPAS().setEnv(szVar, szVal);
+				} catch(const upan::exception& e) {
+				  e.Print();
+				  *piRetVal = -1;
 				}
 			}
 			break ;

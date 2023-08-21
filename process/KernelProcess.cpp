@@ -20,41 +20,57 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <KernelProcess.h>
-#include <ProcessEnv.h>
 #include <UserManager.h>
 #include <ProcessManager.h>
 #include <KernelThread.h>
 #include <GraphicsVideo.h>
 #include <DMM.h>
+#include <InterruptHandlers.h>
 
-upan::mutex KernelProcess::_envMutex;
-
-KernelProcess::KernelProcess(const upan::string& name, uint32_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uint32_t>& params)
+KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
   _mainThreadID = _processID;
-  ProcessEnv_InitializeForKernelProcess() ;
-  _processBase = GLOBAL_DATA_SEGMENT_BASE;
-  const uint32_t uiStackAddress = AllocateAddressSpace();
-  const uint32_t uiStackTop = uiStackAddress - GLOBAL_DATA_SEGMENT_BASE + (PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE) - 1;
-  _taskState.BuildForKernel(taskAddress, uiStackTop, params);
-  _processLDT.BuildForKernel();
+  _processBase = 0;
+
+  _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+
+  const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
+
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId)
+          + PROCESS_KERNEL_STACK_SIZE
+          - (noOfStackParams + 1) * sizeof(uintptr_t);
+
+  //the first stack param is return address - which is pushed as per x86 64 ABI
+  for(int i = 1; i <= noOfStackParams; ++i) {
+    ((uintptr_t*)stackTop)[i] = params[i - 1 + PROCESS_ARGUMENTS_ON_REGS_X86_64];
+  }
+
+  if (params.size() >= 1) _taskContext.rdi = params[0];
+  if (params.size() >= 2) _taskContext.rsi = params[1];
+  if (params.size() >= 3) _taskContext.rdx = params[2];
+  if (params.size() >= 4) _taskContext.rcx = params[3];
+  if (params.size() >= 5) _taskContext.r8 = params[4];
+  if (params.size() >= 6) _taskContext.r9 = params[5];
+
+  _taskContext.interruptState.cs = SYS_CODE_SELECTOR;
+  _taskContext.interruptState.rip = taskAddress;
+  _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
+  _taskContext.interruptState.rsp = stackTop;
+  _taskContext.interruptState.rflags = 0x202;
+  //_taskState.BuildForKernel(taskAddress, stackTop, params);
+  //_processLDT.BuildForKernel();
   _userID = ROOT_USER_ID ;
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
 }
 
-KernelThread& KernelProcess::CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) {
+KernelThread& KernelProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
   return *new KernelThread(*this, threadCaller, entryAddress, arg);
 }
 
-uint32_t KernelProcess::AllocateAddressSpace() {
-  kernelStackBlockId = MemManager::Instance().AllocateKernelStack();
-  return MemManager::Instance().GetKernelStackAddress(kernelStackBlockId);
-}
-
-void KernelProcess::DeAllocateResources() {
-  MemManager::Instance().DeAllocateKernelStack(kernelStackBlockId);
+void KernelProcess::DeallocateResources() {
+  SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
   DeAllocateGUIFramebuffer();
   upanui::GraphicsContext::Destroy();
 }
@@ -63,10 +79,10 @@ void KernelProcess::initGuiFrame() {
   if (_frame.get() == nullptr) {
     FrameBufferInfo frameBufferInfo;
     const auto f = MultiBoot::Instance().VideoFrameBufferInfo();
-    frameBufferInfo._pitch = f->framebuffer_pitch;
-    frameBufferInfo._width = f->framebuffer_width;
-    frameBufferInfo._height = f->framebuffer_height;
-    frameBufferInfo._bpp = f->framebuffer_bpp;
+    frameBufferInfo._pitch = f->_pitch;
+    frameBufferInfo._width = f->_width;
+    frameBufferInfo._height = f->_height;
+    frameBufferInfo._bpp = f->_bpp;
     frameBufferInfo._frameBuffer = (uint32_t*)GraphicsVideo::Instance().allocateFrameBuffer();
     upanui::FrameBuffer frameBuffer(frameBufferInfo);
     upanui::Viewport viewport(0, 0, frameBufferInfo._width, frameBufferInfo._height);
@@ -83,7 +99,7 @@ void KernelProcess::initGuiFrame() {
 
 void KernelProcess::DeAllocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
-    DMM_DeAllocateForKernel((uint32_t)_frame->frameBuffer().buffer());
+    DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
     GraphicsVideo::Instance().removeFGProcess(_processID);
   }
 }

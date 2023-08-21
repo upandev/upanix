@@ -28,7 +28,7 @@
 
 #define __PROCESS_DLL_FILE		".dll"
 
-unsigned ProcessLoader_GetCeilAlignedAddress(unsigned uiAddress, unsigned uiAlign) ;
+uint64_t ProcessLoader_GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign) ;
 unsigned ProcessLoader_GetFloorAlignedAddress(unsigned uiAddress, unsigned uiAlign) ;
 
 class ProcessLoader

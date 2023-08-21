@@ -28,13 +28,14 @@
 #include <GraphicsVideo.h>
 #include <MouseData.h>
 #include <ProcessManager.h>
+#include <InterruptHandlers.h>
 
 PS2MouseDriver::PS2MouseDriver() : _qBuffer(10240) {
   _dataCounter = 0;
   _packetSize = 3; //TODO: go with default - 3 bytes per mouse movement
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().MOUSE_IRQ) ;
-	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (unsigned)&PS2MouseDriver::Handler) ;
+	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (uintptr_t)&mouse_interrupt_handler) ;
 
 	try {
 //	if(SendCommand2(0xF3))
@@ -56,22 +57,12 @@ PS2MouseDriver::PS2MouseDriver() : _qBuffer(10240) {
 }
 
 void PS2MouseDriver::Handler() {
-	AsmUtil_STORE_GPR() ;
-	AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
 	try {
 	  PS2MouseDriver::Instance().HandleEvent();
   } catch (const upan::exception& e) {
 	  printf("\n Failed to get interrupt data from mouse IRQ handler: %s", e.ErrorMsg().c_str());
 	}
-
 	IrqManager::Instance().SendEOI(StdIRQ::Instance().MOUSE_IRQ);
-
-	AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-	AsmUtil_RESTORE_GPR() ;
-
-	__asm__ __volatile__("LEAVE") ;
-	__asm__ __volatile__("IRET") ;
 }
 
 upan::option<uint8_t> PS2MouseDriver::ReceiveIRQData() {
@@ -189,6 +180,6 @@ void PS2MouseDriver::StartDispatcher() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("moed", (unsigned) &Mouse_Event_Dispatcher,
-                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uint32_t>());
+  ProcessManager::Instance().CreateKernelProcess("moed", (uintptr_t) &Mouse_Event_Dispatcher,
+                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

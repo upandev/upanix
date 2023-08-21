@@ -250,10 +250,10 @@ class TransferRing
     TransferRing(unsigned size);
     ~TransferRing();
     void AddSetupStageTRB(uint32_t bmRequestType, uint32_t bmRequest, uint32_t wValue, uint32_t wIndex, uint32_t wLength, TransferType trt);
-    void AddDataStageTRB(uint32_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize);
-    uint32_t AddStatusStageTRB(uint32_t dir);
-    void AddEventDataTRB(uint32_t statusAddr, bool ioc);
-    TRB::Result AddDataTRB(uint32_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize);
+    void AddDataStageTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize);
+    uintptr_t AddStatusStageTRB(uint32_t dir);
+    void AddEventDataTRB(uintptr_t statusAddr, bool ioc);
+    TRB::Result AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize);
     TRB* RingBase() { return _trbs; }
     void UpdateDeEnQPtr(uint32_t dnqPtr);
 

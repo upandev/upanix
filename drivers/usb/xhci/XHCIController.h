@@ -50,7 +50,7 @@ class XHCIController
   private:
     void Start();
     void InitInterruptHandler();
-    void LoadXCaps(unsigned base);
+    void LoadXCaps(uint64_t base);
     void PerformBiosToOSHandoff();
     EventTRB InitiateCommand();
     EventTRB InitiateTransfer(uint32_t trbId, uint32_t slotID, uint32_t ep);
@@ -104,9 +104,9 @@ class CommandManager
     void ConfigureEndPoint(unsigned icptr, unsigned slotID);
     void EvaluateContext(unsigned icptr, unsigned slotID);
     void DebugPrint();
-    uint32_t CommandTRBAddress() const
+    uintptr_t CommandTRBAddress() const
     {
-      return (uint32_t)&_ring->_cmd;
+      return (uintptr_t)&_ring->_cmd;
     }
 
   private:

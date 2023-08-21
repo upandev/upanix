@@ -28,10 +28,6 @@ class Thread : public SchedulableProcess {
 public:
   Thread(AutonomousProcess& parent);
 
-  upan::option<upan::mutex&> envMutex() override {
-    return _parent.envMutex();
-  }
-
   IODescriptorTable& iodTable() override {
     return _parent.iodTable();
   }
@@ -78,6 +74,18 @@ public:
 
   void setGuiBase(bool v) override {
     _parent.setGuiBase(v);
+  }
+
+  void setEnv(const upan::string& key, const upan::string& value) override {
+    _parent.setEnv(key, value);
+  }
+
+  upan::option<upan::string> getEnv(const upan::string& key) override {
+    return _parent.getEnv(key);
+  }
+
+  const ProcessEnvMap& envMap() override {
+    return _parent.envMap();
   }
 
 protected:

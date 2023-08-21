@@ -111,7 +111,7 @@ void ATATimingManager_Compute(ATAPort* pPort, int iSpeed, ATATiming* pATATiming,
 	{
 		for(i = ATA_SPEED_PIO_5; i >= 0; i--)
 		{
-			if((pPort->uiSupportedPortSpeed & (1 << i)) && (pPort->uiSupportedDriveSpeed * (1 << i)))
+			if((pPort->uiSupportedPortSpeed & (1 << i)) && (pPort->uiSupportedDriveSpeed * (1 << i)) != 0)
 			{
 				iPIOMode = i ;
 				break ;

@@ -37,22 +37,21 @@ public:
   }
 
   void onLoad() override;
-  UserThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
-
-  uint32_t startPDEForDLL() const override {
-    return _startPDEForDLL;
-  }
+  UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override;
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
-  upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const override;
-  upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const override;
-
-  uint32_t getAUTAddress() const override {
-    return _uiAUTAddress;
+  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+    return _elfInfo;
   }
-  void setAUTAddress(uint32_t addr) {
-    _uiAUTAddress = addr;
+  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override;
+  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override;
+
+  AllocationUnitTracker* getAUTAddress() const override {
+    return _autAddress;
+  }
+  void setAUTAddress(AllocationUnitTracker* addr) {
+    _autAddress = addr;
   }
 
   IODescriptorTable& iodTable() override {
@@ -65,9 +64,6 @@ public:
   upan::option<upan::mutex&> pageAllocMutex() override {
     return upan::option<upan::mutex&>(_pageFaultMutex);
   }
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
-  }
   upan::option<upan::mutex&> dllMutex() override {
     return upan::option<upan::mutex&>(_dllMutex);
   }
@@ -79,36 +75,27 @@ public:
   void allocateGUIFramebuffer();
 
 private:
-  void Load(int noOfParams, char** szArgumentList);
-  uint32_t AllocateAddressSpace();
-  void CopyElfImage(unsigned uiPDEAddr, byte* bProcessImage, unsigned uiMemImageSize);
-  uint32_t PushProgramInitStackData(int iNumberOfParameters, char** szArgumentList);
-  void AllocatePTE(const unsigned uiPDEAddress);
-  void InitializeProcessSpaceForOS(const unsigned uiPDEAddress);
-  void InitializeProcessSpaceForProcess(const unsigned uiPDEAddress);
+  void Load(int bssSectionHeader, char** szArgumentList);
+  void AllocateAddressSpace();
+  void CopyElfImage(byte* bProcessImage, unsigned uiMemImageSize);
+  uint32_t PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList);
 
-  void DeAllocateResources() override;
-  void DeAllocateDLLPages();
-  void DeAllocateAddressSpace();
-  void DeAllocateProcessSpace();
-  void DeAllocatePTE();
-  void DeAllocateGUIFramebuffer();
+  void DeallocateResources() override;
+  void DeallocateGUIFramebuffer();
 
 private:
-  uint32_t _uiAUTAddress;
-  uint32_t _noOfPagesForPTE;
-  uint32_t _noOfPagesForProcess;
-  uint32_t _noOfPagesForDLLPTE;
+  AllocationUnitTracker* _autAddress;
+  uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;
-  uint32_t _startPDEForDLL;
-  uint32_t _stackPTEAddress;
+  uint32_t _stackPDAddress;
   upan::vector<upan::string> _loadedDLLs;
   DLLInfoMap _dllInfoMap;
   upan::mutex _heapMutex;
   upan::mutex _pageFaultMutex;
-  upan::mutex _envMutex;
   upan::mutex _dllMutex;
   upan::mutex _addressSpaceMutex;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
+  ProcessDLLInfo::ELFInfo _elfInfo;
+  uint64_t* _pml4Table;
 };

@@ -26,11 +26,11 @@
 
 void KernelUtil::Wait(__volatile__ unsigned uiTimeInMilliSec)
 {
-	uiTimeInMilliSec = PIT_RoundSleepTime(uiTimeInMilliSec) ;
-	__volatile__ unsigned uiStartTime = PIT_GetClockCount() ;
+	uiTimeInMilliSec = PIT::Instance().RoundSleepTime(uiTimeInMilliSec) ;
+	__volatile__ unsigned uiStartTime = PIT::Instance().GetClockCount() ;
 
 	IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
-	while((PIT_GetClockCount() - uiStartTime) < uiTimeInMilliSec)
+	while((PIT::Instance().GetClockCount() - uiStartTime) < uiTimeInMilliSec)
 	{
 		__asm__ __volatile__("nop") ;
 		__asm__ __volatile__("nop") ;
@@ -61,18 +61,18 @@ void KernelUtil::TightLoopWait(unsigned loop)
 }
 
 void KernelUtil::ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask& task) {
-  upan::vector<uint32_t> params;
+  upan::vector<uintptr_t> params;
   params.push_back(uiTimeInMilliSec);
-  params.push_back((uint32_t)&task);
-  ProcessManager::Instance().CreateKernelProcess(szName, (unsigned) &SystemTimer, ProcessManager::GetCurrentProcessID(), false, params);
+  params.push_back((uintptr_t)&task);
+  ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &SystemTimer, ProcessManager::GetCurrentProcessID(), false, params);
 }
 
-void KernelUtil::SystemTimer(unsigned uiTimeInMilliSec, TimerTask* task)
+void KernelUtil::SystemTimer(unsigned timeInMilliSec, TimerTask* task)
 {
 	do
 	{
-		ProcessManager::Instance().Sleep(uiTimeInMilliSec) ;
+		ProcessManager::Instance().Sleep(timeInMilliSec) ;
   } while(task->TimerTrigger()) ;
-	ProcessManager_EXIT() ;
+	ProcessManager_Exit();
 }
 

@@ -28,8 +28,9 @@
 class RTC
 {
 	public:
-		static bool Initialize() ;
-		static void GetDateTime(RTCDateTime& rRTCDateTime) ;
+		static bool Initialize();
+		static void GetDateTime(RTCDateTime& rRTCDateTime);
+		static void Handler();
 } ;
 
 #endif

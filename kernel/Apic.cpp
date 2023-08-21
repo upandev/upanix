@@ -71,11 +71,11 @@ Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr)
 void Apic::Initialize()
 {
   // Local APIC, cf. Intel manual 3A, chapter 10
-  _phyApicBase = (uint32_t)(Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFU); // read APIC base address (ignore bit0-11)
+  _phyApicBase = (Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFU); // read APIC base address (ignore bit0-11)
   Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, ((_phyApicBase & ~0xFFFU) | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
   _apicBase = MmapBase(MMAP_APIC_BASE, _phyApicBase);
 
-  uint32_t phyIoApicBase = (*Acpi::Instance().GetMadt().GetIoApics().begin()).Address();
+  uint64_t phyIoApicBase = (*Acpi::Instance().GetMadt().GetIoApics().begin()).Address();
   _ioApicBase = MmapBase(MMAP_IOAPIC_BASE, phyIoApicBase);
 
   printf("\n APIC Base: %x, IO APIC Base: %x", _phyApicBase, phyIoApicBase);
@@ -83,9 +83,7 @@ void Apic::Initialize()
   IrqGuard g;
 
   uint8_t ioApicMaxIndexRedirTab = Bit::Byte3(IoApicRead(IOAPIC_VERSION)); // bit16-23 // Maximum Redirection Entry  ReadOnly
-
-  for(int i = 0; i < 16; i++)
-  {
+  for(int i = 0; i < 16; ++i) {
     // Remap ISA IRQs (edge/hi)
     RemapVector(i, i + IRQ_BASE, false /*edge*/, false /*high*/, true/*enabled, except #2*/);
   }
@@ -191,17 +189,10 @@ void Apic::Initialize()
   _apicBase[APIC_TIMER_INITCOUNT] = (val < 16 ? 16 : val);
 }
 
-uint32_t* Apic::MmapBase(uint32_t vAddr, uint32_t pAddr)
-{
-  static const unsigned PDE_ADDRESS = MEM_PDBR;
-  unsigned uiPDEIndex = ((vAddr >> 22) & 0x3FF);
-  unsigned uiPTEIndex = ((vAddr >> 12) & 0x3FF);
-  unsigned uiPTEAddress = (((unsigned*)(KERNEL_VIRTUAL_ADDRESS(PDE_ADDRESS)))[uiPDEIndex]) & 0xFFFFF000 ;
-  // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-  ((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPTEAddress)))[uiPTEIndex] = (pAddr & 0xFFFFF000) | 0x5 ;
-  if(MemManager::Instance().MarkPageAsAllocated(pAddr / PAGE_SIZE, Success) != Success) {}
+uint32_t* Apic::MmapBase(uint64_t vAddr, uint64_t pAddr) {
+  MemManager::KernelPageTableMmap(vAddr, pAddr, 0x3);
 	Mem_FlushTLB();
-  return (uint32_t*)KERNEL_VIRTUAL_ADDRESS(vAddr + (pAddr % PAGE_SIZE));
+  return (uint32_t*)(vAddr + (pAddr % PAGE_SIZE));
 }
 
 // read IO APIC register

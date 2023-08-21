@@ -73,14 +73,14 @@ void XHCIOpRegister::HCReset()
 {
   if(!IsHCHalted())
     throw upan::exception(XLOC, "Cannot reset while HC is halted");
-  
+
   if(_usbCmd & 0x2)
     throw upan::exception(XLOC, "Cannot reset while reset in-progress");
 
   _usbCmd |= 0x2;
 
   if(!ProcessManager::Instance().ConditionalWait(&_usbCmd, 1, false))
-    throw upan::exception(XLOC, "reset didn't complete - timedout");
+    throw upan::exception(XLOC, "reset didn't complete: timed-out");
 }
 
 void XHCIOpRegister::LightHCReset(const XHCICapRegister* cr)

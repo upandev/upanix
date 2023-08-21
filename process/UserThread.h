@@ -26,17 +26,13 @@
 
 class UserThread : public Thread {
 public:
-  UserThread(AutonomousProcess& parent, uint32_t threadCaller, uint32_t entryAddress, void* arg);
+  UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
 
   bool isKernelProcess() const override {
     return false;
   }
 
   void onLoad() override;
-
-  uint32_t startPDEForDLL() const override {
-    return _parent.startPDEForDLL();
-  }
 
   void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override {
     _parent.LoadELFDLL(szDLLName, szJustDLLName);
@@ -46,18 +42,22 @@ public:
     return _parent.MapDLLPagesToProcess(noOfPagesForDLL, dllName);
   }
 
-  upan::option<const ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) const override {
+  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+    return _parent.getELFInfo();
+  }
+
+  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override {
     return _parent.getDLLInfo(dllName);
   }
-  upan::option<const ProcessDLLInfo&> getDLLInfo(int id) const override {
+  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override {
     return _parent.getDLLInfo(id);
   }
 
-  uint32_t getAUTAddress() const override {
+  AllocationUnitTracker* getAUTAddress() const override {
     return _parent.getAUTAddress();
   }
 
-  void setAUTAddress(uint32_t addr) {
+  void setAUTAddress(AllocationUnitTracker* addr) {
     _parent.setAUTAddress(addr);
   }
 
@@ -74,9 +74,9 @@ public:
   }
 
 private:
-  uint32_t PushProgramInitStackData(uint32_t entryAddress, void* arg);
-  void DeAllocateResources() override;
+  uint32_t PushProgramInitStackData(uint32_t entryAddress, void *arg);
+  void DeallocateResources() override;
 
 private:
-  uint32_t _stackPTEAddress;
+  uint32_t _stackPDAddress;
 };

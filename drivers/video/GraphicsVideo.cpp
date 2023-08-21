@@ -66,17 +66,17 @@ GraphicsVideo& GraphicsVideo::Instance() {
   return *_instance;
 }
 
-GraphicsVideo::GraphicsVideo(const framebuffer_info_t& fbinfo)
+GraphicsVideo::GraphicsVideo(const FrameBufferInfo& fbinfo)
   : _needRefresh(false), _initialized(false),
     _mouseCursor(nullptr), _mouseChange(0), _mousePrevX(0), _mousePrevY(0) {
-  _flatLFBAddress = fbinfo.framebuffer_addr;
-  _mappedLFBAddress = fbinfo.framebuffer_addr;
-  _zBuffer = fbinfo.framebuffer_addr;
+  _flatLFBAddress = (uint64_t)fbinfo._frameBuffer;
+  _mappedLFBAddress = (uint64_t)fbinfo._frameBuffer;
+  _zBuffer = (uint64_t)fbinfo._frameBuffer;
 
-  _height = fbinfo.framebuffer_height;
-  _width = fbinfo.framebuffer_width;
-  _pitch = fbinfo.framebuffer_pitch;
-  _bpp = fbinfo.framebuffer_bpp;
+  _height = fbinfo._height;
+  _width = fbinfo._width;
+  _pitch = fbinfo._pitch;
+  _bpp = fbinfo._bpp;
   _bytesPerPixel = _bpp / 8;
   _lfbSize = _height * _width * _bytesPerPixel;
   _lfbPageCount = ((_lfbSize - 1) / PAGE_SIZE) + 1;
@@ -91,19 +91,14 @@ void GraphicsVideo::Initialize() {
   if (_initialized) {
     return;
   }
-
-  if (_lfbPageCount > PAGE_TABLE_ENTRIES) {
-    throw upan::exception(XLOC, "Max pages available for user process GUI framebuffer is %u, requested: %u", PAGE_TABLE_ENTRIES, _lfbPageCount);
-  }
-
   const auto wc = Pat::Instance().writeCombiningPageTableFlag();
   if (wc >= 0) {
+    printf("\n PAT write-combining flag: 0x%x", wc);
     //remap the video framebuffer address space with write-combining flag
-    MemManager::Instance().MemMapGraphicsLFB(wc);
-    Mem_FlushTLB();
+    MultiBoot::Instance().InitializeGraphicsPageMap(wc);
   }
 
-  printf("\n Initializing mouse cursor image");
+  printf("\n Initializing mouse cursor image\n");
   upan::uniq_ptr<upanui::Image> image(&upanui::PngImageResource::MOUSE_CURSOR.create());
   image->resize(12, 18);
   _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
@@ -127,7 +122,7 @@ void GraphicsVideo::Initialize() {
   }
 
   _initialized = true;
-}
+  KC::MConsole().LoadMessage("Graphics Initialization", Success);}
 
 
 void GraphicsVideo::CreateRefreshTask() {
@@ -198,14 +193,16 @@ bool GraphicsVideo::TimerTrigger() {
       });
     }
   }
-
   _mousePrevX = _mouseCursor->x();
   _mousePrevY = _mouseCursor->y();
 
   DrawMouseCursor();
+
   lfbStats.start();
-  optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
+  //optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
+  memcpy((void*)_mappedLFBAddress, (void*)_zBuffer, _lfbSize);
   lfbStats.end();
+
   gvtStats.end();
 
   return true;
@@ -219,13 +216,11 @@ void GraphicsVideo::NeedRefresh() {
 }
 
 void GraphicsVideo::FillRect(unsigned sx, unsigned sy, unsigned width, unsigned height, unsigned color) {
-  unsigned y_offset;
-  for(unsigned y = sy; y < (sy + height) && y < _height; ++y)
-  {
+  uint32_t y_offset;
+  for(uint32_t y = sy; y < (sy + height) && y < _height; ++y) {
     y_offset = y * _pitch;
-    for(unsigned x = sx; x < (sx + width) && x < _width; ++x)
-    {
-      auto p = (unsigned*)(_zBuffer + y_offset + x * _bytesPerPixel);
+    for(uint32_t x = sx; x < (sx + width) && x < _width; ++x) {
+      auto p = (uint32_t*)(_zBuffer + y_offset + x * _bytesPerPixel);
       *p = (color | upanui::GCoreFunctions::ALPHA_MASK);
     }
   }
@@ -426,7 +421,7 @@ upan::option<int> GraphicsVideo::getDisplayFGProcess() {
   return upan::option<int>(_fgProcesses[_fgProcesses.size() - 1]);
 }
 
-uint32_t GraphicsVideo::allocateFrameBuffer() {
+uint64_t GraphicsVideo::allocateFrameBuffer() {
   auto addr = DMM_AllocateForKernel(_lfbPageCount * PAGE_SIZE, PAGE_SIZE);
   memset((void*)addr, 0, _lfbSize);
   return addr;

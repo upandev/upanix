@@ -304,7 +304,7 @@ void ConsoleCommands_ListDirContent()
     printf("%-20s", pDirList[i].Name()) ;
 	}
 
-	DMM_DeAllocateForKernel((unsigned)pDirList) ;
+	DMM_DeAllocateForKernel((uintptr_t)pDirList) ;
 }
 
 void ConsoleCommands_ReadFileContent()
@@ -348,7 +348,7 @@ void ConsoleCommands_PresentWorkingDir()
 	char* szPWD ;
 	Directory_PresentWorkingDirectory(&ProcessManager::Instance().GetCurrentPAS(), &szPWD) ;
 	printf("\n%s", szPWD);
-	DMM_DeAllocateForKernel((unsigned)szPWD) ;
+	DMM_DeAllocateForKernel((uintptr_t)szPWD) ;
 }
 
 void ConsoleCommands_CopyFile()
@@ -451,7 +451,7 @@ void ConsoleCommands_DeleteUser()
 }
 
 void ConsoleCommands_OpenSession() {
-	const int pid = ProcessManager::Instance().CreateKernelProcess("session", (unsigned) &SessionManager_StartSession, NO_PROCESS_ID, true, upan::vector<uint32_t>());
+	const int pid = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 	ProcessManager::Instance().WaitOnChild(pid) ;
 }
 
@@ -661,8 +661,8 @@ void ConsoleCommands_Exit()
 void ConsoleCommands_Clone()
 {
 	extern void Console_StartUpanixConsole() ;
-  const int pid = ProcessManager::Instance().CreateKernelProcess("console_1", (unsigned) &Console_StartUpanixConsole,
-                                                 ProcessManager::GetCurrentProcessID(), true, upan::vector<uint32_t>()) ;
+  const int pid = ProcessManager::Instance().CreateKernelProcess("console_1", (uintptr_t) &Console_StartUpanixConsole,
+                                                 ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>()) ;
 	ProcessManager::Instance().WaitOnChild(pid) ;
 }
 
@@ -966,7 +966,7 @@ void graphics_photos(int x, int y) {
     exit(0);
   }
 
-  DMM_DeAllocateForKernel((unsigned)pDirList);
+  DMM_DeAllocateForKernel((uintptr_t)pDirList);
 
   const int photoCanvasWidth = 500, photoCanvasHeight = 500;
   upanui::GraphicsContext::Init();
@@ -1473,7 +1473,7 @@ void ConsoleCommands_TestGraphics() {
   }
 
   int type = atoi(CommandLineParser::Instance().GetParameterAt(0));
-  upan::vector<uint32_t> params;
+  upan::vector<uintptr_t> params;
   params.push_back(atoi(CommandLineParser::Instance().GetParameterAt(1)));
   params.push_back(atoi(CommandLineParser::Instance().GetParameterAt(2)));
 
@@ -1481,27 +1481,27 @@ void ConsoleCommands_TestGraphics() {
   pname += upan::string::to_string(testg_id++);
   switch(type) {
     case 1: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_test_process_canvas, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_canvas, NO_PROCESS_ID, true, params);
     }
     break;
 
     case 2: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_test_process_line, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_line, NO_PROCESS_ID, true, params);
     }
     break;
 
     case 3: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_test_clock, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_clock, NO_PROCESS_ID, true, params);
     }
     break;
 
     case 4: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_test_flag, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_flag, NO_PROCESS_ID, true, params);
     }
     break;
 
     case 5: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_window_app, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_window_app, NO_PROCESS_ID, true, params);
     }
     break;
 
@@ -1539,8 +1539,6 @@ class DisplayCache : public BTree::InOrderVisitor
 		mutable bool m_bAbort ;
 } ;
 
-extern unsigned DMM_uiTotalKernelAllocation ;
-
 class RankInOrderVisitor : public BTree::InOrderVisitor
 {
 	private:
@@ -1549,7 +1547,7 @@ class RankInOrderVisitor : public BTree::InOrderVisitor
 		const unsigned m_uiCurrent ;
 
 	public:
-		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(PIT_GetClockCount()) { }
+		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(PIT::Instance().GetClockCount()) { }
 
 		void operator()(const BTreeKey& rKey, BTreeValue* pValue) 
 		{
@@ -1582,7 +1580,7 @@ typedef struct
 ReadStat read_stat[256] ;
 void _UpdateReadStat(unsigned len, bool bFirst)
 {
-	unsigned uiTime = PIT_GetClockCount() ;
+	unsigned uiTime = PIT::Instance().GetClockCount() ;
 	static bool bInit = false ;
 	if(!bInit)
 	{
@@ -1663,11 +1661,11 @@ void ConsoleCommands_Test() {
 extern uint32_t dmm_alloc_count;
 void ConsoleCommands_Testv() {
   //printf("\n Alloc Count: %u", dmm_alloc_count);
-  upan::vector<uint32_t> params;
+  upan::vector<uintptr_t> params;
   params.push_back(0);
   params.push_back(0);
   upan::string pname("photos");
-  ProcessManager::Instance().CreateKernelProcess(pname, (unsigned) &graphics_photos, NO_PROCESS_ID, true, params);
+  ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_photos, NO_PROCESS_ID, true, params);
 }
 
 void ConsoleCommands_TestNet()

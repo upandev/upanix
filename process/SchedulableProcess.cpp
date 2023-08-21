@@ -65,7 +65,7 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
 }
 
 SchedulableProcess::~SchedulableProcess() {
-  DMM_DeAllocateForKernel(reinterpret_cast<unsigned int>(_sseRegs));
+  DMM_DeAllocateForKernel(reinterpret_cast<uint64_t>(_sseRegs));
   delete &_stateInfo;
 }
 
@@ -104,7 +104,7 @@ void SchedulableProcess::Destroy() {
   //MemManager::Instance().DisplayNoOfAllocPages(0,0);
 
   // Deallocate Resources
-  DeAllocateResources();
+  DeallocateResources();
 
   // Release From Process Group
   _processGroup->RemoveFromFGProcessList(_processID);
@@ -115,7 +115,6 @@ void SchedulableProcess::Destroy() {
 
   heapMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
   pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-  envMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
 
   //TODO: release all the mutex held by the process or an individual thread
 
@@ -152,17 +151,19 @@ void SchedulableProcess::FXRestore() {
   __asm__ __volatile__("fxrstor (%0)" : : "r"(_sseRegs));
 }
 
-void SchedulableProcess::Load() {
+void SchedulableProcess::Load(TaskContext& taskContext) {
   onLoad();
   FXRestore();
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
+  taskContext = _taskContext;
+  //MemUtil_CopyMemory(MemUtil_GetDS(), (uint64_t)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
+  //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
 }
 
-void SchedulableProcess::Store() {
+void SchedulableProcess::Store(TaskContext& taskContext) {
+  _taskContext = taskContext;
   FXSave();
-  MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
-  MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
+  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
+  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
 }
 
 FILE_USER_TYPE SchedulableProcess::fileUserType(const FileSystem::Node &node) const
@@ -206,49 +207,44 @@ bool SchedulableProcess::hasFilePermission(const FileSystem::Node& node, byte mo
   return false;
 }
 
-uint32_t SchedulableProcess::Common::AllocatePDE() {
-  unsigned uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
-  unsigned uiPDEAddress = uiFreePageNo * PAGE_SIZE;
-
-  for (unsigned i = 0; i < PAGE_TABLE_ENTRIES; i++)
-    ((unsigned *) (uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[i] = 0x2;
-
-  return uiPDEAddress;
+void SchedulableProcess::Common::SetStackPDTable(uint64_t *pml4Table, uint64_t value) {
+  auto pml4Index = PML4_INDEX(PROCESS_STACK_TOP_ADDRESS - 1);
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+  auto pdpIndex = PDP_INDEX(PROCESS_STACK_TOP_ADDRESS - 1);
+  pdpTable[pdpIndex] = value;
 }
 
-void SchedulableProcess::Common::UpdatePDEWithStackPTE(uint32_t pdeAddress, uint32_t stackPTEAddress) {
-  ((unsigned *) (pdeAddress - GLOBAL_DATA_SEGMENT_BASE))[PROCESS_STACK_PDE_ID] = (stackPTEAddress & 0xFFFFF000) | 0x7;
+void SchedulableProcess::Common::SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress) {
+  SetStackPDTable(pml4Table, (stackPDAddress & PAGE_MASK) | 0x7);
 }
 
-uint32_t SchedulableProcess::Common::AllocatePTEForStack() {
-  auto stackPTEAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
-  for (uint32_t j = 0; j < PAGE_TABLE_ENTRIES; j++) {
-    ((unsigned *) (stackPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[j] = 0x2;
-  }
-  return stackPTEAddress;
+uint64_t SchedulableProcess::Common::AllocateStackSpace() {
+  //pre-allocate process stack - user (the initial space for start-args) + call-gate
+  //further expansion of user stack beyond initial space for start-args will happen as part of regular page fault handling flow
+  uint64_t stackPDAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
+  const uint64_t processCGStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE;
+  const uint64_t processStackBase = processCGStackBase - PROCESS_INIT_STACK_SIZE;
+  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
+  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x3, processCGStackBase, PROCESS_CG_STACK_SIZE);
 }
 
-void SchedulableProcess::Common::AllocateStackSpace(uint32_t pteAddress) {
-  //pre-allocate process stack - user (NO_OF_PAGES_FOR_STARTUP_ARGS) + call-gate
-  //further expansion of user stack beyond NO_OF_PAGES_FOR_STARTUP_ARGS will happen as part of regular page fault handling flow
-  for (int i = 0; i < PROCESS_CG_STACK_PAGES + NO_OF_PAGES_FOR_STARTUP_ARGS; ++i) {
-    const uint32_t uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
-    const uint32_t ptePageType = i > PROCESS_CG_STACK_PAGES - 1 ? 0x7 : 0x3;
-    ((unsigned *) (pteAddress - GLOBAL_DATA_SEGMENT_BASE))[PAGE_TABLE_ENTRIES - 1 - i] =
-        ((uiFreePageNo * PAGE_SIZE) & 0xFFFFF000) | ptePageType;
-  }
+void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress) {
+  MemManager::Instance().DeallocatePDAddressSpace((uint64_t*)stackPDAddress);
 }
 
-void SchedulableProcess::Common::DeAllocateStackSpace(uint32_t stackPTEAddress) {
-  //Deallocate process stack
-  for (uint32_t i = 0; i < PAGE_TABLE_ENTRIES; ++i) {
-    const unsigned pageEntry = (((unsigned *) (stackPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[i]);
-    const bool isPresent = pageEntry & 0x1;
-    const unsigned pageAddress = pageEntry & 0xFFFFF000;
-    if (isPresent && pageAddress) {
-      MemManager::Instance().DeAllocatePhysicalPage(pageAddress / PAGE_SIZE);
-    }
-  }
+uint64_t SchedulableProcess::Common::KernelVirtaulStackBase(int stackBlockId) {
+  return PROCESS_KERNEL_STACK_BASE + stackBlockId * PROCESS_KERNEL_STACK_SIZE;
+}
+
+int SchedulableProcess::Common::AllocateKernelStackSpace() {
+  int stackBlockId = MemManager::Instance().AllocateKernelStack();
+  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  return stackBlockId;
+}
+
+void SchedulableProcess::Common::DeallocateKernelStackSpace(int stackBlockId) {
+  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().DeAllocateKernelStack(stackBlockId);
 }
 
 ProcessStateInfo::ProcessStateInfo() :

@@ -28,7 +28,7 @@
 RawNetPacket::RawNetPacket() : _buf(nullptr), _len(0) {
 }
 
-RawNetPacket::RawNetPacket(const uint32_t addr, const uint32_t len) :
+RawNetPacket::RawNetPacket(const uintptr_t addr, const uint32_t len) :
   _buf(new uint8_t[len]), _len(len) {
   memcpy(_buf, (uint8_t*)addr, _len);
 }

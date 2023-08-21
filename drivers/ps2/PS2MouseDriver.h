@@ -32,14 +32,14 @@ class PS2MouseDriver
       static PS2MouseDriver instance;
       return instance;
     }
+    static void Handler();
 		void HandleEvent();
     void StartDispatcher();
     upanui::MouseData GetMouseData(const upanui::MouseData& prevMouseData);
     void ResetMousePosition();
 
 	private:
-		PS2MouseDriver() ;
-		static void Handler() ;
+		PS2MouseDriver();
 
 	private:
 		upan::option<uint8_t> ReceiveIRQData();

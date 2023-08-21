@@ -25,96 +25,39 @@
 #include <KernelService.h>
 #include <MultiBoot.h>
 #include <MemUtil.h>
-#include <AsmUtil.h>
-#include <IDT.h>
 #include <mutex.h>
 #include <exception.h>
-#include <GraphicsVideo.h>
-#include <RootGUIConsole.h>
+#include <stdlib.h>
 
 extern "C" { 
-	unsigned MEM_PDBR ;
+	uint64_t MEM_PML4 ;
 }
 
-void MemManager::PageFaultHandlerTaskGate()
-{
-	AsmUtil_STORE_GPR() ;
-	
-	__volatile__ unsigned short usDS = MemUtil_GetDS() ; 
-	__volatile__ unsigned short usES = MemUtil_GetES() ; 
-	__volatile__ unsigned short usFS = MemUtil_GetFS() ; 
-	__volatile__ unsigned short usGS = MemUtil_GetGS() ;
-
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %ds") ; 
-	__asm__ __volatile__("popw %fs") ; 
-	__asm__ __volatile__("popw %gs") ; 
-
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("popw %es") ; 
-
-//	__volatile__ unsigned MM_errCode ;
-//	__volatile__ unsigned CS ;
-//	__volatile__ unsigned IP ;
-//
-	__volatile__ unsigned uiFaultyAddress ;
-	__asm__ __volatile__("mov %%cr2, %0" : "=r"(uiFaultyAddress) : ) ;
+void MemManager::PageFaultHandlerTaskGate(uint64_t errorCode) {
+	__volatile__ uint64_t faultyAddress ;
+	__asm__ __volatile__("mov %%cr2, %0" : "=r"(faultyAddress) : ) ;
 
 	if (IS_KERNEL()) {
-    printf("\n Page Fault in Kernel! FIX THIS !!! @ %u", uiFaultyAddress);
+    printf("\n Page Fault in Kernel! FIX THIS !!! @ %lx", faultyAddress);
     while(1);
   }
-	if(!KC::MKernelService().RequestPageFault(uiFaultyAddress))
-	{
-//	__asm__ __volatile__("leave") ;
-//	__asm__ __volatile__("popl %0" : "=m"(MM_errCode) : ) ;
-//	__asm__ __volatile__("popl %0" : "=m"(IP) : ) ;
-//	__asm__ __volatile__("popl %0" : "=m"(CS) : ) ;
-//
-//	KC::MDisplay().Address("\nMM_errCode = ", MM_errCode) ;
-//	KC::MDisplay().Address("\nIP = ", IP) ;
-//	KC::MDisplay().Address("\nCS = ", CS) ;
-
+	if(!KC::MKernelService().RequestPageFault(faultyAddress)) {
 		ProcessManager_EXIT() ;
 	}
-
-	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
-
-	AsmUtil_RESTORE_GPR() ;
-
-//	AsmUtil_UNLOAD_KERNEL_SEGS_ON_STACK() ;
-//	__asm__ __volatile__("popf") ;
-//	__asm__ __volatile__("popa") ;
-
-	__asm__ __volatile__("leave") ;
-//	__asm__ __volatile__("popl %%ss:%0" : "=m"(MM_errCode) : ) ;
-//	TODO: Make this POP more meaningful.
-//	__asm__ __volatile__("popl %ecx") ;
-	__asm__ __volatile__("addl $0x4, %esp");
-	
-	__asm__ __volatile__("iret") ;
 }
 
-MemManager::MemManager() : 
-	m_uiKernelAUTAddress(NULL),
-	RAM_SIZE(MultiBoot::Instance().GetRamSize())
-{
+MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
+  KC::MConsole().Message("\n MemManager Init\n", ' ');
   if(BuildRawPageMap()) {
     if(BuildPageTable()) {
-        if(BuildPagePoolMap()) {
-          if (MarkACPIInfoRegionAsAllocated()) {
-            MemMapGraphicsLFB(0x0);
-            Mem_EnablePaging();
-
-            KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
-            return;
-          }
+      if (BuildPagePoolMap()) {
+        if (MarkACPIInfoRegionAsAllocated()) {
+          Mem_FlushTLB();
+          DMM_InitAUTForKernel();
+          KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
+          return;
         }
+      }
     }
   }
 
@@ -123,9 +66,9 @@ MemManager::MemManager() :
 }
 
 void MemManager::PrintInitStatus() const {
-  printf("\n\tRAM SIZE = %d", RAM_SIZE) ;
-  printf("\n\tNo. of Pages = %d", m_uiNoOfPages) ;
-  printf("\n\tNo. of Resv Pages = %d", m_uiNoOfResvPages) ;
+  printf("\n\tRAM SIZE = %ul", RAM_SIZE) ;
+  printf("\n\tNo. of Pages = %d", _noOfPages) ;
+  printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
 }
 
 bool MemManager::MarkACPIInfoRegionAsAllocated() {
@@ -135,7 +78,7 @@ bool MemManager::MarkACPIInfoRegionAsAllocated() {
   }
 
   const uint32_t noOfPages = ((acpiMmap->length + PAGE_SIZE) / PAGE_SIZE) - 1;
-  uint32_t addr = acpiMmap->base_addr;
+  uint32_t addr = acpiMmap->addr;
 
   ReturnCode markPageRetCode = Success;
   for(int i = 0; i < noOfPages; ++i) {
@@ -149,534 +92,446 @@ bool MemManager::MarkACPIInfoRegionAsAllocated() {
   return true;
 }
 
-void MemManager::MemMapGraphicsLFB(uint32_t memTypeFlag)
-{
-  unsigned noOfPages = (GraphicsVideo::Instance().LFBSize() / PAGE_SIZE) + 1;
-  unsigned availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
-  if(noOfPages > availablePages)
-  {
-    printf("\n Insufficient graphics video buffer. Required pages: %u", noOfPages);
-    while(1);
-  }
-  unsigned lfbaddress = GraphicsVideo::Instance().FlatLFBAddress();
-  unsigned mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
-  ReturnCode markPageRetCode = Success;
-  for(unsigned i = 0; i < noOfPages; ++i) {
-    unsigned addr = lfbaddress + PAGE_SIZE * i;
-    unsigned uiPDEIndex = ((mapAddress >> 22) & 0x3FF);
-    unsigned uiPTEAddress = (((unsigned*)(MEM_PDBR - GLOBAL_DATA_SEGMENT_BASE))[uiPDEIndex]) & 0xFFFFF000;
-    unsigned uiPTEIndex = ((mapAddress >> 12) & 0x3FF);
-    // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[uiPTEIndex] = (addr & 0xFFFFF000) | 0x5 | (memTypeFlag & 0xFF);
-    markPageRetCode = MarkPageAsAllocated(addr / PAGE_SIZE, markPageRetCode);
-    mapAddress += PAGE_SIZE;
-  }
-  GraphicsVideo::Instance().MappedLFBAddress(MEM_GRAPHICS_VIDEO_MAP_START);
-  RootGUIConsole::Instance().resetFrameBuffer(MEM_GRAPHICS_VIDEO_MAP_START);
+void MemManager::InitPage(uint64_t pageNum) {
+  memset((void*)(pageNum * PAGE_SIZE), 0, PAGE_SIZE);
 }
 
-void MemManager::InitPage(unsigned uiPage)
-{
-	uiPage = uiPage * PAGE_SIZE;
-  memset((void*)(uiPage - GLOBAL_DATA_SEGMENT_BASE), 0, PAGE_SIZE);
-}
+bool MemManager::BuildRawPageMap() {
+  _pageMap = (uintptr_t*)MEM_PAGE_MAP_START;
+  _pageMapSize = (((RAM_SIZE / PAGE_SIZE) / 8) / 8) ;
+  _kernelReservedMapSize = (((MEM_KERNEL_RESV_SIZE / PAGE_SIZE) / 8) / 8);
+  _kernelReservedPages = MEM_KERNEL_RESV_SIZE / PAGE_SIZE;
+  _kernelHeapMapSize = (MEM_KERNEL_HEAP_SIZE / PAGE_SIZE) / 8 / 8;
 
-bool MemManager::BuildRawPageMap()
-{
-  m_uiPageMap = (unsigned*)MEM_PAGE_MAP_START ;
-  m_uiPageMapSize = (((RAM_SIZE / PAGE_SIZE) / 8) / 4) ;
-  m_uiResvSize = (((MEM_KERNEL_RESV_SIZE / PAGE_SIZE) / 8) / 4) ;
-  m_uiNoOfResvPages = MEM_KERNEL_RESV_SIZE / PAGE_SIZE;
-  m_uiKernelHeapSize = (MEM_KERNEL_HEAP_SIZE / PAGE_SIZE) / 8 / 4 ;
-  m_uiKernelHeapStartAddress = MEM_KERNEL_HEAP_START - GLOBAL_DATA_SEGMENT_BASE;
-
-  if((m_uiPageMapSize * 4) > (MEM_PAGE_MAP_END - MEM_PAGE_MAP_START))
-  {
+  if((_pageMapSize * 8) > (MEM_PAGE_MAP_END - MEM_PAGE_MAP_START)) {
     KC::MConsole().Message("\n Mem Page Map Size InSufficient\n", 'A') ;
     return false ;
   }
 
-  for(uint32_t i = 0; i < m_uiPageMapSize; i++)
-    m_uiPageMap[i] &= 0x0 ;
+  for(uint32_t i = 0; i < _pageMapSize; ++i) {
+    _pageMap[i] &= 0x0;
+  }
 
-  for(uint32_t i = 0; i < m_uiResvSize; i++)
-    m_uiPageMap[i] |= 0xFFFFFFFF ;
+  for(uint32_t i = 0; i < _kernelReservedMapSize; ++i) {
+    _pageMap[i] |= UINT64_MAX;
+  }
 
   return true ;
 }	
 
-bool MemManager::BuildPagePoolMap()
-{
-  m_uiKernelPagePoolMap = (unsigned*)(MEM_KERNEL_PAGE_POOL_MAP_START - GLOBAL_DATA_SEGMENT_BASE);
-  m_uiKernelPagePoolMapSize = MEM_KERNEL_PAGE_POOL_SIZE / PAGE_SIZE / 8 / 4;
-  m_uiKernelPagePoolStartPage = (MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE) / PAGE_SIZE;
+bool MemManager::BuildPagePoolMap() {
+  _kernelPagePoolMap = (uint64_t*)MEM_KERNEL_PAGE_POOL_MAP_START;
+  _kernelPagePoolMapSize = MEM_KERNEL_PAGE_POOL_SIZE / PAGE_SIZE / 8 / sizeof(uint64_t);
+  _kernelPagePoolStartPage = (MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE) / PAGE_SIZE;
 
-  if((m_uiKernelPagePoolMapSize * 4) > (MEM_KERNEL_PAGE_POOL_MAP_END - MEM_KERNEL_PAGE_POOL_MAP_START))
-  {
+  if((_kernelPagePoolMapSize * sizeof(uint64_t)) > (MEM_KERNEL_PAGE_POOL_MAP_END - MEM_KERNEL_PAGE_POOL_MAP_START)) {
     KC::MConsole().Message("\n Mem Page Pool Map Size InSufficient\n", 'A') ;
     return false ;
   }
 
-  for(uint32_t i = 0; i < m_uiKernelPagePoolMapSize; i++)
-    m_uiKernelPagePoolMap[i] &= 0x0 ;
+  for(uint32_t i = 0; i < _kernelPagePoolMapSize; ++i) {
+    _kernelPagePoolMap[i] &= 0x0;
+  }
 
   return true;
 }
 
-bool MemManager::BuildPageTable()
-{
-	// Expecting a complete 4 GB Page Table setup
-	// i.e, PTE of size 4 MB and PDE of size 4 KB
-	MEM_PDBR = MEM_PDE_START + GLOBAL_DATA_SEGMENT_BASE ;
+bool MemManager::BuildPageTable() {
+	MEM_PML4 = (uint64_t)MEM_PML4_TABLE;
 
-	unsigned uiNoOfPDEEntries ;
-	unsigned uiPageAddress ;
-	unsigned uiPageTableAddress ;
-	
-	m_uiNoOfPages = RAM_SIZE / PAGE_SIZE ;
-	uiNoOfPDEEntries = m_uiNoOfPages / PAGE_TABLE_ENTRIES ;
+  _noOfPages = RAM_SIZE / PAGE_SIZE;
 
-	m_uiPDEBase = (unsigned*)MEM_PDE_START ; 
-	m_uiPTEBase = (unsigned*)MEM_PTE_START ;
-	
-	if((uiNoOfPDEEntries * 4) > (MEM_PDE_END - MEM_PDE_START))
-	{
-    KC::MConsole().Message("\n PDE Size InSufficient\n", 'A') ;
-		return false ;
+  const auto noOfPTTableEntries = _noOfPages;
+	if (noOfPTTableEntries > MEM_PT_SIZE) {
+    KC::MConsole().Message("\n PT table size insufficient\n", 'A') ;
+    return false ;
 	}
 
-	if((m_uiNoOfPages * 4) > (MEM_PTE_END - MEM_PTE_START))
-	{
-    KC::MConsole().Message("\n PTE Size InSufficient\n", 'A') ;
-		return false ;
+  const auto noOfInitPages = I_DIVIDE_AND_CEIL(MEM_INIT_PAGE_MAP_SIZE, PAGE_SIZE);
+	for (uint32_t i = noOfInitPages; i < noOfPTTableEntries; ++i) {
+	  MEM_PT_TABLE[i] = (i * PAGE_SIZE) | 0x3;
 	}
 
-	memset((void*)MEM_PDE_START, 0, (MEM_PDE_END-MEM_PDE_START));
-	memset((void*)MEM_PTE_START, 0, (MEM_PTE_END-MEM_PTE_START));
-	
-	uiPageTableAddress = MEM_PTE_START + GLOBAL_DATA_SEGMENT_BASE ;
-	
-	//Map all PTEs into PDE. Pages in PTE will be mapped based 
-	//on RAM SIZE.
-	for(uint32_t uiPDE = 0; uiPDE < PAGE_TABLE_ENTRIES; uiPDE++)
-	{
-		m_uiPDEBase[uiPDE] = (uiPageTableAddress & 0xFFFFF000) | 0x3 ;
-		uiPageTableAddress += PAGE_TABLE_SIZE ;
-	}
+  for (uint32_t i = noOfPTTableEntries; i < MEM_PT_SIZE; ++i) {
+    MEM_PT_TABLE[i] = 0x0;
+  }
 
-  m_uiPTEBase[0] = 0;
-	uiPageAddress = PAGE_SIZE;
-	for(uint32_t uiPTE = 1; uiPTE < m_uiNoOfPages; uiPTE++)
-	{
-		m_uiPTEBase[uiPTE] = (uiPageAddress & 0xFFFFF000) | 0x3 ;
-		uiPageAddress += PAGE_SIZE ;
-	}
+  const auto noOfPTs = I_DIVIDE_AND_CEIL(noOfPTTableEntries, ENTRIES_PER_PAGE_TABLE);
+  if (noOfPTs > MEM_PD_SIZE) {
+    KC::MConsole().Message("\n PD table size insufficient\n", 'A') ;
+    return false ;
+  }
 
-	/***** Initialize Kernel Processes Stack Pages Table Entries *****/
-	m_uipKernelProcessStackPTEBase = (unsigned*)(MEM_PTE_START + KERNEL_PROCESS_PDE_ID * PAGE_TABLE_SIZE);
-	m_iNoOfKernelProcessStackBlocks = PAGE_TABLE_ENTRIES / PROCESS_KERNEL_STACK_PAGES ;
-	
-	for(int i = 0; i < m_iNoOfKernelProcessStackBlocks; i++)
-		m_bAllocationMapForKernelProcessStackBlock[i] = false ;
+  const auto noOfInitPTs = I_DIVIDE_AND_CEIL(noOfInitPages, ENTRIES_PER_PAGE_TABLE);
+  for (uint32_t i = noOfInitPTs; i < noOfPTs; ++i) {
+    MEM_PD_TABLE[i] = ((uint64_t)MEM_PT_TABLE + i * PAGE_SIZE) | 0x3;
+  }
+
+  for (uint32_t i = noOfPTs; i < MEM_PD_SIZE; ++i) {
+    MEM_PD_TABLE[i] = 0x0;
+  }
+
+  const auto noOfPDs = I_DIVIDE_AND_CEIL(noOfPTs, ENTRIES_PER_PAGE_TABLE);
+  if (noOfPDs > MEM_PDP_SIZE) {
+    KC::MConsole().Message("\n PDP table size insufficient\n", 'A') ;
+    return false ;
+  }
+
+  const auto noOfInitPDs = I_DIVIDE_AND_CEIL(noOfInitPTs, ENTRIES_PER_PAGE_TABLE);
+  for (uint32_t i = noOfInitPDs; i < noOfPDs; ++i) {
+    MEM_PDP_TABLE[i] = ((uint64_t)MEM_PD_TABLE + i * PAGE_SIZE) | 0x3;
+  }
+
+  for (uint32_t i = noOfPDs; i < MEM_PDP_SIZE; ++i) {
+    MEM_PDP_TABLE[i] = 0x0;
+  }
+
+  const auto noOfPDPs = I_DIVIDE_AND_CEIL(noOfPDs, ENTRIES_PER_PAGE_TABLE);
+  if (noOfPDPs > MEM_PML4_SIZE) {
+    KC::MConsole().Message("\n PML4 table size insufficient\n", 'A') ;
+    return false ;
+  }
+
+  const auto noOfInitPDPs = I_DIVIDE_AND_CEIL(noOfInitPDs, ENTRIES_PER_PAGE_TABLE);
+  for (uint32_t i = noOfInitPDPs; i < noOfPDPs; ++i) {
+    MEM_PML4_TABLE[i] = ((uint64_t)MEM_PDP_TABLE + i * PAGE_SIZE) | 0x3;
+  }
+
+  for (uint32_t i = noOfPDPs; i < MEM_PML4_SIZE; ++i) {
+    MEM_PML4_TABLE[i] = 0x0;
+  }
+
+  /***** Initialize Kernel Processes Stack Pages Table Entries *****/
+	for (bool& a : _allocMapForKernelProcessStackBlock) {
+    a = false;
+  }
 
 	return true ;
 }
 
-int MemManager::GetFreeKernelProcessStackBlockID() {
-  ProcessSwitchLock pLock;
-	for(int i = 0; i < m_iNoOfKernelProcessStackBlocks; i++) {
-		if(!m_bAllocationMapForKernelProcessStackBlock[i]) {
-			m_bAllocationMapForKernelProcessStackBlock[i] = true ;
-			return i;
-		}
-	}
-	return -1 ;
+void MemManager::KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag) {
+  auto pdpTable = PAGE_TABLE(MEM_PML4_TABLE, PML4_INDEX(vAddr));
+  auto pdTable = PAGE_TABLE(pdpTable, PDP_INDEX(vAddr));
+  auto ptTable = PAGE_TABLE(pdTable, PD_INDEX(vAddr));
+  // This page is a Read Only area for user process. 0x3 => 011 => Supervisor, Read/Write, Present Bit
+  ptTable[PT_INDEX(vAddr)] = (pAddr & ~0xFFF) | pageFlag;
+}
+
+uint64_t* MemManager::GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress) {
+  auto pml4Index = PML4_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+    auto pdpPage = AllocatePhysicalPage();
+    pml4Table[pml4Index] = (pdpPage * PAGE_SIZE) | 0x7;
+  }
+
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+  auto pdpIndex = PDP_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+    auto pdPage = AllocatePhysicalPage();
+    pdpTable[pdpIndex] = (pdPage * PAGE_SIZE) | 0x7;
+  }
+
+  auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+  return GetPTTableFromPD(pdTable, virtualAddress);
+}
+
+uint64_t* MemManager::GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddress) {
+  auto pdIndex = PD_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
+    auto ptPage = AllocatePhysicalPage();
+    pdTable[pdIndex] = (ptPage * PAGE_SIZE) | 0x7;
+  }
+  return PAGE_TABLE(pdTable, pdIndex);
+}
+
+void MemManager::AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = AllocatePhysicalPage() * PAGE_SIZE | pageConfig;
+    }
+  }
+}
+
+void MemManager::AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTableFromPD(pdTable, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = AllocatePhysicalPage() * PAGE_SIZE | pageConfig;
+    }
+  }
+}
+
+void MemManager::DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+    }
+  }
+}
+
+void MemManager::DeallocateAddressSpace(uint64_t* pml4Table) {
+  for(int pml4Index = 0; pml4Index < ENTRIES_PER_PAGE_TABLE; ++pml4Index) {
+    if (PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+      auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+      for(int pdpIndex = 0; pdpIndex < ENTRIES_PER_PAGE_TABLE; ++pdpIndex) {
+        if (PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+          auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+          DeallocatePDAddressSpace(pdTable);
+        }
+      }
+      DeAllocatePhysicalPage(PAGE_ADDRESS(pml4Table, pml4Index));
+    }
+  }
+  DeAllocatePhysicalPage((uint64_t)pml4Table / PAGE_SIZE);
+}
+
+void MemManager::DeallocatePDAddressSpace(uint64_t* pdTable) {
+  for(int pdIndex = 0; pdIndex < ENTRIES_PER_PAGE_TABLE; ++pdIndex) {
+    if (PAGE_IS_PRESENT(pdTable, pdIndex)) {
+      auto ptTable = PAGE_TABLE(pdTable, pdIndex);
+      for(int ptIndex = 0; ptIndex < ENTRIES_PER_PAGE_TABLE; ++ptIndex) {
+        if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+          DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+        }
+      }
+      DeAllocatePhysicalPage(PAGE_ADDRESS(pdTable, pdIndex));
+    }
+  }
+  DeAllocatePhysicalPage((uint64_t)pdTable / PAGE_SIZE);
+}
+
+void MemManager::MapAddressSpace(uint64_t* pml4Table,
+                                 uint32_t pageConfig,
+                                 uintptr_t virtualAddress,
+                                 uintptr_t realAddress,
+                                 uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE, realAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    ptTable[ptIndex] = realAddress | pageConfig;
+  }
+}
+
+void MemManager::UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size) {
+  const auto maxVirtualAddress = virtualAddress + size;
+  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      ptTable[ptIndex] = 0;
+    }
+  }
 }
 
 int MemManager::AllocateKernelStack() {
   ProcessSwitchLock pLock;
-  const int iStackBlockID = MemManager::Instance().GetFreeKernelProcessStackBlockID();
-
-  if(iStackBlockID < 0)
-    throw upan::exception(XLOC, "No free stack blocks available for kernel process");
-
-  for(int i = 0; i < PROCESS_KERNEL_STACK_PAGES; i++) {
-    uint32_t uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
-    m_uipKernelProcessStackPTEBase[iStackBlockID * PROCESS_KERNEL_STACK_PAGES + i] = ((uiFreePageNo * PAGE_SIZE) & 0xFFFFF000) | 0x3 ;
+  for (int i = 0; i < NO_OF_KERNEL_STACK_BLOCKS; i++) {
+    if (!_allocMapForKernelProcessStackBlock[i]) {
+      _allocMapForKernelProcessStackBlock[i] = true;
+      return i;
+    }
   }
-  Mem_FlushTLB();
-
-  return iStackBlockID;
+  throw upan::exception(XLOC, "No free stack blocks available for kernel process");
 }
 
 void MemManager::DeAllocateKernelStack(int stackBlockId) {
   ProcessSwitchLock pLock;
 
-  if(stackBlockId < 0 || stackBlockId >= m_iNoOfKernelProcessStackBlocks)
-    return ;
+  if(stackBlockId < 0 || stackBlockId >= NO_OF_KERNEL_STACK_BLOCKS)
+    return;
 
-  for(int i = 0; i < PROCESS_KERNEL_STACK_PAGES; i++) {
-    DeAllocatePhysicalPage((m_uipKernelProcessStackPTEBase[stackBlockId * PROCESS_KERNEL_STACK_PAGES + i] & 0xFFFFF000) / PAGE_SIZE);
-  }
-  Mem_FlushTLB();
-
-  m_bAllocationMapForKernelProcessStackBlock[stackBlockId] = false ;
+  _allocMapForKernelProcessStackBlock[stackBlockId] = false ;
 }
 
 ReturnCode MemManager::MarkPageAsAllocated(unsigned uiPageNumber, ReturnCode prevRetCode) {
-    ProcessSwitchLock pLock;
-    unsigned uiPageMapIndex = uiPageNumber / 32 ;
-    //Sometimes MEM IO addresses can fall beyond actual ram size (?) - no need to mark those pages as allocated then
-    if(uiPageMapIndex >= m_uiPageMapSize)
-        return Success;
-    unsigned uiPageBitIndex = uiPageNumber % 32 ;
-    unsigned uiCurVal = (m_uiPageMap[ uiPageMapIndex ] >> uiPageBitIndex) & 0x1 ;
-    if(uiCurVal) {
-        if (prevRetCode == Success) {
-            printf("\n Error: Page: %u is already marked as allocated", uiPageNumber) ;
-        }
-        return Failure;
+  ProcessSwitchLock pLock;
+  unsigned uiPageMapIndex = uiPageNumber / 64;
+  //MEM IO addresses may fall beyond actual ram size - no need to mark such pages as allocated
+  if (uiPageMapIndex >= _pageMapSize)
+    return Success;
+  unsigned uiPageBitIndex = uiPageNumber % 64;
+  unsigned uiCurVal = (_pageMap[uiPageMapIndex] >> uiPageBitIndex) & 0x1;
+  if (uiCurVal) {
+    if (prevRetCode == Success) {
+      printf("\n Error: Page: %u is already marked as allocated", uiPageNumber);
     }
-    m_uiPageMap[ uiPageMapIndex ] |= (0x1 << uiPageBitIndex) ;
-    return Success ;
+    return Failure;
+  }
+  _pageMap[uiPageMapIndex] |= (0x1 << uiPageBitIndex);
+  return Success;
 }
 
-unsigned MemManager::AllocatePhysicalPage()
-{	
+uint64_t MemManager::AllocatePhysicalPage() {
 	ProcessSwitchLock lock;
-
-	unsigned uiPageMapPosition ;
-	unsigned uiPageOffset ;
-	unsigned uiPageMapEntry ;
-	
-	for(uiPageMapPosition = m_uiResvSize; uiPageMapPosition < m_uiPageMapSize; uiPageMapPosition++)
-	{
-		if((m_uiPageMap[uiPageMapPosition] & 0xFFFFFFFF) != 0xFFFFFFFF)
-		{
-			uiPageMapEntry = m_uiPageMap[uiPageMapPosition] ;
-			for(uiPageOffset = 0; uiPageOffset < 32; uiPageOffset++)
-			{
-				if((uiPageMapEntry & 0x1) == 0x0)
-				{
-					m_uiPageMap[uiPageMapPosition] |= (0x1	<< uiPageOffset) ;
-          return (uiPageMapPosition * 4 * 8) + uiPageOffset;
+	for(auto pageMapPosition = _kernelReservedMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
+		if((_pageMap[pageMapPosition] & UINT64_MAX) != UINT64_MAX) {
+      auto pageMapEntry = _pageMap[pageMapPosition] ;
+			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
+				if((pageMapEntry & 0x1) == 0x0) {
+          _pageMap[pageMapPosition] |= (0x1 << pageOffset) ;
+          uint64_t pageNumber = (pageMapPosition * 64) + pageOffset;
+          memset((void*)(pageNumber * PAGE_SIZE), 0, PAGE_SIZE);
+          return pageNumber;
 				}
-				uiPageMapEntry >>= 1 ;
+        pageMapEntry >>= 1 ;
 			}
 		}
 	}
   throw upan::exception(XLOC, "Out of memory pages!");
 }
 
-void MemManager::DeAllocatePhysicalPage(const unsigned uiPageNumber)
-{
+void MemManager::DeAllocatePhysicalPage(uint64_t pageNumber)  {
   ProcessSwitchLock pLock;
-
-	unsigned uiPageMapPosition ;
-	unsigned uiPageOffset ;
-
-	uiPageOffset = uiPageNumber % (8 * 4) ;
-	uiPageMapPosition = uiPageNumber / (8 * 4) ;
-	
-	m_uiPageMap[uiPageMapPosition] = m_uiPageMap[uiPageMapPosition] & ~(0x1 << uiPageOffset) ;
+	const auto pageMapPosition = pageNumber / 64;
+	const auto pageOffset = pageNumber % 64;
+  _pageMap[pageMapPosition] = _pageMap[pageMapPosition] & ~(0x1 << pageOffset) ;
 }
 
-unsigned MemManager::AllocatePageForKernel()
-{
+unsigned MemManager::AllocatePageForKernel() {
   ProcessSwitchLock lock;
-
-  for(uint32_t i = 0; i < m_uiKernelPagePoolMapSize; ++i)
-  {
-    if((m_uiKernelPagePoolMap[i] & 0xFFFFFFFF) != 0xFFFFFFFF)
-    {
-      uint32_t uiPageMapEntry = m_uiKernelPagePoolMap[i] ;
-      for(uint32_t uiPageOffset = 0; uiPageOffset < 32; ++uiPageOffset)
-      {
-        if((uiPageMapEntry & 0x1) == 0x0)
-        {
-          m_uiKernelPagePoolMap[i] |= (0x1 << uiPageOffset) ;
-          return (i * 4 * 8) + uiPageOffset + m_uiKernelPagePoolStartPage;
+  for(auto i = 0; i < _kernelPagePoolMapSize; ++i) {
+    if((_kernelPagePoolMap[i] & UINT64_MAX) != UINT64_MAX) {
+      auto pageMapEntry = _kernelPagePoolMap[i];
+      for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
+        if((pageMapEntry & 0x1) == 0x0) {
+          _kernelPagePoolMap[i] |= (0x1 << pageOffset);
+          return (i * 64) + pageOffset + _kernelPagePoolStartPage;
         }
-        uiPageMapEntry >>= 1 ;
+        pageMapEntry >>= 1;
       }
     }
   }
   throw upan::exception(XLOC, "Out of memory pages in kernel pool!");
 }
 
-void MemManager::DeAllocatePageForKernel(unsigned uiPageNumber)
-{
+void MemManager::DeAllocatePageForKernel(uint32_t pageNumber) {
   ProcessSwitchLock lock;
-
-  uiPageNumber -= m_uiKernelPagePoolStartPage;
-  const unsigned uiPageMapPosition = uiPageNumber / (8 * 4);
-  const unsigned uiPageOffset = uiPageNumber % (8 * 4) ;
-
-  m_uiKernelPagePoolMap[uiPageMapPosition] = m_uiKernelPagePoolMap[uiPageMapPosition] & ~(0x1 << uiPageOffset) ;
+  pageNumber -= _kernelPagePoolStartPage;
+  const auto pageMapPosition = pageNumber / 64;
+  const auto pageOffset = pageNumber % 64;
+  _kernelPagePoolMap[pageMapPosition] = _kernelPagePoolMap[pageMapPosition] & ~(0x1 << pageOffset) ;
 }
-
-//uint32_t MemManager::AllocatePhysicalPage(const uint32_t noOfPages)
-//{	
-//	ProcessSwitchLock lock;
-//  if(noOfPages == 0)
-//    throw upan::exception(XLOC, "NoOfPages to allocate must be > 0");
-//  struct { 
-//    uint32_t index;
-//    uint32_t offset;
-//  } startPage, endPage;
-//  auto finishAllocation = [this, &startPage, &endPage]() {
-//      for(uint32_t mapIndex = startPage.index; mapIndex <= endPage.index; ++mapIndex)
-//      {
-//        const uint32_t sOffset = mapIndex == startPage.index ? startPage.offset : 0;
-//        const uint32_t eOffset = mapIndex == endPage.index ? endPage.offset : 32;
-//        for(uint32_t offset = sOffset; offset <= eOffset; ++offset)
-//          m_uiPageMap[mapIndex] |= (1 << offset);
-//      }
-//  };
-//  uint32_t count = noOfPages;
-//	for(uint32_t uiPageMapPosition = m_uiResvSize; uiPageMapPosition < m_uiPageMapSize; uiPageMapPosition++)
-//	{
-//	  uint32_t uiPageMapEntry = m_uiPageMap[uiPageMapPosition];
-//		if((uiPageMapEntry & 0xFFFFFFFF) != 0xFFFFFFFF)
-//		{
-//			for(uint32_t uiPageOffset = 0; uiPageOffset < 32; uiPageOffset++)
-//			{
-//				if((uiPageMapEntry & 0x1) == 0x0)
-//				{
-//          if(count == noOfPages)
-//          {
-//            startPage.index = uiPageMapPosition;
-//            startPage.offset = uiPageOffset;
-//          }
-//          --count;
-//          if(count == 0)
-//          {
-//            endPage.index = uiPageMapPosition;
-//            endPage.offset = uiPageOffset;
-//            finishAllocation();
-//            return (startPage.index * 4 * 8) + startPage.offset;
-//          }
-//				}
-//        else
-//          count = noOfPages;
-//				uiPageMapEntry >>= 1;
-//			}
-//		}
-//	}
-//  throw upan::exception(XLOC, "Out of memory pages!");
-//}
-//
-//void MemManager::DeAllocatePhysicalPage(uint32_t pageNo, const uint32_t noOfPages)
-//{
-//  ProcessSwitchLock pLock;
-//  for(uint32_t count = 0; count < noOfPages; ++count, ++pageNo)
-//  {
-//    const uint32_t index = pageNo / (8 * 4);
-//    const uint32_t offset = pageNo % (8 * 4);
-//    m_uiPageMap[index] = m_uiPageMap[index] & ~(0x1 << offset) ;
-//  }
-//}
 
 extern __volatile__ int SYS_CALL_ID;
-extern __volatile__ int KERNEL_DMM_ON;
 
-ReturnCode MemManager::AllocatePage(int iProcessID, unsigned uiFaultyAddress) {
+ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
   upan::mutex_guard g(ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pageAllocMutex().value());
 
-  unsigned uiFreePageNo, uiVirtualPageNo ;
-	unsigned uiPDEAddress, uiPTEAddress, uiPTEFreePage ;
+  const auto virtualPageNo = faultyAddress / PAGE_SIZE;
 
-	//KC::MDisplay().Address("\n Addr: ", uiFaultyAddress) ; 
+  if (ProcessManager::Instance().IsKernelProcess(iProcessID)) {
+    printf("\n Page Fault in Kernel! FIX THIS !!!");
+    printf("\n Page Fault Address/Page: %lx / %u", faultyAddress, virtualPageNo);
+    __asm__ __volatile__ ("HLT");
+    while (true);
+  }
 
-	uiVirtualPageNo = uiFaultyAddress / PAGE_SIZE ;
+  bool permittedAddressAccess = false;
+  //This space is for process Stack - page fault here should be only while expanding stack and not for Heap (DMM is OFF)
+  if (faultyAddress >= (PROCESS_STACK_TOP_ADDRESS - PROCESS_STACK_SIZE)
+      && faultyAddress < PROCESS_STACK_TOP_ADDRESS
+      && !ProcessManager::Instance().IsDMMOn(iProcessID)) {
+    permittedAddressAccess = true;
+  } //page fault in heap while allocating memory (DMM is ON)
+  else if (faultyAddress >= PROCESS_HEAP_START_ADDRESS
+           && faultyAddress < (PROCESS_HEAP_START_ADDRESS + PROCESS_HEAP_SIZE)
+           && ProcessManager::Instance().IsDMMOn(iProcessID)) {
+    permittedAddressAccess = true;
+  }
+  if (!permittedAddressAccess) {
+    printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
+    printf("\n Sys Call Id: %d", SYS_CALL_ID);
+    printf("\n PID: %d, DMM Flag: %d", iProcessID, ProcessManager::Instance().IsDMMOn(iProcessID));
+    return Failure;
+  }
 
-	if(ProcessManager::Instance().IsKernelProcess(iProcessID))
-	{
-		printf("\n Page Fault in Kernel! FIX THIS !!!") ;
-		printf("\n Page Fault Address/Page: %x / %u", uiFaultyAddress, uiVirtualPageNo);
-		__asm__ __volatile__ ("HLT");
-		while(1);
-		m_uiPTEBase[uiVirtualPageNo] = ((uiFreePageNo * PAGE_SIZE) & 0xFFFFF000) | 0x3 ;
-	}
-	else
-	{
-		//For User Process a Page Fault can occur only while accessing the HEAP AREA which starts at Virtual Address
-		//2 GB = 0x80000000
-		
-		/* Not accessing Heap and Not the startUp Address access (20MB) in proc_init */
-		const uint32_t pdeIndex = ((uiFaultyAddress >> 22) & 0x3FF);
-		if (pdeIndex != PROCESS_STACK_PDE_ID || pdeIndex != PROCESS_GUI_FRAMEBUFFER_PDE_ID || ProcessManager::Instance().IsDMMOn(iProcessID)) {
-      if ((uiFaultyAddress < PROCESS_HEAP_START_ADDRESS)
-          || (uiFaultyAddress >= PROCESS_HEAP_START_ADDRESS && !ProcessManager::Instance().IsDMMOn(iProcessID))
-          //This space is for process Stack - page fault here should be only while expanding stack and not for Heap
-          || (pdeIndex == PROCESS_STACK_PDE_ID && ProcessManager::Instance().IsDMMOn(iProcessID))
-          //This space is for process gui framebuffer - this space must be pre-allocated
-          || (pdeIndex == PROCESS_GUI_FRAMEBUFFER_PDE_ID)) {
-        printf("\n Segmentation Fault @ Address: 0x%x", uiFaultyAddress);
-        printf("\n Sys Call Id: %d", SYS_CALL_ID);
-        printf("\n PID: %d, DMM Flag: %d, PDE Index: %d", iProcessID, ProcessManager::Instance().IsDMMOn(iProcessID),
-               pdeIndex);
-        return Failure;
-      }
-    }
+  auto pml4Table = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pdbr();
+  auto ptTable = GetPTTable(pml4Table, faultyAddress);
+  const auto ptIndex = PT_INDEX(faultyAddress);
+  auto address = ptTable[ptIndex];
 
-		uiPDEAddress = ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().taskState().CR3_PDBR ;
-
-		uiPTEAddress = (((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[ ((uiFaultyAddress >> 22) & 0x3FF) ]) ;
-
-		if((uiPTEAddress & 0x1) == 0x0) {
-			uiPTEFreePage = AllocatePhysicalPage();
-
-			((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[ ((uiFaultyAddress >> 22) & 0x3FF)] = 
-				((uiPTEFreePage * PAGE_SIZE) & 0xFFFFF000) | 0x7 ;
-
-			uiPTEAddress = uiPTEFreePage * PAGE_SIZE ;
-			InitPage(uiPTEFreePage) ;
-		} else if((uiPTEAddress & 0x7) == 0x7) {
-			uiPTEAddress = uiPTEAddress & 0xFFFFF000;
-		} else {
-      /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
-      printf("\n Segmentation/Permission Fault @ Address: %x, PDE Index: %u", uiFaultyAddress, pdeIndex);
-      return Failure;
-    }
-
-		unsigned uiPageAdress = ((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[((uiFaultyAddress >> 12) & 0x3FF)];
-
-		if((uiPageAdress & 0x01) == 0x00)	{
-			uiFreePageNo = AllocatePhysicalPage();
-
-			((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[ ((uiFaultyAddress >> 12) & 0x3FF) ] = 
-					((uiFreePageNo * PAGE_SIZE) & 0xFFFFF000) | 0x7 ;
-
-			InitPage(uiFreePageNo) ;
-		} else if ((uiPageAdress & 0x7) == 0x7) {
-      // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
-		} else {
-			/* Crash the Process..... With SegFault Or OutOfMemeory Error*/
-			printf("\n Segmentation/Permission Fault @ Address: %x, PDE Index: %u", uiFaultyAddress, pdeIndex);
-			return Failure;
-		}
-	}
-
-	//Mem_FlushTLB();
-//	KC::MDisplay().Address("\n Alloc Done: ", uiFaultyAddress) ;
-	return Success;
+  if ((address & 0x1) == 0) {
+    auto page = AllocatePhysicalPage();
+    ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
+  } else if ((address & 0x7) == 0x7) {
+    // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
+  } else {
+    /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
+    printf("\n Segmentation/Permission Fault @ Address: 0x%lx", faultyAddress);
+    return Failure;
+  }
+  return Success;
 }
 
-ReturnCode MemManager::DeAllocatePage(const unsigned uiAddress) {
-	unsigned uiFreePageNo, uiVirtualPageNo ;
+uintptr_t MemManager::GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) {
+  const auto pml4Index = PML4_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+    return NULL;
+  }
 
-	uiVirtualPageNo = uiAddress / PAGE_SIZE ;
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+  const auto pdpIndex = PDP_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+    return NULL;
+  }
 
-	if((m_uiPTEBase[uiVirtualPageNo] & 0x1) == 0x0)
-		return DupDealloc;
-	
-	uiFreePageNo = (m_uiPTEBase[uiVirtualPageNo] & 0xFFFFF000) / PAGE_SIZE ;
-	m_uiPTEBase[uiVirtualPageNo] &= 0x2 ;
-	DeAllocatePhysicalPage(uiFreePageNo) ;
-
-//	KC::MDisplay().Address("\n DeAllocate Virtual: Address = ", uiAddress) ;
-//	KC::MDisplay().Address(" : Page = ", uiVirtualPageNo) ;
-//	KC::MDisplay().Address("\n DeAllocated Real Page = ", uiFreePageNo) ;
-
-	return Success;
+  auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
+  return GetFlatAddressFromPD(pdTable, virtualAddress);
 }
 
-//void MemManager::PageFaultHandlerTask()
-//{
-//	/*	What is This...... ;) while(1) in a Exception Handler... 
-//		This Exception Handler is Called Via Task Gate in IDT... So After the First Call
-//		the EIP will be pointing to the Next Instruction of IRET..... U Got it,,, right
-//		Yes.... No one there to update the TSS of this Task Gate.... Hence a tweak which works... */
-//	
-//	while(1) 
-//	{
-//		SPECIAL_TASK = true ;
-//
-//		__volatile__ unsigned uiFaultyAddress ;
-//		__asm__ __volatile__("mov %%cr2, %0" : "=r"(uiFaultyAddress) : ) ;
-//		
-//		if(AllocatePage(ProcessManager_iCurrentProcessID, uiFaultyAddress) == Failure)
-//		{
-//			//TODO:
-//			ProcessManager::Instance().GetCurrentPAS().status = TERMINATE ;
-//			__asm__ __volatile__("HLT") ;
-//		}
-//		SPECIAL_TASK = false ;
-//		__asm__ __volatile__("IRET") ;
-//	}
-//}
+uintptr_t MemManager::GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress) {
+  const auto pdIndex = PD_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdTable, pdIndex)) {
+    return NULL;
+  }
 
-void MemManager::DisplayNoOfFreePages()
-{	
-	unsigned uiPageMapPosition ;
-	unsigned uiPageOffset ;
-	unsigned uiPageMapEntry ;
-	unsigned uiFreePageCount = 0 ;
-	
-	for(uiPageMapPosition = m_uiResvSize; uiPageMapPosition < m_uiPageMapSize; uiPageMapPosition++)
-	{
-		if((m_uiPageMap[uiPageMapPosition] & 0xFFFFFFFF) != 0xFFFFFFFF)
-		{
-			uiPageMapEntry = m_uiPageMap[uiPageMapPosition] ;
-			for(uiPageOffset = 0; uiPageOffset < 32; uiPageOffset++)
-			{
-				if((uiPageMapEntry & 0x1) == 0x0)
-					uiFreePageCount++ ;
-				uiPageMapEntry >>= 1 ;
+  auto ptTable = PAGE_TABLE(pdTable, pdIndex);
+  const auto ptIndex = PT_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+    return NULL;
+  }
+
+  return PAGE_ADDRESS(ptTable, ptIndex) + PAGE_INDEX(virtualAddress);
+}
+
+void MemManager::DisplayNoOfFreePages() {
+	uint32_t freePageCount = 0 ;
+	for(auto pageMapPosition = _kernelReservedMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
+		if((_pageMap[pageMapPosition] & UINT64_MAX) != UINT64_MAX) {
+      auto pageMapEntry = _pageMap[pageMapPosition] ;
+			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
+				if((pageMapEntry & 0x1) == 0x0) {
+          freePageCount++;
+        }
+        pageMapEntry >>= 1 ;
 			}
 		}
 	}
-
-	printf("\n Free Page Count = %d", uiFreePageCount);
+	printf("\n Free Page Count = %d", freePageCount);
 }
 
-unsigned MemManager::GetFlatAddress(unsigned uiVirtualAddress)
-{
-	unsigned uiPDEAddress = ProcessManager::Instance().GetCurrentPAS().pdbr();
-
-	unsigned uiPTEAddress = (((unsigned*)(uiPDEAddress - GLOBAL_DATA_SEGMENT_BASE))[((uiVirtualAddress >> 22) & 0x3FF)]) ;
-
-	if((uiPTEAddress & 0x1) == 0x0)
-		return NULL ;
-
-	uiPTEAddress = uiPTEAddress & 0xFFFFF000 ;
-		
-	unsigned uiPageAddress = ((unsigned*)(uiPTEAddress - GLOBAL_DATA_SEGMENT_BASE))[((uiVirtualAddress >> 12) & 0x3FF)] ;
-
-	if((uiPageAddress & 0x1) == 0x0)
-		return NULL ;	
-
-	uiPageAddress = uiPageAddress & 0xFFFFF000 ;
-
-	return uiPageAddress + (uiVirtualAddress & 0xFFF) ;
-}
-
-void MemManager::DisplayNoOfAllocPages()
-{	
-	unsigned uiPageMapPosition ;
-	unsigned uiPageOffset ;
-	unsigned uiPageMapEntry ;
-	unsigned uiAllocPageCount = 0 ;
-
-  KC::MConsole().Message("\n\n", ' ');
-	for(uiPageMapPosition = m_uiResvSize + m_uiKernelHeapSize; uiPageMapPosition < m_uiPageMapSize; uiPageMapPosition++)
-	{
-		//if((m_uiPageMap[uiPageMapPosition] & 0xFFFFFFFF) != 0xFFFFFFFF)
-		{
-			uiPageMapEntry = m_uiPageMap[uiPageMapPosition] ;
-			for(uiPageOffset = 0; uiPageOffset < 32; uiPageOffset++)
-			{
-				if((uiPageMapEntry & 0x1) == 0x1)
-				{
-					uiAllocPageCount++ ;
-					printf(",%u", (uiPageMapPosition * 4 * 8) + uiPageOffset);
+void MemManager::DisplayNoOfAllocPages() {
+	uint32_t allocPageCount = 0 ;
+	for(auto pageMapPosition = _kernelReservedMapSize + _kernelHeapMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
+		if((_pageMap[pageMapPosition] & UINT64_MAX) != 0) {
+      auto pageMapEntry = _pageMap[pageMapPosition] ;
+			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
+				if((pageMapEntry & 0x1) == 0x1) {
+					++allocPageCount;
 				}
-				uiPageMapEntry >>= 1 ;
+        pageMapEntry >>= 1 ;
 			}
 		}
 	}
-	
-	printf("\n Alloc Page Count = %u\n", uiAllocPageCount) ;
+	printf("\n Alloc Page Count = %u\n", allocPageCount) ;
 }
 

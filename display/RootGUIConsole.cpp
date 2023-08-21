@@ -37,15 +37,8 @@ void RootGUIConsole::Create() {
   _done = true;
   auto f = MultiBoot::Instance().VideoFrameBufferInfo();
   if(f) {
-    FrameBufferInfo frameBufferInfo;
-    frameBufferInfo._pitch = f->framebuffer_pitch;
-    frameBufferInfo._width = f->framebuffer_width;
-    frameBufferInfo._height = f->framebuffer_height;
-    frameBufferInfo._bpp = f->framebuffer_bpp;
-    frameBufferInfo._frameBuffer = (uint32_t*)f->framebuffer_addr;
-
-    upanui::FrameBuffer frameBuffer(frameBufferInfo);
-    upanui::Viewport viewport(0, 0, frameBufferInfo._width, frameBufferInfo._height);
+    upanui::FrameBuffer frameBuffer(*f);
+    upanui::Viewport viewport(0, 0, f->_width, f->_height);
 
     static RootGUIConsole guiConsole(frameBuffer, viewport);
     _instance = &guiConsole;
@@ -85,9 +78,9 @@ void RootGUIConsole::scrollDown() {
   _textWriter.scrollDown(_consoleUIObject);
 }
 
-void RootGUIConsole::resetFrameBuffer(uint32_t frameBufferAddress) {
-  if ((uint32_t)_frame.frameBuffer().buffer() != frameBufferAddress) {
-    _frame.resetFrameBufferAddress((uint32_t *) frameBufferAddress);
+void RootGUIConsole::resetFrameBuffer(uintptr_t frameBufferAddress) {
+  if ((uintptr_t)_frame.frameBuffer().buffer() != frameBufferAddress) {
+    _frame.resetFrameBufferAddress((uint32_t*) frameBufferAddress);
     _frame.fillRect(0, 0, _frame.viewport().width(), _frame.viewport().height(), upanui::GCoreFunctions::ALPHA_MASK);
     _consoleUIObject.drawBuffer().initLocal(_frame.frameBuffer());
   }

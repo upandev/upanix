@@ -181,7 +181,7 @@ class EndPointContext
 
     void SetMaxBurstSize(uint32_t maxBurstSize)
     {
-      _context2 = (_context2 & ~(0xFF << 8)) | (maxBurstSize && 0xFF << 8);
+      _context2 = (_context2 & ~(0xFF << 8)) | (maxBurstSize & 0xFF << 8);
     }
 
     void SetMaxESITPayload(uint32_t maxESITPayload)

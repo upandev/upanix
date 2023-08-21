@@ -25,7 +25,6 @@
 # include <DynamicLinkLoader.h>
 # include <UserManager.h>
 # include <GenericUtil.h>
-# include <ProcessEnv.h>
 # include <MemManager.h>
 
 KernelService::DLLAllocCopy::DLLAllocCopy(unsigned uiNoOfPages, const upan::string& dllName) : _noOfPagesForDLL(uiNoOfPages), _dllName(dllName) {
@@ -47,17 +46,17 @@ KernelService::FlatAddress::FlatAddress(unsigned uiVirtualAddress) : m_uiAddress
 { 
 }
 
-void KernelService::FlatAddress::Execute()
-{
-	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(m_uiAddress) ;
+void KernelService::FlatAddress::Execute() {
+  auto& pas = ProcessManager::Instance().GetSchedulableProcess(GetRequestProcessID()).value();
+	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pdbr(), m_uiAddress) ;
 }
 
-KernelService::PageFault::PageFault(unsigned uiFaultyAddress) : m_uiFaultyAddress(uiFaultyAddress)
+KernelService::PageFault::PageFault(uintptr_t faultyAddress) : _faultyAddress(faultyAddress)
 {
 }
 
 void KernelService::PageFault::Execute() {
-  m_bStatus = MemManager::Instance().AllocatePage(GetRequestProcessID(), m_uiFaultyAddress) == Success;
+  m_bStatus = MemManager::Instance().AllocatePage(GetRequestProcessID(), _faultyAddress) == Success;
 }
 
 KernelService::ProcessExec::ProcessExec(int iNoOfArgs, const char* szFile, const char** szArgs)
@@ -130,11 +129,11 @@ unsigned KernelService::RequestFlatAddress(unsigned uiVirtualAddress)
 //This request to allocate a page upon page-fault is triggered via PageFault interrupt 0xE
 //So, this function is called from an interrupt handler - and hence, there won't be any other interrupts while
 //this interrupt is active ==> No PIT interrupts ==> No task switch
-bool KernelService::RequestPageFault(unsigned uiFaultyAddress) {
-  if (uiFaultyAddress < PAGE_SIZE) {
-    printf("\nPageFault at lower address: %x!!\n", uiFaultyAddress);
+bool KernelService::RequestPageFault(uintptr_t faultyAddress) {
+  if (faultyAddress < PAGE_SIZE) {
+    printf("\nPageFault at lower address: %x!!\n", faultyAddress);
   }
-	KernelService::PageFault* pRequest = new KernelService::PageFault(uiFaultyAddress) ;
+	KernelService::PageFault* pRequest = new KernelService::PageFault(faultyAddress) ;
 
 	AddRequest(pRequest) ;
 	ProcessManager::Instance().WaitOnKernelService() ;
@@ -176,7 +175,7 @@ int KernelService::RequestProcessExec(const char* szFile, int iNoOfArgs, const c
 	return iNewProcId ;
 }
 
-int KernelService::RequestThreadExec(uint32_t threadCaller, uint32_t entryAddresss, void* arg) {
+int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t  entryAddresss, void* arg) {
   auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg);
 
   AddRequest(pRequest) ;
@@ -214,9 +213,9 @@ KernelService::Request* KernelService::GetRequest()
 	return pRequest ;
 }
 
-void KernelService::Server(KernelService* pService)
+[[noreturn]] void KernelService::Server(KernelService* pService)
 {
-	while(true)
+  while(true)
 	{
 		Request* pRequest = pService->GetRequest() ;
 		if(!pRequest)
@@ -244,11 +243,11 @@ int KernelService::Spawn()
 
   upan::string szName(szKS);
   szName += upan::string::to_string(iID);
-	iID++ ;
+	++iID;
 
-	upan::vector<uint32_t> params;
-	params.push_back((uint32_t)this);
-	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (unsigned) &(KernelService::Server),
+	upan::vector<uintptr_t> params;
+	params.push_back((uintptr_t)this);
+	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &(KernelService::Server),
                                                           ProcessManager::GetCurrentProcessID(), false, params);
 	if(pid < 0) {
 		printf("\n Failed to create Kernel Service Process %s", szName.c_str()) ;

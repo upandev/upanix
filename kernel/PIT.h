@@ -19,10 +19,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#pragma once
 
 #include <Global.h>
+#include <InterruptHandlers.h>
 
 #define TIMECOUNTER_i8254_FREQU 1193182 // Input Frequency of PIT
 // Counter 0, 1, 2
@@ -59,18 +59,21 @@ In MODES 2 and 3 (which are periodic) the Counter reloads itself with the initia
 
 class IRQ ;
 
-void PIT_Initialize();
-void PIT_Handler();
+class PIT {
+private:
+  PIT();
+public:
+  static PIT& Instance() {
+    static PIT instance;
+    return instance;
+  }
 
-unsigned PIT_GetClockCount();
+  void Initialize();
+  void Handler(TaskContext&);
 
-unsigned char PIT_IsContextSwitch();
-void PIT_SetContextSwitch(bool flag);
+  uint32_t GetClockCount() const { return _clockCountForSleep; }
+  uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
 
-bool PIT_IsTaskSwitch();
-bool PIT_EnableTaskSwitch();
-bool PIT_DisableTaskSwitch();
-
-unsigned PIT_RoundSleepTime(__volatile__ unsigned uiSleepTime);
-
-#endif
+private:
+  uint32_t _clockCountForSleep ;
+};

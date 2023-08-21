@@ -1,25 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
       <config projectName="Upanix" targetName="mcpp" />
+      <config projectName="Upanix" targetName="ints" />
+      <config projectName="Upanix" targetName="interrupt_handlers" />
       <config projectName="Upanix" targetName="boot" />
       <config projectName="Upanix" targetName="mem" />
-      <config projectName="Upanix" targetName="images" />
       <config projectName="Upanix" targetName="osutils" />
       <config projectName="Upanix" targetName="upanix.elf" />
     </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Default-WSL" TOOLCHAIN_NAME="WSL" GENERATION_DIR="." ENABLED="true" />
+      <configuration PROFILE_NAME="Default" GENERATION_OPTIONS="-DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake" GENERATION_DIR="cmake-build-default" ENABLED="true" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="vertical scroller integration">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="kernel process and thread modified for 64bit kernel">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.h" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +63,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ClangdSettings">
+    <option name="clangTidyViaClangd" value="false" />
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="Git.Settings">
@@ -40,7 +77,7 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="ProjectId" id="2KwYpfak6x92oCUSsIMkh0N6qn7" />
+  <component name="ProjectId" id="2QOvEEBy5uQqlyx0kyrNYCzmRMJ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -49,169 +86,224 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
     <property name="cidr.known.project.marker" value="true" />
     <property name="cmake.loaded.for.project" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/libints" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="preferences.fileTypes" />
+    <property name="settings.editor.splitter.proportion" value="0.25050917" />
   </component>
-  <component name="RunManager" selected="Shell Script.Upanix Load &amp; Run">
-    <configuration name="Upanix Load &amp; Run" type="ShConfigurationType">
-      <option name="SCRIPT_TEXT" value="make &amp;&amp; ./runqemu_uefi load &amp;&amp; exit" />
-      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="" />
-      <option name="SCRIPT_OPTIONS" value="" />
-      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-      <option name="INTERPRETER_PATH" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="EXECUTE_IN_TERMINAL" value="true" />
-      <option name="EXECUTE_SCRIPT_FILE" value="false" />
-      <envs />
-      <method v="2" />
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/libints" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
     </configuration>
-    <configuration name="Upanix Run" type="ShConfigurationType">
-      <option name="SCRIPT_TEXT" value="./runqemu_uefi 64 &amp;&amp; exit" />
+    <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="interrupt_handlers" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="interrupt_handlers" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ints" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="ints" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="mcpp" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="mcpp" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="mem" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="mem" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="osutils" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="osutils" CONFIG_NAME="Default">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="upanix.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="upanix.elf" CONFIG_NAME="Default" RUN_TARGET_PROJECT_NAME="Upanix" RUN_TARGET_NAME="upanix.elf">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/run" />
       <option name="SCRIPT_OPTIONS" value="" />
       <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
       <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-      <option name="INTERPRETER_PATH" value="" />
+      <option name="INTERPRETER_PATH" value="/bin/zsh" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="EXECUTE_IN_TERMINAL" value="true" />
-      <option name="EXECUTE_SCRIPT_FILE" value="false" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
       <envs />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Shell Script.Upanix Load &amp; Run" />
-      <item itemvalue="Shell Script.Upanix Run" />
+      <item itemvalue="CMake Application.boot" />
+      <item itemvalue="CMake Application.interrupt_handlers" />
+      <item itemvalue="CMake Application.ints" />
+      <item itemvalue="CMake Application.mcpp" />
+      <item itemvalue="CMake Application.mem" />
+      <item itemvalue="CMake Application.osutils" />
+      <item itemvalue="CMake Application.upanix.elf" />
+      <item itemvalue="Shell Script.run" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="5b4062e0-dd6b-4561-ae8e-0091f8403ff5" name="Default Changelist" comment="" />
-      <created>1674887296898</created>
+      <changelist id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="" />
+      <created>1685237328529</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1674887296898</updated>
-      <workItem from="1674887308811" duration="25000" />
-      <workItem from="1674887461869" duration="10003000" />
-      <workItem from="1674966495326" duration="7628000" />
-      <workItem from="1675170263491" duration="4011000" />
-      <workItem from="1675576774719" duration="8798000" />
-      <workItem from="1675778944432" duration="595000" />
-      <workItem from="1676111815129" duration="4657000" />
-      <workItem from="1676284619975" duration="3288000" />
-      <workItem from="1676377978361" duration="4850000" />
-      <workItem from="1676721681662" duration="5287000" />
-      <workItem from="1676761257385" duration="8409000" />
-      <workItem from="1676893204091" duration="1517000" />
-      <workItem from="1677072973157" duration="1904000" />
-      <workItem from="1677299189851" duration="12065000" />
-      <workItem from="1677376639552" duration="17489000" />
-      <workItem from="1677593038298" duration="1557000" />
-      <workItem from="1677906715367" duration="8158000" />
-      <workItem from="1677993435855" duration="5513000" />
-      <workItem from="1678109773066" duration="2998000" />
-      <workItem from="1678185776059" duration="3050000" />
-      <workItem from="1678267967037" duration="3557000" />
-      <workItem from="1678460936719" duration="3503000" />
-      <workItem from="1678490871828" duration="2998000" />
+      <updated>1685237328529</updated>
+      <workItem from="1685237329931" duration="295000" />
+      <workItem from="1685239056071" duration="16619000" />
+      <workItem from="1685687919023" duration="2283000" />
+      <workItem from="1685693558568" duration="18318000" />
+      <workItem from="1687080901318" duration="29899000" />
+      <workItem from="1688169083627" duration="76239000" />
+      <workItem from="1689170475032" duration="12538000" />
+      <workItem from="1689461946146" duration="101171000" />
+      <workItem from="1691579315317" duration="77242000" />
     </task>
-    <task id="LOCAL-00001" summary="update workspace.xml">
-      <created>1674909854044</created>
+    <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
+      <created>1688394036377</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1674909854044</updated>
+      <updated>1688394036378</updated>
     </task>
-    <task id="LOCAL-00002" summary="scroller testing">
-      <created>1674909879894</created>
+    <task id="LOCAL-00002" summary="got 64bit OS working till mem manager initialization with graphics">
+      <created>1688880757090</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1674909879894</updated>
+      <updated>1688880757090</updated>
     </task>
-    <task id="LOCAL-00003" summary="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event">
-      <created>1675591833215</created>
+    <task id="LOCAL-00003" summary="IDT setup for 64bit OS">
+      <created>1688898298017</created>
       <option name="number" value="00003" />
       <option name="presentableId" value="LOCAL-00003" />
       <option name="project" value="LOCAL" />
-      <updated>1675591833215</updated>
+      <updated>1688898298017</updated>
     </task>
-    <task id="LOCAL-00004" summary="identify root gui console as a rectangular shape object">
-      <created>1675610053184</created>
+    <task id="LOCAL-00004" summary="PAT, IRQ, Graphics Init for 64bit">
+      <created>1689462151507</created>
       <option name="number" value="00004" />
       <option name="presentableId" value="LOCAL-00004" />
       <option name="project" value="LOCAL" />
-      <updated>1675610053184</updated>
+      <updated>1689462151507</updated>
     </task>
-    <task id="LOCAL-00005" summary="test PNG image decoder">
-      <created>1676893519306</created>
+    <task id="LOCAL-00005" summary="Handling interrupts in 64 bit">
+      <created>1689487629329</created>
       <option name="number" value="00005" />
       <option name="presentableId" value="LOCAL-00005" />
       <option name="project" value="LOCAL" />
-      <updated>1676893519306</updated>
+      <updated>1689487629329</updated>
     </task>
-    <task id="LOCAL-00006" summary="test PNG image decoder">
-      <created>1676896791112</created>
+    <task id="LOCAL-00006" summary="more changes to memory management in migrating to 64bit">
+      <created>1690068941100</created>
       <option name="number" value="00006" />
       <option name="presentableId" value="LOCAL-00006" />
       <option name="project" value="LOCAL" />
-      <updated>1676896791112</updated>
+      <updated>1690068941100</updated>
     </task>
-    <task id="LOCAL-00007" summary="change alpha channel range to 0-255">
-      <created>1677074296605</created>
+    <task id="LOCAL-00007" summary="more changes to process memory management in migrating to 64bit">
+      <created>1690679180441</created>
       <option name="number" value="00007" />
       <option name="presentableId" value="LOCAL-00007" />
       <option name="project" value="LOCAL" />
-      <updated>1677074296605</updated>
+      <updated>1690679180441</updated>
     </task>
-    <task id="LOCAL-00008" summary="use png image for mouse cursor">
-      <created>1677385012425</created>
+    <task id="LOCAL-00008" summary="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping">
+      <created>1691311095014</created>
       <option name="number" value="00008" />
       <option name="presentableId" value="LOCAL-00008" />
       <option name="project" value="LOCAL" />
-      <updated>1677385012425</updated>
+      <updated>1691311095014</updated>
     </task>
-    <task id="LOCAL-00009" summary="use predefined image resource for mouse cursor and testing">
-      <created>1677392546031</created>
+    <task id="LOCAL-00009" summary="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic">
+      <created>1691895237496</created>
       <option name="number" value="00009" />
       <option name="presentableId" value="LOCAL-00009" />
       <option name="project" value="LOCAL" />
-      <updated>1677392546031</updated>
+      <updated>1691895237497</updated>
     </task>
-    <task id="LOCAL-00010" summary="refactor to remove unused header">
-      <created>1677410075459</created>
+    <task id="LOCAL-00010" summary="a separate handler for timer interrupt written in assembly to make it specific and clean without any compiler dependent/generated code in order to make it suitable for use in context switching">
+      <created>1691895357344</created>
       <option name="number" value="00010" />
       <option name="presentableId" value="LOCAL-00010" />
       <option name="project" value="LOCAL" />
-      <updated>1677410075459</updated>
+      <updated>1691895357344</updated>
     </task>
-    <task id="LOCAL-00011" summary="use iconbuttons">
-      <created>1677424128604</created>
+    <task id="LOCAL-00011" summary="XHCI controller initializing upgraded for 64bit kernel">
+      <created>1691914877579</created>
       <option name="number" value="00011" />
       <option name="presentableId" value="LOCAL-00011" />
       <option name="project" value="LOCAL" />
-      <updated>1677424128604</updated>
+      <updated>1691914877579</updated>
     </task>
-    <task id="LOCAL-00012" summary="vertical scoller integration">
-      <created>1678187954219</created>
+    <task id="LOCAL-00012" summary="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop.">
+      <created>1691923542360</created>
       <option name="number" value="00012" />
       <option name="presentableId" value="LOCAL-00012" />
       <option name="project" value="LOCAL" />
-      <updated>1678187954219</updated>
+      <updated>1691923542360</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="upgrade EHCI controler initialization to support 64bit kernel">
+      <created>1691932153889</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1691932153889</updated>
+    </task>
+    <task id="LOCAL-00014" summary="kernel process and thread modified for 64bit kernel">
+      <created>1692369730041</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1692369730041</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -226,17 +318,20 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="update workspace.xml" />
-    <MESSAGE value="scroller testing" />
-    <MESSAGE value="a process can wait on interrupt with timeout. this is currently used by mouse event handler to simulate mouse button 'hold' event" />
-    <MESSAGE value="identify root gui console as a rectangular shape object" />
-    <MESSAGE value="test PNG image decoder" />
-    <MESSAGE value="change alpha channel range to 0-255" />
-    <MESSAGE value="use png image for mouse cursor" />
-    <MESSAGE value="use predefined image resource for mouse cursor and testing" />
-    <MESSAGE value="refactor to remove unused header" />
-    <MESSAGE value="use iconbuttons" />
-    <MESSAGE value="vertical scroller integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="vertical scroller integration" />
+    <MESSAGE value="changes towards converting to 64bit OS" />
+    <MESSAGE value="got 64bit OS working till mem manager initialization with graphics" />
+    <MESSAGE value="IDT setup for 64bit OS" />
+    <MESSAGE value="PAT, IRQ, Graphics Init for 64bit" />
+    <MESSAGE value="Handling interrupts in 64 bit" />
+    <MESSAGE value="more changes to memory management in migrating to 64bit" />
+    <MESSAGE value="more changes to process memory management in migrating to 64bit" />
+    <MESSAGE value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
+    <MESSAGE value="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic" />
+    <MESSAGE value="a separate handler for timer interrupt written in assembly to make it specific and clean without any compiler dependent/generated code in order to make it suitable for use in context switching" />
+    <MESSAGE value="XHCI controller initializing upgraded for 64bit kernel" />
+    <MESSAGE value="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop." />
+    <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
+    <MESSAGE value="kernel process and thread modified for 64bit kernel" />
+    <option name="LAST_COMMIT_MESSAGE" value="kernel process and thread modified for 64bit kernel" />
   </component>
 </project>

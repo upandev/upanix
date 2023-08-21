@@ -429,7 +429,7 @@ class SupProtocolXCap
     {
       unsigned psiCount = (_portDetails >> 28) & 0xF;
       printf("\n PSIC: %d", psiCount);
-      unsigned* psi = (unsigned*)((unsigned)this + sizeof(SupProtocolXCap));
+      auto psi = (unsigned*)((uintptr_t)this + sizeof(SupProtocolXCap));
       for(unsigned i = 0; i < psiCount; ++i)
       {
         if(psiv != (psi[i] & 0xF))

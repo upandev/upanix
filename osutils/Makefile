@@ -17,31 +17,18 @@
 #																			 
 #	 You should have received a copy of the GNU General Public License
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
-CC = ${HOME}/opt/cross/bin/i686-elf-gcc
+CC = ${HOME}/opt/cross/bin/x86_64-elf-gcc
 ASM = ${HOME}/opt/cross/bin/nasm
 
 DLL_SRC = dll.asm 
 DLL_OUTPUT = .dll
 
-#PROCINIT_SRC = proc_init.asm
-#PROCINIT_OUTPUT = .procinit
-
-#REALMODE_SRC = realmode.asm
-#REALMODE_OUTPUT = .realmode
-
-#OUTPUTS := ${DLL_OUTPUT} ${PROCINIT_OUTPUT} ${REALMODE_OUTPUT} crti.o crtn.o
 OUTPUTS := ${DLL_OUTPUT} crti.o crtn.o
 
 osutils: ${OUTPUTS}
 
 ${DLL_OUTPUT}: ${DLL_SRC}
 	${ASM} -fbin ${DLL_SRC} -o ${DLL_OUTPUT}
-
-#${PROCINIT_OUTPUT}: ${PROCINIT_SRC}
-#	${ASM} -fbin ${PROCINIT_SRC} -o ${PROCINIT_OUTPUT}
-
-#${REALMODE_OUTPUT}: ${REALMODE_SRC}
-#	${ASM} -fbin ${REALMODE_SRC} -o ${REALMODE_OUTPUT}
 
 crti.o: crti.s
 	${CC} -c crti.s

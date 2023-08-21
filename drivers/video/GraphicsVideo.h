@@ -32,7 +32,7 @@
 
 class GraphicsVideo : protected KernelUtil::TimerTask {
   private:
-    GraphicsVideo(const framebuffer_info_t&);
+    GraphicsVideo(const FrameBufferInfo&);
 
   public:
     static void Create();
@@ -63,7 +63,7 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
       return _inputEventFGProcess;
     }
 
-    uint32_t allocateFrameBuffer();
+    uint64_t allocateFrameBuffer();
 
     void DebugPrint();
 
@@ -85,9 +85,9 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
     void DrawMouseCursor();
 
     static GraphicsVideo* _instance;
-    unsigned _flatLFBAddress;
-    unsigned _mappedLFBAddress;
-    unsigned _zBuffer;
+    uint64_t _flatLFBAddress;
+    uint64_t _mappedLFBAddress;
+    uint64_t _zBuffer;
     unsigned _pitch;
     unsigned _width;
     unsigned _height;

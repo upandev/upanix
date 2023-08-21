@@ -71,10 +71,6 @@ public:
     return false;
   }
 
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
-  }
-
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }
@@ -87,8 +83,8 @@ public:
     return true;
   }
 
-  uint32_t pdbr() const override {
-    return MEM_PDBR;
+  uint64_t* pdbr() const override {
+    return (uint64_t*)MEM_PML4;
   }
 
   void setDriveID(int driveID) override {
@@ -105,6 +101,10 @@ public:
 
   ProcessStateInfo& stateInfo() {
     throw upan::exception(XLOC, "stateInfo() unsupported");
+  }
+
+  PROCESS_STATUS status() const {
+    throw upan::exception(XLOC, "status() unsupported");
   }
 
   PROCESS_STATUS setStatus(PROCESS_STATUS status) {
@@ -138,7 +138,13 @@ public:
     throw upan::exception(XLOC, "KernelRootProcess is always GuiBase process - can't modify this flag");
   }
 
+  void setEnv(const upan::string& key, const upan::string& value) override;
+  upan::option<upan::string> getEnv(const upan::string& key) override;
+  const ProcessEnvMap& envMap() override {
+    return _envMap;
+  }
+
 private:
-  upan::mutex _envMutex;
   IODescriptorTable _iodTable;
+  ProcessEnvMap _envMap;
 };

@@ -4,39 +4,61 @@
 ; I am making my contributions/submissions to this project solely in
 ; my personal capacity and am not conveying any rights to any
 ; intellectual property of any third parties.
-;	                                                                        
+;
 ;	This program is free software: you can redistribute it and/or modify
 ;	it under the terms of the GNU General Public License as published by
 ;	the Free Software Foundation, either version 3 of the License, or
 ;	(at your option) any later version.
-;	                                                                        
+;
 ;	This program is distributed in the hope that it will be useful,
 ;	but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;	GNU General Public License for more details.
-;	                                                                        
+;
 ;	You should have received a copy of the GNU General Public License
 ;	along with this program.  If not, see <http://www.gnu.org/licenses/
 
 [BITS 64]
 
-[GLOBAL Mem_FlushTLB]
-[GLOBAL Mem_FlushTLBPage]
+[EXTERN timer_interrupt_handler]
+[GLOBAL _timer_interrupt_handler]
 
-Mem_FlushTLB:
-  push rax
-  mov rax, cr3
-  mov cr3, rax
-  pop rax
-  ret
+_timer_interrupt_handler:
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rbp
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
 
-Mem_FlushTLBPage:
-	;push dword	ebp
-	;mov dword	ebp, esp
-	;push dword	ebx
-	;mov dword	ebx, [ebp]
-	;invlpg		[ebx]
-	;pop dword	ebx
-	;pop dword	ebp
-	ret
+    mov rdi, rsp ; set the TaskContext param
+    cld ; clear direction flag
+    call timer_interrupt_handler
+    mov rsp, rax ; switch to returned TaskContext
 
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+
+    iretq

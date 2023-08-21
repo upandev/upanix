@@ -18,18 +18,19 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program.  If not, see <http://www.gnu.org/licenses/
 /* x86 crti.s */
+.code64
 .section .init
 .global _cxx_global_init
 .type _cxx_global_init, @function
 _cxx_global_init:
-	push %ebp
-	movl %esp, %ebp
+	push %rbp
+	mov %rsp, %rbp
 	/* gcc will nicely put the contents of crtbegin.o's .init section here. */
 
 .section .fini
 .global _fini
 .type _fini, @function
 _fini:
-	push %ebp
-	movl %esp, %ebp
+	push %rbp
+	mov %rsp, %rbp
 	/* gcc will nicely put the contents of crtbegin.o's .fini section here. */

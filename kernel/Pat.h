@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <Cpu.h>
 
+//Page Address Table
 class Pat {
 private:
   static const int IA32_PAT = 0x277;

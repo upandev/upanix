@@ -19,20 +19,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _MEM_MANAGER_H_
-#define _MEM_MANAGER_H_
+#pragma once
 
 #include <Global.h>
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
+#include "DMM.h"
 
 #define KERNEL_PROCESS_PDE_ID	1022
 
-extern "C"
-{
-	extern unsigned MEM_PDBR ;
-	void Mem_EnablePaging() ;
+extern "C" {
+	extern uint64_t MEM_PML4 ;
 	void Mem_FlushTLB() ;
 	void Mem_FlushTLBPage(unsigned uiPageNumber) ;
 }
@@ -49,30 +47,37 @@ class MemManager
 		}
     void PrintInitStatus() const;
 		ReturnCode MarkPageAsAllocated(unsigned uiPageNumber, ReturnCode prevRetCode) ;
-		unsigned AllocatePhysicalPage();
-		void DeAllocatePhysicalPage(const unsigned uiPageNumber) ;
+		uint64_t AllocatePhysicalPage();
+		void DeAllocatePhysicalPage(uint64_t uiPageNumber) ;
 		unsigned AllocatePageForKernel();
-		void DeAllocatePageForKernel(unsigned uiPageNumber);
+		void DeAllocatePageForKernel(unsigned pageNumber);
 
-    //uint32_t AllocatePhysicalPage(const uint32_t noOfPages = 1);
-    //void DeAllocatePhysicalPage(uint32_t pageNo, const uint32_t noOfPages = 1);
-		ReturnCode AllocatePage(int iProcessID, unsigned uiFaultyAddress) ;
-		ReturnCode DeAllocatePage(const unsigned uiAddress) ;
+		ReturnCode AllocatePage(int iProcessID, uintptr_t faultyAddress) ;
+    uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
+    uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
 		void DisplayNoOfFreePages() ;
-		unsigned GetFlatAddress(unsigned uiVirtualAddress) ;
 		void DisplayNoOfAllocPages() ;
 
-		static void InitPage(unsigned uiPage) ;
-		static void PageFaultHandlerTaskGate() ;
+    static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);
+    uint64_t* GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress);
+    uint64_t* GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
 
-		inline unsigned GetKernelHeapStartAddr() { return m_uiKernelHeapStartAddress ; }
-		inline unsigned GetRamSize() { return RAM_SIZE; }
+    void AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
+    void DeallocateAddressSpace(uint64_t* pml4Table);
+    void DeallocatePDAddressSpace(uint64_t* pdTable);
+
+    void MapAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t realAddress, uintptr_t size);
+    void UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
+
+		static void InitPage(uint64_t uiPage) ;
+		static void PageFaultHandlerTaskGate(uint64_t errorCode) ;
+
+		inline uint64_t GetRamSize() { return RAM_SIZE; }
 
 		int AllocateKernelStack();
 		void DeAllocateKernelStack(int stackBlockId);
-    inline uint32_t GetKernelStackAddress(int stackBlockId) {
-      return KERNEL_PROCESS_PDE_ID * PAGE_TABLE_ENTRIES * PAGE_SIZE + stackBlockId * PROCESS_KERNEL_STACK_PAGES * PAGE_SIZE;
-		}
 
 		static inline unsigned GetProcessSizeInPages(unsigned uiSizeInBytes)
 		{
@@ -84,43 +89,29 @@ class MemManager
 			return ((uiSizeInPages - 1) / PAGE_TABLE_ENTRIES) + 1 ;
 		}
 
-		inline unsigned& GetKernelAUTAddress()
-		{
-			return m_uiKernelAUTAddress ;
-		}
-    void MemMapGraphicsLFB(uint32_t memTypeFlag);
-
 	private:
 		bool BuildRawPageMap() ;
 		bool BuildPagePoolMap();
 		bool BuildPageTable() ;
     bool MarkACPIInfoRegionAsAllocated();
-    int GetFreeKernelProcessStackBlockID() ;
 
 	private:
-		unsigned m_uiNoOfPages ;
-		unsigned m_uiNoOfResvPages ;
-		unsigned m_uiKernelHeapSize ;
-		unsigned m_uiKernelHeapStartAddress ;
+    uint32_t _noOfPages ;
+    uint32_t _kernelReservedPages ;
+    uint32_t _kernelHeapMapSize ;
 
-		unsigned* m_uiPageMap ;
-		unsigned m_uiPageMapSize ;
+    uint64_t* _pageMap ;
+		uint32_t _pageMapSize ;
 
-		unsigned* m_uiKernelPagePoolMap;
-		unsigned m_uiKernelPagePoolMapSize;
-		unsigned m_uiKernelPagePoolStartPage;
+    uint64_t* _kernelPagePoolMap;
+    uint64_t _kernelPagePoolMapSize;
+    uint64_t _kernelPagePoolStartPage;
 
-		unsigned m_uiResvSize ;
+    uint32_t _kernelReservedMapSize ;
 
-		unsigned* m_uiPDEBase ;
-		unsigned* m_uiPTEBase ;
-		unsigned* m_uipKernelProcessStackPTEBase ;
-		unsigned m_uiKernelAUTAddress ;
+    uintptr_t* m_uipKernelProcessStackPTEBase ;
 
-		int m_iNoOfKernelProcessStackBlocks ;
-		bool m_bAllocationMapForKernelProcessStackBlock[PAGE_TABLE_ENTRIES / PROCESS_KERNEL_STACK_PAGES] ;
+		bool _allocMapForKernelProcessStackBlock[NO_OF_KERNEL_STACK_BLOCKS];
 
-		const unsigned RAM_SIZE ;
+		const uint64_t RAM_SIZE ;
 };
-
-#endif

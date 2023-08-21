@@ -24,26 +24,14 @@
 #include <PortCom.h>
 #include <IrqManager.h>
 #include <KeyboardHandler.h>
-#include <KBInputHandler.h>
 #include <PS2Controller.h>
+#include <InterruptHandlers.h>
 
-static void KBDriver_Handler()
-{
-  AsmUtil_STORE_GPR() ;
-  AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
-  //printf("\nKB IRQ\n") ;
+void PS2KeyboardDriver::Handler() {
   PS2Controller::Instance().WaitForRead();
   if(!(PortCom_ReceiveByte(PS2Controller::COMMAND_PORT) & 0x20))
     PS2KeyboardDriver::Instance().Process((PortCom_ReceiveByte(PS2Controller::DATA_PORT)) & 0xFF);
-
   IrqManager::Instance().SendEOI(StdIRQ::Instance().KEYBOARD_IRQ);
-
-  AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-  AsmUtil_RESTORE_GPR() ;
-
-  __asm__ __volatile__("LEAVE") ;
-  __asm__ __volatile__("IRET") ;
 }
 
 static const byte EXTRA_KEYS = 224;
@@ -81,7 +69,7 @@ PS2KeyboardDriver::PS2KeyboardDriver() : _isShiftKey(false), _isCapsLock(false),
   KeyboardHandler::Instance();
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
-  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (unsigned)&KBDriver_Handler);
+  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (uintptr_t)&keyboard_interrupt_handler);
   IrqManager::Instance().EnableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
 
   PortCom_ReceiveByte(PS2Controller::DATA_PORT);

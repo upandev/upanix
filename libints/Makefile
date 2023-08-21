@@ -19,26 +19,16 @@
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 ASM = ${HOME}/opt/cross/bin/nasm
 
-BIN = ${UPANIX_HOME}/bin
-UPANIX_START_MAIN_SRC = UpanixStart_Main.asm
-UPANIX_START_MAIN_OBJ = UpanixStart_Main.grub
-FPU_INIT_SRC = fpu_init.asm
-FPU_INIT_OBJ = fpu_init.obj
+TIMER_INTERRUPT_HANDLER_ASM_SRC = TimerInterruptHandler.asm
+TIMER_INTERRUPT_HANDLER_ASM_OBJ = TimerInterruptHandler.o
 
-boot_elf: ${UPANIX_START_MAIN_OBJ} ${FPU_INIT_OBJ}
+build: ${TIMER_INTERRUPT_HANDLER_ASM_OBJ}
 
-${FPU_INIT_OBJ}: ${FPU_INIT_SRC}
-	${ASM} -felf64 ${FPU_INIT_SRC} -o ${FPU_INIT_OBJ}
-
-${UPANIX_START_MAIN_OBJ}: ${UPANIX_START_MAIN_SRC}
-	${ASM} -felf64 ${UPANIX_START_MAIN_SRC} -o ${UPANIX_START_MAIN_OBJ}
+${TIMER_INTERRUPT_HANDLER_ASM_OBJ}: ${TIMER_INTERRUPT_HANDLER_ASM_SRC}
+	${ASM} -felf64 ${TIMER_INTERRUPT_HANDLER_ASM_SRC}
 
 clean:
 	rm -f *.o
-	rm -f ${FPU_INIT_OBJ}
-	rm -f ${UPANIX_START_MAIN_OBJ}
 
 distclean:
 	rm -f *.o
-	rm -f ${FPU_INIT_OBJ}
-	rm -f ${UPANIX_START_MAIN_OBJ}

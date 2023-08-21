@@ -31,7 +31,7 @@
 //But it is a process in that if the parent process dies before child, then child kernel process will continue to execute under the root kernel process
 class KernelProcess : public AutonomousProcess {
 public:
-  KernelProcess(const upan::string& name, uint32_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uint32_t>& params);
+  KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params);
 
   bool isKernelProcess() const override {
     return true;
@@ -39,11 +39,7 @@ public:
 
   void onLoad() override {}
 
-  KernelThread& CreateThread(uint32_t threadCaller, uint32_t entryAddress, void* arg) override;
-
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>(_envMutex);
-  }
+  KernelThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
   IODescriptorTable& iodTable() override {
     return _iodTable;
@@ -64,16 +60,13 @@ public:
   }
 
 private:
-  void DeAllocateResources() override;
-  uint32_t AllocateAddressSpace();
+  void DeallocateResources() override;
   void DeAllocateGUIFramebuffer();
 
 private:
-  int kernelStackBlockId;
+  int _stackBlockId;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
-  //common mutex for all kernel processes
-  static upan::mutex _envMutex;
   //interop variable
   upanui::GraphicsContext* _graphicsContext;
 };

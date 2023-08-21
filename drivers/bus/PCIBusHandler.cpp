@@ -316,6 +316,18 @@ PCIEntry::PCIEntry(unsigned uiBusNo, unsigned uiDeviceNo, unsigned uiFunc, byte 
   }
 }
 
+uint64_t PCIEntry::GetIOMapAddress() {
+  uint64_t bar0 = BusEntity.NonBridge.uiBaseAddress0;
+  uint32_t addrType = (bar0 >> 1 & 0x3);
+  printf("\n PCI BaseAddr Type: %d", addrType);
+  if (addrType == 2) {
+    uint64_t bar1 = BusEntity.NonBridge.uiBaseAddress1;
+    return ((bar1 & PCI_ADDRESS_MEMORY_32_MASK) << 32) | (bar0 & PCI_ADDRESS_MEMORY_32_MASK);
+  } else {
+    return bar0 & PCI_ADDRESS_MEMORY_32_MASK;
+  }
+}
+
 void PCIEntry::ReadPCIConfig(unsigned uiPCIEntryOffset, unsigned uiPCIEntrySize, void* pValue) const
 {
   PCIBusHandler::Instance().ReadPCIConfig(uiBusNumber, uiDeviceNumber, uiFunction, uiPCIEntryOffset, uiPCIEntrySize, pValue);

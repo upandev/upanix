@@ -226,11 +226,11 @@ void ATAAMD_InitController(const PCIEntry* pPCIEntry, ATAController* pController
 	  printf("\n\tnVIDIA Serial ATA Controller Detected");
 		strcpy(pController->szName, "nVIDIA Serial ATA Controller") ;
 
-		DMM_DeAllocateForKernel((unsigned)pController->pPort[1]) ;
-		DMM_DeAllocateForKernel((unsigned)pController->pPort[3]) ;
+		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[1]) ;
+		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[3]) ;
 
 		pController->pPort[1] = pController->pPort[2] ;
-		pController->pPort[2] = NULL ;
+		pController->pPort[2] = nullptr ;
 		
 		pController->uiPortsPerChannel = 1 ;
 

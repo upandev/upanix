@@ -306,8 +306,8 @@ struct ATAPort
 	byte bLBA48Bit ;
 	byte* pDataBuffer ;
 	char szDeviceName[32] ;
-	unsigned uiDMARegs[ ATA_DMA_TOTAL_REGS ] ;
-	unsigned uiRegs[ ATA_TOTAL_REGS ] ;
+	uintptr_t uiDMARegs[ ATA_DMA_TOTAL_REGS ] ;
+	uintptr_t uiRegs[ ATA_TOTAL_REGS ] ;
 	ATAIdentifyInfo id ;
 	void* DeviceStruct ;
 	void* pVendorSpecInfo ;

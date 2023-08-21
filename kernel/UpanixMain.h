@@ -41,7 +41,6 @@ typedef enum
 } CO_PROC_TYPE ;
 
 extern "C" void UpanixMain() ;
-bool UpanixMain_isCoProcPresent() ;
 upan::mutex& UpanixMain_GetDMMMutex() ;
 void DummyProcess() ;
 

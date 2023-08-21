@@ -19,40 +19,38 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _REL_SECTION_H_
-#define _REL_SECTION_H_
+#pragma once
 
 #include "ElfConstants.h"
 
-#define ELF32_R_SYM(i) ((i) >> 8)
-#define ELF32_R_TYPE(i) ((unsigned char)(i))
-#define ELF32_R_INFO(s, t) (((s) << 8) + (unsigned char)(t))
-#define ELF32_REL_ENT(p, off) ((ELF32_Rel*)((byte*)p + off))
+#define ELF64_R_SYM(i) ((i) >> 32)
+#define ELF64_R_TYPE(i) (i & 0xFFFFFFFFL)
+#define ELF64_R_INFO(s, t) (((s) << 32) + ((t) & 0xFFFFFFFFL))
+#define ELF64_REL_ENT(p, off) ((Elf64_Rel*)((byte*)p + off))
 
-namespace ELFRelocSection
-{
+namespace ElfRelocSection {
 	typedef struct {
-		Elf32_Addr r_offset ;
-		Elf32_Word r_info ;
-	} PACKED ELF32_Rel ;
+		Elf64_Addr  r_offset;
+		Elf64_Xword r_info;
+	} PACKED Elf64_Rel;
 
 	typedef struct {
-		Elf32_Addr r_offset ;
-		Elf32_Word r_info ;
-		Elf32_Sword r_addend ;
-	} PACKED ELF32_Rela ;
+		Elf64_Addr   r_offset;
+		Elf64_Xword  r_info;
+		Elf64_Sxword r_addend;
+	} PACKED Elf64_Rela;
 
-	static const unsigned R_386_NONE = 0 ;
-	static const unsigned R_386_32 = 1 ;
-	static const unsigned R_386_PC32 = 2 ;
-	static const unsigned R_386_GOT32  = 3 ;
-	static const unsigned R_386_PLT32 = 4 ;
-	static const unsigned R_386_COPY = 5 ;
-	static const unsigned R_386_GLOB_DAT = 6 ;
-	static const unsigned R_386_JMP_SLOT = 7 ;
-	static const unsigned R_386_RELATIVE = 8 ;
-	static const unsigned R_386_GOTOFF = 9 ;
-	static const unsigned R_386_GOTPC = 10 ;
+	static const unsigned R_386_NONE = 0;
+	static const unsigned R_386_32 = 1;
+	static const unsigned R_386_PC32 = 2;
+	static const unsigned R_386_GOT32  = 3;
+	static const unsigned R_386_PLT32 = 4;
+	static const unsigned R_386_COPY = 5;
+	static const unsigned R_386_GLOB_DAT = 6;
+	static const unsigned R_386_JMP_SLOT = 7;
+	static const unsigned R_386_RELATIVE = 8;
+	static const unsigned R_386_GOTOFF = 9;
+	static const unsigned R_386_GOTPC = 10;
 
 	static const char RelocationType[11][40] = {
 		"R_386_NONE",
@@ -66,7 +64,5 @@ namespace ELFRelocSection
 		"R_386_RELATIVE",
 		"R_386_GOTOFF",
 		"R_386_GOTPC",
-	} ;
-} ;
-
-#endif
+	};
+};

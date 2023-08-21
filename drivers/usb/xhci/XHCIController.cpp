@@ -31,59 +31,34 @@
 #include <XHCIManager.h>
 #include <USBDataHandler.h>
 #include <XHCIDevice.h>
+#include <Cpu.h>
 
 unsigned XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
 
 XHCIController::XHCIController(PCIEntry* pPCIEntry)
   : _pPCIEntry(pPCIEntry), _capReg(nullptr), _opReg(nullptr),
-    _legSupXCap(nullptr), _doorBellRegs(nullptr)
-{
-	unsigned uiIOAddr = pPCIEntry->BusEntity.NonBridge.uiBaseAddress0;
-	printf("\n PCI BaseAddr: %x", uiIOAddr);
-
-	uiIOAddr = uiIOAddr & PCI_ADDRESS_MEMORY_32_MASK;
-	unsigned ioSize = pPCIEntry->GetPCIMemSize(0);
-	printf(", Raw MMIO BaseAddr: %x, IOSize: %d, Mmap Address: %x", uiIOAddr, ioSize, _memMapBaseAddress);
+    _legSupXCap(nullptr), _doorBellRegs(nullptr) {
+  const uint64_t ioAddress = pPCIEntry->GetIOMapAddress();
+  const uint32_t ioSize = pPCIEntry->GetPCIMemSize(0);
+	printf(", Raw MMIO BaseAddr: %lx, IOSize: %d, KernelPageTableMmap Address: %lx", ioAddress, ioSize, _memMapBaseAddress);
 
   const unsigned availableMemMapSize = XHCI_MMIO_BASE_ADDR_END - _memMapBaseAddress;
 	if(ioSize > availableMemMapSize)
-    throw upan::exception(XLOC, "XHCI IO Size is %x > greater than available size %x !", ioSize, availableMemMapSize);
+    throw upan::exception(XLOC, "XHCI IO Size is %x > greater than available size %x!", ioSize, availableMemMapSize);
 
-  unsigned pagesToMap = ioSize / PAGE_SIZE;
-  if(ioSize % PAGE_SIZE)
-    ++pagesToMap;
-	unsigned uiPDEAddress = MEM_PDBR ;
-  const unsigned uiMappedIOAddr = KERNEL_VIRTUAL_ADDRESS(_memMapBaseAddress + (uiIOAddr % PAGE_SIZE));
-  printf("\n Total pages to Map: %d", pagesToMap);
-  ReturnCode markPageRetCode = Success;
-  for(unsigned i = 0; i < pagesToMap; ++i)
-  {
-  	unsigned uiPDEIndex = ((_memMapBaseAddress >> 22) & 0x3FF) ;
-	  unsigned uiPTEIndex = ((_memMapBaseAddress >> 12) & 0x3FF) ;
-	  unsigned uiPTEAddress = (((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPDEAddress)))[uiPDEIndex]) & 0xFFFFF000 ;
-    // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPTEAddress)))[uiPTEIndex] = (uiIOAddr & 0xFFFFF000) | 0x5 ;
-    markPageRetCode = MemManager::Instance().MarkPageAsAllocated(uiIOAddr / PAGE_SIZE, markPageRetCode);
-    if(markPageRetCode != Success) {
-    }
-
-    _memMapBaseAddress += PAGE_SIZE;
-    uiIOAddr += PAGE_SIZE;
-  }
-
-	Mem_FlushTLB();
+  MemManager::Instance().MapAddressSpace(MEM_PML4_TABLE, 0x7, _memMapBaseAddress, ioAddress, ioSize);
+  Mem_FlushTLB();
 
 	printf("\n Bus: %d, Dev: %d, Func: %d", pPCIEntry->uiBusNumber, pPCIEntry->uiDeviceNumber, pPCIEntry->uiFunction);
 	printf("\n Vendor: %x, Device: %x, Rev: %x", pPCIEntry->usVendorID, pPCIEntry->usDeviceID, pPCIEntry->bRevisionID);
 
+  const uint64_t uiMappedIOAddr = _memMapBaseAddress + (ioAddress % PAGE_SIZE);
 	_capReg = (XHCICapRegister*)uiMappedIOAddr;
 	_opReg = (XHCIOpRegister*)(uiMappedIOAddr + _capReg->CapLength());
 
   _capReg->Print();
-
   //Enable Ports for Intel PanthorPoint XHCI
-  if(pPCIEntry->usVendorID == INTEL_VENDOR_ID && pPCIEntry->usDeviceID == 0x1E31)
-  {
+  if(pPCIEntry->usVendorID == INTEL_VENDOR_ID && pPCIEntry->usDeviceID == 0x1E31) {
     unsigned portsAvailable;
 
     portsAvailable = 0xFFFFFFFF;
@@ -137,13 +112,12 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
 
   //allocate scratchpad buffer
   auto maxScratchpadBuffers = _capReg->MaxScratchpadBufSize();
-  if(maxScratchpadBuffers > 0)
-  {
+  if(maxScratchpadBuffers > 0) {
     printf("\n Allocating %u scratchpad buffer entries", maxScratchpadBuffers);
-    uint64_t* scratchpadBufferArray = (uint64_t*)DMM_AllocateForKernel(sizeof(uint64_t) * maxScratchpadBuffers, 64);
+    auto scratchpadBufferArray = (uint64_t*)DMM_AllocateForKernel(sizeof(uint64_t) * maxScratchpadBuffers, 64);
     for(uint32_t i = 0; i < maxScratchpadBuffers; ++i)
       scratchpadBufferArray[i] = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
-    _deviceContextAddrArray[0] = (uint64_t)KERNEL_REAL_ADDRESS(scratchpadBufferArray);
+    _deviceContextAddrArray[0] = (uint64_t)scratchpadBufferArray;
   }
 
   //Door Bell array
@@ -228,12 +202,10 @@ void XHCIController::InitInterruptHandler()
   _pPCIEntry->SwitchToMsi();
 }
 
-void XHCIController::LoadXCaps(unsigned base)
-{
+void XHCIController::LoadXCaps(uint64_t base) {
 	unsigned ecpOffset = _capReg->ECPOffset();
 
-	if(!ecpOffset)
-  {
+	if(!ecpOffset) {
     printf("\nXHCI System does not support Extended Capabilities");
     return;
   }
@@ -242,29 +214,23 @@ void XHCIController::LoadXCaps(unsigned base)
   _supProtoXCaps.clear();
 
   base += ecpOffset;
-  while(true)
-  {
+  while(true) {
     unsigned& xCapReg = *(unsigned*)(base);
     unsigned capId = xCapReg & 0xFF;
     if(!capId)
       throw upan::exception(XLOC, "Invalid Xtended CapID 0!");
 
-    if(capId == 1)
-    {
+    if(capId == 1) {
       if(!_legSupXCap)
         _legSupXCap = (LegSupXCap*)&xCapReg;
       else
         printf("\n Found more than 1 LEG SUP Extended capability entries - something wrong!!");
-    }
-    else if(capId == 2)
-    {
-      _supProtoXCaps.push_back((SupProtocolXCap*)&xCapReg);
-    }
-    else
-    {
+    } else if(capId == 2) {
+      _supProtoXCaps.push_back((SupProtocolXCap *) &xCapReg);
+    } else {
       printf("\n Unhandled Extended CapID: %d", capId);
     }
-    unsigned nextOffset = (xCapReg >> 6) & 0x3FC;
+    unsigned nextOffset = ((xCapReg >> 8) & 0xFF) << 2;
     if(!nextOffset)
       break;
     base += nextOffset;
@@ -273,10 +239,8 @@ void XHCIController::LoadXCaps(unsigned base)
     i->Print();
 }
 
-void XHCIController::PerformBiosToOSHandoff()
-{
-  if(!_legSupXCap)
-  {
+void XHCIController::PerformBiosToOSHandoff() {
+  if(!_legSupXCap) {
     printf("\n LEG SUP Extended capability is not supported - cannot perform BIOS to OS Handoff");
     return;
   }

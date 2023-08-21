@@ -33,6 +33,7 @@
 #include <IODescriptorTable.h>
 #include <ProcessGroup.h>
 #include <Process.h>
+#include <InterruptHandlers.h>
 
 class SchedulableProcess : public Process
 {
@@ -56,9 +57,6 @@ public:
   virtual upan::option<upan::mutex&> pageAllocMutex() {
     return upan::option<upan::mutex&>::empty();
   }
-  upan::option<upan::mutex&> envMutex() override {
-    return upan::option<upan::mutex&>::empty();
-  }
 
   virtual SchedulableProcess& forSchedule() {
     throw upan::exception(XLOC, "forSchedule unsupported");
@@ -68,12 +66,12 @@ public:
     return _processGroup->IsFGProcessGroup();
   }
 
-  uint32_t pdbr() const override {
-    return _taskState.CR3_PDBR;
+  uint64_t* pdbr() const override {
+    return (uint64_t*)_taskState.CR3_PDBR;
   }
 
-  void Load();
-  void Store();
+  void Load(TaskContext& taskState);
+  void Store(TaskContext& taskState);
   void Destroy();
   void Release();
 
@@ -83,16 +81,16 @@ public:
   uint32_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }
 
+  bool isDmmFlag() const override { return _dmmFlag; }
+  void setDmmFlag(bool dmmFlag) override { _dmmFlag = dmmFlag; }
+
   int processID() const override { return _processID; }
   int parentProcessID() const override { return _parentProcessID; }
   int mainThreadID() const { return _mainThreadID; }
 
   void setParentProcessID(int parentProcessID) { _parentProcessID = parentProcessID; }
 
-  bool isDmmFlag() const { return _dmmFlag; }
-  void setDmmFlag(bool dmmFlag) { _dmmFlag = dmmFlag; }
-
-  PROCESS_STATUS status() const { return _status; }
+  PROCESS_STATUS status() const override { return _status; }
   PROCESS_STATUS setStatus(PROCESS_STATUS status) override {
     return (PROCESS_STATUS) upan::atomic::op::swap((__volatile__ uint32_t &) (_status), static_cast<int>(status));
   }
@@ -122,17 +120,20 @@ private:
   __inline__ void FXRestore();
 
 protected:
-  virtual void DeAllocateResources() = 0;
+  virtual void DeallocateResources() = 0;
   virtual void DestroyThreads() {
   }
 
   class Common {
   public:
-    static uint32_t AllocatePDE();
-    static void UpdatePDEWithStackPTE(uint32_t pdeAddress, uint32_t stackPTEAddress);
-    static uint32_t AllocatePTEForStack();
-    static void AllocateStackSpace(uint32_t pteAddress);
-    static void DeAllocateStackSpace(uint32_t stackPTEAddress);
+    static void SetStackPDTable(uint64_t* pml4Table, uint64_t value);
+    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress);
+    static uint64_t AllocateStackSpace();
+    static void DeAllocateStackSpace(uint64_t stackPDAddress);
+
+    static uint64_t KernelVirtaulStackBase(int stackBlockId);
+    static int AllocateKernelStackSpace();
+    static void DeallocateKernelStackSpace(int stackBlockId);
   };
 
 protected:
@@ -146,6 +147,7 @@ protected:
   int _driveID;
   int _userID;
   ProcessStateInfo& _stateInfo;
+  TaskContext _taskContext;
   TaskState _taskState;
   ProcessLDT _processLDT;
   FileSystem::PresentWorkingDirectory _processPWD;

@@ -106,7 +106,7 @@ byte ATAPortOperation_PortPrepareDMARead(ATAPort* pPort, unsigned uiLength)
 	RETURN_IF_NOT(bStatus, ATAPortOperation_PreparePortDMATable(pPort, uiLength), ATAPortOperation_SUCCESS) ;
 
 	// Write Registers 
-	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (unsigned)pPort->pPRDTable - GLOBAL_DATA_SEGMENT_BASE) ;
+	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (uintptr_t)pPort->pPRDTable - GLOBAL_DATA_SEGMENT_BASE) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_CONTROL, ATA_DMA_CONTROL_READ) ;
 	ATA_READ_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus | ATA_DMA_STATUS_IRQ | ATA_DMA_STATUS_ERROR) ;

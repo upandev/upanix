@@ -24,7 +24,7 @@
 class RawNetPacket {
 public:
   RawNetPacket();
-  RawNetPacket(const uint32_t addr, const uint32_t len);
+  RawNetPacket(const uintptr_t addr, const uint32_t len);
   ~RawNetPacket();
   RawNetPacket(const RawNetPacket& o);
   RawNetPacket& operator=(const RawNetPacket& o);

@@ -69,17 +69,7 @@ byte SPECIAL_TASK ;
 int debug_point ;
 /***********************************************/
 
-void DummyPrint()
-{
-  static int i = 1;
-  while(true)
-  {
-    ProcessManager::Instance().Sleep(1000);
-    printf("\n COUNTER: %d", ++i);
-  }
-}
-
-void UpanixMain_KernelProcess() {
+[[noreturn]] void UpanixMain_KernelProcess() {
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
@@ -88,16 +78,19 @@ void UpanixMain_KernelProcess() {
 
 	KernelRootProcess::Instance().initGuiFrame();
 	RootGUIConsole::Instance().ClearScreen();
+
   GraphicsVideo::Instance().CreateRefreshTask();
 
   KC::MConsole().StartCursorBlink();
+
   KeyboardHandler::Instance().StartDispatcher();
   PS2MouseDriver::Instance().StartDispatcher();
 
 	while(true) {
-    const int pid = ProcessManager::Instance().CreateKernelProcess("console", (unsigned) &Console_StartUpanixConsole,
-                                                                   ProcessManager::GetCurrentProcessID(), true, upan::vector<uint32_t>());
+    const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
+                                                                   ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
+
     ProcessManager::Instance().WaitOnChild(pid);
   }
 	ProcessManager_EXIT() ;
@@ -151,15 +144,16 @@ void Initialize() {
 
 	MultiBoot::Instance();
 	RootConsole::Create();
+  MemManager::Instance();
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
 
-	MemManager::Instance();
   ProcessManager::Instance();
 
   //KernelRootProcess must be initialized to setup kernel FD table with stdin/out/err before using stdio functions like printf.
   KernelRootProcess::Instance();
   MultiBoot::Instance().Print();
   MemManager::Instance().PrintInitStatus();
+
 	//defined in osutils/crti.s - this is C++ init to call global objects' constructor
 	_cxx_global_init();
 
@@ -174,23 +168,18 @@ void Initialize() {
     Mtrr::Instance();
     DMA_Initialize();
     StdIRQ::Instance();
-
-    SysCall_Initialize();
-
+    //TODO: SysCall_Initialize();
     KC::MKernelService();
-
     GraphicsVideo::Instance().Initialize();
 
   /* Start - Peripheral Device Initialization */
   //TODO: An Abstract Bus Handler which should internally take care of different
   //types of bus like ISA, PCI etc... 
     PCIBusHandler::Instance().Initialize();
-
     IrqManager::Initialize();
-
-    PIT_Initialize();
+    PIT::Instance().Initialize();
     IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
-
+    __asm__ __volatile__("sti");
     DiskDriveManager::Instance();
 
     PS2Controller::Instance();
@@ -203,7 +192,6 @@ void Initialize() {
   /*End - Peripheral Device Initialization */
 
     RTC::Initialize() ;
-    
     //USB
     USBController::Instance();
     //UHCIManager::Instance();
@@ -240,39 +228,19 @@ upan::mutex& UpanixMain_GetDMMMutex()
 	return mDMMMutex ;
 }
 
-byte* GetArea()
-{
-	static byte area[0x1000] ;
-	return area ;
-}
-
 void UpanixMain() {
-	byte* bios = (byte*)(0 - GLOBAL_DATA_SEGMENT_BASE) ;
-
-	for(int i = 0; i < 0x500; i++) 
-		GetArea()[i] = bios[i] ;
-
-	Initialize() ;
-
-	ProcessManager::Instance().CreateKernelProcess("kerparent", (unsigned) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uint32_t>());
+	Initialize();
+	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
-	ProcessManager::Instance().StartScheduler();
+  KERNEL_MODE = false;
+	ProcessManager::Instance().EnableTaskSwitch();
 	while(1) ;
 }
 
-bool UpanixMain_IsKernelDebugOn()
-{
-	const char* szVal = getenv("UPANIX_KDEBUG") ;
-	if(szVal != NULL)
-		if(strcmp(szVal, "1") == 0)
-			return true ;
-
+bool UpanixMain_IsKernelDebugOn() {
+  char szVal[MAX_ENV_VAL_LEN];
+	if(!getenv("UPANIX_KDEBUG", szVal)) {
+    return strcmp(szVal, "1") == 0;
+  }
 	return false ;
-}
-
-bool UpanixMain_isCoProcPresent()
-{
-	if(CO_PROC_FPU_TYPE == NO_CO_PROC)
-		return false ;
-	return true ;
 }

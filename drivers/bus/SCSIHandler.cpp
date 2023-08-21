@@ -329,7 +329,7 @@ static SCSIDevice* SCSIHandler_CreateDisk(SCSIHost* pHost, int iChannel, int iDe
 	if(SCSIHandler_GenericOpen(pDevice) != SCSIHandler_SUCCESS)
 	{
 		printf("\n Failed to get disk capacity attributes") ;
-		DMM_DeAllocateForKernel((unsigned)pDevice) ;
+		DMM_DeAllocateForKernel((uintptr_t)pDevice) ;
 		return NULL ;
 	}
 	

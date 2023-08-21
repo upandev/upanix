@@ -35,6 +35,7 @@ public:
     static PS2KeyboardDriver instance;
     return instance;
   }
+  static void Handler();
   void Process(byte rawKey);
 
 private:

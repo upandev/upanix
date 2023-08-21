@@ -24,22 +24,21 @@
 #include <stdio.h>
 #include <exception.h>
 
-Cpu::Cpu()
-{
-  uint32_t result = 0;
+Cpu::Cpu() {
+  uint64_t result = 0;
   // Test if the CPU supports the CPUID-Command
-  __asm__ __volatile__("pushfl;"
-                       "pushfl;"
-                       "pop %%eax;"
-                       "mov %%eax, %%ecx;"
-                       "xorl $0x200000, %%eax;"
-                       "push %%eax;"
-                       "popfl;"
-                       "pushfl;"
-                       "pop %%eax;"
-                       "xorl %%ecx, %%eax;"
-                       "shrl $21, %%eax;"
-                       "popfl;" : "=m"(result) : : "eax", "ecx", "memory");
+  __asm__ __volatile__("pushfq;"
+                       "pushfq;"
+                       "pop %%rax;"
+                       "mov %%rax, %%rcx;"
+                       "xor $0x200000, %%rax;"
+                       "push %%rax;"
+                       "popfq;"
+                       "pushfq;"
+                       "pop %%rax;"
+                       "xor %%rcx, %%rax;"
+                       "shr $21, %%rax;"
+                       "popfq;" : "=m"(result) : : "rax", "rcx", "memory");
   _cpuIdAvailable = (result == 0);
   if(_cpuIdAvailable) {
     printf("\n CPUID is available");
@@ -105,19 +104,19 @@ void Cpu::MSRwrite(uint32_t msr, uint64_t value)
 void Cpu::EnableSSE() {
   if (HasSupport(CF_SSE) && HasSupport(CF_SSE2)) {
     printf("\n SSE/SSE2 is supported.");
-    __asm__ __volatile__("mov %%cr0, %%eax;"
+    __asm__ __volatile__("mov %%cr0, %%rax;"
                          "and $0xFFFB, %%ax;" // clear coprocessor emulation CR0.EM
                          "or $0x2, %%ax;" // set coprocessor monitoring CR0.MP
-                         "mov %%eax, %%cr0;"
-                         "mov %%cr4, %%eax;"
+                         "mov %%rax, %%cr0;"
+                         "mov %%cr4, %%rax;"
                          "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
-                         "mov %%eax, %%cr4;" : : : );
+                         "mov %%rax, %%cr4;" : : : );
     printf("\n SSE/SSE2 enabled");
     if(HasSupport(CF_FPU)) {
       //set NE flag
-      __asm__ __volatile__("mov %%cr0, %%eax;"
+      __asm__ __volatile__("mov %%cr0, %%rax;"
                            "or $0x20, %%ax;"
-                           "mov %%eax, %%cr0;" : : : );
+                           "mov %%rax, %%cr0;" : : : );
       printf("\n Builtin FPU found");
     }
   } else {
@@ -127,7 +126,7 @@ void Cpu::EnableSSE() {
 }
 
 uint32_t Cpu::GetRegValue(Cpu::Register reg) {
-  uint32_t val;
+  uint64_t val;
   switch(reg) {
     case Register::CR0:
       __asm__ __volatile__("mov %%cr0, %0" :  "=r"(val) : );

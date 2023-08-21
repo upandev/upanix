@@ -195,10 +195,10 @@ USBKeyboard::USBKeyboard(USBDevice& device, int interfaceIndex) : _device(device
   for(int i = 0; i < 0; ++i)
   {
     byte* report = new byte[STD_USB_KB_REPORT_LEN];
-    _device.SetupInterruptReceiveData((uint32_t)report, STD_USB_KB_REPORT_LEN, this);
+    _device.SetupInterruptReceiveData((uintptr_t)report, STD_USB_KB_REPORT_LEN, this);
   }
 
-  uint32_t reportAddress = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
+  uintptr_t reportAddress = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
   _reports = new ((void*)reportAddress) byte*[_device.GetInterruptQueueSize()];
 
   reportAddress += sizeof(byte*) * _device.GetInterruptQueueSize();
@@ -208,14 +208,13 @@ USBKeyboard::USBKeyboard(USBDevice& device, int interfaceIndex) : _device(device
   KernelUtil::ScheduleTimedTask("USB KB Poller", 50, *this);
 }
 
-USBKeyboard::~USBKeyboard()
-{
-  MemManager::Instance().DeAllocatePageForKernel(KERNEL_REAL_ADDRESS(_reports) / PAGE_SIZE);
+USBKeyboard::~USBKeyboard() {
+  MemManager::Instance().DeAllocatePageForKernel(uintptr_t (_reports) / PAGE_SIZE);
 }
 
 bool USBKeyboard::TimerTrigger()
 {
-  if(_device.SetupInterruptReceiveData((uint32_t)&_reports[_currentReportIndex], STD_USB_KB_REPORT_LEN, this))
+  if(_device.SetupInterruptReceiveData((uintptr_t)&_reports[_currentReportIndex], STD_USB_KB_REPORT_LEN, this))
     _currentReportIndex = (_currentReportIndex + 1) % _device.GetInterruptQueueSize();
   return true;
 }

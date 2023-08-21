@@ -27,7 +27,6 @@
 # include <DMM.h>
 # include <StringUtil.h>
 # include <MemUtil.h>
-# include <ProcessEnv.h>
 # include <ProcessManager.h>
 # include <SCSIHandler.h>
 # include <stdio.h>
@@ -418,13 +417,13 @@ void DiskDrive::StartReleaseCacheTask()
   StopReleaseCacheTask(false);
 
 	const upan::string dcfName = upan::string("dcf-") + DriveName();
-	upan::vector<uint32_t> params;
-	params.push_back((uint32_t)this);
-  ProcessManager::Instance().CreateKernelProcess(dcfName, (unsigned) &DiskCache_TaskFlushCache,
+	upan::vector<uintptr_t> params;
+	params.push_back((uintptr_t)this);
+  ProcessManager::Instance().CreateKernelProcess(dcfName, (uintptr_t) &DiskCache_TaskFlushCache,
                                                            ProcessManager::Instance().GetCurProcId(), false, params);
 
   const upan::string dcrName = upan::string("dcr-") + DriveName();
-  ProcessManager::Instance().CreateKernelProcess(dcrName, (unsigned) &DiskCache_TaskReleaseCache,
+  ProcessManager::Instance().CreateKernelProcess(dcrName, (uintptr_t) &DiskCache_TaskReleaseCache,
                                                  ProcessManager::Instance().GetCurProcId(), false, params);
 }
 
@@ -578,13 +577,10 @@ byte DiskDriveManager::Change(const upan::string& szDriveName)
 	if(pDiskDrive == NULL)
 		return DeviceDrive_ERR_INVALID_DRIVE_NAME ;
 
-	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
-
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&(pDiskDrive->_fileSystem.FSpwd),
-                    MemUtil_GetDS(), (unsigned)&ProcessManager::Instance().GetCurrentPAS().processPWD(),
-                    sizeof(FileSystem::PresentWorkingDirectory)) ;
-
-  ProcessEnv_Set("PWD", (const char*)pDiskDrive->_fileSystem.FSpwd.DirEntry.Name()) ;
+	auto& pas = ProcessManager::Instance().GetCurrentPAS();
+	pas.setDriveID(pDiskDrive->Id());
+  memcpy(&pas.processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
+  pas.setEnv("PWD", (const char*)pDiskDrive->_fileSystem.FSpwd.DirEntry.Name()) ;
 
 	return DeviceDrive_SUCCESS ;
 }

@@ -20,149 +20,124 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <MultiBoot.h>
-#include <MemConstants.h>
 #include <PortCom.h>
+#include <MemManager.h>
+#include <GraphicsVideo.h>
+#include <RootGUIConsole.h>
 
-MultiBoot::MultiBoot() : _realRamSize(0), _ramSize(0) {
-  memcpy((void*)&_info, (void*)MULTIBOOT_INFO_ADDR, sizeof(multiboot_info_t));
-  memset((void*)&_mmap, 0, sizeof(_mmap));
-
-  if((_info.flags) & (1 << 6)) {
-    int i = 0;
-    const memory_map_t* mmap = (memory_map_t*)(_info.mmap_addr);
-    while((unsigned)mmap < _info.mmap_addr + _info.mmap_length) {
-      if (i >= MAX_MMAP_ENTRIES) {
-        //PANIC
-        while(1);
-      }
-      _mmap[i].base_addr = mmap->base_addr;
-      _mmap[i].length = mmap->length;
-      _mmap[i].type = mmap->type;
-      //this is not required/used further
-      _mmap[i].size = mmap->size;
-      mmap = (memory_map_t*)((unsigned)mmap + mmap->size + sizeof(uint32_t));
-      ++i;
-    }
-    for(i = 0; i < MAX_MMAP_ENTRIES && _mmap[i].size > 0; ++i) {
-      _realRamSize += _mmap[i].length;
-    }
-    const uint32_t LITTLE_LESS_THAN_4GB = 4u * 1024 * 1024 * 1023;
-    if(_realRamSize > LITTLE_LESS_THAN_4GB)
-      _ramSize = LITTLE_LESS_THAN_4GB;
-    else
-      _ramSize = _realRamSize;
+MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
+                        _acpi_mmap(nullptr), _mmap_size(0), _hasFrameBufferInfo(false), _rawFrameBufferAddress(0) {
+  if (MULTIBOOT2_BOOTLOADER_MAGIC_VAL != MULTIBOOT2_BOOTLOADER_MAGIC) {
+    // Unsupported boot loader -> Only multiboot2 complaint boot loading is supported.
+    while (true);
   }
-  else //TODO: use some other approach to find RAM or KERNEL PANIC
-    _ramSize = 128 * 1024 * 1024; //fake it
-}
 
-byte MultiBoot::GetBootDeviceID()
-{
-	return _info.boot_device[3] ;
-}
-
-byte MultiBoot::GetBootPartitionID()
-{
-	return _info.boot_device[2] ;
-}
-
-const framebuffer_info_t* MultiBoot::VideoFrameBufferInfo() const
-{
-  if((_info.flags) & (1 << 12))
-    return &_info.framebuffer_info;
-  return nullptr;
-}
-
-const memory_map_t* MultiBoot::GetACPIInfoMemMap() const {
-  const int ACPI_INFO_MMAP_TYPE = 3;
-  if((_info.flags) & (1 << 6)) {
-    for (int i = 0; i < MAX_MMAP_ENTRIES && _mmap[i].size > 0; ++i) {
-      if (_mmap[i].type == ACPI_INFO_MMAP_TYPE) {
-        return &_mmap[i];
+  const uint32_t size = ((uint32_t *) MULTIBOOT2_INFO_ADDR)[0];
+  for (auto tag = (multiboot_tag *) (MULTIBOOT2_INFO_ADDR + 8);
+       tag->type != MULTIBOOT_TAG_TYPE_END;
+       tag = (multiboot_tag *) ((uint8_t *) tag + ((tag->size + 7) & ~7))) {
+    switch (tag->type) {
+      case MULTIBOOT_TAG_TYPE_BOOTDEV: {
+        _bootDevId = ((multiboot_tag_bootdev *) tag)->biosdev;
+        _bootPartitionId = ((multiboot_tag_bootdev *) tag)->part;
       }
+      break;
+
+      case MULTIBOOT_TAG_TYPE_MMAP: {
+        int i = 0;
+        auto mmap_tag = (multiboot_tag_mmap *) tag;
+        for (auto mmap = mmap_tag->entries; (uint8_t *) mmap < (uint8_t *) tag + tag->size;
+             mmap = (multiboot_mmap_entry *) ((uintptr_t) mmap + mmap_tag->entry_size)) {
+          if (i >= MAX_MMAP_ENTRIES) {
+            //PANIC
+            while (true);
+          }
+          _mmap[i].addr = mmap->addr;
+          _mmap[i].length = mmap->length;
+          _mmap[i].type = mmap->type;
+          _ramSize += mmap->length;
+          if (mmap->type == MULTIBOOT_MEMORY_ACPI_RECLAIMABLE) {
+            _acpi_mmap = &_mmap[i];
+          }
+          ++i;
+        }
+        _mmap_size = i;
+      }
+      break;
+
+      case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
+        auto fb_tag = (multiboot_tag_framebuffer *) tag;
+        _rawFrameBufferAddress = fb_tag->common.framebuffer_addr;
+        _framebufferInfo._frameBuffer = (uint32_t *)_rawFrameBufferAddress;
+        _framebufferInfo._pitch = fb_tag->common.framebuffer_pitch;
+        _framebufferInfo._width = fb_tag->common.framebuffer_width;
+        _framebufferInfo._height = fb_tag->common.framebuffer_height;
+        _framebufferInfo._bpp = fb_tag->common.framebuffer_bpp;
+        _hasFrameBufferInfo = true;
+      }
+      break;
     }
   }
-  return nullptr;
+
+  if (_hasFrameBufferInfo) {
+    InitializeGraphicsPageMap(-1);
+  }
 }
 
-void MultiBoot::Print()
-{
+void MultiBoot::InitializeGraphicsPageMap(int memTypeFlag) {
+  const uint32_t lfbSize = _framebufferInfo._width * _framebufferInfo._height * _framebufferInfo._bpp / 8;
+  const uint32_t noOfPages = ((lfbSize - 1) / PAGE_SIZE) + 1;
+  const uint32_t availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
+  if (noOfPages > availablePages) {
+    if (memTypeFlag >= 0) {
+      printf("\n Insufficient graphics video buffer. Required pages: %u", noOfPages);
+    }
+    //PANIC
+    while (true);
+  }
+  uint64_t lfbaddress = _rawFrameBufferAddress;
+  uint64_t mapAddress = MEM_GRAPHICS_VIDEO_MAP_START;
+
+  const uint16_t wcFlag = memTypeFlag >= 0 ? memTypeFlag & 0xFF : 0;
+  const uint32_t pageFlag = 0x3 | (wcFlag & 0xFF);
+
+  for (unsigned i = 0; i < noOfPages; ++i) {
+    const uint64_t addr = lfbaddress + PAGE_SIZE * i;
+    MemManager::KernelPageTableMmap(mapAddress, addr, pageFlag);
+    mapAddress += PAGE_SIZE;
+  }
+  Mem_FlushTLB();
+
+  if (memTypeFlag >= 0) {
+    GraphicsVideo::Instance().MappedLFBAddress(MEM_GRAPHICS_VIDEO_MAP_START);
+    RootGUIConsole::Instance().resetFrameBuffer(MEM_GRAPHICS_VIDEO_MAP_START);
+  } else {
+    _framebufferInfo._frameBuffer = (uint32_t*)MEM_GRAPHICS_VIDEO_MAP_START;
+  }
+}
+
+void MultiBoot::Print() {
   char buffer[256];
   upan::string msg;
 
-  sprintf(buffer, "\n FLAG: 0x%x", _info.flags);
+  for (int i = 0; i < _mmap_size; ++i) {
+    sprintf(buffer, "\n%d) Address: %llu, Length: %llu, Type: %u", i + 1, _mmap[i].addr, _mmap[i].length, _mmap[i].type);
+    msg += buffer;
+  }
+  sprintf(buffer, "\n Total RAM SIZE: %llu", _ramSize);
   msg += buffer;
-  
-  if((_info.flags) & 0x1)
-  {
-    sprintf(buffer, "\n LOWER_MEM: %u, UPPER_MEM: %u", _info.mem_lower, _info.mem_upper);
-    msg += buffer;
-  }
 
-  if((_info.flags) & (1 << 6))
-  {
-    for (int i = 0; i < MAX_MMAP_ENTRIES && _mmap[i].size > 0; ++i) {
-      sprintf(buffer, "\n%d) Size: %u, Address: %llu, Length: %llu, Type: %u", i+1, _mmap[i].size, _mmap[i].base_addr, _mmap[i].length, _mmap[i].type);
-      msg += buffer;
-    }
-    sprintf(buffer, "\n Total RAM SIZE: %llu", _realRamSize);
-    msg += buffer;
-  }
+  sprintf(buffer, "\n FRAMEBUFFER_ADDR: 0x%x", _framebufferInfo._frameBuffer);
+  msg += buffer;
+  sprintf(buffer, "\n FRAMEBUFFER_PITCH: %u", _framebufferInfo._pitch);
+  msg += buffer;
+  sprintf(buffer, "\n FRAMEBUFFER_WIDTH: %u", _framebufferInfo._width);
+  msg += buffer;
+  sprintf(buffer, "\n FRAMEBUFFER_HEIGHT: %u", _framebufferInfo._height);
+  msg += buffer;
+  sprintf(buffer, "\n FRAMEBUFFER_BPP: %u", _framebufferInfo._bpp);
+  msg += buffer;
 
-  if((_info.flags) & (1 << 11))
-  {
-    sprintf(buffer, "\n VBE_CONTROL_INFO: 0x%x", _info.vbe_info.vbe_control_info);
-    msg += buffer;
-    sprintf(buffer, "\n VBE_MODE_INFO: 0x%x", _info.vbe_info.vbe_mode_info);
-    msg += buffer;
-    sprintf(buffer, "\n VBE_MODE: %u", _info.vbe_info.vbe_mode);
-    msg += buffer;
-    sprintf(buffer, "\n VBE_INTERFACE_SEG: 0x%x", _info.vbe_info.vbe_interface_seg);
-    msg += buffer;
-    sprintf(buffer, "\n VBE_INTERFACE_OFF: 0x%x", _info.vbe_info.vbe_interface_off);
-    msg += buffer;
-    sprintf(buffer, "\n VBE_INTERFACE_LEN: %u", _info.vbe_info.vbe_interface_len);
-    msg += buffer;
-    sprintf(buffer, "\n");
-    msg += buffer;
-  }
-  else if((_info.flags) & (1 << 12))
-  {
-    sprintf(buffer, "\n FRAMEBUFFER_ADDR: 0x%x", _info.framebuffer_info.framebuffer_addr);
-    msg += buffer;
-    sprintf(buffer, "\n FRAMEBUFFER_PITCH: %u", _info.framebuffer_info.framebuffer_pitch);
-    msg += buffer;
-    sprintf(buffer, "\n FRAMEBUFFER_WIDTH: %u", _info.framebuffer_info.framebuffer_width);
-    msg += buffer;
-    sprintf(buffer, "\n FRAMEBUFFER_HEIGHT: %u", _info.framebuffer_info.framebuffer_height);
-    msg += buffer;
-    sprintf(buffer, "\n FRAMEBUFFER_BPP: %u", _info.framebuffer_info.framebuffer_bpp);
-    msg += buffer;
-
-    if(_info.framebuffer_info.framebuffer_type == MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED)
-    {
-      sprintf(buffer, "\n FRAMEBUFFER_PALETTE_ADDR: 0x%x", _info.framebuffer_info.framebuffer_palette_addr);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_PALETTE_NUM_COLORS: %u", _info.framebuffer_info.framebuffer_palette_num_colors);
-      msg += buffer;
-    }
-    else if(_info.framebuffer_info.framebuffer_type == MULTIBOOT_FRAMEBUFFER_TYPE_RGB)
-    {
-      sprintf(buffer, "\n FRAMEBUFFER_RED_POS: %u", _info.framebuffer_info.framebuffer_red_field_position);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_RED_SIZE: %u", _info.framebuffer_info.framebuffer_red_mask_size);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_GREEN_POS: %u", _info.framebuffer_info.framebuffer_green_field_position);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_GREEN_SIZE: %u", _info.framebuffer_info.framebuffer_green_mask_size);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_BLUE_POS: %u", _info.framebuffer_info.framebuffer_blue_field_position);
-      msg += buffer;
-      sprintf(buffer, "\n FRAMEBUFFER_BLUE_SIZE: %u", _info.framebuffer_info.framebuffer_blue_mask_size);
-      msg += buffer;
-    }
-  }
-  
   COM1::Instance().Write(msg);
   printf("%s", msg.c_str());
 }

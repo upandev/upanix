@@ -27,10 +27,10 @@ set(CROSS_TOOL_PATH $ENV{HOME}/opt/cross)
 set(UPANLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../upanlibs)
 set(UPANLIB_OUT_DIR ${UPANLIB_SOURCE_DIR}/out)
 
-set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-g++)
-set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/i686-elf-gcc)
-set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/i686-elf-ld)
-set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/i686-elf-ar)
+set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-g++)
+set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-gcc)
+set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/x86_64-elf-ld)
+set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/x86_64-elf-ar)
 
 set(ENABLE_CXX_RT ON)
 	
@@ -49,6 +49,8 @@ set(OUTPUT_DIR "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 include_directories(${PROJECT_SOURCE_DIR}/bin)
 include_directories(${PROJECT_SOURCE_DIR}/kernel)
@@ -105,6 +107,7 @@ include_directories(${UPANLIB_SOURCE_DIR}/libm/include)
 include_directories(${UPANLIB_SOURCE_DIR}/libm/include/bits)
 
 include_directories(${PROJECT_SOURCE_DIR}/libmcpp/cal)
+include_directories(${PROJECT_SOURCE_DIR}/libints)
 
 include_directories(${UPANLIB_SOURCE_DIR}/libcxxrt)
 
@@ -132,6 +135,7 @@ include_directories(${UPANLIB_SOURCE_DIR}/libupanui/interop/includes)
 add_custom_target(osutils COMMAND make WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/osutils)
 add_custom_target(boot COMMAND make boot_elf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/boot)
 add_custom_target(mem COMMAND make WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/memory)
+add_custom_target(interrupt_handlers COMMAND make WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/libints)
 
 execute_process(COMMAND bash ${PROJECT_SOURCE_DIR}/upanix_src_files.sh WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE UPANIX_SRCS)
 string(REPLACE "\n" ";" UPANIX_SRCS ${UPANIX_SRCS})
@@ -144,26 +148,35 @@ string(REPLACE "\n" "" CRTEND_OBJ ${CRTEND_OBJ})
 set(CRTINIT_OBJ "${PROJECT_SOURCE_DIR}/osutils/crti.o ${CRTBEGIN_OBJ}")
 set(CRTFINI_OBJ "${CRTEND_OBJ} ${PROJECT_SOURCE_DIR}/osutils/crtn.o")
 
-set(OTHER_OBJS ${PROJECT_SOURCE_DIR}/memory/Mem.o)
+set(OTHER_OBJS ${PROJECT_SOURCE_DIR}/memory/Mem.o ${PROJECT_SOURCE_DIR}/libints/TimerInterruptHandler.o)
 
-set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> ${CMAKE_CXX_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} ${PROJECT_SOURCE_DIR}/boot/fpu_init.obj ${PROJECT_SOURCE_DIR}/boot/UpanixStart_Main.grub ${CRTINIT_OBJ} <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${CRTFINI_OBJ}")
+set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> ${CMAKE_CXX_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} ${PROJECT_SOURCE_DIR}/boot/fpu_init.obj ${CRTINIT_OBJ} <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${CRTFINI_OBJ}")
 
 #LIBMCPP
 execute_process(COMMAND bash -c "cd ${PROJECT_SOURCE_DIR}; find ./libmcpp -name '*.cpp' | grep -v CMakeFile" OUTPUT_VARIABLE MCPP_SRC)
 string(REPLACE "\n" ";" MCPP_SRC ${MCPP_SRC})
 add_library(mcpp STATIC "${MCPP_SRC}")
+add_custom_command(TARGET mcpp POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:mcpp>)
+
+#LIBINTS
+execute_process(COMMAND bash -c "cd ${PROJECT_SOURCE_DIR}; find ./libints -name '*.cpp' | grep -v CMakeFile" OUTPUT_VARIABLE INTS_SRC)
+string(REPLACE "\n" ";" INTS_SRC ${INTS_SRC})
+add_library(ints STATIC "${INTS_SRC}")
+add_custom_command(TARGET ints POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:ints>)
+target_compile_options(ints PRIVATE -mgeneral-regs-only -mno-red-zone)
 
 #UPANIX
 add_executable(${TARGET_BIN} ${OTHER_OBJS} ${UPANIX_SRCS})
 
-#add_dependencies(${TARGET_BIN} c)
 add_dependencies(${TARGET_BIN} mcpp)
 add_dependencies(${TARGET_BIN} osutils)
 add_dependencies(${TARGET_BIN} boot)
 add_dependencies(${TARGET_BIN} mem)
+add_dependencies(${TARGET_BIN} interrupt_handlers)
 
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libcxxrt.a)
 target_link_libraries(${TARGET_BIN} mcpp)
+target_link_libraries(${TARGET_BIN} ints)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libgcceh.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libustd.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libupanui_interop.a)
@@ -173,8 +186,3 @@ target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libgccucore.a)
 
 set_source_files_properties(${OTHER_OBJS} PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 
-##LOAD BINARY
-#add_custom_command(
-#	TARGET ${TARGET_BIN}
-#	POST_BUILD
-#	COMMAND bash -c "./build_load.sh")

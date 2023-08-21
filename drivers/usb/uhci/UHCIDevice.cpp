@@ -921,7 +921,7 @@ void UHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 			pInterfaceBuffer = (USBStandardInterface*)((char*)pEndPtBuffer + iNumEndPoints * sizeof(USBStandardEndPt));
 		}
 
-		DMM_DeAllocateForKernel((unsigned)pBuffer);
+		DMM_DeAllocateForKernel((uintptr_t)pBuffer);
 		pBuffer = NULL ;
 	}
 
@@ -947,7 +947,7 @@ void UHCIDevice::GetStringDescriptorZero(USBStringDescZero** ppStrDescZero)
 	USBDataHandler_CopyStrDescZero(*ppStrDescZero, pStringDescZero);
 	USBDataHandler_DisplayStrDescZero(*ppStrDescZero);
 
-	DMM_DeAllocateForKernel((unsigned)pStringDescZero);
+	DMM_DeAllocateForKernel((uintptr_t)pStringDescZero);
 }
 
 void UHCIDevice::GetConfiguration(byte* bConfigValue)

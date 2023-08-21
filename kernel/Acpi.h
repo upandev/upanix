@@ -140,7 +140,7 @@ class Acpi
 
       private:
         void DebugPrint() const;
-        void LocalApicAddr(uint32_t addr) { _localApicAddr = addr; }
+        void LocalApicAddr(uint64_t addr) { _localApicAddr = addr; }
         void IsPcAtCompatible(bool v) { _isPcAtCompatible = v; }
         void AddLocalApic(uint32_t processorId, uint32_t id)
         {
@@ -163,7 +163,7 @@ class Acpi
           _localApicNmis.push_back(LocalApicNmi(processorId, flags, lintPin));
         }
       private:
-        uint32_t           _localApicAddr;
+        uint64_t          _localApicAddr;
         bool               _isPcAtCompatible;
         LocalApics         _localApics;
         IoApics            _ioApics;
@@ -285,7 +285,7 @@ class Acpi
       private:
         uint8_t  _bus; // Will always be 0 (ISA)
         uint8_t  _picIrq; // Bus relative interrupt (e.g. no + 32)
-        uint8_t  _apicIrq; // Int no when mapped on IO-APIC
+        uint32_t _apicIrq; // Int no when mapped on IO-APIC
         uint16_t _flags; // See madt.h
     } PACKED;
 

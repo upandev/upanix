@@ -25,7 +25,7 @@ MEMORY_ASM_OBJ = Mem.o
 build: ${MEMORY_ASM_OBJ}
 
 ${MEMORY_ASM_OBJ}: ${MEMORY_ASM_SRC}
-	${ASM} -felf ${MEMORY_ASM_SRC}
+	${ASM} -felf64 ${MEMORY_ASM_SRC}
 
 clean:
 	rm -f *.o

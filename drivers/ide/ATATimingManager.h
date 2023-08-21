@@ -40,7 +40,7 @@
 
 #define FIT( v, min, max ) MAX( MIN( v, max ), min )
 #define ENOUGH( v, unit ) ( ( ( v ) - 1 ) / ( unit ) + 1 )
-#define EZ( v, unit ) ( ( v ) ? ENOUGH( v, unit ) : 0 )
+#define EZ( v, unit ) ( ( v != 0 ) ? ENOUGH( v, unit ) : 0 )
 
 typedef struct
 {
