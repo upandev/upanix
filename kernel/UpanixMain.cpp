@@ -73,6 +73,8 @@ int debug_point ;
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
+	KernelRootProcess::Instance().createScheduleRunner();
+
 	KC::MKernelService().Spawn() ;
 	KC::MKernelService().Spawn() ;
 

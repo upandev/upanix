@@ -70,11 +70,13 @@ public:
   }
 
   void Initialize();
-  void Handler(TaskContext&);
+  void ContextSwitchHandler(TaskContext& taskContext);
+  void Handler();
 
   uint32_t GetClockCount() { return _clockCountForSleep.get(); }
   uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
 
 private:
   upan::atomic::integral<uint32_t> _clockCountForSleep ;
+  const IRQ* _pitIrq;
 };

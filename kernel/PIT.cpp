@@ -27,37 +27,60 @@
 #include <PortCom.h>
 #include <atomicop.h>
 #include <ProcessManager.h>
+#include "Acpi.h"
 
 extern "C" {
-  void _timer_interrupt_handler();
+  void _pit_timer_interrupt_handler();
 }
 
-PIT::PIT() : _clockCountForSleep(0) {
+PIT::PIT() : _clockCountForSleep(0), _pitIrq(&StdIRQ::Instance().TIMER_IRQ) {
 }
 
 void PIT::Initialize() {
   ReturnCode status = Success;
-  IrqGuard g;
-  if(!IrqManager::Instance().IsApic()) {
-  	uint32_t uiTimerRate = TIMECOUNTER_i8254_FREQU / INT_PER_SEC ;
-	  PortCom_SendByte(PIT_MODE_PORT, 0x34) ;				// Set Timer to Mode 2 -- Free Running LSB/MSB
-  	PortCom_SendByte(PIT_COUNTER_0_PORT, uiTimerRate & 0xFF) ;			// Clock Divisor LSB
-	  PortCom_SendByte(PIT_COUNTER_0_PORT, (uiTimerRate >> 8) & 0xFF) ;	// Clock Divisor MSB
-  }
 
-  IrqManager::Instance().DisableIRQ(StdIRQ::Instance().TIMER_IRQ);
-	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&_timer_interrupt_handler))
-    status = Failure;
-  IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ);
+  IrqGuard g;
+
+  uint32_t uiTimerRate = TIMECOUNTER_i8254_FREQU / INT_PER_SEC ;
+  PortCom_SendByte(PIT_MODE_PORT, 0x34) ;				// Set Timer to Mode 2 -- Free Running LSB/MSB
+  PortCom_SendByte(PIT_COUNTER_0_PORT, uiTimerRate & 0xFF) ;			// Clock Divisor LSB
+  PortCom_SendByte(PIT_COUNTER_0_PORT, (uiTimerRate >> 8) & 0xFF) ;	// Clock Divisor MSB
+
+  if (IrqManager::Instance().IsApic()) {
+    const auto& apicMapping = Acpi::Instance().GetMadt().GetIntSourceOverride(StdIRQ::Instance().TIMER_IRQ.GetIRQNo());
+    if (apicMapping.isEmpty()) {
+      printf("\n No APIC mapping found for PIT timer interrupt!");
+      status = Failure;
+    } else {
+      _pitIrq = IrqManager::Instance().RegisterIRQ(apicMapping.value(), (uintptr_t)&_pit_timer_interrupt_handler);
+      if (_pitIrq) {
+        IrqManager::Instance().EnableIRQ(*_pitIrq);
+      } else {
+        printf("\n Failed to register PIT Timer IRQ on mapped APIC IRQ %d", apicMapping.value());
+        status = Failure;
+      }
+    }
+  } else {
+    if (IrqManager::Instance().RegisterIRQ(*_pitIrq, (uintptr_t)&_pit_timer_interrupt_handler)) {
+      IrqManager::Instance().EnableIRQ(*_pitIrq);
+    } else {
+      printf("\n Failed to register PIT Timer IRQ %d", _pitIrq->GetIRQNo());
+      status = Failure;
+    }
+  }
 
   KC::MConsole().LoadMessage("Timer Initialization", status);
 }
 
-void PIT::Handler(TaskContext& taskContext) {
-	// 1 Int --> 1ms
-	_clockCountForSleep.inc();
+void PIT::ContextSwitchHandler(TaskContext& taskContext) {
   ProcessManager::Instance().ContextSwitch(taskContext);
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
+}
+
+void PIT::Handler() {
+  // 1 Int --> 1ms
+  _clockCountForSleep.inc();
+  IrqManager::Instance().SendEOI(*_pitIrq);
 }
 
 uint32_t PIT::RoundSleepTime(__volatile__ uint32_t uiSleepTime)

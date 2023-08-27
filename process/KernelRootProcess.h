@@ -39,6 +39,8 @@ public:
     return instance;
   }
 
+  void createScheduleRunner();
+  
   bool isKernelProcess() const override {
     return true;
   }
@@ -85,6 +87,10 @@ public:
 
   uint64_t* pdbr() const override {
     return (uint64_t*)MEM_PML4;
+  }
+
+  void yield() override {
+    throw upan::exception(XLOC, "yield() unsupported");
   }
 
   void setDriveID(int driveID) override {

@@ -86,6 +86,7 @@ _%1_interrupt_handler:
 %endmacro
 
 interrupt_handler timer
+interrupt_handler pit_timer
 interrupt_handler keyboard
 interrupt_handler mouse
 interrupt_handler rtc

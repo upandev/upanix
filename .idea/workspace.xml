@@ -23,13 +23,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="save fx states and protect framebuffer copy by disabling all interrupts">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="enhance scheduler to support yield and preempt">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Acpi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Acpi.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" beforeDir="false" afterPath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -284,7 +296,14 @@
       <option name="project" value="LOCAL" />
       <updated>1693107352489</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="enhance scheduler to support yield and preempt">
+      <created>1693145132558</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1693145132558</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -329,6 +348,7 @@
     <MESSAGE value="kernel process and thread modified for 64bit kernel" />
     <MESSAGE value="map APIC MMIO space as uncacheable" />
     <MESSAGE value="save fx states and protect framebuffer copy by disabling all interrupts" />
-    <option name="LAST_COMMIT_MESSAGE" value="save fx states and protect framebuffer copy by disabling all interrupts" />
+    <MESSAGE value="enhance scheduler to support yield and preempt" />
+    <option name="LAST_COMMIT_MESSAGE" value="enhance scheduler to support yield and preempt" />
   </component>
 </project>

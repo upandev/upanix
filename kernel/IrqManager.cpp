@@ -88,16 +88,14 @@ IrqManager::IrqManager() : _isApic(false)
 {
 }
 
-const IRQ* IrqManager::RegisterIRQ(const int& iIRQNo, unsigned pHandler)
-{
+const IRQ* IrqManager::RegisterIRQ(const int& iIRQNo, unsigned pHandler) {
 	if(iIRQNo < 0 && iIRQNo >= MAX_INTERRUPT)
-		return NULL;
+		return nullptr;
 
 	IRQ* pIRQ = new IRQ(iIRQNo);
-	if(!RegisterIRQ(*pIRQ, pHandler))
-	{
+	if(!RegisterIRQ(*pIRQ, pHandler))	{
 		delete pIRQ;
-		pIRQ = NULL;
+		pIRQ = nullptr;
 	}
 	return pIRQ;
 }

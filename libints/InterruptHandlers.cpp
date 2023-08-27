@@ -32,7 +32,11 @@
 
 extern "C" {
   void timer_interrupt_handler(TaskContext *state) {
-    PIT::Instance().Handler(*state);
+    PIT::Instance().ContextSwitchHandler(*state);
+  }
+
+  void pit_timer_interrupt_handler() {
+    PIT::Instance().Handler();
   }
 
   void keyboard_interrupt_handler() {

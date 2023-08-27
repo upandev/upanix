@@ -23,6 +23,18 @@
 #include <KernelRootProcess.h>
 #include <GraphicsVideo.h>
 #include <KeyboardHandler.h>
+#include "ProcessManager.h"
+
+[[noreturn]] void schedule_runner_process() {
+  while(true) {
+    ProcessManager::Instance().GetCurrentPAS().yield();
+  }
+}
+
+void KernelRootProcess::createScheduleRunner() {
+  ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
+                                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+}
 
 void KernelRootProcess::initGuiFrame() {
   static bool initialized = false;
@@ -48,4 +60,5 @@ void KernelRootProcess::setEnv(const upan::string& key, const upan::string& valu
 }
 
 upan::option<upan::string> KernelRootProcess::getEnv(const upan::string& key) {
+  return upan::option<upan::string>::empty();
 }

@@ -151,6 +151,12 @@ void SchedulableProcess::FXRestore() {
   __asm__ __volatile__("fxrstor (%0)" : : "r"(_sseRegs));
 }
 
+void SchedulableProcess::yield() {
+  do {
+    __asm__ __volatile__ ("int $0x20");
+  } while (status() != RUN);
+}
+
 bool SchedulableProcess::CanPreempt() {
   return (PIT::Instance().GetClockCount() - _runTick) > 10;
 }

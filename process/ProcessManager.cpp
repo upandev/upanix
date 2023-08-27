@@ -368,8 +368,7 @@ void ProcessManager::Sleep(__volatile__ unsigned sleepTime) // in Mili Seconds
     p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(sleepTime));
     p.setStatus(WAIT_SLEEP);
   }
-  while(p.status() != RUN);
-	//ProcessManager_Yield() ;
+  p.yield();
 }
 
 void ProcessManager::WaitOnInterrupt(const IRQ& irq)
@@ -386,10 +385,7 @@ void ProcessManager::WaitOnInterrupt(const IRQ& irq)
     p.stateInfo().Irq(&irq);
     p.setStatus(WAIT_INT);
   }
-  while(p.status() != RUN) {
-    __asm__ __volatile__("int $32");
-  }
-	//ProcessManager_Yield();
+  p.yield();
 }
 
 void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout)
@@ -407,8 +403,7 @@ void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout
     p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeout));
     p.setStatus(WAIT_INT_WITH_TIMEOUT);
   }
-  while(p.status() != RUN);
-  //ProcessManager_Yield();
+  p.yield();
 }
 
 void ProcessManager::WaitForEvent()
@@ -425,8 +420,7 @@ void ProcessManager::WaitForEvent()
 
   auto& p = GetCurrentPAS();
   p.setStatus(WAIT_EVENT);
-  while(p.status() != RUN);
-  //ProcessManager_Yield();
+  p.yield();
 }
 
 void ProcessManager::WaitOnChild(int iChildProcessID)
@@ -443,8 +437,7 @@ void ProcessManager::WaitOnChild(int iChildProcessID)
     p.stateInfo().WaitChildProcId(iChildProcessID);
     p.setStatus(WAIT_CHILD);
   }
-  while(p.status() != RUN);
-	//ProcessManager_Yield() ;
+  p.yield();
 }
 
 void ProcessManager::WaitOnResource(RESOURCE_KEYS resourceKey)
@@ -458,8 +451,7 @@ void ProcessManager::WaitOnResource(RESOURCE_KEYS resourceKey)
     p.stateInfo().WaitResourceId(resourceKey);
     p.setStatus(WAIT_RESOURCE);
   }
-  while(p.status() != RUN);
-	//ProcessManager_Yield() ;
+  p.yield();
 }
 
 void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType) {
@@ -482,7 +474,7 @@ void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& wait
     p.setStatus(WAIT_IO_DESCRIPTORS);
   }
   while(p.status() != RUN);
-  //ProcessManager_Yield() ;
+  p.yield();
 }
 
 bool ProcessManager::IsAlive(int pid) {
@@ -625,20 +617,7 @@ void ProcessManager_Exit() {
   }
   auto& p = ProcessManager::Instance().GetCurrentPAS();
   p.setStatus(TERMINATED);
-  while(1);
-//  ProcessManager::DisableTaskSwitch();
-//	ProcessManager::SetContextSwitch(false);
-//	ProcessManager_EXIT();
-}
-
-void ProcessManager_Yield() {
-  if (IS_KERNEL()) {
-    __asm__ __volatile__("HLT");
-  }
-  ProcessManager::DisableTaskSwitch();
-  ProcessManager::SetContextSwitch(true);
-  ProcessManager_EXIT();
-  ProcessManager_RESTORE();
+  p.yield();
 }
 
 bool ProcessManager::IsResourceBusy(__volatile__ RESOURCE_KEYS uiType)
@@ -661,8 +640,7 @@ void ProcessManager::Kill(int iProcessID) {
     if (process.status() != TERMINATED && process.status() != RELEASED) {
       if (iProcessID == GetCurProcId()) {
         process.setStatus(TERMINATED);
-        while(1);
-        //ProcessManager_Yield();
+        process.yield();
       } else {
         process.Destroy();
       }
@@ -686,8 +664,7 @@ void ProcessManager::WaitOnKernelService() {
     p.stateInfo().KernelServiceComplete(false);
     p.setStatus(WAIT_KERNEL_SERVICE);
   }
-  while(p.status() != RUN);
-	//ProcessManager_Yield() ;
+  p.yield();
 }
 
 bool ProcessManager::CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem::PresentWorkingDirectory& mOldPWD) {

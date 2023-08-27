@@ -113,6 +113,7 @@ public:
   void addChildProcessID(int pid) { _childProcessIDs.insert(pid); }
   void removeChildProcessID(int pid) { _childProcessIDs.erase(pid); }
 
+  void yield() override;
   bool CanPreempt();
 
 private:

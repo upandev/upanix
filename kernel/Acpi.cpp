@@ -185,6 +185,15 @@ bool Acpi::Rsdp::MatchSignature() const
   return memcmp(_signature, RSDP_SIGNATURE, RSDP_SIG_LEN) == 0;
 }
 
+upan::option<uint8_t> Acpi::Madt::GetIntSourceOverride(uint8_t picIrq) const {
+  for(const auto& i : GetIntSrcOverrides()) {
+    if (i.PicIrq() == picIrq) {
+      return upan::option<uint8_t>(i.ApicMappedIrq());
+    }
+  }
+  return upan::option<uint8_t>::empty();
+}
+
 void Acpi::Madt::DebugPrint() const
 {
   printf("\n Local APIC Address: %x", _localApicAddr);

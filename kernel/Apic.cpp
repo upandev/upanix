@@ -55,6 +55,10 @@ static const uint32_t APIC_SW_ENABLE = (1U << 8);
 static const uint32_t APIC_NMI = (1U << 10);
 static const uint32_t APIC_EXT_INT = (1U << 8) | (1U << 9) | (1U << 10);
 
+extern "C" {
+  void _timer_interrupt_handler();
+}
+
 bool Apic::IsAvailable()
 {
   if(Cpu::Instance().HasSupport(CF_MSR) && Cpu::Instance().HasSupport(CF_APIC)) // We need MSR (to initialize APIC) and (obviously) APIC
@@ -190,6 +194,9 @@ void Apic::Initialize()
 
   // set APIC timer init value
   _apicBase[APIC_TIMER_INITCOUNT] = (val < 16 ? 16 : val);
+
+  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&_timer_interrupt_handler);
+  IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ);
 }
 
 uint32_t* Apic::MmapBase(uint64_t vAddr, uint64_t pAddr) {

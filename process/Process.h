@@ -115,6 +115,8 @@ public:
     throw upan::exception(XLOC, "dispatchMouseData unsupported");
   }
 
+  virtual void yield() = 0;
+
   virtual UIType getUIType() = 0;
   virtual void initGuiFrame() = 0;
   virtual upan::option<RootFrame&> getGuiFrame() = 0;

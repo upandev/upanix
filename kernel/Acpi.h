@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <list.h>
+#include <option.h>
 
 class Acpi
 {
@@ -137,6 +138,7 @@ class Acpi
         const IntSourceOverrides GetIntSrcOverrides() const { return _intSrcOverrides; }
         const Nmis GetNmis() const { return _nmis; }
         const LocalApicNmis& GetLocalApicNmis() const { return _localApicNmis; }
+        upan::option<uint8_t> GetIntSourceOverride(uint8_t picIrq) const;
 
       private:
         void DebugPrint() const;
