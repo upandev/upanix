@@ -20,10 +20,7 @@
 
 [BITS 64]
 
-[EXTERN timer_interrupt_handler]
-[GLOBAL _timer_interrupt_handler]
-
-_timer_interrupt_handler:
+%macro _save_interrupt_regs 0
     push rax
     push rbx
     push rcx
@@ -40,10 +37,15 @@ _timer_interrupt_handler:
     push r14
     push r15
 
-    mov rdi, rsp ; set the TaskContext param
-    cld ; clear direction flag
-    call timer_interrupt_handler
-    mov rsp, rax ; switch to returned TaskContext
+    sub rsp, 512
+    clts
+    fxsave [rsp]
+%endmacro
+
+%macro _restore_interrupt_regs 0
+    clts
+    fxrstor [rsp]
+    add rsp, 512
 
     pop r15
     pop r14
@@ -60,5 +62,33 @@ _timer_interrupt_handler:
     pop rcx
     pop rbx
     pop rax
+%endmacro
+
+%macro interrupt_handler 1-2
+[GLOBAL _%1_interrupt_handler]
+[EXTERN %1_interrupt_handler]
+
+_%1_interrupt_handler:
+    _save_interrupt_regs
+
+    mov rdi, rsp ; set the TaskContext param
+    cld ; clear direction flag
+    call %1_interrupt_handler
+
+    _restore_interrupt_regs
+
+  %ifidn %2, "ec"
+    ;discard error code
+    add rsp, 8
+  %endif
 
     iretq
+%endmacro
+
+interrupt_handler timer
+interrupt_handler keyboard
+interrupt_handler mouse
+interrupt_handler rtc
+interrupt_handler xhci
+interrupt_handler page_fault, ec
+interrupt_handler isr_0x27

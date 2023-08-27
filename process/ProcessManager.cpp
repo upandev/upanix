@@ -38,6 +38,7 @@
 #include <syscalldefs.h>
 #include <KernelProcess.h>
 #include <UserThread.h>
+#include <PortCom.h>
 #include "KernelRootProcess.h"
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
@@ -502,7 +503,6 @@ int ProcessManager::CreateKernelProcess(const upan::string& name, const uintptr_
   try {
     upan::uniq_ptr<SchedulableProcess> newPAS(new KernelProcess(name, uiTaskAddress, iParentProcessID, bIsFGProcess, params));
     int pid = newPAS->processID();
-    printf("\n New PID: %d", pid);
     AddToSchedulerList(*newPAS.release());
     return pid;
   } catch(upan::exception& ex) {

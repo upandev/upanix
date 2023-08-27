@@ -71,7 +71,7 @@ public:
   }
 
   void Load(TaskContext& taskState);
-  void Store(TaskContext& taskState);
+  void Store(const TaskContext& taskState);
   void Destroy();
   void Release();
 

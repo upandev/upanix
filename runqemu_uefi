@@ -70,8 +70,8 @@ sleep 1
 #-net nic,model=e1000 \
 #-net tap,ifname=tap0,script=no,downscript=no \
 
-#qemu-system-x86_64 \
-~/workspace/tools/qemu/build/qemu-system-x86_64 \
+#~/workspace/tools/qemu/build/qemu-system-x86_64 \
+qemu-system-x86_64 \
 -serial file:serial_debug.log \
 -pflash $UPANIX_TOOLS/OVMF.fd \
 -m 512 \

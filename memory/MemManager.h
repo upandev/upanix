@@ -72,7 +72,7 @@ class MemManager
     void UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
 
 		static void InitPage(uint64_t uiPage) ;
-		static void PageFaultHandlerTaskGate(uint64_t errorCode) ;
+		static void PageFaultHandler() ;
 
 		inline uint64_t GetRamSize() { return RAM_SIZE; }
 

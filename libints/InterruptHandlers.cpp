@@ -28,140 +28,142 @@
 #include <PS2MouseDriver.h>
 #include <RTC.h>
 #include <XHCIManager.h>
+#include <PortCom.h>
 
 extern "C" {
-  TaskContext* timer_interrupt_handler(TaskContext* state) {
+  void timer_interrupt_handler(TaskContext *state) {
     PIT::Instance().Handler(*state);
-    return state;
   }
-}
 
-__attribute__((interrupt)) void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  MemManager::PageFaultHandlerTaskGate(errorCode);
-}
+  void keyboard_interrupt_handler() {
+    PS2KeyboardDriver::Handler();
+  }
 
-__attribute__((interrupt)) void keyboard_interrupt_handler(InterruptState* state) {
-  PS2KeyboardDriver::Handler();
-}
+  void mouse_interrupt_handler() {
+    PS2MouseDriver::Handler();
+  }
 
-__attribute__((interrupt)) void mouse_interrupt_handler(InterruptState* state) {
-  PS2MouseDriver::Handler();
-}
+  void rtc_interrupt_handler() {
+    RTC::Handler();
+  }
 
-__attribute__((interrupt)) void rtc_interrupt_handler(InterruptState* state) {
-  RTC::Handler();
-}
+  void xhci_interrupt_handler() {
+    XHCIManager::Handler();
+  }
 
-__attribute__((interrupt)) void xhci_interrupt_handler(InterruptState* state) {
-  XHCIManager::Handler();
+  void page_fault_interrupt_handler() {
+    MemManager::PageFaultHandler();
+  }
+
+  void isr_0x27_interrupt_handler() {
+    COM1::Instance().Write("\nInt 0x27.");
+  }
 }
 
 /************ Default Handlers *****************/
 // Handler for Interrupt 0x27
-__attribute__((interrupt)) void isr_0x27_interrupt_handler(InterruptState* state) {
-}
 
 __attribute__((interrupt)) void isr_default_interrupt_handler(InterruptState* state) {
-  printf("\n default exception handler invoked!\n");
-  __asm__ __volatile__("HLT") ;
+  COM1::Instance().Write("\n default exception handler invoked!");
+  __asm__ __volatile__("hlt") ;
 }
 
 __attribute__((interrupt)) void isr_0_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 0: Divide By Zero\n");
+  COM1::Instance().Write("\n Interrupt 0: Divide By Zero.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_1_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 1: Debug Exception\n");
+  COM1::Instance().Write("\n Interrupt 1: Debug Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_2_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 2: NMI\n");
+  COM1::Instance().Write("\n Interrupt 2: NMI.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_3_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 3: Break Point\n");
+  COM1::Instance().Write("\n Interrupt 3: Break Point.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_4_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 4: Overflow Exception\n");
+  COM1::Instance().Write("\n Interrupt 4: Overflow Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_5_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 5: Range out of bounds exception\n");
+  COM1::Instance().Write("\n Interrupt 5: Range out of bounds exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_6_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 6: Invalid Opcode Exception\n");
+  COM1::Instance().Write("\n Interrupt 6: Invalid Opcode Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_7_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 7: Device not available Exception\n");
+  COM1::Instance().Write("\n Interrupt 7: Device not available Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_8_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 8: Double Fault Exception. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 8: Double Fault Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_9_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 9: Coprocessor Segment Overrun\n");
+  COM1::Instance().Write("\n Interrupt 9: Coprocessor Segment Overrun.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_10_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 10: Invalid TSS Exception. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 10: Invalid TSS Exception.");
   __asm__ __volatile__("HLT");
 }
 
 __attribute__((interrupt)) void isr_11_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 11: Segment not present. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 11: Segment not present.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_12_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 12: Stack Fault Exception. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 12: Stack Fault Exception");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_13_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 13: General Protection Fault. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 13: General Protection Fault.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_16_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 16: x87 FPU Floating-Point Error\n");
+  COM1::Instance().Write("\n Interrupt 16: x87 FPU Floating-Point Error.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_17_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 17: Alignment Check Exception. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 17: Alignment Check Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_18_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 18: Machine Check Exception.\n");
+  COM1::Instance().Write("\n Interrupt 18: Machine Check Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_19_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 19: SIMD Floating-Point Exception.\n");
+  COM1::Instance().Write("\n Interrupt 19: SIMD Floating-Point Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_20_interrupt_handler(InterruptState* state) {
-  printf("\n Interrupt 20: Virtualization Exception.\n");
+  COM1::Instance().Write("\n Interrupt 20: Virtualization Exception.");
   ProcessManager_Exit();
 }
 
 __attribute__((interrupt)) void isr_21_interrupt_handler(InterruptState* state, uint64_t errorCode) {
-  printf("\n Interrupt 21: Control Protection Exception. Error Code: 0x%x\n", errorCode);
+  COM1::Instance().Write("\n Interrupt 21: Control Protection Exception.");
   ProcessManager_Exit();
 }

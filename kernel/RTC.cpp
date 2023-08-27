@@ -41,6 +41,10 @@
 #define RTC_RGSTR_STATUSB		0x0B
 #define RTC_RGSTR_STATUSC		0x0C
 
+extern "C" {
+  void _rtc_interrupt_handler();
+};
+
 bool RTC::Initialize()
 {
 	byte bStatusB, bStatusC ;
@@ -68,7 +72,7 @@ bool RTC::Initialize()
 	PortCom_SendByte(RTC_COMMAND_PORT, RTC_RGSTR_STATUSC) ;
 	PortCom_SendByte(RTC_DATA_PORT, bStatusC) ;
 
-  return IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().RTC_IRQ, (uintptr_t)&rtc_interrupt_handler);
+  return IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().RTC_IRQ, (uintptr_t)&_rtc_interrupt_handler);
 //	IrqManager::Instance().EnableIRQ(StdIRQ::Instance().RTC_IRQ) ;
 }
 

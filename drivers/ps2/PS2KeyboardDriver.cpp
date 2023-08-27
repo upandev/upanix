@@ -64,12 +64,16 @@ static const KeyboardKeys Keyboard_GENERIC_KEY_MAP[MAX_KEYBOARD_CHARS] = { Keybo
   Keyboard_KEY_PG_DOWN, Keyboard_KEY_INST, Keyboard_KEY_DEL
 };
 
+extern "C" {
+  void _keyboard_interrupt_handler();
+}
+
 PS2KeyboardDriver::PS2KeyboardDriver() : _isShiftKey(false), _isCapsLock(false), _isCtrlKey(false)
 {
   KeyboardHandler::Instance();
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
-  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (uintptr_t)&keyboard_interrupt_handler);
+  IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().KEYBOARD_IRQ, (uintptr_t)&_keyboard_interrupt_handler);
   IrqManager::Instance().EnableIRQ(StdIRQ::Instance().KEYBOARD_IRQ);
 
   PortCom_ReceiveByte(PS2Controller::DATA_PORT);

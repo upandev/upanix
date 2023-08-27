@@ -109,9 +109,9 @@ class IrqGuard
       IrqManager::Instance().DisableIRQ(*_irq);
     }
     IrqGuard() : _irq(nullptr) {
-      __asm__ __volatile__("pushf;"
-                           "pop %0" : "=m"(_allIntSyncFlag) : );
-      if(_allIntSyncFlag & 0x0200) {
+      __asm__ __volatile__("pushfq;"
+                           "popq %0;" : "=m"(_allIntSyncFlag) : : "memory");
+      if(_allIntSyncFlag & 0x200) {
         __asm__ __volatile__("cli");
       }
     }
@@ -119,14 +119,14 @@ class IrqGuard
       if(_irq) {
         IrqManager::Instance().EnableIRQ(*_irq);
       } else {
-        if(_allIntSyncFlag & 0x0200) {
+        if(_allIntSyncFlag & 0x200) {
           __asm__ __volatile__("sti");
         }
       }
     }
   private:
     const IRQ* _irq;
-    uint64_t _allIntSyncFlag;
+    __volatile__ uint64_t _allIntSyncFlag;
 };
 
 #endif

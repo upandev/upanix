@@ -29,15 +29,15 @@ Cpu::Cpu() {
   // Test if the CPU supports the CPUID-Command
   __asm__ __volatile__("pushfq;"
                        "pushfq;"
-                       "pop %%rax;"
-                       "mov %%rax, %%rcx;"
-                       "xor $0x200000, %%rax;"
-                       "push %%rax;"
+                       "popq %%rax;"
+                       "movq %%rax, %%rcx;"
+                       "xorq $0x200000, %%rax;"
+                       "pushq %%rax;"
                        "popfq;"
                        "pushfq;"
-                       "pop %%rax;"
-                       "xor %%rcx, %%rax;"
-                       "shr $21, %%rax;"
+                       "popq %%rax;"
+                       "xorq %%rcx, %%rax;"
+                       "shrq $21, %%rax;"
                        "popfq;" : "=m"(result) : : "rax", "rcx", "memory");
   _cpuIdAvailable = (result == 0);
   if(_cpuIdAvailable) {
@@ -112,6 +112,19 @@ void Cpu::EnableSSE() {
                          "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
                          "mov %%rax, %%cr4;" : : : );
     printf("\n SSE/SSE2 enabled");
+
+    if (HasSupport(CF_SSE3))
+      printf("\n SSE3 is supported");
+
+    if (HasSupport(CF_SSE41))
+      printf("\n SSE41 supported");
+
+    if (HasSupport(CF_SSE42))
+      printf("\n SSE42 supported");
+
+    if (HasSupport(CF_SSSE3))
+      printf("\n SSSE3 supported");
+
     if(HasSupport(CF_FPU)) {
       //set NE flag
       __asm__ __volatile__("mov %%cr0, %%rax;"

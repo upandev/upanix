@@ -30,12 +30,16 @@
 #include <ProcessManager.h>
 #include <InterruptHandlers.h>
 
+extern "C" {
+  void _mouse_interrupt_handler();
+}
+
 PS2MouseDriver::PS2MouseDriver() : _qBuffer(10240) {
   _dataCounter = 0;
   _packetSize = 3; //TODO: go with default - 3 bytes per mouse movement
 
   IrqManager::Instance().DisableIRQ(StdIRQ::Instance().MOUSE_IRQ) ;
-	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (uintptr_t)&mouse_interrupt_handler) ;
+	IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().MOUSE_IRQ, (uintptr_t)&_mouse_interrupt_handler) ;
 
 	try {
 //	if(SendCommand2(0xF3))

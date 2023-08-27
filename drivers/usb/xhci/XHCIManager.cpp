@@ -40,9 +40,13 @@ void XHCIManager::Handler() {
   IrqManager::Instance().SendEOI(*XHCI_IRQ);
 }
 
+extern "C" {
+  void _xhci_interrupt_handler();
+}
+
 XHCIManager::XHCIManager() : _initialized(false)
 {
-  XHCI_IRQ = IrqManager::Instance().RegisterIRQ(XHCI_IRQ_NO, (uintptr_t)xhci_interrupt_handler);
+  XHCI_IRQ = IrqManager::Instance().RegisterIRQ(XHCI_IRQ_NO, (uintptr_t)_xhci_interrupt_handler);
   if(XHCI_IRQ) {
     _eventMode = EventMode::Interrupt;
     IrqManager::Instance().DisableIRQ(*XHCI_IRQ);

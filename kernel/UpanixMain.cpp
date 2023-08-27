@@ -90,7 +90,6 @@ int debug_point ;
     const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
                                                                    ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
-
     ProcessManager::Instance().WaitOnChild(pid);
   }
 	ProcessManager_EXIT() ;
@@ -178,7 +177,6 @@ void Initialize() {
     PCIBusHandler::Instance().Initialize();
     IrqManager::Initialize();
     PIT::Instance().Initialize();
-    IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ) ;
     __asm__ __volatile__("sti");
     DiskDriveManager::Instance();
 

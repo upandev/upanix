@@ -36,6 +36,7 @@ typedef struct {
 } PACKED InterruptState;
 
 typedef struct {
+  uint8_t sse_state[512];
   uint64_t r15;
   uint64_t r14;
   uint64_t r13;
@@ -54,17 +55,6 @@ typedef struct {
   InterruptState interruptState;
 } PACKED TaskContext;
 
-extern "C" {
-  TaskContext *timer_interrupt_handler(TaskContext *state);
-}
-
-void page_fault_interrupt_handler(InterruptState* state, uint64_t errorCode);
-void keyboard_interrupt_handler(InterruptState* state);
-void mouse_interrupt_handler(InterruptState* state);
-void rtc_interrupt_handler(InterruptState* state);
-void xhci_interrupt_handler(InterruptState* state);
-
-void isr_0x27_interrupt_handler(InterruptState* state);
 void isr_default_interrupt_handler(InterruptState* state);
 void isr_0_interrupt_handler(InterruptState* state);
 void isr_1_interrupt_handler(InterruptState* state);

@@ -44,7 +44,7 @@ public:
     return _isSupported;
   }
 
-  int writeCombiningPageTableFlag();
+  int pageTableFlag(Cpu::MEM_TYPE memType);
 
   void print();
   Cpu::MEM_TYPE get(int i);

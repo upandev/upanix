@@ -102,9 +102,9 @@ void MultiBoot::InitializeGraphicsPageMap(int memTypeFlag) {
   const uint32_t pageFlag = 0x3 | (wcFlag & 0xFF);
 
   for (unsigned i = 0; i < noOfPages; ++i) {
-    const uint64_t addr = lfbaddress + PAGE_SIZE * i;
-    MemManager::KernelPageTableMmap(mapAddress, addr, pageFlag);
+    MemManager::KernelPageTableMmap(mapAddress, lfbaddress, pageFlag);
     mapAddress += PAGE_SIZE;
+    lfbaddress += PAGE_SIZE;
   }
   Mem_FlushTLB();
 

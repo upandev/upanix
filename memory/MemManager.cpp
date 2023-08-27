@@ -33,7 +33,7 @@ extern "C" {
 	uint64_t MEM_PML4 ;
 }
 
-void MemManager::PageFaultHandlerTaskGate(uint64_t errorCode) {
+void MemManager::PageFaultHandler() {
 	__volatile__ uint64_t faultyAddress ;
 	__asm__ __volatile__("mov %%cr2, %0" : "=r"(faultyAddress) : ) ;
 

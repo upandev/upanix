@@ -40,7 +40,7 @@ if(ENABLE_CXX_RT)
 endif()
 
 set(CMAKE_CXX_FLAGS " -O0 -Wall -ffreestanding -nodefaultlibs -nostdlib -nostartfiles -nostdinc -std=c++11 -nostdinc++ -fno-threadsafe-statics -fpermissive ${EXCEPTION_SUP}")
-set(CMAKE_C_FLAGS " -std=c11 -O0 -Wall -ffreestanding -nodefaultlibs -nostdlib -nostartfiles -nostdinc")
+set(CMAKE_C_FLAGS " -std=c11 -O0 -Wall -ffreestanding -nodefaultlibs -nostdlib -nostartfiles -nostdinc -fno-threadsafe-statics")
 set(CMAKE_EXE_LINKER_FLAGS " -T${PROJECT_SOURCE_DIR}/kernel.ld -O0 -nostdlib")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -148,7 +148,7 @@ string(REPLACE "\n" "" CRTEND_OBJ ${CRTEND_OBJ})
 set(CRTINIT_OBJ "${PROJECT_SOURCE_DIR}/osutils/crti.o ${CRTBEGIN_OBJ}")
 set(CRTFINI_OBJ "${CRTEND_OBJ} ${PROJECT_SOURCE_DIR}/osutils/crtn.o")
 
-set(OTHER_OBJS ${PROJECT_SOURCE_DIR}/memory/Mem.o ${PROJECT_SOURCE_DIR}/libints/TimerInterruptHandler.o)
+set(OTHER_OBJS ${PROJECT_SOURCE_DIR}/memory/Mem.o ${PROJECT_SOURCE_DIR}/libints/_InterruptHandlers.o)
 
 set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> ${CMAKE_CXX_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} ${PROJECT_SOURCE_DIR}/boot/fpu_init.obj ${CRTINIT_OBJ} <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${CRTFINI_OBJ}")
 

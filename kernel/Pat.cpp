@@ -40,10 +40,10 @@ void Pat::print() {
   }
 }
 
-int Pat::writeCombiningPageTableFlag() {
+int Pat::pageTableFlag(Cpu::MEM_TYPE memType) {
   if (_isSupported) {
     for (int i = 0; i < NO_OF_PAT_ENTRIES; ++i) {
-      if (get(i) == Cpu::MEM_TYPE::WRITE_COMBINING) {
+      if (get(i) == memType) {
         return ((i >> 2) & 0x1) << 7 | ((i >> 1) & 0x1) << 4 | (i & 0x1) << 3;
       }
     }

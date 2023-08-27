@@ -45,8 +45,10 @@ void PIT::Initialize() {
 	  PortCom_SendByte(PIT_COUNTER_0_PORT, (uiTimerRate >> 8) & 0xFF) ;	// Clock Divisor MSB
   }
 
+  IrqManager::Instance().DisableIRQ(StdIRQ::Instance().TIMER_IRQ);
 	if(!IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().TIMER_IRQ, (uintptr_t)&_timer_interrupt_handler))
     status = Failure;
+  IrqManager::Instance().EnableIRQ(StdIRQ::Instance().TIMER_IRQ);
 
   KC::MConsole().LoadMessage("Timer Initialization", status);
 }

@@ -52,6 +52,11 @@ IDT::IDT() {
   KC::MConsole().LoadMessage("IDT Initialization", Success) ;
 }
 
+extern "C" {
+  void _page_fault_interrupt_handler();
+  void _isr_0x27_interrupt_handler();
+}
+
 void IDT::LoadHandlers() {
 	LoadEntry(0, (uintptr_t)&isr_0_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 	LoadEntry(1, (uintptr_t)&isr_1_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
@@ -67,7 +72,7 @@ void IDT::LoadHandlers() {
 	LoadEntry(11, (uintptr_t)&isr_11_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 	LoadEntry(12, (uintptr_t)&isr_12_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 	LoadEntry(13, (uintptr_t)&isr_13_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
-	LoadEntry(14, (uintptr_t)&page_fault_interrupt_handler, SYS_CODE_SELECTOR, 0xEE) ;
+	LoadEntry(14, (uintptr_t)&_page_fault_interrupt_handler, SYS_CODE_SELECTOR, 0xEE) ;
 	LoadEntry(16, (uintptr_t)&isr_16_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
   LoadEntry(17, (uintptr_t)&isr_17_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
   LoadEntry(18, (uintptr_t)&isr_18_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
@@ -76,7 +81,7 @@ void IDT::LoadHandlers() {
   LoadEntry(21, (uintptr_t)&isr_21_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 
 	//Spurious IRQ
-	LoadEntry(0x27, (uintptr_t)&isr_0x27_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
+	LoadEntry(0x27, (uintptr_t)&_isr_0x27_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 }
 
 void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options) {

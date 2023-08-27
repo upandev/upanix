@@ -35,6 +35,7 @@
 #include <GCoreFunctions.h>
 #include <metrics.h>
 #include <ImageResource.h>
+#include <PortCom.h>
 
 //make below extern as you load bmp files during testing
 unsigned _binary_p16_bmp_start;
@@ -91,7 +92,7 @@ void GraphicsVideo::Initialize() {
   if (_initialized) {
     return;
   }
-  const auto wc = Pat::Instance().writeCombiningPageTableFlag();
+  const auto wc = Pat::Instance().pageTableFlag(Cpu::MEM_TYPE::WRITE_COMBINING);
   if (wc >= 0) {
     printf("\n PAT write-combining flag: 0x%x", wc);
     //remap the video framebuffer address space with write-combining flag
@@ -129,6 +130,61 @@ void GraphicsVideo::CreateRefreshTask() {
   _zBuffer = KERNEL_VIRTUAL_ADDRESS(MEM_GRAPHICS_Z_BUFFER_START);
   memset((void*)_zBuffer, 0, _lfbSize);
   KernelUtil::ScheduleTimedTask("xgrefresh", 10, *this);
+}
+
+void optimized_memcpy(uint64_t dest, uint64_t src, int len) {
+  IrqGuard g;
+  const int inc = 16 * 16; // number of bytes copied per iteration = 16 bytes per xmm register * 8 xmm registers
+  for(int i = 0; i < len; i += inc) {
+    __asm__ __volatile__ (
+    "prefetchnta 256(%0);"
+    "prefetchnta 288(%0);"
+    "prefetchnta 320(%0);"
+    "prefetchnta 352(%0);"
+
+    "prefetchnta 384(%0);"
+    "prefetchnta 416(%0);"
+    "prefetchnta 448(%0);"
+    "prefetchnta 480(%0);"
+
+    "movdqa 0(%0), %%xmm0;"
+    "movdqa 16(%0), %%xmm1;"
+    "movdqa 32(%0), %%xmm2;"
+    "movdqa 48(%0), %%xmm3;"
+    "movdqa 64(%0), %%xmm4;"
+    "movdqa 80(%0), %%xmm5;"
+    "movdqa 96(%0), %%xmm6;"
+    "movdqa 112(%0), %%xmm7;"
+    "movdqa 128(%0), %%xmm8;"
+    "movdqa 144(%0), %%xmm9;"
+    "movdqa 160(%0), %%xmm10;"
+    "movdqa 176(%0), %%xmm11;"
+    "movdqa 192(%0), %%xmm12;"
+    "movdqa 208(%0), %%xmm13;"
+    "movdqa 224(%0), %%xmm14;"
+    "movdqa 240(%0), %%xmm15;"
+
+    "movntdq %%xmm0, 0(%1);"
+    "movntdq %%xmm1, 16(%1);"
+    "movntdq %%xmm2, 32(%1);"
+    "movntdq %%xmm3, 48(%1);"
+    "movntdq %%xmm4, 64(%1);"
+    "movntdq %%xmm5, 80(%1);"
+    "movntdq %%xmm6, 96(%1);"
+    "movntdq %%xmm7, 112(%1);"
+    "movntdq %%xmm8, 128(%1);"
+    "movntdq %%xmm9, 144(%1);"
+    "movntdq %%xmm10, 160(%1);"
+    "movntdq %%xmm11, 176(%1);"
+    "movntdq %%xmm12, 192(%1);"
+    "movntdq %%xmm13, 208(%1);"
+    "movntdq %%xmm14, 224(%1);"
+    "movntdq %%xmm15, 240(%1);"
+
+    : : "r"(src), "r"(dest) : "memory");
+    src += inc;
+    dest += inc;
+  }
 }
 
 bool GraphicsVideo::TimerTrigger() {
@@ -199,8 +255,7 @@ bool GraphicsVideo::TimerTrigger() {
   DrawMouseCursor();
 
   lfbStats.start();
-  //optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
-  memcpy((void*)_mappedLFBAddress, (void*)_zBuffer, _lfbSize);
+  optimized_memcpy(_mappedLFBAddress, _zBuffer, _lfbSize);
   lfbStats.end();
 
   gvtStats.end();
