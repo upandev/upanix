@@ -113,6 +113,8 @@ public:
   void addChildProcessID(int pid) { _childProcessIDs.insert(pid); }
   void removeChildProcessID(int pid) { _childProcessIDs.erase(pid); }
 
+  bool CanPreempt();
+
 private:
   static int _nextPid;
 
@@ -146,6 +148,7 @@ protected:
   PROCESS_STATUS _status;
   int _driveID;
   int _userID;
+  uint32_t _runTick;
   ProcessStateInfo& _stateInfo;
   TaskContext _taskContext;
   TaskState _taskState;

@@ -23,33 +23,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="map APIC MMIO space as uncacheable">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="save fx states and protect framebuffer copy by disabling all interrupts">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Cpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Pat.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Pat.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Pat.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Pat.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/RTC.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/RTC.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.h" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/libints/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/TimerInterruptHandler.asm" beforeDir="false" afterPath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/crti.s" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/crti.s" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -290,7 +270,21 @@
       <option name="project" value="LOCAL" />
       <updated>1693106493359</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
+      <created>1693107341944</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1693107341944</updated>
+    </task>
+    <task id="LOCAL-00017" summary="save fx states and protect framebuffer copy by disabling all interrupts">
+      <created>1693107352489</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1693107352489</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -334,6 +328,7 @@
     <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
     <MESSAGE value="kernel process and thread modified for 64bit kernel" />
     <MESSAGE value="map APIC MMIO space as uncacheable" />
-    <option name="LAST_COMMIT_MESSAGE" value="map APIC MMIO space as uncacheable" />
+    <MESSAGE value="save fx states and protect framebuffer copy by disabling all interrupts" />
+    <option name="LAST_COMMIT_MESSAGE" value="save fx states and protect framebuffer copy by disabling all interrupts" />
   </component>
 </project>

@@ -151,7 +151,12 @@ void SchedulableProcess::FXRestore() {
   __asm__ __volatile__("fxrstor (%0)" : : "r"(_sseRegs));
 }
 
+bool SchedulableProcess::CanPreempt() {
+  return (PIT::Instance().GetClockCount() - _runTick) > 10;
+}
+
 void SchedulableProcess::Load(TaskContext& taskContext) {
+  _runTick = PIT::Instance().GetClockCount();
   onLoad();
   //FXRestore();
   taskContext = _taskContext;

@@ -55,10 +55,8 @@ void PIT::Initialize() {
 
 void PIT::Handler(TaskContext& taskContext) {
 	// 1 Int --> 1ms
-	++_clockCountForSleep;
-	if ((_clockCountForSleep % 10) == 0) {
-	  ProcessManager::Instance().ContextSwitch(taskContext);
-	}
+	_clockCountForSleep.inc();
+  ProcessManager::Instance().ContextSwitch(taskContext);
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 }
 

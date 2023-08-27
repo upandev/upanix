@@ -23,6 +23,7 @@
 
 #include <Global.h>
 #include <InterruptHandlers.h>
+#include <atomicop.h>
 
 #define TIMECOUNTER_i8254_FREQU 1193182 // Input Frequency of PIT
 // Counter 0, 1, 2
@@ -71,9 +72,9 @@ public:
   void Initialize();
   void Handler(TaskContext&);
 
-  uint32_t GetClockCount() const { return _clockCountForSleep; }
+  uint32_t GetClockCount() { return _clockCountForSleep.get(); }
   uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
 
 private:
-  uint32_t _clockCountForSleep ;
+  upan::atomic::integral<uint32_t> _clockCountForSleep ;
 };
