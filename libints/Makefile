@@ -19,13 +19,13 @@
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 ASM = ${HOME}/opt/cross/bin/nasm
 
-TIMER_INTERRUPT_HANDLER_ASM_SRC = TimerInterruptHandler.asm
-TIMER_INTERRUPT_HANDLER_ASM_OBJ = TimerInterruptHandler.o
+INTERRUPT_HANDLER_ASM_SRC = _InterruptHandlers.asm
+INTERRUPT_HANDLER_ASM_OBJ = _InterruptHandlers.o
 
-build: ${TIMER_INTERRUPT_HANDLER_ASM_OBJ}
+build: ${INTERRUPT_HANDLER_ASM_OBJ}
 
-${TIMER_INTERRUPT_HANDLER_ASM_OBJ}: ${TIMER_INTERRUPT_HANDLER_ASM_SRC}
-	${ASM} -felf64 ${TIMER_INTERRUPT_HANDLER_ASM_SRC}
+${INTERRUPT_HANDLER_ASM_OBJ}: ${INTERRUPT_HANDLER_ASM_SRC}
+	${ASM} -felf64 ${INTERRUPT_HANDLER_ASM_SRC}
 
 clean:
 	rm -f *.o
