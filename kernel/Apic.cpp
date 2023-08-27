@@ -32,6 +32,7 @@
 #include <PortCom.h>
 #include <PIT.h>
 #include <atomicop.h>
+#include "Pat.h"
 
 #define IA32_APIC_BASE_MSR          0x1B
 #define IA32_APIC_BASE_BSP          0x100
@@ -71,14 +72,16 @@ Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr)
 void Apic::Initialize()
 {
   // Local APIC, cf. Intel manual 3A, chapter 10
-  _phyApicBase = (Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFU); // read APIC base address (ignore bit0-11)
-  Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, ((_phyApicBase & ~0xFFFU) | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
+  _phyApicBase = (Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL); // read APIC base address (ignore bit0-11)
+  Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, ((_phyApicBase & ~0xFFFUL) | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
   _apicBase = MmapBase(MMAP_APIC_BASE, _phyApicBase);
 
   uint64_t phyIoApicBase = (*Acpi::Instance().GetMadt().GetIoApics().begin()).Address();
   _ioApicBase = MmapBase(MMAP_IOAPIC_BASE, phyIoApicBase);
 
+  printf("\n APIC VBase: %x, IO APID VBase: %x", MMAP_APIC_BASE, MMAP_IOAPIC_BASE);
   printf("\n APIC Base: %x, IO APIC Base: %x", _phyApicBase, phyIoApicBase);
+  printf("\n MADT APIC Base: %x", Acpi::Instance().GetMadt().LocalApicAddress());
 
   IrqGuard g;
 
@@ -190,7 +193,13 @@ void Apic::Initialize()
 }
 
 uint32_t* Apic::MmapBase(uint64_t vAddr, uint64_t pAddr) {
-  MemManager::KernelPageTableMmap(vAddr, pAddr, 0x3);
+  const auto uc = Pat::Instance().pageTableFlag(Cpu::MEM_TYPE::UNCACHEABLE);
+  uint32_t pageFlag = 0x3;
+  if (uc >= 0) {
+    printf("\n PAT (strong) Uncacheable (UC) flag: 0x%x", uc);
+    pageFlag |= uc;
+  }
+  MemManager::KernelPageTableMmap(vAddr, pAddr, pageFlag);
 	Mem_FlushTLB();
   return (uint32_t*)(vAddr + (pAddr % PAGE_SIZE));
 }
