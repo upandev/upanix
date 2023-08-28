@@ -23,26 +23,26 @@
 # include <SysCallDisplay.h>
 # include <exception.h>
 
-byte SysCallProc_IsPresent(unsigned uiSysCallID)
+byte SysCallProc_IsPresent(uint32_t uiSysCallID)
 {
 	return (uiSysCallID > SYS_CALL_PROC_START && uiSysCallID < SYS_CALL_PROC_END) ;
 }
 
 void SysCallProc_Handle(
 __volatile__ int* piRetVal,
-__volatile__ uintptr_t uiSysCallID,
+__volatile__ uint32_t sysCallID,
 __volatile__ bool bDoAddrTranslation,
-__volatile__ uintptr_t uiP1,
-__volatile__ uintptr_t uiP2,
-__volatile__ uintptr_t uiP3,
-__volatile__ uintptr_t uiP4,
-__volatile__ uintptr_t uiP5,
-__volatile__ uintptr_t uiP6,
-__volatile__ uintptr_t uiP7,
-__volatile__ uintptr_t uiP8,
-__volatile__ uintptr_t uiP9)
+__volatile__ uint64_t P1,
+__volatile__ uint64_t P2,
+__volatile__ uint64_t P3,
+__volatile__ uint64_t P4,
+__volatile__ uint64_t P5,
+__volatile__ uint64_t P6,
+__volatile__ uint64_t P7,
+__volatile__ uint64_t P8,
+__volatile__ uint64_t P9)
 {
-	switch(uiSysCallID)
+	switch(sysCallID)
 	{
 		case SYS_CALL_DLL_RELOCATE :
 			// P8 => Second Entry in GOT
@@ -50,7 +50,7 @@ __volatile__ uintptr_t uiP9)
       try
       {
         //ProcessManager_DisableTaskSwitch() ;
-        DynamicLinkLoader_DoRelocation(&ProcessManager::Instance().GetCurrentPAS(), (int)uiP8, uiP9, piRetVal);
+        DynamicLinkLoader_DoRelocation(&ProcessManager::Instance().GetCurrentPAS(), (int)P8, P9, piRetVal);
         //ProcessManager_EnableTaskSwitch() ;
       }
       catch(const upan::exception& e)
@@ -66,13 +66,13 @@ __volatile__ uintptr_t uiP9)
 			{
 				//ProcessManager_DisableTaskSwitch() ;
 				
-				char* szFile = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
-				char** szArgList = KERNEL_ADDR(bDoAddrTranslation, char**, uiP3) ;
+				char* szFile = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
+				char** szArgList = KERNEL_ADDR(bDoAddrTranslation, char**, P3) ;
 
-				for(unsigned i = 0; i < uiP2; i++)
+				for(unsigned i = 0; i < P2; i++)
 					szArgList[i] = KERNEL_ADDR(bDoAddrTranslation, char*, szArgList[i]) ;
 
-				*piRetVal = KC::MKernelService().RequestProcessExec(szFile, uiP2, (const char**)szArgList) ;
+				*piRetVal = KC::MKernelService().RequestProcessExec(szFile, P2, (const char**)szArgList) ;
 
 				//ProcessManager_EnableTaskSwitch() ;
 			}
@@ -82,13 +82,13 @@ __volatile__ uintptr_t uiP9)
 	    // P1 => thread entry point
 	    // P2 => thread (input) arg
       {
-        *piRetVal = KC::MKernelService().RequestThreadExec(uiP1, uiP2, (void*)uiP3) ;
+        *piRetVal = KC::MKernelService().RequestThreadExec(P1, P2, (void*)P3) ;
       }
       break;
 		case SYS_CALL_PROCESS_WAIT_PID :
 			// P1 => PID	
 			{
-				ProcessManager::Instance().WaitOnChild((int)uiP1) ;
+				ProcessManager::Instance().WaitOnChild((int)P1) ;
 			}
 			break ;
 
@@ -108,7 +108,7 @@ __volatile__ uintptr_t uiP9)
 		case SYS_CALL_PROCESS_SLEEP :
 			// P1 => Exit Status
 			{
-				ProcessManager::Instance().Sleep((unsigned)uiP1) ;
+				ProcessManager::Instance().Sleep((unsigned)P1) ;
 			}
 			break ;
 
@@ -121,12 +121,12 @@ __volatile__ uintptr_t uiP9)
 		case SYS_CALL_PROCESS_GET_ENV:
 			//P1 - Env Var
 			{
-				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 				const auto& val = ProcessManager::Instance().GetCurrentPAS().getEnv(szVar);
 				if (val.isEmpty()) {
 				  *piRetVal = -1;
 				} else {
-          char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
+          char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, P2) ;
           strcpy(szVal, val.value().c_str());
           *piRetVal = 0;
 				}
@@ -137,8 +137,8 @@ __volatile__ uintptr_t uiP9)
 			//P1 - Env Var
 			//P2 - Env Val
 			{
-				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
-				char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
+				char* szVar = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
+				char* szVal = KERNEL_ADDR(bDoAddrTranslation, char*, P2) ;
 
 				*piRetVal = 0 ;
 				try {
@@ -154,8 +154,8 @@ __volatile__ uintptr_t uiP9)
 			//P1 - Proc List Ptr
 			//P2 - List Size Ptr
 			{
-				PS** pProcList = KERNEL_ADDR(bDoAddrTranslation, PS**, uiP1) ;
-				unsigned* uiListSize = KERNEL_ADDR(bDoAddrTranslation, unsigned*, uiP2) ;
+				PS** pProcList = KERNEL_ADDR(bDoAddrTranslation, PS**, P1) ;
+				unsigned* uiListSize = KERNEL_ADDR(bDoAddrTranslation, unsigned*, P2) ;
 
 				*piRetVal = 0;
         *pProcList = ProcessManager::Instance().GetProcList(*uiListSize);
@@ -166,22 +166,22 @@ __volatile__ uintptr_t uiP9)
 			//P1 - Proc List Ptr
 			//P2 - List size
 			{
-				PS* pProcList = KERNEL_ADDR(bDoAddrTranslation, PS*, uiP1) ;
-				ProcessManager::Instance().FreeProcListMem(pProcList, uiP2) ;
+				PS* pProcList = KERNEL_ADDR(bDoAddrTranslation, PS*, P1) ;
+				ProcessManager::Instance().FreeProcListMem(pProcList, P2) ;
 			}
 			break ;
 
 		case SYS_CALL_PROCESS_CHILD_ALIVE :
 			// P1 => PID	
 			{
-				*piRetVal = ProcessManager::Instance().IsChildAlive((int)uiP1) ;
+				*piRetVal = ProcessManager::Instance().IsChildAlive((int)P1) ;
 			}
 			break ;
 
     case SYS_CALL_PROCESS_ALIVE :
       // P1 => PID
       {
-        *piRetVal = ProcessManager::Instance().IsAlive((int)uiP1) ;
+        *piRetVal = ProcessManager::Instance().IsAlive((int)P1) ;
       }
       break ;
   }

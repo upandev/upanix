@@ -32,18 +32,18 @@ byte SysCallFile_IsPresent(unsigned uiSysCallID)
 __volatile__ bool bDoAddrTranslation = true ;
 
 void SysCallFile_Handle(
-__volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID,
-__volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1,
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+        __volatile__ int* piRetVal,
+        __volatile__ unsigned uiSysCallID,
+        __volatile__ bool bDoAddrTranslation,
+        volatile uint64_t P1,
+        volatile uint64_t P2,
+        volatile uint64_t P3,
+        volatile uint64_t P4,
+        volatile uint64_t P5,
+        volatile uint64_t P6,
+        volatile uint64_t P7,
+        volatile uint64_t P8,
+        volatile uint64_t P9)
 {
 	
 	switch(uiSysCallID)
@@ -51,7 +51,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_CHANGE_DIR : //Change Directory
 			//P1 => Directory Path
 			{
-				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 
 				*piRetVal = 0 ;
         try
@@ -69,7 +69,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_PWD : //Get PWD
 			//P1 => Return Dir Name Pointer
 			{
-				char** szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char**, uiP1) ;
+				char** szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char**, P1) ;
         *piRetVal = 0;
         try
         {
@@ -87,12 +87,12 @@ __volatile__ unsigned uiP9)
 			//P1 => Return Dir Name Pointer
 			//P2 => Buf Length
 			{
-				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 				*piRetVal = 0;
 
         try
         {
-          FileOperations_GetCWD(szPathAddress, uiP2);
+          FileOperations_GetCWD(szPathAddress, P2);
         }
         catch(upan::exception& ex)
         {
@@ -107,14 +107,14 @@ __volatile__ unsigned uiP9)
 			//P1 => Dir Path
 			//P2 => Dir Attr
 			{
-				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 				unsigned short usType = (uiSysCallID == SYS_CALL_MKDIR) ? ATTR_TYPE_DIRECTORY : ATTR_TYPE_FILE ; 
 				*piRetVal = 0 ;
 
         try
         {
           FileOperations_SyncPWD();
-          FileOperations_Create(szPathAddress, usType, (unsigned short)(uiP2));
+          FileOperations_Create(szPathAddress, usType, (unsigned short)(P2));
         }
         catch(const upan::exception& ex)
 				{
@@ -127,7 +127,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_RMDIR : //Delete Dir / File
 			//P1 => Dir Path
 			{
-				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 				*piRetVal = 0 ;
         try
         {
@@ -147,9 +147,9 @@ __volatile__ unsigned uiP9)
 			// P2 => Ret Dir Content List Address
 			// P3 => Ret Dir Content List Size Address
 			{
-				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
-				FileSystem::Node** pRetDirContentList = KERNEL_ADDR(bDoAddrTranslation, FileSystem::Node**, uiP2) ;
-				int* pRetDirContentListSize = KERNEL_ADDR(bDoAddrTranslation, int*, uiP3) ;
+				char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
+				FileSystem::Node** pRetDirContentList = KERNEL_ADDR(bDoAddrTranslation, FileSystem::Node**, P2) ;
+				int* pRetDirContentListSize = KERNEL_ADDR(bDoAddrTranslation, int*, P3) ;
 				*piRetVal = 0 ;
 
         try
@@ -169,8 +169,8 @@ __volatile__ unsigned uiP9)
 			// P1 => File Name / Path
 			// P2 => Mode
 			{
-				const char* szFileNameAddr = KERNEL_ADDR(bDoAddrTranslation, const char*, uiP1) ;
-				byte mode = uiP2 ;
+				const char* szFileNameAddr = KERNEL_ADDR(bDoAddrTranslation, const char*, P1) ;
+				byte mode = P2 ;
 
 				*piRetVal = 0 ;
 
@@ -191,7 +191,7 @@ __volatile__ unsigned uiP9)
 			// P1 => File Desc
 			{
 				*piRetVal = 0 ;
-				if(FileOperations_Close((int)uiP1) != FileOperations_SUCCESS)
+				if(FileOperations_Close((int)P1) != FileOperations_SUCCESS)
 					*piRetVal = -1 ;
 			}
 			break ;
@@ -202,13 +202,13 @@ __volatile__ unsigned uiP9)
 			// P3 => Byte to read 
 			// Return Value = Bytes Read
 			{
-				char* szBufferAddr = KERNEL_ADDR(bDoAddrTranslation, char*, uiP2) ;
+				char* szBufferAddr = KERNEL_ADDR(bDoAddrTranslation, char*, P2) ;
 
 				*piRetVal = 0 ;
         try
         {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)uiP1);
-          *piRetVal = file.read(szBufferAddr, (int)uiP3);
+          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)P1);
+          *piRetVal = file.read(szBufferAddr, (int)P3);
         }
         catch(...)
         {
@@ -222,13 +222,13 @@ __volatile__ unsigned uiP9)
 			// P2 => Write buffer address
 			// P3 => Byte to write 
 			{
-				const char* szBufferAddr = KERNEL_ADDR(bDoAddrTranslation, const char*, uiP2);
+				const char* szBufferAddr = KERNEL_ADDR(bDoAddrTranslation, const char*, P2);
 
 				*piRetVal = 0 ;
         try
         {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)uiP1);
-          *piRetVal =  file.write(szBufferAddr, (int)uiP3);
+          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)P1);
+          *piRetVal =  file.write(szBufferAddr, (int)P3);
         }
         catch(const upan::exception& ex)
 				{
@@ -242,8 +242,8 @@ __volatile__ unsigned uiP9)
 	    // P1 => Input IO Descriptors to wait on
 	    // P2 => Output IO Descriptors that are ready
 	    {
-	      io_descriptor* in_waitIODescriptors = KERNEL_ADDR(bDoAddrTranslation, io_descriptor*, uiP1);
-	      io_descriptor* out_readyIODescriptors = KERNEL_ADDR(bDoAddrTranslation, io_descriptor*, uiP2);
+	      io_descriptor* in_waitIODescriptors = KERNEL_ADDR(bDoAddrTranslation, io_descriptor*, P1);
+	      io_descriptor* out_readyIODescriptors = KERNEL_ADDR(bDoAddrTranslation, io_descriptor*, P2);
 
 	      upan::vector<io_descriptor> waitIODescriptors;
 	      for(int i = 0; in_waitIODescriptors[i]._fd >= 0; ++i) {
@@ -266,8 +266,8 @@ __volatile__ unsigned uiP9)
 				*piRetVal = 0 ;
         try
         {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)uiP1);
-          file.seek((int)uiP3, (int)uiP2);
+          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)P1);
+          file.seek((int)P3, (int)P2);
         }
         catch(upan::exception& ex)
         {
@@ -284,7 +284,7 @@ __volatile__ unsigned uiP9)
 			{
         try
         {
-          *piRetVal = FileOperations_GetOffset((int)uiP1);
+          *piRetVal = FileOperations_GetOffset((int)P1);
         }
         catch(const upan::exception& ex)
         {
@@ -301,7 +301,7 @@ __volatile__ unsigned uiP9)
 			{
         try
         {
-          *piRetVal = FileOperations_GetFileOpenMode((int)uiP1);
+          *piRetVal = FileOperations_GetFileOpenMode((int)P1);
         }
         catch(const upan::exception& ex)
 				{
@@ -315,10 +315,10 @@ __volatile__ unsigned uiP9)
 			// P2 => FileStat
 			{
 				*piRetVal = 0 ;
-				const char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, const char*, uiP1) ;
+				const char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, const char*, P1) ;
         try
         {
-          FileSystem_FileStat* pFileStat = KERNEL_ADDR(bDoAddrTranslation, FileSystem_FileStat*, uiP2);
+          FileSystem_FileStat* pFileStat = KERNEL_ADDR(bDoAddrTranslation, FileSystem_FileStat*, P2);
           *pFileStat = FileOperations_GetStat(szPathAddress, FROM_FILE);
         }
         catch(const upan::exception& ex)
@@ -334,10 +334,10 @@ __volatile__ unsigned uiP9)
 			// P2 => FileStat
 			{
 				*piRetVal = 0 ;
-				int iFD = uiP1 ;
+				int iFD = P1 ;
         try
         {
-          FileSystem_FileStat* pFileStat = KERNEL_ADDR(bDoAddrTranslation, FileSystem_FileStat*, uiP2) ;
+          FileSystem_FileStat* pFileStat = KERNEL_ADDR(bDoAddrTranslation, FileSystem_FileStat*, P2) ;
           *pFileStat = FileOperations_GetStatFD(iFD);
         }
         catch(const upan::exception& ex)
@@ -353,8 +353,8 @@ __volatile__ unsigned uiP9)
 			// P2 => Mode
 			{
 				*piRetVal = 0 ;
-				const char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, const char*, uiP1) ;
-        if(!FileOperations_FileAccess(szPathAddress, FROM_FILE, (int)uiP2))
+				const char* szPathAddress = KERNEL_ADDR(bDoAddrTranslation, const char*, P1) ;
+        if(!FileOperations_FileAccess(szPathAddress, FROM_FILE, (int)P2))
 				{
 					*piRetVal = -1 ;
 				}
@@ -367,7 +367,7 @@ __volatile__ unsigned uiP9)
 			{
 				*piRetVal = 0 ;
 				try {
-          FileOperations_Dup2(uiP1, uiP2);
+          FileOperations_Dup2(P1, P2);
 				} catch(upan::exception& e) {
 				  e.Print();
           *piRetVal = -1 ;

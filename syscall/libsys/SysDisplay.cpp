@@ -24,7 +24,7 @@
 void SysDisplay_Message(const char* szMessage, unsigned uiAttr)
 {
 	int iRetStatus ;
-	SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_MESSAGE, false, (unsigned)szMessage, uiAttr, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_MESSAGE, false, (uint64_t)szMessage, uiAttr, 3, 4, 5, 6, 7, 8, 9) ;
 }
 
 void SysDisplay_ClearScreen()
@@ -67,12 +67,12 @@ void SysDisplay_RawCharacter(__volatile__ const char ch, __volatile__ unsigned u
 
 void SysDisplay_RawCharacterArea(const MChar* src, uint32_t rows, uint32_t cols, int curPos) {
   int iRetStatus ;
-  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_RAW_CHAR_AREA, false, (uint32_t)src, rows, cols, curPos, 5, 6, 7, 8, 9);
+  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_RAW_CHAR_AREA, false, (uint64_t)src, rows, cols, curPos, 5, 6, 7, 8, 9);
 }
 
 void SysDisplay_InitGuiFrame(FrameBufferInfo* frameBufferInfo) {
   int iRetStatus;
-  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_INIT_GUI_FRAME, false, (uint32_t)frameBufferInfo, 2, 3, 4, 5, 6, 7, 8, 9);
+  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_INIT_GUI_FRAME, false, (uint64_t)frameBufferInfo, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysDisplay_FrameTouch() {
@@ -97,15 +97,15 @@ void SysDisplay_InitTermConsole() {
 
 void SysDisplay_InitGuiEventStream(int fdList[]) {
   int iRetStatus;
-  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_INIT_GUI_EVENT_STREAM, false, (uint32_t)fdList, 2, 3, 4, 5, 6, 7, 8, 9);
+  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_INIT_GUI_EVENT_STREAM, false, (uint64_t)fdList, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysDisplay_SetViewport(const ViewportInfo* viewportInfo) {
   int iRetStatus;
-  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_SET_VIEWPORT, false, (uint32_t)viewportInfo, 2, 3, 4, 5, 6, 7, 8, 9);
+  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_SET_VIEWPORT, false, (uint64_t)viewportInfo, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysDisplay_GetViewport(ViewportInfo* viewportInfo) {
   int iRetStatus;
-  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_GET_VIEWPORT, false, (uint32_t)viewportInfo, 2, 3, 4, 5, 6, 7, 8, 9);
+  SysCallDisplay_Handle(&iRetStatus, SYS_CALL_DISPLAY_GET_VIEWPORT, false, (uint64_t)viewportInfo, 2, 3, 4, 5, 6, 7, 8, 9);
 }

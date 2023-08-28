@@ -24,31 +24,31 @@
 # include <SystemUtil.h>
 # include <RTC.h>
 
-byte SysCallUtil_IsPresent(unsigned uiSysCallID)
+byte SysCallUtil_IsPresent(uint32_t sysCallID)
 {
-	return (uiSysCallID > SYS_CALL_UTIL_START && uiSysCallID < SYS_CALL_UTIL_END) ;
+	return (sysCallID > SYS_CALL_UTIL_START && sysCallID < SYS_CALL_UTIL_END) ;
 }
 
 void SysCallUtil_Handle(
-__volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+        __volatile__ int* piRetVal,
+        __volatile__ unsigned uiSysCallID,
+        __volatile__ bool bDoAddrTranslation,
+        volatile uint64_t P1,
+        volatile uint64_t P2,
+        volatile uint64_t P3,
+        volatile uint64_t P4,
+        volatile uint64_t P5,
+        volatile uint64_t P6,
+        volatile uint64_t P7,
+        volatile uint64_t P8,
+        volatile uint64_t P9)
 {
 	switch(uiSysCallID)
 	{
 		case SYS_CALL_UTIL_DTIME : 
 			//P1 => Ret RTC Pointer
 			{
-				RTCDateTime* pRTCTime = KERNEL_ADDR(bDoAddrTranslation, RTCDateTime*, uiP1) ;
+				RTCDateTime* pRTCTime = KERNEL_ADDR(bDoAddrTranslation, RTCDateTime*, P1) ;
 
 				*piRetVal = 0 ;
 				RTC::GetDateTime((*pRTCTime)) ;
@@ -64,7 +64,7 @@ __volatile__ unsigned uiP9)
     case SYS_CALL_UTIL_TOD :
       // P1 => Ret timeval Pointer
       {
-        struct timeval* tv = KERNEL_ADDR(bDoAddrTranslation, struct timeval*, uiP1) ;
+        struct timeval* tv = KERNEL_ADDR(bDoAddrTranslation, struct timeval*, P1) ;
 
         *piRetVal = 0 ;
         try

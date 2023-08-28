@@ -24,20 +24,20 @@
 
 # include <Global.h>
 
-byte SysCallProc_IsPresent(unsigned uiSysCallID) ;
+byte SysCallProc_IsPresent(uint32_t sysCallID) ;
 
 void SysCallProc_Handle(
 __volatile__ int* piRetVal,
-__volatile__ uintptr_t uiSysCallID,
+__volatile__ uint32_t sysCallID,
 __volatile__ bool bDoAddrTranslation,
-__volatile__ uintptr_t uiP1,
-__volatile__ uintptr_t uiP2,
-__volatile__ uintptr_t uiP3,
-__volatile__ uintptr_t uiP4,
-__volatile__ uintptr_t uiP5,
-__volatile__ uintptr_t uiP6,
-__volatile__ uintptr_t uiP7,
-__volatile__ uintptr_t uiP8,
-__volatile__ uintptr_t uiP9) ;
+__volatile__ uint64_t P1,
+__volatile__ uint64_t P2,
+__volatile__ uint64_t P3,
+__volatile__ uint64_t P4,
+__volatile__ uint64_t P5,
+__volatile__ uint64_t P6,
+__volatile__ uint64_t P7,
+__volatile__ uint64_t P8,
+__volatile__ uint64_t P9) ;
 
 #endif

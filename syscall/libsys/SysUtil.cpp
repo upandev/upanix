@@ -25,7 +25,7 @@
 void SysUtil_GetDateTime(RTCDateTime* rtcDateTime)
 {
 	int iRetStatus ;
-	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_DTIME, false, (unsigned)rtcDateTime, 2, 3, 4, 5, 6, 7, 8, 9);
+	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_DTIME, false, (uint64_t)rtcDateTime, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysUtil_Reboot()

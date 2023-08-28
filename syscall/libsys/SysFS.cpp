@@ -25,20 +25,20 @@
 int SysFS_ChangeDirectory(const char* szDirPath)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_CHANGE_DIR, false, (unsigned)szDirPath, 2, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_CHANGE_DIR, false, (uint64_t)szDirPath, 2, 3, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 
 void SysFS_PWD(char** uiReturnDirPathAddress)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_PWD, false, (unsigned)uiReturnDirPathAddress, 2, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_PWD, false, (uint64_t)uiReturnDirPathAddress, 2, 3, 4, 5, 6, 7, 8, 9) ;
 }
 
 int SysFS_CreateDirectory(const char* szDirPath, unsigned short usAttribute)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_MKDIR, false, (unsigned)szDirPath, (unsigned)usAttribute, 3, 4, 5, 6, 
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_MKDIR, false, (uint64_t)szDirPath, (uint64_t)usAttribute, 3, 4, 5, 6,
 							7, 8, 9) ;
 	return iRetStatus ;
 }
@@ -46,14 +46,14 @@ int SysFS_CreateDirectory(const char* szDirPath, unsigned short usAttribute)
 int SysFS_DeleteDirectory(const char* szDirPath)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_RMDIR, false, (unsigned)szDirPath, 2, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_RMDIR, false, (uint64_t)szDirPath, 2, 3, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 
 int SysFS_GetDirContent(const char* szDirPath, FileSystem::Node** pDirList, int* iListSize)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_GET_DIR_LIST, false, (unsigned)szDirPath, (unsigned)pDirList, (unsigned)iListSize, 
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_GET_DIR_LIST, false, (uint64_t)szDirPath, (uint64_t)pDirList, (uint64_t)iListSize,
 							4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
@@ -61,7 +61,7 @@ int SysFS_GetDirContent(const char* szDirPath, FileSystem::Node** pDirList, int*
 int SysFS_CreateFile(const char* szDirPath, unsigned short usAttribute)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_CREATE, false, (unsigned)szDirPath, (unsigned)usAttribute, 3, 4, 5, 6, 
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_CREATE, false, (uint64_t)szDirPath, (uint64_t)usAttribute, 3, 4, 5, 6,
 							7, 8, 9) ;
 	return iRetStatus ;
 }
@@ -69,7 +69,7 @@ int SysFS_CreateFile(const char* szDirPath, unsigned short usAttribute)
 int SysFS_FileOpen(const char* szFileName, byte bMode)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_OPEN, false, (unsigned)szFileName, (unsigned)bMode, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_OPEN, false, (uint64_t)szFileName, (uint64_t)bMode, 3, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 
@@ -83,20 +83,20 @@ int SysFS_FileClose(int fd)
 int SysFS_FileRead(int fd, void* buf, int len)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_READ, false, fd, (unsigned)buf, len, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_READ, false, fd, (uint64_t)buf, len, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 
 int SysFS_FileWrite(int fd, const void* buf, int len)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_WRITE, false, fd, (unsigned)buf, len, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_WRITE, false, fd, (uint64_t)buf, len, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 
 void SysFS_FileSelect(io_descriptor* waitIODescriptors, io_descriptor* readyIODescriptors) {
   int iRetStatus ;
-  SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_SELECT, false, (uint32_t)waitIODescriptors, (uint32_t)readyIODescriptors, 3, 4, 5, 6, 7, 8, 9) ;
+  SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_SELECT, false, (uint64_t)waitIODescriptors, (uint64_t)readyIODescriptors, 3, 4, 5, 6, 7, 8, 9) ;
 }
 
 int SysFS_FileSeek(int fd, int offSet, int seekType)
@@ -123,7 +123,7 @@ int SysFS_FileOpenMode(int fd)
 int SysFS_FileStat(const char* szFileName, struct stat* pFileStat)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_STAT, false, (unsigned)szFileName, (unsigned)pFileStat, 3, 4, 5, 6, 
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_STAT, false, (uint64_t)szFileName, (uint64_t)pFileStat, 3, 4, 5, 6,
 							7, 8, 9) ;
 	return iRetStatus ;
 }
@@ -131,7 +131,7 @@ int SysFS_FileStat(const char* szFileName, struct stat* pFileStat)
 int SysFS_FileStatFD(int iFD, struct stat* pFileStat)
 {
 	int iRetStatus ;
-	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_STAT_FD, false, iFD, (unsigned)pFileStat, 3, 4, 5, 6, 7, 8, 9) ;
+	SysCallFile_Handle(&iRetStatus, SYS_CALL_FILE_STAT_FD, false, iFD, (uint64_t)pFileStat, 3, 4, 5, 6, 7, 8, 9) ;
 	return iRetStatus ;
 }
 

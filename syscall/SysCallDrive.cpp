@@ -24,31 +24,31 @@
 # include <DeviceDrive.h>
 # include <try.h>
 
-byte SysCallDrive_IsPresent(unsigned uiSysCallID)
+byte SysCallDrive_IsPresent(unsigned sysCallID)
 {
-	return (uiSysCallID > SYS_CALL_DRIVE_START && uiSysCallID < SYS_CALL_DRIVE_END) ;
+	return (sysCallID > SYS_CALL_DRIVE_START && sysCallID < SYS_CALL_DRIVE_END) ;
 }
 
 void SysCallDrive_Handle(
-__volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+        __volatile__ int* piRetVal,
+        __volatile__ uint32_t sysCallID,
+        __volatile__ bool bDoAddrTranslation,
+        volatile uint64_t P1,
+        volatile uint64_t P2,
+        volatile uint64_t P3,
+        volatile uint64_t P4,
+        volatile uint64_t P5,
+        volatile uint64_t P6,
+        volatile uint64_t P7,
+        volatile uint64_t P8,
+        volatile uint64_t P9)
 {
-	switch(uiSysCallID)
+	switch(sysCallID)
 	{
 		case SYS_CALL_CHANGE_DRIVE : //Change Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
 
 				*piRetVal = 0 ;
 				if(DiskDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
@@ -60,8 +60,8 @@ __volatile__ unsigned uiP9)
 			// P1 => Ret Drive Stat List
 			// P2 => Ret Drive Stat List Size
 			{
-				DriveStat** pDriveList = KERNEL_ADDR(bDoAddrTranslation, DriveStat**, uiP1) ;
-				int* iListSize = KERNEL_ADDR(bDoAddrTranslation, int*, uiP2) ;
+				DriveStat** pDriveList = KERNEL_ADDR(bDoAddrTranslation, DriveStat**, P1) ;
+				int* iListSize = KERNEL_ADDR(bDoAddrTranslation, int*, P2) ;
 
 				*piRetVal = 0 ;
 				if(DiskDriveManager::Instance().GetList(pDriveList, iListSize) != DeviceDrive_SUCCESS)
@@ -72,7 +72,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_MOUNT_DRIVE : //Mount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
         *piRetVal = 0;
         try
         {
@@ -88,7 +88,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_UNMOUNT_DRIVE : //UnMount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
         *piRetVal = 0;
         try
         {
@@ -104,7 +104,7 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_FORMAT_DRIVE : //Format Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1) ;
+				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
         *piRetVal = 0;
         try
         {
@@ -123,7 +123,7 @@ __volatile__ unsigned uiP9)
         *piRetVal = 0;
         try
         {
-          DriveStat* pDriveStat = KERNEL_ADDR(bDoAddrTranslation, DriveStat*, uiP1) ;
+          DriveStat* pDriveStat = KERNEL_ADDR(bDoAddrTranslation, DriveStat*, P1) ;
           DiskDriveManager::Instance().GetCurrentDriveStat(pDriveStat);
         }
         catch(...)

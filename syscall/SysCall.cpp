@@ -25,19 +25,19 @@
 
 typedef void Handler(
 __volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
+__volatile__ uint32_t uiSysCallID,
 __volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9) ;
+__volatile__ uint64_t P1,
+__volatile__ uint64_t P2,
+__volatile__ uint64_t P3,
+__volatile__ uint64_t P4,
+__volatile__ uint64_t P5,
+__volatile__ uint64_t P6,
+__volatile__ uint64_t P7,
+__volatile__ uint64_t P8,
+__volatile__ uint64_t P9) ;
 
-typedef byte Check(unsigned uiSysCallID) ;
+typedef byte Check(uint32_t uiSysCallID) ;
 
 typedef struct
 {
@@ -59,7 +59,7 @@ void SysCall_InitializeHandler(SysCallHandler* pSysCallHandler, Check* pFuncChec
 
 void SysCall_Initialize()
 {
-	ProcessManager::Instance().BuildCallGate(CALL_GATE_SELECTOR, (unsigned)&SysCall_Entry, SYS_CODE_SELECTOR, NO_OF_SYSCALL_PARAMS) ;
+	ProcessManager::Instance().BuildCallGate(CALL_GATE_SELECTOR, (uint64_t)&SysCall_Entry, SYS_CODE_SELECTOR, NO_OF_SYSCALL_PARAMS) ;
 
 	SysCall_NoOfHandlers = 0 ;
 

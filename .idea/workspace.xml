@@ -23,25 +23,26 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="enhance scheduler to support yield and preempt">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Enable both APIC and PIT timer. Use APIC for process scheduling and PIT for clock/time keeping.&#10; Implement yield() for various wait scenarios.&#10; Add a schedule_runner_process that will ensure that the timer interrupt based scheduler has at-least one process to execute and return from timer irq - so, other interrupts like PIT timer interrupt will get a chance to trigger and allow sleeping processes to wake up. Basically, this will avoid the main process scheduling loop inside the timer interrupt handler from getting into an infinite loop of processes that are not ready to run.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Acpi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Acpi.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Acpi.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" beforeDir="false" afterPath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -303,7 +304,14 @@
       <option name="project" value="LOCAL" />
       <updated>1693145132558</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Enable both APIC and PIT timer. Use APIC for process scheduling and PIT for clock/time keeping.&#10; Implement yield() for various wait scenarios.&#10; Add a schedule_runner_process that will ensure that the timer interrupt based scheduler has at-least one process to execute and return from timer irq - so, other interrupts like PIT timer interrupt will get a chance to trigger and allow sleeping processes to wake up. Basically, this will avoid the main process scheduling loop inside the timer interrupt handler from getting into an infinite loop of processes that are not ready to run.">
+      <created>1693154632126</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1693154632126</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -349,6 +357,7 @@
     <MESSAGE value="map APIC MMIO space as uncacheable" />
     <MESSAGE value="save fx states and protect framebuffer copy by disabling all interrupts" />
     <MESSAGE value="enhance scheduler to support yield and preempt" />
-    <option name="LAST_COMMIT_MESSAGE" value="enhance scheduler to support yield and preempt" />
+    <MESSAGE value="Enable both APIC and PIT timer. Use APIC for process scheduling and PIT for clock/time keeping.&#10; Implement yield() for various wait scenarios.&#10; Add a schedule_runner_process that will ensure that the timer interrupt based scheduler has at-least one process to execute and return from timer irq - so, other interrupts like PIT timer interrupt will get a chance to trigger and allow sleeping processes to wake up. Basically, this will avoid the main process scheduling loop inside the timer interrupt handler from getting into an infinite loop of processes that are not ready to run." />
+    <option name="LAST_COMMIT_MESSAGE" value="Enable both APIC and PIT timer. Use APIC for process scheduling and PIT for clock/time keeping.&#10; Implement yield() for various wait scenarios.&#10; Add a schedule_runner_process that will ensure that the timer interrupt based scheduler has at-least one process to execute and return from timer irq - so, other interrupts like PIT timer interrupt will get a chance to trigger and allow sleeping processes to wake up. Basically, this will avoid the main process scheduling loop inside the timer interrupt handler from getting into an infinite loop of processes that are not ready to run." />
   </component>
 </project>

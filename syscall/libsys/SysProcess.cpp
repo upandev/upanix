@@ -66,13 +66,13 @@ int SysProcess_Exec(const char* szFileName, int iNoOfArgs, char *const szArgList
 void SysProcess_WaitPID(int iProcessID)
 {
 	int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_WAIT_PID, false, (unsigned)iProcessID, 2, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_WAIT_PID, false, (uint64_t)iProcessID, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysProcess_Exit(int iExitStatus)
 {
 	int iRetStatus ;
-	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_EXIT, false, (unsigned)iExitStatus, 2, 3, 4, 5, 6, 7, 8, 9);
+	SysCallProc_Handle(&iRetStatus, SYS_CALL_PROCESS_EXIT, false, (uint64_t)iExitStatus, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 void SysProcess_Yield()

@@ -22,35 +22,35 @@
 # include <SysCall.h>
 # include <SysCallMem.h>
 
-byte SysCallMem_IsPresent(unsigned uiSysCallID)
+byte SysCallMem_IsPresent(uint32_t sysCallID)
 {
-	return (uiSysCallID > SYS_CALL_MEM_START && uiSysCallID < SYS_CALL_MEM_END) ;
+	return (sysCallID > SYS_CALL_MEM_START && sysCallID < SYS_CALL_MEM_END) ;
 }
 
 void SysCallMem_Handle(
-__volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+        __volatile__ int* piRetVal,
+        __volatile__ uint32_t sysCallID,
+        __volatile__ bool bDoAddrTranslation,
+        volatile uint64_t P1,
+        volatile uint64_t P2,
+        volatile uint64_t P3,
+        volatile uint64_t P4,
+        volatile uint64_t P5,
+        volatile uint64_t P6,
+        volatile uint64_t P7,
+        volatile uint64_t P8,
+        volatile uint64_t P9)
 {
-	switch(uiSysCallID)
+	switch(sysCallID)
 	{
 		case SYS_CALL_ALLOC : //Allocate Mem.. Ment only for User Process
 			//P1 => Return Alloc Address
 			//P2 => Size in Bytes
 			{
-				void** addr = KERNEL_ADDR(bDoAddrTranslation, void**, uiP1) ;
+				void** addr = KERNEL_ADDR(bDoAddrTranslation, void**, P1) ;
 				// ProcessManager_DisableTaskSwitch() ;
 
-				*addr = (void*)DMM_Allocate(&ProcessManager::Instance().GetCurrentPAS(), uiP2) ;
+				*addr = (void*)DMM_Allocate(&ProcessManager::Instance().GetCurrentPAS(), P2) ;
 
 				// ProcessManager_EnableTaskSwitch() ;
 			}
@@ -64,7 +64,7 @@ __volatile__ unsigned uiP9)
 
 				*piRetVal = 0 ;
 				
-				if(DMM_DeAllocate(&ProcessManager::Instance().GetCurrentPAS(), uiP1) != DMM_SUCCESS)
+				if(DMM_DeAllocate(&ProcessManager::Instance().GetCurrentPAS(), P1) != DMM_SUCCESS)
 					*piRetVal = -1 ;
 
 				// ProcessManager_EnableTaskSwitch() ;
@@ -76,9 +76,9 @@ __volatile__ unsigned uiP9)
 			//P2 => Ret Size
 			{
         ProcessSwitchLock pLock;
-				auto pRetAllocSize = KERNEL_ADDR(bDoAddrTranslation, size_t*, uiP2) ;
+				auto pRetAllocSize = KERNEL_ADDR(bDoAddrTranslation, size_t*, P2) ;
 				*piRetVal = 0 ;
-				if(!DMM_GetAllocSize(uiP1, pRetAllocSize)) {
+				if(!DMM_GetAllocSize(P1, pRetAllocSize)) {
           *piRetVal = -1;
         }
 			}

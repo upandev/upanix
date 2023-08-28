@@ -30,18 +30,18 @@ byte SysCallDisplay_IsPresent(unsigned uiSysCallID)
 }
 
 void SysCallDisplay_Handle(
-__volatile__ int* piRetVal,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ bool bDoAddrTranslation,
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
+        __volatile__ int* piRetVal,
+        __volatile__ unsigned uiSysCallID,
+        __volatile__ bool bDoAddrTranslation,
+        volatile uint64_t P1,
+        volatile uint64_t P2,
+        volatile uint64_t P3,
+        volatile uint64_t P4,
+        volatile uint64_t P5,
+        volatile uint64_t P6,
+        volatile uint64_t P7,
+        volatile uint64_t P8,
+        volatile uint64_t P9)
 {
 	switch(uiSysCallID)
 	{
@@ -49,8 +49,8 @@ __volatile__ unsigned uiP9)
 			// P1 => Address of DisplayString relative to processBase 
 			// P2 => Color Attr
 			{
-				char* szMessageAddress = KERNEL_ADDR(bDoAddrTranslation, char*, uiP1);
-        KC::MConsole().Message(szMessageAddress, uiP2) ;
+				char* szMessageAddress = KERNEL_ADDR(bDoAddrTranslation, char*, P1);
+        KC::MConsole().Message(szMessageAddress, P2) ;
 			}
 			break ;
 
@@ -63,14 +63,14 @@ __volatile__ unsigned uiP9)
 		case SYS_CALL_DISPLAY_MOV_CURSOR :
 			// P1 => No of Positions to Move
 			{
-        KC::MConsole().MoveCursor((int)uiP1) ;
+        KC::MConsole().MoveCursor((int)P1) ;
 			}
 			break ;
 
 		case SYS_CALL_DISPLAY_CLR_LINE :
 			// P1 => Position to Clear From
 			{
-        KC::MConsole().ClearLine((int)uiP1) ;
+        KC::MConsole().ClearLine((int)P1) ;
 			}
 			break ;
 
@@ -78,7 +78,7 @@ __volatile__ unsigned uiP9)
 			// P1 => Cursor Position
 			// P2 => Update Cursor On Screen
 			{
-        KC::MConsole().SetCursor((int)uiP1, uiP2) ;
+        KC::MConsole().SetCursor((int)P1, P2) ;
 			}
 			break ;
 
@@ -93,14 +93,14 @@ __volatile__ unsigned uiP9)
 			// P2 => Color Attr
 			// P3 => Update Cursor On Screen
 			{
-        KC::MConsole().RawCharacter((char)(uiP1), uiP2, uiP3) ;
+        KC::MConsole().RawCharacter((char)(P1), P2, P3) ;
 			}
 			break ;
 
     case SYS_CALL_DISPLAY_RAW_CHAR_AREA:
       {
-        const MChar* src = KERNEL_ADDR(bDoAddrTranslation, MChar*, uiP1);
-        KC::MConsole().RawCharacterArea(src, uiP2, uiP3, (int)uiP4);
+        const MChar* src = KERNEL_ADDR(bDoAddrTranslation, MChar*, P1);
+        KC::MConsole().RawCharacterArea(src, P2, P3, (int)P4);
       }
       break;
 
@@ -108,8 +108,8 @@ __volatile__ unsigned uiP9)
       // P1 => Row size (return)
       // P2 => Column size (return)
       {
-        auto maxRows = KERNEL_ADDR(bDoAddrTranslation, unsigned*, uiP1);
-        auto maxCols = KERNEL_ADDR(bDoAddrTranslation, unsigned*, uiP2);
+        auto maxRows = KERNEL_ADDR(bDoAddrTranslation, unsigned*, P1);
+        auto maxCols = KERNEL_ADDR(bDoAddrTranslation, unsigned*, P2);
         *maxRows = KC::MConsole().MaxRows();
         *maxCols = KC::MConsole().MaxColumns();
       }
@@ -121,11 +121,12 @@ __volatile__ unsigned uiP9)
       auto& process = ProcessManager::Instance().GetCurrentPAS();
       process.initGuiFrame();
       RootFrame& frame = process.getGuiFrame().value();
-      auto frameBufferInfo = KERNEL_ADDR(bDoAddrTranslation, FrameBufferInfo*, uiP1);
+      auto frameBufferInfo = KERNEL_ADDR(bDoAddrTranslation, FrameBufferInfo*, P1);
       frameBufferInfo->_pitch = frame.frameBuffer().pitch();
       frameBufferInfo->_width = frame.frameBuffer().width();
       frameBufferInfo->_height = frame.frameBuffer().height();
       frameBufferInfo->_bpp = frame.frameBuffer().bpp();
+
       if (process.isKernelProcess()) {
         frameBufferInfo->_frameBuffer = frame.frameBuffer().buffer();
       } else {
@@ -142,13 +143,13 @@ __volatile__ unsigned uiP9)
 
     case SYS_CALL_DISPLAY_GUI_FRAME_HAS_ALPHA:
     {
-      ProcessManager::Instance().GetCurrentPAS().getGuiFrame().ifPresent([uiP1](RootFrame& f) { f.hasAlpha((bool)uiP1); });
+      ProcessManager::Instance().GetCurrentPAS().getGuiFrame().ifPresent([P1](RootFrame& f) { f.hasAlpha((bool)P1); });
     }
     break;
 
 	  case SYS_CALL_DISPLAY_SET_GUI_BASE:
     {
-      ProcessManager::Instance().GetCurrentPAS().setGuiBase((bool)uiP1);
+      ProcessManager::Instance().GetCurrentPAS().setGuiBase((bool)P1);
     }
     break;
 
@@ -160,21 +161,21 @@ __volatile__ unsigned uiP9)
 
 	  case SYS_CALL_DISPLAY_INIT_GUI_EVENT_STREAM:
 	  {
-	    int* fdList = KERNEL_ADDR(bDoAddrTranslation, int*, uiP1);
+	    int* fdList = KERNEL_ADDR(bDoAddrTranslation, int*, P1);
 	    ProcessManager::Instance().GetCurrentPAS().setupAsGuiProcess(fdList);
 	  }
 	  break;
 
 	  case SYS_CALL_DISPLAY_SET_VIEWPORT:
 	  {
-	    const auto* viewportInfo = KERNEL_ADDR(bDoAddrTranslation, ViewportInfo*, uiP1);
+	    const auto* viewportInfo = KERNEL_ADDR(bDoAddrTranslation, ViewportInfo*, P1);
 	    ProcessManager::Instance().GetCurrentPAS().getGuiFrame().value().updateViewport(*viewportInfo);
 	  }
 	  break;
 
 	  case SYS_CALL_DISPLAY_GET_VIEWPORT:
 	  {
-	    auto* viewportInfo = KERNEL_ADDR(bDoAddrTranslation, ViewportInfo*, uiP1);
+	    auto* viewportInfo = KERNEL_ADDR(bDoAddrTranslation, ViewportInfo*, P1);
 	    const auto& viewport = ProcessManager::Instance().GetCurrentPAS().getGuiFrame().value().viewport();
 	    viewportInfo->_x = viewport.x1();
 	    viewportInfo->_y = viewport.y1();
