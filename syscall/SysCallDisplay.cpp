@@ -24,14 +24,14 @@
 # include <MultiBoot.h>
 #include <BaseFrame.h>
 
-byte SysCallDisplay_IsPresent(unsigned uiSysCallID)
+byte SysCallDisplay_IsPresent(uint32_t sysCallID)
 {
-	return (uiSysCallID > SYS_CALL_DISPLAY_START && uiSysCallID < SYS_CALL_DISPLAY_END) ;
+	return (sysCallID > SYS_CALL_DISPLAY_START && sysCallID < SYS_CALL_DISPLAY_END) ;
 }
 
 void SysCallDisplay_Handle(
         __volatile__ int* piRetVal,
-        __volatile__ unsigned uiSysCallID,
+        __volatile__ uint32_t sysCallID,
         __volatile__ bool bDoAddrTranslation,
         volatile uint64_t P1,
         volatile uint64_t P2,
@@ -43,7 +43,7 @@ void SysCallDisplay_Handle(
         volatile uint64_t P8,
         volatile uint64_t P9)
 {
-	switch(uiSysCallID)
+	switch(sysCallID)
 	{
 		case SYS_CALL_DISPLAY_MESSAGE :
 			// P1 => Address of DisplayString relative to processBase 

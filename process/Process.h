@@ -44,7 +44,7 @@ public:
   virtual bool isKernelProcess() const = 0;
   virtual bool isFGProcessGroup() const = 0;
   virtual int driveID() const = 0;
-  virtual uint32_t getProcessBase() const = 0;
+  virtual uint64_t getProcessBase() const = 0;
   virtual int userID() const = 0;
   virtual bool isChildThread() const = 0;
 

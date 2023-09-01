@@ -78,7 +78,7 @@ public:
   FILE_USER_TYPE fileUserType(const FileSystem::Node&) const override;
   bool hasFilePermission(const FileSystem::Node&, byte mode) const override;
 
-  uint32_t getProcessBase() const override { return _processBase; }
+  uint64_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }
 
   bool isDmmFlag() const override { return _dmmFlag; }
@@ -119,9 +119,6 @@ public:
 private:
   static int _nextPid;
 
-  __inline__ void FXSave();
-  __inline__ void FXRestore();
-
 protected:
   virtual void DeallocateResources() = 0;
   virtual void DestroyThreads() {
@@ -145,7 +142,7 @@ protected:
   int _mainThreadID;
   int _parentProcessID;
   bool _dmmFlag;
-  uint32_t _processBase;
+  uint64_t _processBase;
   PROCESS_STATUS _status;
   int _driveID;
   int _userID;

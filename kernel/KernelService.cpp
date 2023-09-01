@@ -42,7 +42,7 @@ void KernelService::DLLAllocCopy::Execute() {
   _status = true ;
 }
 
-KernelService::FlatAddress::FlatAddress(unsigned uiVirtualAddress) : m_uiAddress(uiVirtualAddress)
+KernelService::FlatAddress::FlatAddress(uint64_t uiVirtualAddress) : m_uiAddress(uiVirtualAddress)
 { 
 }
 
@@ -112,14 +112,14 @@ bool KernelService::RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string&
 	return bStatus ;
 }
 
-unsigned KernelService::RequestFlatAddress(unsigned uiVirtualAddress)
+uint64_t KernelService::RequestFlatAddress(uint64_t uiVirtualAddress)
 {
 	KernelService::FlatAddress* pRequest = new KernelService::FlatAddress(uiVirtualAddress) ;
 	AddRequest(pRequest) ;
 
 	ProcessManager::Instance().WaitOnKernelService() ;
 
-	unsigned uiFlatAddress = pRequest->GetFlatAddress() ;
+	auto uiFlatAddress = pRequest->GetFlatAddress() ;
 
 	delete pRequest ;
 
@@ -175,7 +175,7 @@ int KernelService::RequestProcessExec(const char* szFile, int iNoOfArgs, const c
 	return iNewProcId ;
 }
 
-int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t  entryAddresss, void* arg) {
+int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg) {
   auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg);
 
   AddRequest(pRequest) ;

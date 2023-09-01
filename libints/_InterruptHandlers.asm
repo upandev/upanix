@@ -37,8 +37,12 @@
     push r14
     push r15
 
+
     sub rsp, 512
+    ;As per Intel manuals, when TS flag is set and EM is clear then SSE instructions will cause GP
+    ;But in Qemu, this didn't cause any GP but I am doing it just to go by the doc
     clts
+    ;sse pointer on stack must be 16 byte aligned otherwise it will cause General Protection fault
     fxsave [rsp]
 %endmacro
 

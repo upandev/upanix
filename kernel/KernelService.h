@@ -62,7 +62,7 @@ class KernelService
 
 		// RequestFactory
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
-		unsigned RequestFlatAddress(unsigned uiAddress) ;
+    uint64_t RequestFlatAddress(uint64_t uiAddress) ;
 		bool RequestPageFault(uintptr_t faultyAddress) ;
 		int RequestProcessExec(const char* szFile, int iNoOfArgs, const char** szArgs) ;
 		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg);
@@ -91,13 +91,13 @@ class KernelService
 		class FlatAddress : public Request
 		{
 			private:
-				unsigned m_uiAddress ;
-				unsigned m_uiFlatAddress ;
+				uint64_t m_uiAddress ;
+        uint64_t m_uiFlatAddress ;
 
 			public:
-				FlatAddress(unsigned uiVirtualAddress) ;
+				FlatAddress(uint64_t uiVirtualAddress) ;
         void Execute() ;
-				inline unsigned GetFlatAddress() { return m_uiFlatAddress ; }
+				inline uint64_t GetFlatAddress() { return m_uiFlatAddress ; }
 		} ;
 
 		class PageFault : public Request

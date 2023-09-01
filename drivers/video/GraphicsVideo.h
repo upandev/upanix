@@ -37,8 +37,8 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
   public:
     static void Create();
     static GraphicsVideo& Instance();
-    unsigned FlatLFBAddress() const { return _flatLFBAddress; }
-    void MappedLFBAddress(unsigned a)
+    uint64_t FlatLFBAddress() const { return _flatLFBAddress; }
+    void MappedLFBAddress(uint64_t a)
     {
       _mappedLFBAddress = a;
       _zBuffer = a;

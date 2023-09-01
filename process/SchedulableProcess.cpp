@@ -60,8 +60,6 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
   if(isFGProcess)
     _processGroup->PutOnFGProcessList(_processID);
   _sseRegs = (uint8_t*) DMM_AllocateForKernel(512, 16);
-  //Initialize _sseRegs with some legitimate value
-  FXSave();
 }
 
 SchedulableProcess::~SchedulableProcess() {
@@ -130,27 +128,6 @@ void SchedulableProcess::Release() {
   setStatus(RELEASED);
 }
 
-void SchedulableProcess::FXSave() {
-//  uint32_t cr0;
-//  __asm__ __volatile__("mov %%cr0, %0" :  "=r"(cr0) : );
-//  printf("\n CR0: %x, %x", cr0, _sseRegs);
-  /* As per Intel manuals, when TS flag is set and EM is clear then SSE instructions will cause GP
-   * But in Qemu, this didn't cause any GP but I am doing it just to go by the doc */
-  __asm__ __volatile__("clts");
-  /* Below will not work because fxsave will then access _sseRegs like a pointer - in which case, it will require
-   * both the address of _sseRegs and the address pointed by _sseRegs to be 16-byte aligned
-   * However, only the address pointed by _sseRegs will be 16 byte aligned and the address of _sseRegs could
-   * potentially be a non 16 byte aligned address - so, below code will cause a General Protection Fault --> Exception 13 (0xD)
-   * __asm__ __volatile__("fxsave %0" : : "m"(_sseRegs));
-   */
-  __asm__ __volatile__("fxsave (%0)" : : "r"(_sseRegs));
-}
-
-void SchedulableProcess::FXRestore() {
-  __asm__ __volatile__("clts");
-  __asm__ __volatile__("fxrstor (%0)" : : "r"(_sseRegs));
-}
-
 void SchedulableProcess::yield() {
   do {
     __asm__ __volatile__ ("int $0x20");
@@ -164,7 +141,6 @@ bool SchedulableProcess::CanPreempt() {
 void SchedulableProcess::Load(TaskContext& taskContext) {
   _runTick = PIT::Instance().GetClockCount();
   onLoad();
-  //FXRestore();
   taskContext = _taskContext;
   //MemUtil_CopyMemory(MemUtil_GetDS(), (uint64_t)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
   //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
@@ -172,7 +148,6 @@ void SchedulableProcess::Load(TaskContext& taskContext) {
 
 void SchedulableProcess::Store(const TaskContext& taskContext) {
   _taskContext = taskContext;
-  //FXSave();
   //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
   //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
 }
@@ -237,6 +212,7 @@ uint64_t SchedulableProcess::Common::AllocateStackSpace() {
   const uint64_t processStackBase = processCGStackBase - PROCESS_INIT_STACK_SIZE;
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x3, processCGStackBase, PROCESS_CG_STACK_SIZE);
+  return stackPDAddress;
 }
 
 void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress) {

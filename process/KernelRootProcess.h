@@ -40,7 +40,7 @@ public:
   }
 
   void createScheduleRunner();
-  
+
   bool isKernelProcess() const override {
     return true;
   }
@@ -61,7 +61,7 @@ public:
     return ROOT_DRIVE;
   }
 
-  uint32_t getProcessBase() const override {
+  uint64_t getProcessBase() const override {
     return GLOBAL_DATA_SEGMENT_BASE;
   }
 

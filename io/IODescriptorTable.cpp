@@ -127,8 +127,10 @@ upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_desc
   const auto& result = selectCheck(ioDescriptors);
   if (result.empty()) {
     ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors);
+    return ProcessManager::Instance().GetCurrentPAS().stateInfo().GetIODescriptors();
+  } else {
+    return result;
   }
-  return ProcessManager::Instance().GetCurrentPAS().stateInfo().GetIODescriptors();
 }
 
 upan::vector<io_descriptor> IODescriptorTable::selectCheck(const upan::vector<io_descriptor>& ioDescriptors) {

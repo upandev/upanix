@@ -127,7 +127,7 @@ void GraphicsVideo::Initialize() {
 
 
 void GraphicsVideo::CreateRefreshTask() {
-  _zBuffer = KERNEL_VIRTUAL_ADDRESS(MEM_GRAPHICS_Z_BUFFER_START);
+  _zBuffer = MEM_GRAPHICS_Z_BUFFER_START;
   memset((void*)_zBuffer, 0, _lfbSize);
   KernelUtil::ScheduleTimedTask("xgrefresh", 10, *this);
 }

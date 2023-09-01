@@ -50,7 +50,7 @@ SchedulableProcess& AutonomousProcess::forSchedule() {
     auto curThreadIt = _nextThreadIt++;
     Thread& thread = **curThreadIt;
 
-    if (thread.status() == RELEASED) {
+    if (thread.status() == RELEASED || thread.status() == TERMINATED) {
       _threadSchedulerList.erase(curThreadIt);
       ProcessManager::Instance().RemoveFromProcessMap(thread);
       delete &thread;

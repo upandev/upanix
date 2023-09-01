@@ -24,11 +24,11 @@
 
 # include <Global.h>
 
-byte SysCallDisplay_IsPresent(unsigned uiSysCallID) ;
+byte SysCallDisplay_IsPresent(uint32_t sysCallID) ;
 
 void SysCallDisplay_Handle(
         __volatile__ int* piRetVal,
-        __volatile__ unsigned uiSysCallID,
+        __volatile__ uint32_t sysCallID,
         __volatile__ bool bDoAddrTranslation,
         volatile uint64_t P1,
         volatile uint64_t P2,

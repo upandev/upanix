@@ -305,40 +305,38 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 }
 
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
-  if (!_processSchedulerList.empty()) {
-    if (_processSchedulerIt != _processSchedulerList.end()) {
-      auto& currentProcess = **_processSchedulerIt;
-
-      if (currentProcess.status() == PROCESS_STATUS::RUN && (!IsTaskSwitchEnabled() || !currentProcess.CanPreempt())) {
-          return;
-      } else if (currentProcess.status() == TERMINATED) {
-        currentProcess.Destroy();
-      } else {
-        currentProcess.Store(taskContext);
-      }
-      ++_processSchedulerIt;
-      EnableTaskSwitch();
+  const auto& p = GetSchedulableProcess(GetCurrentProcessID());
+  if (!p.isEmpty()) {
+    auto &currentProcess = p.value();
+    if (currentProcess.status() == PROCESS_STATUS::RUN && (!IsTaskSwitchEnabled() || !currentProcess.CanPreempt())) {
+      return;
+    } else if (currentProcess.status() == TERMINATED) {
+      currentProcess.Destroy();
+    } else {
+      currentProcess.Store(taskContext);
     }
+    EnableTaskSwitch();
+  }
 
-    if (IsTaskSwitchEnabled()) {
-      while (!_processSchedulerList.empty()) {
-        if (_processSchedulerIt == _processSchedulerList.end()) {
-          _processSchedulerIt = _processSchedulerList.begin();
-        }
+  if (IsTaskSwitchEnabled()) {
+    while (!_processSchedulerList.empty()) {
+      if (_processSchedulerIt == _processSchedulerList.end()) {
+        _processSchedulerIt = _processSchedulerList.begin();
+      }
 
-        auto &process = (*_processSchedulerIt)->forSchedule();
-        PrepareToRun(process);
+      auto &process = (*_processSchedulerIt)->forSchedule();
+      PrepareToRun(process);
 
-        if (process.status() == PROCESS_STATUS::RUN) {
-          process.Load(taskContext);
-          break;
-        } else if (!process.isChildThread() && process.status() == RELEASED) {
-          _processSchedulerList.erase(_processSchedulerIt++);
-          RemoveFromProcessMap(process);
-          delete &process;
-        } else {
-          ++_processSchedulerIt;
-        }
+      if (process.status() == PROCESS_STATUS::RUN) {
+        process.Load(taskContext);
+        ++_processSchedulerIt;
+        break;
+      } else if (!process.isChildThread() && process.status() == RELEASED) {
+        _processSchedulerList.erase(_processSchedulerIt++);
+        RemoveFromProcessMap(process);
+        delete &process;
+      } else {
+        ++_processSchedulerIt;
       }
     }
   }
@@ -354,7 +352,7 @@ bool ProcessManager::DisableTaskSwitch() {
   return upan::atomic::op::swap(_taskSwitch, 0) == 1;
 }
 
-void ProcessManager::Sleep(__volatile__ unsigned sleepTime) // in Mili Seconds
+void ProcessManager::Sleep(__volatile__ unsigned sleepTime) // in Milli Seconds
 {
 	if(DoPollWait()) {
 		KernelUtil::Wait(sleepTime) ;
@@ -466,14 +464,12 @@ void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType) {
 void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors) {
   if(GetCurProcId() < 0)
     return ;
-
   auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
     p.stateInfo().SetIODescriptors(waitIODescriptors);
     p.setStatus(WAIT_IO_DESCRIPTORS);
   }
-  while(p.status() != RUN);
   p.yield();
 }
 
