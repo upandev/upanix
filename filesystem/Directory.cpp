@@ -653,7 +653,7 @@ int Directory_FileRead(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescrip
 
   if(uiOffset >= pDirFile->Size())
     return 0;
-		
+
   if(pDirFile->Size() == 0)
 	{
 		bDataBuffer[0] = '\0' ;
@@ -680,7 +680,7 @@ int Directory_FileRead(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescrip
 		iSectorIndex = 0 ;
     uiCurrentSectorID = pDirFile->StartSectorID() ;
 	}
-	
+
 	while(iSectorIndex != iStartReadSectorNo)
 	{
     uiNextSectorID = pDiskDrive->_fileSystem.GetSectorEntryValue(uiCurrentSectorID);
@@ -753,7 +753,7 @@ int Directory_FileRead(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescrip
 
     pDiskDrive->xRead(bSectorBuffer, uiStartSectorID, iSectorCount);
 
-		MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)bSectorBuffer + iStartReadSectorPos, MemUtil_GetDS(), (unsigned)bDataBuffer + iReadCount, iCurrentReadSize) ;
+    memcpy(bDataBuffer + iReadCount, bSectorBuffer + iStartReadSectorPos, iCurrentReadSize);
 
 		iReadCount += iCurrentReadSize ;
 		iReadRemainingCount -= iCurrentReadSize ;
