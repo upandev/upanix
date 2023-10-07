@@ -39,7 +39,7 @@ SECTIONS
   .bootstrap BLOCK(1K) : ALIGN(8)
   {
       *(.multiboot)
-    ../boot/UpanixStart_Main.grub (.text)
+      @PROJECT_SOURCE_DIR@/boot/UpanixStart_Main.grub (.text)
   }
 
   . = 1M;

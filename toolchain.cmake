@@ -20,6 +20,9 @@
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
+set(CMAKE_CROSSCOMPILING 1)
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
 
 set(CROSS_TOOL_PATH $ENV{HOME}/opt/cross)
 
@@ -27,14 +30,3 @@ set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-g++)
 set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-gcc)
 set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/x86_64-elf-ld)
 set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/x86_64-elf-ar)
-
-set(ENABLE_CXX_RT ON)
-	
-set(EXCEPTION_SUP " -fno-exceptions -fno-rtti")
-if(ENABLE_CXX_RT)
-	set(EXCEPTION_SUP " -fexceptions -frtti")
-endif()
-
-set(CMAKE_CXX_FLAGS " -O0 -Wall -ffreestanding -nodefaultlibs -nostdlib -nostartfiles -nostdinc -std=c++11 -nostdinc++ -fno-threadsafe-statics -fpermissive ${EXCEPTION_SUP}")
-set(CMAKE_C_FLAGS " -std=c11 -O0 -Wall -ffreestanding -nodefaultlibs -nostdlib -nostartfiles -nostdinc")
-set(CMAKE_EXE_LINKER_FLAGS " -T${PROJECT_SOURCE_DIR}/kernel.ld -O0 -nostdlib")

@@ -22,15 +22,8 @@ project(Upanix)
 
 set(TARGET_BIN "upanix.elf")
 
-set(CROSS_TOOL_PATH $ENV{HOME}/opt/cross)
-
 set(UPANLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../upanlibs)
 set(UPANLIB_OUT_DIR ${UPANLIB_SOURCE_DIR}/out)
-
-set(CMAKE_CXX_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-g++)
-set(CMAKE_C_COMPILER ${CROSS_TOOL_PATH}/bin/x86_64-elf-gcc)
-set(CMAKE_LINKER ${CROSS_TOOL_PATH}/bin/x86_64-elf-ld)
-set(CMAKE_AR ${CROSS_TOOL_PATH}/bin/x86_64-elf-ar)
 
 set(ENABLE_CXX_RT ON)
 	
@@ -164,6 +157,8 @@ string(REPLACE "\n" ";" INTS_SRC ${INTS_SRC})
 add_library(ints STATIC "${INTS_SRC}")
 add_custom_command(TARGET ints POST_BUILD COMMAND ${CROSS_TOOL_PATH}/bin/x86_64-elf-ranlib $<TARGET_FILE:ints>)
 target_compile_options(ints PRIVATE -mgeneral-regs-only -mno-red-zone)
+
+configure_file(${PROJECT_SOURCE_DIR}/kernel.ld.in ${PROJECT_SOURCE_DIR}/kernel.ld @ONLY)
 
 #UPANIX
 add_executable(${TARGET_BIN} ${OTHER_OBJS} ${UPANIX_SRCS})
