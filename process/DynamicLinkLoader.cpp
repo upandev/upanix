@@ -121,7 +121,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
     pELFSectionHeader = dllInfo.elfInfo()._elfSectionHeaders;
     pSecHeaderStrTable = dllInfo.elfInfo()._elfSecStrTable;
   } else {
-		uiBaseAddress = PROCESS_BASE ;
+		uiBaseAddress = 0;//PROCESS_BASE ;
 		pELFHeader = (Elf64_Ehdr*)(GLOBAL_REL_ADDR(processAddressSpace->getProcessBase(), uiBaseAddress)) ;
     pELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
     pSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
@@ -144,7 +144,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 	unsigned uiSymStrIndex = pELFDynSymTable[uiSymIndex].st_name ;
 	char* szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
 
-	pProcessELFHeader = (Elf64_Ehdr*)(GLOBAL_REL_ADDR(processAddressSpace->getProcessBase(), PROCESS_BASE)) ;
+	pProcessELFHeader = (Elf64_Ehdr*)(GLOBAL_REL_ADDR(processAddressSpace->getProcessBase(), 0)) ;
 	pProcessELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
 	pProcessSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
 
@@ -162,7 +162,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
   Elf64_Shdr* pDynamicSectionHeader = mProgELFParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
 	
 	unsigned uiIndex, uiNoOfEntries = pDynamicSectionHeader->sh_size / pDynamicSectionHeader->sh_entsize ;
-	Elf64_Dyn* pELFDynSection = (Elf64_Dyn*)(GLOBAL_REL_ADDR(pDynamicSectionHeader->sh_addr, PROCESS_BASE)) ;
+	Elf64_Dyn* pELFDynSection = (Elf64_Dyn*)(GLOBAL_REL_ADDR(pDynamicSectionHeader->sh_addr, 0)) ;
 
   for(uiIndex = 0; uiIndex < uiNoOfEntries; uiIndex++)
 	{
@@ -175,7 +175,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 			  Elf64_Shdr* pProcRelocSectionHeader = mProgELFParser.GetSectionHeaderByTypeAndName(SHT_REL, REL_PLT_SUB_NAME).goodValueOrThrow(XLOC);
 			  Elf64_Shdr* pProcDynamicSymSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcRelocSectionHeader->sh_link).goodValueOrThrow(XLOC);
 			  Elf64_Shdr* pProcDynamicSymStringSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcDynamicSymSecHeader->sh_link).goodValueOrThrow(XLOC);
-			  pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, PROCESS_BASE)) ;
+			  pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, 0)) ;
 			}
 			else
 			{
@@ -202,10 +202,10 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 bool DynamicLinkLoader_GetSymbolOffsetFromProcess(ElfParser& elfParser, const char* szSymName, unsigned* symAddress) {
   const Elf64_Shdr* pDynSymTableSectionHeader = elfParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
   const Elf64_Shdr* pDynSymStrTableSectionHeader = elfParser.GetSectionHeaderByIndex(pDynSymTableSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const char* pSymStrTable = (const char*)(GLOBAL_REL_ADDR(pDynSymStrTableSectionHeader->sh_addr, PROCESS_BASE)) ;
+  const char* pSymStrTable = (const char*)(GLOBAL_REL_ADDR(pDynSymStrTableSectionHeader->sh_addr, 0)) ;
 
   const auto tableSize = pDynSymTableSectionHeader->sh_size / pDynSymTableSectionHeader->sh_entsize;
-  const Elf64_Sym* entries = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynSymTableSectionHeader->sh_addr, PROCESS_BASE)) ;
+  const Elf64_Sym* entries = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynSymTableSectionHeader->sh_addr, 0)) ;
   for(uint32_t i = 0; i < tableSize; ++i) {
     if (strcmp(&pSymStrTable[entries[i].st_name], szSymName) == 0) {
       if (entries[i].st_value == 0) {

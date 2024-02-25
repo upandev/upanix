@@ -63,7 +63,7 @@ void TaskState::BuildForUser(uint64_t stackStartAddress, uint64_t pml4Address, u
     SS = 0x20 | 0x7 ;
 
     SS0 = 0x28 | 0x4 ;
-    ESP0 = PROCESS_BASE + stackStartAddress;
+    ESP0 = /*PROCESS_BASE*/ + stackStartAddress;
     LDT = 0x50 ;
   }
 
@@ -95,7 +95,7 @@ void TaskState::BuildForKernel(const uintptr_t uiTaskAddress, unsigned uiStackTo
 
   LDT = 0x50 ;
 
-  CR3_PDBR = MEM_PML4 ;
+//  CR3_PDBR = MEM_PML4 ;
   EFLAGS = 0x202 ;
   DEBUG_T_BIT = 0x00 ;
   IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present
@@ -113,7 +113,7 @@ void Descriptor::Build(unsigned uiLimit, unsigned uiBase, byte bType, byte bFlag
 
 void ProcessLDT::BuildForUser()
 {
-  unsigned uiSegmentBase = PROCESS_BASE ;
+  unsigned uiSegmentBase = 0/*PROCESS_BASE*/;
   unsigned uiProcessLimit = 0xFFFFF ;
 
   NullDesc.Build(0, 0, 0, 0) ;

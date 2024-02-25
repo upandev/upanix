@@ -75,16 +75,17 @@ MULTIBOOT_HEADER_END:
 [GLOBAL GLOBAL_DATA_SEGMENT_BASE]
 [GLOBAL SYS_CODE_SELECTOR]
 [GLOBAL SYS_DATA_SELECTOR]
+[GLOBAL USER_CODE_SELECTOR]
+[GLOBAL USER_DATA_SELECTOR]
 
-[GLOBAL SYS_LINEAR_SELECTOR]
 [GLOBAL SYS_TSS_SELECTOR]
 [GLOBAL CALL_GATE_SELECTOR]
 [GLOBAL MULTIBOOT2_INFO_ADDR]
 [GLOBAL MULTIBOOT2_BOOTLOADER_MAGIC_VAL]
 [GLOBAL CR0_CONTENT]
 [GLOBAL CO_PROC_FPU_TYPE]
-[GLOBAL PROCESS_STACK_TOP_ADDRESS]
 
+[EXTERN PAGE_TABLE_END]
 [EXTERN FPU_INIT]
 [EXTERN UpanixMain]
 
@@ -184,7 +185,7 @@ _bootstrap:
     ; load gdt
     LGDT [GDT.POINTER]
 
-    JMP (GDT.CODE):(_MosMain)
+    JMP (GDT.SYS_CODE):(_MosMain)
 
 [BITS 64]
 SECTION .text
@@ -193,25 +194,23 @@ _MosMain:
 
     MOV RSP, KERNEL_STACK_TOP
 
-    MOV WORD [SYS_CODE_SELECTOR], GDT.CODE
+    MOV WORD [SYS_CODE_SELECTOR], GDT.SYS_CODE
+    MOV WORD [SYS_DATA_SELECTOR], GDT.SYS_DATA
 
-    MOV AX, GDT.DATA
-    MOV WORD [SYS_DATA_SELECTOR], GDT.DATA
+    MOV AX, GDT.SYS_DATA
     MOV SS, AX
     MOV DS, AX
     MOV ES, AX
     MOV FS, AX
     MOV GS, AX
 
+    MOV WORD [USER_CODE_SELECTOR], GDT.USER_CODE
+    MOV WORD [USER_DATA_SELECTOR], GDT.USER_DATA
+
     MOV QWORD [IDT_BASE_ADDR], IDT_BASE
 
     MOV WORD [SYS_TSS_SELECTOR], GDT.TSS
     MOV QWORD [TSS_BASE_ADDR], TSS_BASE
-    MOV RAX, [PROCESS_STACK_TOP_ADDRESS]
-    MOV QWORD [TSS_BASE + 4], RAX
-
-    MOV AX, GDT.TSS
-    LTR AX
 
     CALL FPU_INIT
 
@@ -223,21 +222,23 @@ SECTION .bss
 ALIGN 4096
 LDT_BASE: RESB 8192
 IDT_BASE: RESB 4096
-TSS_BASE: RESB 4096
+TSS_BASE: RESB 512
 
 IDT_BASE_ADDR: RESQ 1
 LDT_BASE_ADDR: RESD 1
-TSS_BASE_ADDR: RESD 1
+TSS_BASE_ADDR: RESQ 1
 
 SECTION .data
 GLOBAL_DATA_SEGMENT_BASE:
 		DD 0
 SYS_CODE_SELECTOR:
 		DW 0
-SYS_LINEAR_SELECTOR:
-		DD 0
 SYS_DATA_SELECTOR:
 		DW 0
+USER_CODE_SELECTOR:
+        DW 0
+USER_DATA_SELECTOR:
+        DW 0
 SYS_TSS_SELECTOR:
 		DD 0
 CALL_GATE_SELECTOR:
@@ -247,7 +248,6 @@ CR0_CONTENT:
 CO_PROC_FPU_TYPE:
 		DB 0
 
-PROCESS_STACK_TOP_ADDRESS: DQ 512 * 1024 * 1024 * 1024
 MULTIBOOT2_INFO_ADDR: DQ 0
 MULTIBOOT2_BOOTLOADER_MAGIC_VAL: DD 0
 
@@ -273,12 +273,13 @@ SECTION .rodata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ALIGN 4096
 ; set the following values:
-        ; descriptor type: bit 44 has to be 1 for code and data segments
-        ; present: bit 47 has to be  1 if the entry is valid
-        ; read/write: bit 41 1 means that is readable
-        ; executable: bit 43 it has to be 1 for code segments
-        ; 64bit: bit 53 1 if this is a 64bit gdt
-        dq (1 <<44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)  ;second entry=code=8
+; descriptor type: bit 44 has to be 1 for code and data segments
+; present: bit 47 has to be  1 if the entry is valid
+; read/write: bit 41 1 means that is readable
+; executable: bit 43 it has to be 1 for code segments
+; 64bit: bit 53 1 if this is a 64bit gdt
+;dq (1 <<44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)  ;second entry=code=8
+
 GDT:
   .NULL EQU $ - GDT
     DW 0			; LIMIT 15:0
@@ -288,7 +289,7 @@ GDT:
     DB 0			; LIMIT 19:16, FLAGS
     DB 0			; BASE 31:24
 
-  .CODE EQU $ - GDT
+  .SYS_CODE EQU $ - GDT
     DW 0			; LIMIT 15:0
     DW 0			; BASE 15:0
     DB 0			; BASE 23:16
@@ -296,11 +297,27 @@ GDT:
     DB 00100000b    ; (0, 0, 1->64bit, 0, 0000->limit 19:16)
     DB 0			; BASE 31:24
 
-  .DATA EQU $ - GDT
+  .SYS_DATA EQU $ - GDT
     DW 0			; LIMIT 15:0
     DW 0			; BASE 15:0
     DB 0			; BASE 23:16
     DB 10010010b    ; TYPE (1->present, 00->dpl, 1->code/data, 0->data, 0, 1->read/write, 0)
+    DB 0			; LIMIT 19:16, FLAGS
+    DB 0			; BASE 31:24
+
+  .USER_CODE EQU $ - GDT
+    DW 0			; LIMIT 15:0
+    DW 0			; BASE 15:0
+    DB 0			; BASE 23:16
+    DB 11111010b    ; TYPE (1->present, 11->dpl, 1->code/data, 1->executable, 0, 1->readable, 0)
+    DB 00100000b    ; (0, 0, 1->64bit, 0, 0000->limit 19:16)
+    DB 0			; BASE 31:24
+
+  .USER_DATA EQU $ - GDT
+    DW 0			; LIMIT 15:0
+    DW 0			; BASE 15:0
+    DB 0			; BASE 23:16
+    DB 11110010b    ; TYPE (1->present, 11->dpl, 1->code/data, 0->data, 0, 1->read/write, 0)
     DB 0			; LIMIT 19:16, FLAGS
     DB 0			; BASE 31:24
 
@@ -316,5 +333,5 @@ GDT:
 	DD 0            ; RESERVED
 
   .POINTER:
-    DW .POINTER - GDT - 1 ; size
+    DW .POINTER - GDT; size
 	DQ GDT

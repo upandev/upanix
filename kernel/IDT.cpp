@@ -91,7 +91,7 @@ void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t
   idtEntry->_midOffset = (offset >> 16) & 0xFFFF;
   idtEntry->_higherOffset = (offset >> 32) & 0xFFFFFFFF;
 	idtEntry->_selector = selector;
+  idtEntry->_ist = 1;
 	idtEntry->_reserved = 0;
 	idtEntry->_options = options;
 }
-

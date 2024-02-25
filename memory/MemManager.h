@@ -25,12 +25,12 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
+#include <TaskStructures.h>
 #include "DMM.h"
 
 #define KERNEL_PROCESS_PDE_ID	1022
 
 extern "C" {
-	extern uint64_t MEM_PML4 ;
 	void Mem_FlushTLB() ;
 	void Mem_FlushTLBPage(unsigned uiPageNumber) ;
 }
@@ -94,6 +94,7 @@ class MemManager
 		bool BuildPagePoolMap();
 		bool BuildPageTable() ;
     bool MarkACPIInfoRegionAsAllocated();
+    void InitTaskState64();
 
 	private:
     uint32_t _noOfPages ;
@@ -113,5 +114,5 @@ class MemManager
 
 		bool _allocMapForKernelProcessStackBlock[NO_OF_KERNEL_STACK_BLOCKS];
 
-		const uint64_t RAM_SIZE ;
+		const uint64_t RAM_SIZE;
 };

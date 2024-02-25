@@ -108,7 +108,8 @@ class Cpu
     } Register;
 
     static const char* memTypeToStr(MEM_TYPE memType);
-    static uint32_t GetRegValue(Cpu::Register reg);
+    static uint64_t GetRegValue(Cpu::Register reg);
+    static void SetRegValue(Cpu::Register reg, uint64_t val);
 
   private:
     void EnableSSE();

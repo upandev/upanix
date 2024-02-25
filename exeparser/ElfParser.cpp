@@ -106,8 +106,10 @@ void ElfParser::ReadHeader() {
 	if(n < sizeof(Elf64_Ehdr))
     throw upan::exception(XLOC, "elf file header size %u is less than Elf64_Ehdr size %u", n, sizeof(Elf64_Ehdr));
 
-	if(!CheckMagicSignature(_header))
-    throw upan::exception(XLOC, "Invalid ELF 32 magic signature");
+	if(!CheckMagicSignature(_header)) {
+	  //printf("\n %x %c %c %c", _header->e_ident[0], _header->e_ident[1], _header->e_ident[2], _header->e_ident[3]);
+    throw upan::exception(XLOC, "Invalid ELF 64 magic signature");
+  }
 }
 
 void ElfParser::ReadProgramHeaders() {

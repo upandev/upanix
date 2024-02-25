@@ -85,8 +85,8 @@ public:
     return true;
   }
 
-  uint64_t* pdbr() const override {
-    return (uint64_t*)MEM_PML4;
+  uint64_t* pml4Table() const override {
+    return MEM_PML4_TABLE;
   }
 
   void yield() override {

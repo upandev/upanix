@@ -26,9 +26,10 @@
 
 extern uint32_t GLOBAL_DATA_SEGMENT_BASE ;
 
-extern uint16_t SYS_CODE_SELECTOR ;
-extern uint32_t SYS_LINEAR_SELECTOR ;
-extern uint16_t SYS_DATA_SELECTOR ;
+extern uint16_t SYS_CODE_SELECTOR;
+extern uint16_t SYS_DATA_SELECTOR;
+extern uint16_t USER_CODE_SELECTOR;
+extern uint16_t USER_DATA_SELECTOR;
 extern uint32_t SYS_TSS_SELECTOR ;
 extern uint32_t USER_TSS_SELECTOR ;
 extern uint32_t CALL_GATE_SELECTOR ;
@@ -77,46 +78,45 @@ constexpr uint64_t MMAP_IOAPIC_BASE = MMAP_APIC_BASE + PAGE_SIZE;
 #define NET_E1000_MMIO_BASE_ADDR 0x1659000 // 22 MB + 100 KB  + 64 pages
 #define NET_E1000_MMIO_BASE_ADDR_END 0x1699000 // + 64 pages
 
-extern uint64_t* MEM_PML4_TABLE;
-extern uint32_t MEM_PML4_SIZE;
+extern uint64_t* const MEM_PML4_TABLE;
+extern const uint32_t MEM_PML4_SIZE;
 
-extern uint64_t* MEM_PDP_TABLE;
-extern uint32_t MEM_PDP_SIZE;
+extern uint64_t* const MEM_PDP_TABLE;
+extern const uint32_t MEM_PDP_SIZE;
 
-extern uint64_t* MEM_PD_TABLE;
-extern uint32_t MEM_PD_SIZE;
+extern uint64_t* const MEM_PD_TABLE;
+extern const uint32_t MEM_PD_SIZE;
 
-extern uint64_t* MEM_PT_TABLE;
-extern uint32_t MEM_PT_SIZE;
+extern uint64_t* const MEM_PT_TABLE;
+extern const uint32_t MEM_PT_SIZE;
 
-extern uint32_t MEM_INIT_PAGE_MAP_SIZE;
+extern const uint32_t MEM_INIT_PAGE_MAP_SIZE;
 
-constexpr uint64_t PAGE_TABLE_END = 0x3012000;
+constexpr uint64_t PAGE_TABLE_END = 0x3012000; // (uint64_t)MEM_PT_TABLE + MEM_PT_SIZE * sizeof(uint64_t);
 
 constexpr uint64_t MEM_PAGE_MAP_START = PAGE_TABLE_END;
-constexpr uint64_t MEM_PAGE_MAP_END = MEM_PAGE_MAP_START + 0x20000; // + 128 KB
-
-constexpr uint64_t MEM_KERNEL_STACK_POOL_START = MEM_PAGE_MAP_END;
-constexpr uint32_t MEM_KERNEL_STACK_POOL_SIZE = 4 MB;
-constexpr uint32_t NO_OF_KERNEL_STACK_BLOCKS = MEM_KERNEL_STACK_POOL_SIZE / (8 * PAGE_SIZE);
+constexpr uint64_t MEM_PAGE_MAP_END = MEM_PAGE_MAP_START + 128 KB;
 
 /* kernel page heap/pool */
-constexpr uint64_t MEM_KERNEL_PAGE_POOL_MAP_START = MEM_KERNEL_STACK_POOL_START + MEM_KERNEL_STACK_POOL_SIZE; // 52 MB + 128KB
+constexpr uint64_t MEM_KERNEL_PAGE_POOL_MAP_START = MEM_PAGE_MAP_END;
 constexpr uint64_t MEM_KERNEL_PAGE_POOL_MAP_END =  MEM_KERNEL_PAGE_POOL_MAP_START + 8 KB;
 
-constexpr uint32_t MEM_GRAPHICS_VIDEO_MAP_SIZE = 0x1000000; // 16 MB
+constexpr uint32_t MEM_GRAPHICS_VIDEO_MAP_SIZE = 16 MB;
 
-constexpr uint64_t MEM_GRAPHICS_TEXT_BUFFER_START = MEM_KERNEL_PAGE_POOL_MAP_END; // 52 MB + 128KB
-constexpr uint64_t MEM_GRAPHICS_TEXT_BUFFER_END = MEM_GRAPHICS_TEXT_BUFFER_START + 0xC800; // + 50 KB
+constexpr uint64_t MEM_GRAPHICS_TEXT_BUFFER_START = MEM_KERNEL_PAGE_POOL_MAP_END;
+constexpr uint64_t MEM_GRAPHICS_TEXT_BUFFER_END = MEM_GRAPHICS_TEXT_BUFFER_START + 50 KB;
 
-constexpr uint64_t MEM_GRAPHICS_VIDEO_MAP_START = 0x4000000; // 64 MB
+constexpr uint64_t MEM_GRAPHICS_VIDEO_MAP_START = 64 MB;
 constexpr uint64_t MEM_GRAPHICS_Z_BUFFER_START = MEM_GRAPHICS_VIDEO_MAP_START + MEM_GRAPHICS_VIDEO_MAP_SIZE;
 
 constexpr uint64_t MEM_KERNEL_HEAP_START = MEM_GRAPHICS_Z_BUFFER_START + MEM_GRAPHICS_VIDEO_MAP_SIZE;
-constexpr uint32_t MEM_KERNEL_HEAP_SIZE = 0x3000000;// 48 MB
-constexpr uint32_t MEM_KERNEL_PAGE_POOL_SIZE = 0x1000000; // 16 MB
+constexpr uint32_t MEM_KERNEL_HEAP_SIZE = 48 MB;
 
-constexpr uint32_t MEM_KERNEL_RESV_SIZE = MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE + MEM_KERNEL_PAGE_POOL_SIZE;
+constexpr uint64_t MEM_KERNEL_RING0_STACK_TOP = MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE + 512 KB;
+constexpr uint64_t MEM_KERNEL_IST1_STACK_TOP = MEM_KERNEL_RING0_STACK_TOP + 512 KB;
+constexpr uint64_t MEM_KERNEL_PAGE_POOL_START = MEM_KERNEL_IST1_STACK_TOP;
+constexpr uint32_t MEM_KERNEL_PAGE_POOL_SIZE = 16 MB;
+constexpr uint32_t MEM_KERNEL_RESV_SIZE = MEM_KERNEL_PAGE_POOL_START + MEM_KERNEL_PAGE_POOL_SIZE;
 
 /***** These addresses are Relative to Kernel Base ===> Their Phy Addr = Addr + Kernel Base ******/
 #define MEM_PTE_START		0x1000000 // 16 MB

@@ -32,7 +32,6 @@
 #include <ElfParser.h>
 #include <ElfRelocationSection.h>
 #include <ElfSymbolTable.h>
-#include <IODescriptorTable.h>
 #include <ProcessGroup.h>
 #include <DMM.h>
 #include <GraphicsVideo.h>
@@ -47,11 +46,9 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
   _mainThreadID = _processID;
   _autAddress = nullptr;
   _pml4Table = nullptr;
-
   Load(noOfParams, args);
-
   _totalNoOfPagesForDLL = 0;
-  _processLDT.BuildForUser();
+  //_processLDT.BuildForUser();
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
@@ -62,21 +59,21 @@ UserThread& UserProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAdd
   return *new UserThread(*this, threadCaller, entryAddress, arg);
 }
 
-void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
+void UserProcess::Load(int numOfParams, char** argvList) {
   ElfParser mELFParser(_name.c_str());
 
   uint64_t minMemAddr, maxMemAddr;
 
   mELFParser.GetMemImageSize(minMemAddr, maxMemAddr);
-  if(minMemAddr < PROCESS_BASE)
-    throw upan::exception(XLOC, "process min load address %x is less than PROCESS_BASE %x", minMemAddr, PROCESS_BASE);
+  if(minMemAddr < USER_PROCESS_MIN_LOAD_ADDRESS)
+    throw upan::exception(XLOC, "process min load address %x is less than USER_PROCESS_MIN_LOAD_ADDRESS %x", minMemAddr, USER_PROCESS_MIN_LOAD_ADDRESS);
 
   if((minMemAddr % PAGE_SIZE) != 0)
     throw upan::exception(XLOC, "process min load address %x is not page aligned", minMemAddr);
 
-  unsigned uiDLLSectionSize ;
+  uint32_t uiDLLSectionSize = 0;
 
-  upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
+//  upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
 
   uint64_t processImageSize = ProcessLoader_GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
   uint64_t uiMemImageSize = processImageSize + uiDLLSectionSize ;
@@ -100,13 +97,13 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
     throw upan::exception(XLOC, err);
   });
 
-  memcpy((void*)(bProcessImage.get() + processImageSize), (void*)bDLLSectionImage.get(), uiDLLSectionSize) ;
-
-  // Setting the Dynamic Link Loader Address in GOT
-  mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
-    uiGOT[1] = -1;
-    uiGOT[2] = minMemAddr + processImageSize;
-  });
+//  memcpy((void*)(bProcessImage.get() + processImageSize), (void*)bDLLSectionImage.get(), uiDLLSectionSize) ;
+//
+//  // Setting the Dynamic Link Loader Address in GOT
+//  mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
+//    uiGOT[1] = -1;
+//    uiGOT[2] = minMemAddr + processImageSize;
+//  });
 
   // Initialize BSS segment to 0
   mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_NOBITS, BSS_SEC_NAME).onGood([&] (Elf64_Shdr* bssSectionHeader) {
@@ -116,99 +113,59 @@ void UserProcess::Load(int iNumberOfParameters, char** szArgumentList) {
 
   CopyElfImage(bProcessImage.get(), uiMemImageSize);
 
-  /* Find init and term stdio functions in libc if any */
-  /*** This code is not required anymore because init and term is now handled in crt0.s - which calls init_standard_library and exit functions */
-//  unsigned uiInitRelocAddress = NULL ;
-//  unsigned uiTermRelocAddress = NULL ;
-//  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_REL, REL_PLT_SUB_NAME).onGood([&] (Elf64_Shdr* pRelocationSectionHeader)
-//  {
-//    mELFParser.GetSectionHeaderByIndex(pRelocationSectionHeader->sh_link).onGood([&] (Elf64_Shdr* pDynamicSymSectiomHeader)
-//    {
-//      mELFParser.GetSectionHeaderByIndex(pDynamicSymSectiomHeader->sh_link).onGood([&] (Elf64_Shdr* pDynamicSymStringSectionHeader)
-//      {
-//        ElfRelocSection::Elf64_Rel* pELFDynRelTable =
-//          (ElfRelocSection::Elf64_Rel*)((unsigned)bProcessImage.get() + pRelocationSectionHeader->sh_addr - minMemAddr) ;
-//
-//        unsigned uiNoOfDynRelEntries = pRelocationSectionHeader->sh_size / pRelocationSectionHeader->sh_entsize ;
-//
-//        ElfSymbolTable::Elf64_Sym* pELFDynSymTable =
-//          (ElfSymbolTable::Elf64_Sym*)((unsigned)bProcessImage.get() + pDynamicSymSectiomHeader->sh_addr - minMemAddr) ;
-//
-//        const char* pDynStrTable = (const char*)((unsigned)bProcessImage.get() + pDynamicSymStringSectionHeader->sh_addr - minMemAddr) ;
-//
-//        for(unsigned i = 0; i < uiNoOfDynRelEntries && (uiInitRelocAddress == NULL || uiTermRelocAddress == NULL); i++)
-//        {
-//          if(ELF64_R_TYPE(pELFDynRelTable[i].r_info) == ElfRelocSection::R_386_JMP_SLOT)
-//          {
-//            int iSymIndex = ELF64_R_SYM(pELFDynRelTable[i].r_info);
-//            int iStrIndex = pELFDynSymTable[ iSymIndex ].st_name ;
-//            char* szSymName = (char*)&pDynStrTable[ iStrIndex ] ;
-//
-//            if(strcmp(szSymName, INIT_NAME) == 0)
-//              uiInitRelocAddress = pELFDynRelTable[i].r_offset ;
-//            else if(strcmp(szSymName, TERM_NAME) == 0)
-//              uiTermRelocAddress = pELFDynRelTable[i].r_offset ;
-//          }
-//        }
-//      });
-//    });
-//  });
+  const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
+  const auto entryAdddress = mELFParser.GetProgramStartAddress();// minMemAddr + processImageSize ;
 
-  /* End of Find init and term stdio functions in libc if any */
+  _taskContext.rdi = numOfParams; //argc
+  _taskContext.rsi = stackTopAddress; //argv
 
-  const uint32_t uiProcessEntryStackSize = PushProgramInitStackData(iNumberOfParameters, szArgumentList);
-  const uint64_t uiEntryAdddress = mELFParser.GetProgramStartAddress();// minMemAddr + processImageSize ;
-
-  const uint64_t stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_BASE;
-  _taskState.BuildForUser(stackTopAddress, (uint64_t)_pml4Table, uiEntryAdddress, uiProcessEntryStackSize);
+  _taskContext.interruptState.cs = USER_CODE_SELECTOR | 0x3;
+  _taskContext.interruptState.rip = entryAdddress;
+  _taskContext.interruptState.ss = USER_DATA_SELECTOR | 0x3;
+  _taskContext.interruptState.rsp = stackTopAddress;
+  _taskContext.interruptState.rflags = 0x202;
+  //_taskState.BuildForUser(stackTopAddress, (uint64_t)_pml4Table, entryAdddress, processEntryStackSize);
 }
 
-uint32_t UserProcess::PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList) {
-  const unsigned argc = 4;
-  const unsigned argv = 4; // address of argv first dimension
-  const unsigned uiArgumentAddressListSize = iNumberOfParameters * 4; // address of char* entry (second dimension) of argv array
+uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList) {
+  const unsigned argvEntriesSize = numOfParams * sizeof(uint64_t); // address of char* entry (second dimension) of argv array
 
-  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE - PROCESS_BASE;
+  uint32_t argumentSize = 0;
+  for(int i = 0; i < numOfParams; i++) {
+    argumentSize += (strlen(argvList[i]) + 1);
+  }
 
-  uint32_t uiArgumentDataSize = 0;
-  for(int i = 0; i < iNumberOfParameters; i++)
-    uiArgumentDataSize += (strlen(szArgumentList[i]) + 1) ;
+  const uint32_t processEntryStackSize = argvEntriesSize + argumentSize;
 
-  const uint32_t processEntryStackSize = argc + argv + uiArgumentAddressListSize + uiArgumentDataSize;
+  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE - processEntryStackSize;
+  const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
 
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {
     throw upan::exception(XLOC, "Startup arguments size is larger than reserved init stack size of %u", PROCESS_INIT_STACK_SIZE);
   }
 
-  const auto realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress) - processEntryStackSize;
-
-  int iStackIndex = 0 ;
-  ((unsigned*)(realStackTopAddress))[iStackIndex++] = iNumberOfParameters; // argc
-  int argLength = (iStackIndex + 1) * 4;
-  ((unsigned*)(realStackTopAddress))[iStackIndex++] = virtualStackTopAddress - processEntryStackSize + argLength; // argv
-
-  uiArgumentDataSize = 0 ;// argv[0] through argv[argc - 1]
-  for(int i = 0; i < iNumberOfParameters; i++) {
-    ((unsigned*)(realStackTopAddress))[iStackIndex + i] = ((unsigned*)(realStackTopAddress))[iStackIndex - 1] + uiArgumentAddressListSize + uiArgumentDataSize ;
-    strcpy((char*)&((unsigned*)(realStackTopAddress))[iStackIndex + iNumberOfParameters] + uiArgumentDataSize,	szArgumentList[i]) ;
-    uiArgumentDataSize += (strlen(szArgumentList[i]) + 1) ;
+  argumentSize = 0 ;// argv[0] through argv[argc - 1]
+  for(int i = 0; i < numOfParams; i++) {
+    const uint64_t argAddress = realStackTopAddress + argvEntriesSize + argumentSize;
+    ((uint64_t*)realStackTopAddress)[i] = argAddress;
+    strcpy((char*)argAddress, argvList[i]);
+    argumentSize += (strlen(argvList[i]) + 1);
   }
 
-  return processEntryStackSize;
+  return virtualStackTopAddress;
 }
 
 void UserProcess::CopyElfImage(byte* processImage, unsigned memImageSize) {
-  uint64_t copySize = memImageSize;
-  uint64_t offset = 0;
-
-  uint64_t virtualAddress = _processBase + PROCESS_BASE;
+  uint64_t virtualAddress = _processBase;
   const uint64_t endAddress = virtualAddress + _processSpaceSize;
 
-  for(; virtualAddress < endAddress; virtualAddress += PAGE_SIZE, offset += PAGE_SIZE, copySize -= PAGE_SIZE) {
+  for(uint64_t offset = 0, copySize = memImageSize;
+    virtualAddress < endAddress;
+    virtualAddress += PAGE_SIZE, offset += PAGE_SIZE, copySize -= PAGE_SIZE) {
     auto ptTable = MemManager::Instance().GetPTTable(_pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
-      throw upan::exception(XLOC, "page table not allocated at proces space address: 0x%lx", virtualAddress);
+      throw upan::exception(XLOC, "page table not allocated at process space address: 0x%lx", virtualAddress);
     }
 
     uint64_t realAddress = ptTable[ptIndex] & PAGE_MASK;
@@ -295,10 +252,16 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
 
 void UserProcess::AllocateAddressSpace() {
   _pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+
   //Map kernel space into the process
-  MemManager::Instance().MapAddressSpace(_pml4Table, 0x5, 0, 0, PROCESS_SPACE_FOR_OS);
+  //The first PDP entry = 1 GB of memory is reserved for kernel space
+  auto pdpPage = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+  auto kernelPdpPage = PAGE_TABLE(MEM_PML4_TABLE, 0);
+  pdpPage[0] = PAGE_ADDRESS(kernelPdpPage, 0) | 0x7;
+ _pml4Table[0] = (uint64_t)pdpPage | 0x7;
+
   //Allocate process space
-  MemManager::Instance().AllocateAddressSpace(_pml4Table, 0x7, _processBase + PROCESS_BASE, _processSpaceSize);
+  MemManager::Instance().AllocateAddressSpace(_pml4Table, 0x7, _processBase, _processSpaceSize);
 
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
 }
@@ -309,16 +272,18 @@ void UserProcess::DeallocateResources() {
   SchedulableProcess::Common::DeAllocateStackSpace(_stackPDAddress);
   MemManager::Instance().DeAllocatePhysicalPage(_stackPDAddress / PAGE_SIZE);
 
-  SchedulableProcess::Common::SetStackPDTable(pdbr(), 0);
+  SchedulableProcess::Common::SetStackPDTable(pml4Table(), 0);
 
-  MemManager::Instance().UnMapAddressSpace(pdbr(), 0, PROCESS_SPACE_FOR_OS);
-  MemManager::Instance().DeallocateAddressSpace(pdbr());
-  MemManager::Instance().DeAllocatePhysicalPage((uint64_t)pdbr() / PAGE_SIZE);
+  //release the PDP that's mapped to Kernel space
+  auto pdpPage = PAGE_TABLE(_pml4Table, 0);
+  pdpPage[0] = 0;
+  MemManager::Instance().DeallocateAddressSpace(pml4Table());
+  MemManager::Instance().DeAllocatePhysicalPage((uint64_t) pml4Table() / PAGE_SIZE);
 }
 
 void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
   const auto virtualDLLLoadAddress = PROCESS_DLL_START_ADDRESS + _totalNoOfPagesForDLL * PAGE_SIZE;
-  MemManager::Instance().AllocateAddressSpace(pdbr(), 0x7, virtualDLLLoadAddress, noOfPagesForDLL * PAGE_SIZE);
+  MemManager::Instance().AllocateAddressSpace(pml4Table(), 0x7, virtualDLLLoadAddress, noOfPagesForDLL * PAGE_SIZE);
 
   _loadedDLLs.push_back(dllName);
   _dllInfoMap.insert(DLLInfoMap::value_type(dllName, ProcessDLLInfo(_loadedDLLs.size() - 1, virtualDLLLoadAddress, noOfPagesForDLL)));
@@ -342,14 +307,14 @@ upan::option<ProcessDLLInfo&> UserProcess::getDLLInfo(int id) {
 }
 
 void UserProcess::onLoad() {
-  SchedulableProcess::Common::SwitchStack(pdbr(), _stackPDAddress);
+  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
 }
 
 void UserProcess::allocateGUIFramebuffer() {
   auto frameBufferAddress = GraphicsVideo::Instance().allocateFrameBuffer();
-  MemManager::Instance().MapAddressSpace(pdbr(), 0x7,
-                                    PROCESS_GUI_FRAMEBUFFER_ADDRESS,
-                                    frameBufferAddress,
+  MemManager::Instance().MapAddressSpace(pml4Table(), 0x7,
+                                         PROCESS_GUI_FRAMEBUFFER_ADDRESS,
+                                         frameBufferAddress,
                                     GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
   FrameBufferInfo frameBufferInfo;
   const auto f = MultiBoot::Instance().VideoFrameBufferInfo();
@@ -380,7 +345,7 @@ void UserProcess::initGuiFrame() {
 void UserProcess::DeallocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
     DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
-    MemManager::Instance().UnMapAddressSpace(pdbr(), PROCESS_GUI_FRAMEBUFFER_ADDRESS, GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
+    MemManager::Instance().UnMapAddressSpace(pml4Table(), PROCESS_GUI_FRAMEBUFFER_ADDRESS, GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
     GraphicsVideo::Instance().removeFGProcess(processID());
   }
 }

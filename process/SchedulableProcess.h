@@ -66,14 +66,11 @@ public:
     return _processGroup->IsFGProcessGroup();
   }
 
-  uint64_t* pdbr() const override {
-    return (uint64_t*)_taskState.CR3_PDBR;
-  }
-
   void Load(TaskContext& taskState);
   void Store(const TaskContext& taskState);
   void Destroy();
   void Release();
+  void switchPageTable() const;
 
   FILE_USER_TYPE fileUserType(const FileSystem::Node&) const override;
   bool hasFilePermission(const FileSystem::Node&, byte mode) const override;

@@ -88,6 +88,10 @@ public:
     return _parent.envMap();
   }
 
+  uint64_t* pml4Table() const override {
+    return _parent.pml4Table();
+  }
+
 protected:
   AutonomousProcess& _parent;
 };

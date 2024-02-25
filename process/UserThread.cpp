@@ -27,10 +27,20 @@
 UserThread::UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
-  const auto stackArgSize = PushProgramInitStackData(arg, nullptr);
-  const uint32_t stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_BASE;
-  _taskState.BuildForUser(stackTopAddress, _parent.taskState().CR3_PDBR, threadCaller, stackArgSize);
-  _processLDT.BuildForUser();
+  //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
+  //but a thread function - unlike a typical c function, should exit() instead of return
+  const auto stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE - sizeof(uint64_t);
+//  _taskState.BuildForUser(stackTopAddress, _parent.taskState().CR3_PDBR, threadCaller, stackArgSize);
+  //_processLDT.BuildForUser();
+
+  _taskContext.rdi = entryAddress;
+  _taskContext.rsi = (uintptr_t)arg;
+
+  _taskContext.interruptState.cs = USER_CODE_SELECTOR | 0x3;
+  _taskContext.interruptState.rip = threadCaller;
+  _taskContext.interruptState.ss = USER_DATA_SELECTOR | 0x3;
+  _taskContext.interruptState.rsp = stackTopAddress;
+  _taskContext.interruptState.rflags = 0x202;
 
   _parent.addToThreadScheduler(*this);
 }
@@ -40,21 +50,6 @@ void UserThread::DeallocateResources() {
   MemManager::Instance().DeAllocatePhysicalPage(_stackPDAddress / PAGE_SIZE);
 }
 
-uint32_t UserThread::PushProgramInitStackData(uint32_t entryAddress, void *arg) {
-  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE - PROCESS_BASE;
-  const uint32_t processEntryStackSize = sizeof(entryAddress) + sizeof(arg) + 4;
-  const uint64_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress) - processEntryStackSize;
-
-  //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
-  //but a thread function - unlike a typical c function, should exit() instead of return
-  ((unsigned*)(realStackTopAddress))[0] = 0;
-  //parameter
-  ((unsigned*)(realStackTopAddress))[1] = entryAddress;
-  ((unsigned*)(realStackTopAddress))[2] = (uint64_t)arg;
-
-  return processEntryStackSize;
-}
-
 void UserThread::onLoad() {
-  SchedulableProcess::Common::SwitchStack(pdbr(), _stackPDAddress);
+  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
 }

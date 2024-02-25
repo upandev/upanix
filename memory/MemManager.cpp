@@ -28,10 +28,7 @@
 #include <mutex.h>
 #include <exception.h>
 #include <stdlib.h>
-
-extern "C" { 
-	uint64_t MEM_PML4 ;
-}
+#include <PortCom.h>
 
 void MemManager::PageFaultHandler() {
 	__volatile__ uint64_t faultyAddress ;
@@ -42,7 +39,7 @@ void MemManager::PageFaultHandler() {
     while(1);
   }
 	if(!KC::MKernelService().RequestPageFault(faultyAddress)) {
-		ProcessManager_EXIT() ;
+		ProcessManager_Exit();
 	}
 }
 
@@ -52,6 +49,7 @@ MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
     if(BuildPageTable()) {
       if (BuildPagePoolMap()) {
         if (MarkACPIInfoRegionAsAllocated()) {
+          InitTaskState64();
           Mem_FlushTLB();
           DMM_InitAUTForKernel();
           KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
@@ -69,6 +67,17 @@ void MemManager::PrintInitStatus() const {
   printf("\n\tRAM SIZE = %ul", RAM_SIZE) ;
   printf("\n\tNo. of Pages = %d", _noOfPages) ;
   printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
+}
+
+void MemManager::InitTaskState64() {
+  TaskState64* taskState64 = (TaskState64*)(TSS_BASE_ADDR);
+  memset(taskState64, 0, sizeof(TaskState64));
+  taskState64->_ioMapBase = 103;
+  taskState64->_rsp0 = MEM_KERNEL_RING0_STACK_TOP;
+  taskState64->_ist1 = MEM_KERNEL_IST1_STACK_TOP;
+
+  __asm__ __volatile__("mov %0, %%ax;"
+                       "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);
 }
 
 bool MemManager::MarkACPIInfoRegionAsAllocated() {
@@ -122,7 +131,7 @@ bool MemManager::BuildRawPageMap() {
 bool MemManager::BuildPagePoolMap() {
   _kernelPagePoolMap = (uint64_t*)MEM_KERNEL_PAGE_POOL_MAP_START;
   _kernelPagePoolMapSize = MEM_KERNEL_PAGE_POOL_SIZE / PAGE_SIZE / 8 / sizeof(uint64_t);
-  _kernelPagePoolStartPage = (MEM_KERNEL_HEAP_START + MEM_KERNEL_HEAP_SIZE) / PAGE_SIZE;
+  _kernelPagePoolStartPage = MEM_KERNEL_PAGE_POOL_START / PAGE_SIZE;
 
   if((_kernelPagePoolMapSize * sizeof(uint64_t)) > (MEM_KERNEL_PAGE_POOL_MAP_END - MEM_KERNEL_PAGE_POOL_MAP_START)) {
     KC::MConsole().Message("\n Mem Page Pool Map Size InSufficient\n", 'A') ;
@@ -137,8 +146,6 @@ bool MemManager::BuildPagePoolMap() {
 }
 
 bool MemManager::BuildPageTable() {
-	MEM_PML4 = (uint64_t)MEM_PML4_TABLE;
-
   _noOfPages = RAM_SIZE / PAGE_SIZE;
 
   const auto noOfPTTableEntries = _noOfPages;
@@ -245,8 +252,7 @@ uint64_t* MemManager::GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddre
 }
 
 void MemManager::AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
-  const auto maxVirtualAddress = virtualAddress + size;
-  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+  for(const auto maxVirtualAddress = virtualAddress + size; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
     auto ptTable = GetPTTable(pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
@@ -256,8 +262,7 @@ void MemManager::AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, 
 }
 
 void MemManager::AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
-  const auto maxVirtualAddress = virtualAddress + size;
-  for(; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+  for(const auto maxVirtualAddress = virtualAddress + size; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
     auto ptTable = GetPTTableFromPD(pdTable, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
@@ -454,7 +459,7 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
     return Failure;
   }
 
-  auto pml4Table = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pdbr();
+  auto pml4Table = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pml4Table();
   auto ptTable = GetPTTable(pml4Table, faultyAddress);
   const auto ptIndex = PT_INDEX(faultyAddress);
   auto address = ptTable[ptIndex];

@@ -18,7 +18,7 @@ ATH9KHardware::ATH9KHardware(const PCIEntry& pciEntry) : _pciEntry(pciEntry)
   unsigned pagesToMap = ioSize / PAGE_SIZE;
   if(ioSize % PAGE_SIZE)
     ++pagesToMap;
-  unsigned uiPDEAddress = MEM_PML4 ;
+  uint64_t uiPDEAddress = (uint64_t)MEM_PML4_TABLE;
   uint32_t memMapAddress = NET_ATH9K_MMIO_BASE_ADDR;
   printf("\n Total pages to Map: %d", pagesToMap);
   ReturnCode markPageRetCode = Success;

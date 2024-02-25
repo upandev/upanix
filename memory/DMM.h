@@ -33,8 +33,8 @@
 #define DMM_BAD_ALIGN			2
 #define DMM_FAILURE				3
 
-#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) ((uintptr_t)(RealAddress) - PROCESS_BASE)
-#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) ((uintptr_t)(VirtualAddress) + PROCESS_BASE)
+#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) ((uintptr_t)(RealAddress))
+#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) ((uintptr_t)(VirtualAddress))
 
 typedef struct AllocationUnitTracker {
   AllocationUnitTracker* allocatedAddress;

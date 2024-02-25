@@ -138,7 +138,7 @@ void Cpu::EnableSSE() {
   }
 }
 
-uint32_t Cpu::GetRegValue(Cpu::Register reg) {
+uint64_t Cpu::GetRegValue(Cpu::Register reg) {
   uint64_t val;
   switch(reg) {
     case Register::CR0:
@@ -160,6 +160,28 @@ uint32_t Cpu::GetRegValue(Cpu::Register reg) {
       throw upan::exception(XLOC, "Unrecognized register: %d", reg);
   }
   return val;
+}
+
+void Cpu::SetRegValue(Cpu::Register reg, uint64_t val) {
+  switch(reg) {
+    case Register::CR0:
+      __asm__ __volatile__("mov %0, %%cr0" : : "r"(val));
+      break;
+    case Register::CR1:
+      __asm__ __volatile__("mov %0, %%cr1" : : "r"(val));
+      break;
+    case Register::CR2:
+      __asm__ __volatile__("mov %0, %%cr2" : : "r"(val));
+      break;
+    case Register::CR3:
+      __asm__ __volatile__("mov %0, %%cr3" : : "r"(val));
+      break;
+    case Register::CR4:
+      __asm__ __volatile__("mov %0, %%cr4" : : "r"(val));
+      break;
+    default:
+      throw upan::exception(XLOC, "Unrecognized register: %d", reg);
+  }
 }
 
 const char* Cpu::memTypeToStr(MEM_TYPE memType) {

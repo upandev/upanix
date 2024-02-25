@@ -27,6 +27,7 @@
 #include <MemUtil.h>
 #include <ProcessManager.h>
 #include <DMM.h>
+#include <Cpu.h>
 
 //#define INIT_NAME "_stdio_init-NOTINUSE"
 //#define TERM_NAME "_stdio_term-NOTINUSE"
@@ -146,6 +147,10 @@ void SchedulableProcess::Load(TaskContext& taskContext) {
   //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
 }
 
+void SchedulableProcess::switchPageTable() const {
+  Cpu::SetRegValue(Cpu::CR3, (uint64_t)pml4Table());
+}
+
 void SchedulableProcess::Store(const TaskContext& taskContext) {
   _taskContext = taskContext;
   //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
@@ -211,7 +216,7 @@ uint64_t SchedulableProcess::Common::AllocateStackSpace() {
   const uint64_t processCGStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE;
   const uint64_t processStackBase = processCGStackBase - PROCESS_INIT_STACK_SIZE;
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
-  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x3, processCGStackBase, PROCESS_CG_STACK_SIZE);
+  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processCGStackBase, PROCESS_CG_STACK_SIZE);
   return stackPDAddress;
 }
 

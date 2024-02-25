@@ -74,7 +74,6 @@ public:
   }
 
 private:
-  uint32_t PushProgramInitStackData(uint32_t entryAddress, void *arg);
   void DeallocateResources() override;
 
 private:

@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <ProcessManager.h>
-#include <MemManager.h>
 #include <FileSystem.h>
 #include <IrqManager.h>
 #include <PIT.h>
@@ -38,6 +37,7 @@
 #include <syscalldefs.h>
 #include <KernelProcess.h>
 #include <UserThread.h>
+#include <Cpu.h>
 #include <PortCom.h>
 #include "KernelRootProcess.h"
 
@@ -159,7 +159,7 @@ void ProcessManager::BuildIntTaskState(const unsigned uiTaskAddress, const unsig
 	taskState->GS = 0x18 ;
 	taskState->LDT = 0x0 ;
 
-	taskState->CR3_PDBR = MEM_PML4 ;
+	//taskState->CR3_PDBR = MEM_PML4 ;
 	taskState->EFLAGS = 0x202 ;
 	taskState->DEBUG_T_BIT = 0x00 ;
 	taskState->IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present
@@ -305,10 +305,12 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 }
 
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
+  Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
   const auto& p = GetSchedulableProcess(GetCurrentProcessID());
   if (!p.isEmpty()) {
     auto &currentProcess = p.value();
     if (currentProcess.status() == PROCESS_STATUS::RUN && (!IsTaskSwitchEnabled() || !currentProcess.CanPreempt())) {
+      currentProcess.switchPageTable();
       return;
     } else if (currentProcess.status() == TERMINATED) {
       currentProcess.Destroy();
@@ -329,6 +331,7 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
 
       if (process.status() == PROCESS_STATUS::RUN) {
         process.Load(taskContext);
+        process.switchPageTable();
         ++_processSchedulerIt;
         break;
       } else if (!process.isChildThread() && process.status() == RELEASED) {

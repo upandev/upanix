@@ -45,7 +45,7 @@ public:
     return _loadAddress;
   }
   uint64_t loadAddressForProcess() const {
-    return _loadAddress - PROCESS_BASE;
+    return _loadAddress /*- PROCESS_BASE*/;
   }
   ELFInfo& elfInfo() {
     return _elfInfo;

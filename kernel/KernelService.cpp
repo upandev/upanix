@@ -48,7 +48,7 @@ KernelService::FlatAddress::FlatAddress(uint64_t uiVirtualAddress) : m_uiAddress
 
 void KernelService::FlatAddress::Execute() {
   auto& pas = ProcessManager::Instance().GetSchedulableProcess(GetRequestProcessID()).value();
-	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pdbr(), m_uiAddress) ;
+	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pml4Table(), m_uiAddress) ;
 }
 
 KernelService::PageFault::PageFault(uintptr_t faultyAddress) : _faultyAddress(faultyAddress)

@@ -65,8 +65,6 @@ extern "C" {
 }
 
 /************ Default Handlers *****************/
-// Handler for Interrupt 0x27
-
 __attribute__((interrupt)) void isr_default_interrupt_handler(InterruptState* state) {
   COM1::Instance().Write("\n default exception handler invoked!");
   __asm__ __volatile__("hlt") ;
@@ -139,6 +137,8 @@ __attribute__((interrupt)) void isr_12_interrupt_handler(InterruptState* state, 
 
 __attribute__((interrupt)) void isr_13_interrupt_handler(InterruptState* state, uint64_t errorCode) {
   COM1::Instance().Write("\n Interrupt 13: General Protection Fault.");
+//  printf("\n Interrupt State: %x, %x, %x, %x, %x\n", state->cs, state->rip, state->ss, state->rsp, state->rflags);
+//  printf("\n Error Code: %lu\n", errorCode);
   ProcessManager_Exit();
 }
 

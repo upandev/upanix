@@ -290,7 +290,7 @@ bool DMM_DeAllocateForKernel(uintptr_t address) {
 }
 	
 void DMM_DeAllocatePhysicalPages(Process* processAddressSpace) {
-	auto pml4Table = (uint64_t*)processAddressSpace->pdbr();
+	auto pml4Table = (uint64_t*) processAddressSpace->pml4Table();
   auto pdpTable = (uint64_t*)(pml4Table[0] & PAGE_MASK);
 
 	for(uint64_t address = PROCESS_HEAP_START_ADDRESS; address < (PROCESS_HEAP_START_ADDRESS + PROCESS_HEAP_SIZE); address += PAGE_SIZE) {

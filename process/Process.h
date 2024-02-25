@@ -60,7 +60,7 @@ public:
 
   virtual FILE_USER_TYPE fileUserType(const FileSystem::Node&) const = 0;
   virtual bool hasFilePermission(const FileSystem::Node&, byte mode) const = 0;
-  virtual uint64_t* pdbr() const = 0;
+  virtual uint64_t* pml4Table() const = 0;
 
   virtual void setDriveID(int driveID) = 0;
   virtual FileSystem::PresentWorkingDirectory& processPWD() = 0;

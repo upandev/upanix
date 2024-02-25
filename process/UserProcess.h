@@ -54,6 +54,10 @@ public:
     _autAddress = addr;
   }
 
+  uint64_t* pml4Table() const override {
+    return _pml4Table;
+  }
+
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }
@@ -75,10 +79,10 @@ public:
   void allocateGUIFramebuffer();
 
 private:
-  void Load(int bssSectionHeader, char** szArgumentList);
+  void Load(int numOfParams, char** argvList);
   void AllocateAddressSpace();
   void CopyElfImage(byte* bProcessImage, unsigned uiMemImageSize);
-  uint32_t PushProgramInitStackData(int iNumberOfParameters, char **szArgumentList);
+  uint64_t PushProgramInitStackData(int numOfParams, char **argvList);
 
   void DeallocateResources() override;
   void DeallocateGUIFramebuffer();
@@ -87,7 +91,7 @@ private:
   AllocationUnitTracker* _autAddress;
   uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;
-  uint32_t _stackPDAddress;
+  uint64_t _stackPDAddress;
   upan::vector<upan::string> _loadedDLLs;
   DLLInfoMap _dllInfoMap;
   upan::mutex _heapMutex;

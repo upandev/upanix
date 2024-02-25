@@ -59,6 +59,10 @@ public:
     _graphicsContext = graphicsContext;
   }
 
+  uint64_t* pml4Table() const override {
+    return MEM_PML4_TABLE;
+  }
+
 private:
   void DeallocateResources() override;
   void DeAllocateGUIFramebuffer();
