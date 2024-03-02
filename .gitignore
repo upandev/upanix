@@ -22,3 +22,4 @@ Upanix.cbp
 /Makefile
 *.log
 .cmake
+/kernel.ld
