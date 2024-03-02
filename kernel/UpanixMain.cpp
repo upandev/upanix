@@ -169,7 +169,7 @@ void Initialize() {
     Mtrr::Instance();
     DMA_Initialize();
     StdIRQ::Instance();
-    //TODO: SysCall_Initialize();
+    SysCall_Initialize();
     KC::MKernelService();
     GraphicsVideo::Instance().Initialize();
 

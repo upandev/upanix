@@ -24,35 +24,25 @@
 # include <DeviceDrive.h>
 # include <try.h>
 
-byte SysCallDrive_IsPresent(unsigned sysCallID)
+byte SysCallDrive_IsPresent(uint64_t sysCallId)
 {
-	return (sysCallID > SYS_CALL_DRIVE_START && sysCallID < SYS_CALL_DRIVE_END) ;
+	return (sysCallId > SYS_CALL_DRIVE_START && sysCallId < SYS_CALL_DRIVE_END) ;
 }
 
-void SysCallDrive_Handle(
-        __volatile__ int* piRetVal,
-        __volatile__ uint32_t sysCallID,
-        __volatile__ bool bDoAddrTranslation,
-        volatile uint64_t P1,
-        volatile uint64_t P2,
-        volatile uint64_t P3,
-        volatile uint64_t P4,
-        volatile uint64_t P5,
-        volatile uint64_t P6,
-        volatile uint64_t P7,
-        volatile uint64_t P8,
-        volatile uint64_t P9)
+void
+SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3,
+                    uint64_t p4, uint64_t p5)
 {
-	switch(sysCallID)
+	switch(sysCallId)
 	{
 		case SYS_CALL_CHANGE_DRIVE : //Change Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
+				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
 
-				*piRetVal = 0 ;
+				*retVal = 0 ;
 				if(DiskDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
-					*piRetVal = -1 ;
+					*retVal = -1 ;
 			}
 			break ;
 
@@ -60,27 +50,27 @@ void SysCallDrive_Handle(
 			// P1 => Ret Drive Stat List
 			// P2 => Ret Drive Stat List Size
 			{
-				DriveStat** pDriveList = KERNEL_ADDR(bDoAddrTranslation, DriveStat**, P1) ;
-				int* iListSize = KERNEL_ADDR(bDoAddrTranslation, int*, P2) ;
+				DriveStat** pDriveList = KERNEL_ADDR(doAddrTranslation, DriveStat**, p1) ;
+				int* iListSize = KERNEL_ADDR(doAddrTranslation, int*, p2) ;
 
-				*piRetVal = 0 ;
+				*retVal = 0 ;
 				if(DiskDriveManager::Instance().GetList(pDriveList, iListSize) != DeviceDrive_SUCCESS)
-					*piRetVal = -1 ;
+					*retVal = -1 ;
 			}
 			break ;
 
 		case SYS_CALL_MOUNT_DRIVE : //Mount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
-        *piRetVal = 0;
+				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+        *retVal = 0;
         try
         {
           DiskDriveManager::Instance().MountDrive(szDriveName);
         }
         catch(...)
         {
-          *piRetVal = -1;
+          *retVal = -1;
         }
 			}
 			break ;
@@ -88,15 +78,15 @@ void SysCallDrive_Handle(
 		case SYS_CALL_UNMOUNT_DRIVE : //UnMount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
-        *piRetVal = 0;
+				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+        *retVal = 0;
         try
         {
           DiskDriveManager::Instance().UnMountDrive(szDriveName);
         }
         catch(...)
         {
-          *piRetVal = -1;
+          *retVal = -1;
         }
 			}
 			break ;
@@ -104,15 +94,15 @@ void SysCallDrive_Handle(
 		case SYS_CALL_FORMAT_DRIVE : //Format Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(bDoAddrTranslation, char*, P1) ;
-        *piRetVal = 0;
+				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+        *retVal = 0;
         try
         {
           DiskDriveManager::Instance().FormatDrive(szDriveName);
         }
         catch(...)
         {
-          *piRetVal = -1;
+          *retVal = -1;
         }
 			}
 			break ;
@@ -120,15 +110,15 @@ void SysCallDrive_Handle(
 		case SYS_CALL_CURRENT_DRIVE_STAT : //Current Drive
 			//P1 => Ret Drive
 			{
-        *piRetVal = 0;
+        *retVal = 0;
         try
         {
-          DriveStat* pDriveStat = KERNEL_ADDR(bDoAddrTranslation, DriveStat*, P1) ;
+          DriveStat* pDriveStat = KERNEL_ADDR(doAddrTranslation, DriveStat*, p1) ;
           DiskDriveManager::Instance().GetCurrentDriveStat(pDriveStat);
         }
         catch(...)
         {
-          *piRetVal = -1;
+          *retVal = -1;
         }
 			}
 			break ;

@@ -25,4 +25,4 @@
 #include <KernelService.h>
 
 bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* szSymName, unsigned* uiDynSymOffset, Process* processAddressSpace) ;
-void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsigned uiRelocationOffset, __volatile__ int* iDynamicSymAddress) ;
+void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) ;

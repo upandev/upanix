@@ -24,21 +24,21 @@
 
 void SysUtil_GetDateTime(RTCDateTime* rtcDateTime)
 {
-	int iRetStatus ;
-	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_DTIME, false, (uint64_t)rtcDateTime, 2, 3, 4, 5, 6, 7, 8, 9);
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_DTIME, false, (uint64_t) rtcDateTime, 2, 3, 4, 5);
 }
 
 void SysUtil_Reboot()
 {
-	int iRetStatus ;
-	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_REBOOT, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_REBOOT, false, 1, 2, 3, 4, 5);
 }
 
 int SysUtil_GetTimeOfDay(struct timeval* pTV)
 {
-	int iRetStatus ;
-	SysCallUtil_Handle(&iRetStatus, SYS_CALL_UTIL_TOD, false, (uint64_t)pTV, 2, 3, 4, 5, 6, 7, 8, 9);
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_TOD, false, (uint64_t) pTV, 2, 3, 4, 5);
+	return retStatus ;
 }
 
 uint32_t SysUtil_GetTimeSinceBoot() {

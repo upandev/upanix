@@ -426,7 +426,7 @@ void MemManager::DeAllocatePageForKernel(uint32_t pageNumber) {
   _kernelPagePoolMap[pageMapPosition] = _kernelPagePoolMap[pageMapPosition] & ~(0x1 << pageOffset) ;
 }
 
-extern __volatile__ int SYS_CALL_ID;
+extern __volatile__ uint64_t SYS_CALL_ID;
 
 ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
   upan::mutex_guard g(ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pageAllocMutex().value());
@@ -454,7 +454,7 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
   }
   if (!permittedAddressAccess) {
     printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
-    printf("\n Sys Call Id: %d", SYS_CALL_ID);
+    printf("\n Sys Call Id: %lu", SYS_CALL_ID);
     printf("\n PID: %d, DMM Flag: %d", iProcessID, ProcessManager::Instance().IsDMMOn(iProcessID));
     return Failure;
   }

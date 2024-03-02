@@ -85,7 +85,6 @@ MULTIBOOT_HEADER_END:
 [GLOBAL CR0_CONTENT]
 [GLOBAL CO_PROC_FPU_TYPE]
 
-[EXTERN PAGE_TABLE_END]
 [EXTERN FPU_INIT]
 [EXTERN UpanixMain]
 
@@ -305,20 +304,20 @@ GDT:
     DB 0			; LIMIT 19:16, FLAGS
     DB 0			; BASE 31:24
 
-  .USER_CODE EQU $ - GDT
-    DW 0			; LIMIT 15:0
-    DW 0			; BASE 15:0
-    DB 0			; BASE 23:16
-    DB 11111010b    ; TYPE (1->present, 11->dpl, 1->code/data, 1->executable, 0, 1->readable, 0)
-    DB 00100000b    ; (0, 0, 1->64bit, 0, 0000->limit 19:16)
-    DB 0			; BASE 31:24
-
   .USER_DATA EQU $ - GDT
     DW 0			; LIMIT 15:0
     DW 0			; BASE 15:0
     DB 0			; BASE 23:16
     DB 11110010b    ; TYPE (1->present, 11->dpl, 1->code/data, 0->data, 0, 1->read/write, 0)
     DB 0			; LIMIT 19:16, FLAGS
+    DB 0			; BASE 31:24
+
+  .USER_CODE EQU $ - GDT
+    DW 0			; LIMIT 15:0
+    DW 0			; BASE 15:0
+    DB 0			; BASE 23:16
+    DB 11111010b    ; TYPE (1->present, 11->dpl, 1->code/data, 1->executable, 0, 1->readable, 0)
+    DB 00100000b    ; (0, 0, 1->64bit, 0, 0000->limit 19:16)
     DB 0			; BASE 31:24
 
   .TSS EQU $ - GDT

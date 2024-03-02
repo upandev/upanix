@@ -27,7 +27,7 @@
 
 //4MB stack starting (backwards) at 512 GB
 constexpr uint64_t PROCESS_STACK_TOP_ADDRESS = 512 GB;
-constexpr uint64_t PROCESS_CG_STACK_SIZE = 8 * PAGE_SIZE;
+constexpr uint64_t PROCESS_SYSCALL_STACK_SIZE = 8 * PAGE_SIZE;
 constexpr uint64_t PROCESS_INIT_STACK_SIZE = PAGE_SIZE;
 constexpr uint64_t PROCESS_STACK_SIZE = 4 MB;
 

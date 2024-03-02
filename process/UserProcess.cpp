@@ -73,7 +73,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
 
   uint32_t uiDLLSectionSize = 0;
 
-//  upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
+  //upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
 
   uint64_t processImageSize = ProcessLoader_GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
   uint64_t uiMemImageSize = processImageSize + uiDLLSectionSize ;
@@ -97,6 +97,13 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     throw upan::exception(XLOC, err);
   });
 
+  auto r = mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_PROGBITS, ".dll");
+  r.onGood([&mELFParser, &bProcessImage, &minMemAddr](Elf64_Shdr* dllSectionHeader) {
+    mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
+      uiGOT[1] = -1;
+      uiGOT[2] = dllSectionHeader->sh_addr;
+    });
+  });
 //  memcpy((void*)(bProcessImage.get() + processImageSize), (void*)bDLLSectionImage.get(), uiDLLSectionSize) ;
 //
 //  // Setting the Dynamic Link Loader Address in GOT
@@ -137,7 +144,7 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
 
   const uint32_t processEntryStackSize = argvEntriesSize + argumentSize;
 
-  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE - processEntryStackSize;
+  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize;
   const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
 
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {

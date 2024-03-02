@@ -128,7 +128,7 @@ protected:
     static uint64_t AllocateStackSpace();
     static void DeAllocateStackSpace(uint64_t stackPDAddress);
 
-    static uint64_t KernelVirtaulStackBase(int stackBlockId);
+    static uint64_t KernelVirtualStackBase(int stackBlockId);
     static int AllocateKernelStackSpace();
     static void DeallocateKernelStackSpace(int stackBlockId);
   };

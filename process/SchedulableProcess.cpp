@@ -213,10 +213,10 @@ uint64_t SchedulableProcess::Common::AllocateStackSpace() {
   //pre-allocate process stack - user (the initial space for start-args) + call-gate
   //further expansion of user stack beyond initial space for start-args will happen as part of regular page fault handling flow
   uint64_t stackPDAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
-  const uint64_t processCGStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_CG_STACK_SIZE;
-  const uint64_t processStackBase = processCGStackBase - PROCESS_INIT_STACK_SIZE;
+  const uint64_t processSysCallStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE;
+  const uint64_t processStackBase = processSysCallStackBase - PROCESS_INIT_STACK_SIZE;
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
-  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processCGStackBase, PROCESS_CG_STACK_SIZE);
+  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processSysCallStackBase, PROCESS_SYSCALL_STACK_SIZE);
   return stackPDAddress;
 }
 
@@ -224,18 +224,18 @@ void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress) {
   MemManager::Instance().DeallocatePDAddressSpace((uint64_t*)stackPDAddress);
 }
 
-uint64_t SchedulableProcess::Common::KernelVirtaulStackBase(int stackBlockId) {
+uint64_t SchedulableProcess::Common::KernelVirtualStackBase(int stackBlockId) {
   return PROCESS_KERNEL_STACK_BASE + stackBlockId * PROCESS_KERNEL_STACK_SIZE;
 }
 
 int SchedulableProcess::Common::AllocateKernelStackSpace() {
   int stackBlockId = MemManager::Instance().AllocateKernelStack();
-  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtualStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
   return stackBlockId;
 }
 
 void SchedulableProcess::Common::DeallocateKernelStackSpace(int stackBlockId) {
-  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtaulStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtualStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
   MemManager::Instance().DeAllocateKernelStack(stackBlockId);
 }
 

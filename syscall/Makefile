@@ -19,12 +19,12 @@
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 CC = ${HOME}/opt/cross/bin/x86_64-elf-gcc
 
-OUTPUTS := _InterruptHandlers.o
+OUTPUTS := _SysCallHandler.o
 
-libints: ${OUTPUTS}
+syscall: ${OUTPUTS}
 
-_InterruptHandlers.o: _InterruptHandlers.s
-	${CC} -c _InterruptHandlers.s
+_SysCallHandler.o: _SysCallHandler.s
+	${CC} -c _SysCallHandler.s
 
 clean:
 	rm -f *.o

@@ -22,22 +22,15 @@
 #include <SysCall.h>
 #include <MemUtil.h>
 #include <exception.h>
+#include <Cpu.h>
 
-typedef void Handler(
-__volatile__ int* piRetVal,
-__volatile__ uint32_t uiSysCallID,
-__volatile__ bool bDoAddrTranslation,
-__volatile__ uint64_t P1,
-__volatile__ uint64_t P2,
-__volatile__ uint64_t P3,
-__volatile__ uint64_t P4,
-__volatile__ uint64_t P5,
-__volatile__ uint64_t P6,
-__volatile__ uint64_t P7,
-__volatile__ uint64_t P8,
-__volatile__ uint64_t P9) ;
+uint64_t SYSCALL_USER_ORIG_RSP = PROCESS_STACK_TOP_ADDRESS - 8 * 1;
+uint64_t SYSCALL_USER_LOCAL_RSP = PROCESS_STACK_TOP_ADDRESS - 8 * 2;
+uint64_t SYSCALL_RETURN_ADDRESS = PROCESS_STACK_TOP_ADDRESS - 8 * 3;
+uint64_t SYSCALL_STACK_TOP = SYSCALL_RETURN_ADDRESS;
 
-typedef byte Check(uint32_t uiSysCallID) ;
+typedef void Handler(uint64_t* retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
+typedef byte Check(uint64_t uiSysCallID);
 
 typedef struct
 {
@@ -57,93 +50,66 @@ void SysCall_InitializeHandler(SysCallHandler* pSysCallHandler, Check* pFuncChec
 
 /******************************************************************/
 
-void SysCall_Initialize()
-{
-	ProcessManager::Instance().BuildCallGate(CALL_GATE_SELECTOR, (uint64_t)&SysCall_Entry, SYS_CODE_SELECTOR, NO_OF_SYSCALL_PARAMS) ;
+constexpr uint32_t IA32_EFER = 0xC0000080;
+constexpr uint32_t IA32_STAR = 0xC0000081;
+constexpr uint32_t IA32_LSTAR = 0xC0000082;
+constexpr uint32_t IA32_FMASK = 0xC0000084;
+
+extern "C" {
+  void _syscall_handler();
+}
+
+void SysCall_Initialize() {
+  if (!Cpu::Instance().HasSupport(CF_MSR) || !Cpu::Instance().HasSupport(CF_SYSENTEREXIT)) {
+    throw upan::exception(XLOC, "MSR support is required to support system calls");
+  }
+
+  //enable syscall/sysret instructions in 64bit mode
+  Cpu::Instance().MSRwrite(IA32_EFER, Cpu::Instance().MSRread(IA32_EFER) | 1);
+  Cpu::Instance().MSRwrite(IA32_FMASK, 0x200);
+  Cpu::Instance().MSRwrite(IA32_LSTAR, (uintptr_t)&_syscall_handler);
+  //As per intel documentation,
+  //For Ring0->Ring3 (entry), the SS selector is obtained by adding 8 to the CS selector value in STAR [47:32]
+  //For Ring3->Ring0 (return), the CS selector is obtained by adding 16 to STAR [63:48] and SS selector by adding 8 to STAR [63:48]
+  Cpu::Instance().MSRwrite(IA32_STAR, ((uint64_t)(SYS_DATA_SELECTOR | 0x3) << 48) | ((uint64_t)SYS_CODE_SELECTOR << 32));
+
+	//ProcessManager::Instance().BuildCallGate(CALL_GATE_SELECTOR, (uint64_t)&SysCall_Entry, SYS_CODE_SELECTOR, NO_OF_SYSCALL_PARAMS) ;
 
 	SysCall_NoOfHandlers = 0 ;
 
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDisplay_IsPresent, &SysCallDisplay_Handle) ;
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDisplay_IsPresent, &SysCallDisplay_Handle);
 
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallFile_IsPresent, &SysCallFile_Handle) ;
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallFile_IsPresent, &SysCallFile_Handle);
 
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallProc_IsPresent, &SysCallProc_Handle) ;
-	
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallMem_IsPresent, &SysCallMem_Handle) ;
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallProc_IsPresent, &SysCallProc_Handle);
 
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDrive_IsPresent, &SysCallDrive_Handle) ;
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallMem_IsPresent, &SysCallMem_Handle);
 
-	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallUtil_IsPresent, &SysCallUtil_Handle) ;
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDrive_IsPresent, &SysCallDrive_Handle);
+
+	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallUtil_IsPresent, &SysCallUtil_Handle);
 
   KC::MConsole().LoadMessage("SysCall Initialization", Success) ;
 }
 
-__volatile__ int SYS_CALL_ID ;
+uint64_t SYS_CALL_ID = 0;
 
-void SysCall_Entry(__volatile__ unsigned uiCSCorrection,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9)
-{
-	AsmUtil_STORE_GPR() ;
-	
-	__volatile__ unsigned short usDS = MemUtil_GetDS() ; 
-	__volatile__ unsigned short usES = MemUtil_GetES() ; 
-	__volatile__ unsigned short usFS = MemUtil_GetFS() ; 
-	__volatile__ unsigned short usGS = MemUtil_GetGS() ;
-
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ; 
-//	__asm__ __volatile__("popw %ds") ;
-//	__asm__ __volatile__("popw %fs") ;
-//	__asm__ __volatile__("popw %gs") ;
-
-//	__asm__ __volatile__("pushw %0" : : "i"(SYS_DATA_SELECTOR_DEFINED)) ;
-//	__asm__ __volatile__("popw %es") ;
-
-	__volatile__ int iRetVal = 0;
-
-	//printf(", SC: %u", uiSysCallID) ;
-	SYS_CALL_ID = uiSysCallID ;
-	
-	for(unsigned i = 0; i < SysCall_NoOfHandlers; i++)
-	{
-		if(SysCall_Handlers[i].pFuncCheck(uiSysCallID))
-		{
-      try
-      {
-  			SysCall_Handlers[i].pFuncHandle(&iRetVal, uiSysCallID, true, uiP1, uiP2, uiP3, uiP4, uiP5, uiP6, uiP7, uiP8, uiP9) ;
-      }
-      catch(const upan::exception& ex)
-      {
-        printf("\n SysCall %u failed with error: %s\n", uiSysCallID, ex.ErrorMsg().c_str());
-        iRetVal = -1;
+extern "C" void SysCall_Entry(uint64_t sysCallId, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
+  printf("\n System Call Params: %lu, %lu, %lu, %lu, %lu, %lu\n", sysCallId, p1, p2, p3, p4, p5);
+  return;
+  SYS_CALL_ID = sysCallId;
+	uint64_t retVal = 0;
+	for(auto i = 0; i < SysCall_NoOfHandlers; i++) {
+		if(SysCall_Handlers[i].pFuncCheck(sysCallId)) {
+      try {
+  			SysCall_Handlers[i].pFuncHandle(&retVal, sysCallId, true, p1, p2, p3, p4, p5) ;
+      } catch(const upan::exception& ex) {
+        printf("\n SysCall %lu failed with error: %s\n", sysCallId, ex.ErrorMsg().c_str());
+        retVal = -1;
       }
 	  	break ;
 		}
 	}
-
-	__asm__ __volatile__("movw %%ss:%0, %%ds" :: "m"(usDS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%es" :: "m"(usES) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%fs" :: "m"(usFS) ) ;
-	__asm__ __volatile__("movw %%ss:%0, %%gs" :: "m"(usGS) ) ;
-
-	AsmUtil_RESTORE_GPR() ;
-
-	__asm__ __volatile__("movl %0, %%eax" : : "m"(iRetVal)) ;
-	__asm__ __volatile__("leave") ;
-	__asm__ __volatile__("lret %0" : : "i"(NO_OF_SYSCALL_PARAMS * 4)) ; 
-
-	/* optional arg to ret = number of bytes consumed by
-		args pushed on to stack by calling program 
-		This is to adjust old SS:ESP ---> the one of calling program */
+  *((uint64_t*)SYSCALL_RETURN_ADDRESS) = retVal;
 }
 

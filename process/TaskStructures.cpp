@@ -30,7 +30,7 @@ void TaskState::BuildForUser(uint64_t stackStartAddress, uint64_t pml4Address, u
 
   CR3_PDBR = pml4Address ;
   EIP = entryAdddress ;
-  ESP = stackStartAddress - PROCESS_CG_STACK_SIZE - processEntryStackSize ;
+  ESP = stackStartAddress - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize ;
 
   if(pr == 1) { //GDT - Low Priority
     ES = 0x50 | 0x3 ;

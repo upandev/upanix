@@ -36,7 +36,7 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
 
   const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
 
-  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtaulStackBase(_stackBlockId)
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtualStackBase(_stackBlockId)
           + PROCESS_KERNEL_STACK_SIZE
           - (noOfStackParams + 1) * sizeof(uintptr_t);
 

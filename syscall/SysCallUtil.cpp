@@ -24,63 +24,53 @@
 # include <SystemUtil.h>
 # include <RTC.h>
 
-byte SysCallUtil_IsPresent(uint32_t sysCallID)
+byte SysCallUtil_IsPresent(uint64_t sysCallId)
 {
-	return (sysCallID > SYS_CALL_UTIL_START && sysCallID < SYS_CALL_UTIL_END) ;
+	return (sysCallId > SYS_CALL_UTIL_START && sysCallId < SYS_CALL_UTIL_END) ;
 }
 
-void SysCallUtil_Handle(
-        __volatile__ int* piRetVal,
-        __volatile__ unsigned uiSysCallID,
-        __volatile__ bool bDoAddrTranslation,
-        volatile uint64_t P1,
-        volatile uint64_t P2,
-        volatile uint64_t P3,
-        volatile uint64_t P4,
-        volatile uint64_t P5,
-        volatile uint64_t P6,
-        volatile uint64_t P7,
-        volatile uint64_t P8,
-        volatile uint64_t P9)
+void
+SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3,
+                   uint64_t p4, uint64_t p5)
 {
-	switch(uiSysCallID)
+	switch(sysCallId)
 	{
 		case SYS_CALL_UTIL_DTIME : 
 			//P1 => Ret RTC Pointer
 			{
-				RTCDateTime* pRTCTime = KERNEL_ADDR(bDoAddrTranslation, RTCDateTime*, P1) ;
+				RTCDateTime* pRTCTime = KERNEL_ADDR(doAddrTranslation, RTCDateTime*, p1) ;
 
-				*piRetVal = 0 ;
+				*retVal = 0 ;
 				RTC::GetDateTime((*pRTCTime)) ;
 			}
 			break ;
 
     case SYS_CALL_UTIL_BTIME:
       {
-        *piRetVal = SysUtil_GetTimeSinceBoot();
+        *retVal = SysUtil_GetTimeSinceBoot();
       }
       break;
 
     case SYS_CALL_UTIL_TOD :
       // P1 => Ret timeval Pointer
       {
-        struct timeval* tv = KERNEL_ADDR(bDoAddrTranslation, struct timeval*, P1) ;
+        struct timeval* tv = KERNEL_ADDR(doAddrTranslation, struct timeval*, p1) ;
 
-        *piRetVal = 0 ;
+        *retVal = 0 ;
         try
         {
           tv->tSec = SystemUtil_GetTimeOfDay();
         }
         catch(...)
         {
-          *piRetVal = -1 ;
+          *retVal = -1 ;
         }
       }
       break ;
 
     case SYS_CALL_UTIL_REBOOT :
 			{
-				*piRetVal = 0 ;
+				*retVal = 0 ;
 				SystemUtil_Reboot() ;
 			}
 			break ;

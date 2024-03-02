@@ -100,7 +100,7 @@ bool DynamicLinkLoader_GetSymbolOffsetFromProcess(ElfParser& elfParser, const ch
 
 /**********************************************************************************************/
 
-void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsigned uiRelocationOffset, __volatile__ int* iDynamicSymAddress) {
+void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) {
   //multithread synchronization
   upan::mutex_guard g(processAddressSpace->dllMutex().value());
 
@@ -140,7 +140,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 	Elf64_Sym* pELFDynSymTable = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynamicSymSectionHeader->sh_addr, uiBaseAddress)) ;
 	const char* pDynStrTable = (const char*)(GLOBAL_REL_ADDR(pDynamicSymStringSectionHeader->sh_addr, uiBaseAddress)) ;
 
-	unsigned uiSymIndex = ELF64_R_SYM(ELF64_REL_ENT(pELFRelTable, uiRelocationOffset)->r_info) ;
+	unsigned uiSymIndex = ELF64_R_SYM(ELF64_REL_ENT(pELFRelTable, relocationOffset)->r_info) ;
 	unsigned uiSymStrIndex = pELFDynSymTable[uiSymIndex].st_name ;
 	char* szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
 
@@ -153,9 +153,9 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
 	if (iID >= 0) {
 	  uint32_t uiDynSymAddress;
 	  if (DynamicLinkLoader_GetSymbolOffsetFromProcess(mProgELFParser, szSymName, &uiDynSymAddress)) {
-	    unsigned* uiGOTAddress = (unsigned*)GLOBAL_REL_ADDR(ELF64_REL_ENT(pELFRelTable, uiRelocationOffset)->r_offset, uiBaseAddress);
+	    unsigned* uiGOTAddress = (unsigned*)GLOBAL_REL_ADDR(ELF64_REL_ENT(pELFRelTable, relocationOffset)->r_offset, uiBaseAddress);
 	    uiGOTAddress[0] = uiDynSymAddress;
-	    *iDynamicSymAddress = uiDynSymAddress;
+	    *dynamicSymAddress = uiDynSymAddress;
       return;
 	  }
 	}
@@ -187,10 +187,10 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, unsig
       {
         DynamicLinkLoader_LoadDLL(szDLLName, processAddressSpace);
 
-        unsigned* uiGOTAddress = (unsigned*)GLOBAL_REL_ADDR(ELF64_REL_ENT(pELFRelTable, uiRelocationOffset)->r_offset, uiBaseAddress) ;
+        unsigned* uiGOTAddress = (unsigned*)GLOBAL_REL_ADDR(ELF64_REL_ENT(pELFRelTable, relocationOffset)->r_offset, uiBaseAddress) ;
         unsigned uiDynSymAddress = processAddressSpace->getDLLInfo(szDLLName).value().loadAddressForProcess() + uiDynSymOffset;
         uiGOTAddress[0] = uiDynSymAddress ;
-        *iDynamicSymAddress = uiDynSymAddress ;
+        *dynamicSymAddress = uiDynSymAddress ;
         return;
       }
 		}

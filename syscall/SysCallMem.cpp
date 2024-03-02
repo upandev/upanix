@@ -22,35 +22,25 @@
 # include <SysCall.h>
 # include <SysCallMem.h>
 
-byte SysCallMem_IsPresent(uint32_t sysCallID)
+byte SysCallMem_IsPresent(uint64_t sysCallId)
 {
-	return (sysCallID > SYS_CALL_MEM_START && sysCallID < SYS_CALL_MEM_END) ;
+	return (sysCallId > SYS_CALL_MEM_START && sysCallId < SYS_CALL_MEM_END) ;
 }
 
-void SysCallMem_Handle(
-        __volatile__ int* piRetVal,
-        __volatile__ uint32_t sysCallID,
-        __volatile__ bool bDoAddrTranslation,
-        volatile uint64_t P1,
-        volatile uint64_t P2,
-        volatile uint64_t P3,
-        volatile uint64_t P4,
-        volatile uint64_t P5,
-        volatile uint64_t P6,
-        volatile uint64_t P7,
-        volatile uint64_t P8,
-        volatile uint64_t P9)
+void
+SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2,
+                  uint64_t p3, uint64_t p4, uint64_t p5)
 {
-	switch(sysCallID)
+	switch(sysCallId)
 	{
 		case SYS_CALL_ALLOC : //Allocate Mem.. Ment only for User Process
 			//P1 => Return Alloc Address
 			//P2 => Size in Bytes
 			{
-				void** addr = KERNEL_ADDR(bDoAddrTranslation, void**, P1) ;
+				void** addr = KERNEL_ADDR(doAddrTranslation, void**, p1) ;
 				// ProcessManager_DisableTaskSwitch() ;
 
-				*addr = (void*)DMM_Allocate(&ProcessManager::Instance().GetCurrentPAS(), P2) ;
+				*addr = (void*)DMM_Allocate(&ProcessManager::Instance().GetCurrentPAS(), p2) ;
 
 				// ProcessManager_EnableTaskSwitch() ;
 			}
@@ -62,10 +52,10 @@ void SysCallMem_Handle(
 			{
 				// ProcessManager_DisableTaskSwitch() ;
 
-				*piRetVal = 0 ;
+				*retVal = 0 ;
 				
-				if(DMM_DeAllocate(&ProcessManager::Instance().GetCurrentPAS(), P1) != DMM_SUCCESS)
-					*piRetVal = -1 ;
+				if(DMM_DeAllocate(&ProcessManager::Instance().GetCurrentPAS(), p1) != DMM_SUCCESS)
+					*retVal = -1 ;
 
 				// ProcessManager_EnableTaskSwitch() ;
 			}
@@ -76,10 +66,10 @@ void SysCallMem_Handle(
 			//P2 => Ret Size
 			{
         ProcessSwitchLock pLock;
-				auto pRetAllocSize = KERNEL_ADDR(bDoAddrTranslation, size_t*, P2) ;
-				*piRetVal = 0 ;
-				if(!DMM_GetAllocSize(P1, pRetAllocSize)) {
-          *piRetVal = -1;
+				auto pRetAllocSize = KERNEL_ADDR(doAddrTranslation, size_t*, p2) ;
+				*retVal = 0 ;
+				if(!DMM_GetAllocSize(p1, pRetAllocSize)) {
+          *retVal = -1;
         }
 			}
 			break ;

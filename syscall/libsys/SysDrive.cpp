@@ -24,42 +24,42 @@
 
 int SysDrive_ChangeDrive(const char* szDriveName)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_CHANGE_DRIVE, false, (uintptr_t)szDriveName, 2, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_CHANGE_DRIVE, false, (uintptr_t) szDriveName, 2, 3, 4, 5);
+	return retStatus ;
 }
 
 int SysDrive_ShowDrives(DriveStat** pDriveList, int* iListSize)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_SHOW_DRIVES, false, (uintptr_t)pDriveList, (uintptr_t)iListSize, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_SHOW_DRIVES, false, (uintptr_t) pDriveList, (uintptr_t) iListSize, 3, 4, 5);
+	return retStatus ;
 }
 
 int SysDrive_Mount(const char* szDriveName)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_MOUNT_DRIVE, false, (uintptr_t)szDriveName, 2, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_MOUNT_DRIVE, false, (uintptr_t) szDriveName, 2, 3, 4, 5);
+	return retStatus ;
 }
 
 int SysDrive_UnMount(const char* szDriveName)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_UNMOUNT_DRIVE, false, (uintptr_t)szDriveName, 2, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_UNMOUNT_DRIVE, false, (uintptr_t) szDriveName, 2, 3, 4, 5);
+	return retStatus ;
 }
 
 int SysDrive_Format(const char* szDriveName)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_FORMAT_DRIVE, false, (uintptr_t)szDriveName, 2, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_FORMAT_DRIVE, false, (uintptr_t) szDriveName, 2, 3, 4, 5);
+	return retStatus ;
 }
 
 int SysDrive_GetCurrentDriveStat(DriveStat* pDriveStat)
 {
-	__volatile__ int iRetStatus ;
-	SysCallDrive_Handle(&iRetStatus, SYS_CALL_CURRENT_DRIVE_STAT, false, (uintptr_t)pDriveStat, 2, 3, 4, 5, 6, 7, 8, 9) ;
-	return iRetStatus ;
+  uint64_t retStatus ;
+  SysCallDrive_Handle(&retStatus, SYS_CALL_CURRENT_DRIVE_STAT, false, (uintptr_t) pDriveStat, 2, 3, 4, 5);
+	return retStatus ;
 }
