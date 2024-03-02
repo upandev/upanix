@@ -170,6 +170,7 @@ void Initialize() {
     DMA_Initialize();
     StdIRQ::Instance();
     SysCall_Initialize();
+    DynamicLinkLoader::Instance();
     KC::MKernelService();
     GraphicsVideo::Instance().Initialize();
 

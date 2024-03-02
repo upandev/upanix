@@ -23,7 +23,6 @@
 #include <FileSystem.h>
 #include <IrqManager.h>
 #include <PIT.h>
-#include <ProcessLoader.h>
 #include <DMM.h>
 #include <KernelService.h>
 #include <UserManager.h>
@@ -51,13 +50,6 @@ ProcessManager::ProcessManager() {
     i = false;
   }
 
-//	TaskState* sysTSS = (TaskState*)(SYS_TSS_BASE_ADDR - GLOBAL_DATA_SEGMENT_BASE) ;
-//  memset(sysTSS, 0, sizeof(TaskState));
-//	sysTSS->CR3_PDBR = MEM_PML4 ;
-//	sysTSS->DEBUG_T_BIT = 0 ;
-//	sysTSS->IO_MAP_BASE = 103 ;
-
-  ProcessLoader::Instance();
   _processSchedulerIt = _processSchedulerList.end();
 
   KC::MConsole().LoadMessage("Process Manager Initialization", Success);

@@ -40,7 +40,7 @@ typedef struct
 
 /************************ static **********************************/
 static SysCallHandler SysCall_Handlers[10] ; 
-static unsigned SysCall_NoOfHandlers ;
+static int SysCall_NoOfHandlers ;
 
 void SysCall_InitializeHandler(SysCallHandler* pSysCallHandler, Check* pFuncCheck, Handler* pFuncHandle)
 {
@@ -73,8 +73,6 @@ void SysCall_Initialize() {
   //For Ring3->Ring0 (return), the CS selector is obtained by adding 16 to STAR [63:48] and SS selector by adding 8 to STAR [63:48]
   Cpu::Instance().MSRwrite(IA32_STAR, ((uint64_t)(SYS_DATA_SELECTOR | 0x3) << 48) | ((uint64_t)SYS_CODE_SELECTOR << 32));
 
-	//ProcessManager::Instance().BuildCallGate(CALL_GATE_SELECTOR, (uint64_t)&SysCall_Entry, SYS_CODE_SELECTOR, NO_OF_SYSCALL_PARAMS) ;
-
 	SysCall_NoOfHandlers = 0 ;
 
 	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDisplay_IsPresent, &SysCallDisplay_Handle);
@@ -95,11 +93,10 @@ void SysCall_Initialize() {
 uint64_t SYS_CALL_ID = 0;
 
 extern "C" void SysCall_Entry(uint64_t sysCallId, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
-  printf("\n System Call Params: %lu, %lu, %lu, %lu, %lu, %lu\n", sysCallId, p1, p2, p3, p4, p5);
-  return;
+  printf("\n System Call Params: %lu, %llx, %llx, %llx, %llx, %llx\n", sysCallId, p1, p2, p3, p4, p5);
   SYS_CALL_ID = sysCallId;
 	uint64_t retVal = 0;
-	for(auto i = 0; i < SysCall_NoOfHandlers; i++) {
+	for(auto i = 0; i < SysCall_NoOfHandlers; ++i) {
 		if(SysCall_Handlers[i].pFuncCheck(sysCallId)) {
       try {
   			SysCall_Handlers[i].pFuncHandle(&retVal, sysCallId, true, p1, p2, p3, p4, p5) ;

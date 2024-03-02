@@ -89,7 +89,9 @@ class MemManager
 			return ((uiSizeInPages - 1) / PAGE_TABLE_ENTRIES) + 1 ;
 		}
 
-	private:
+		static uint64_t GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign);
+
+private:
 		bool BuildRawPageMap() ;
 		bool BuildPagePoolMap();
 		bool BuildPageTable() ;

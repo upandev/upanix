@@ -24,42 +24,20 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="changes to support loading user process from storage">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support for system calls - built the entry point and routing logic for system calls">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/libints/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/_InterruptHandlers.asm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/TaskStructures.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessLoader.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessLoader.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/_SysCallHandler.s" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/_SysCallHandler.s" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,6 +96,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -218,7 +201,7 @@
       <workItem from="1708265261221" duration="56062000" />
       <workItem from="1708866827126" duration="30734000" />
       <workItem from="1709200466294" duration="11226000" />
-      <workItem from="1709291039257" duration="18827000" />
+      <workItem from="1709291039257" duration="34950000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -388,7 +371,21 @@
       <option name="project" value="LOCAL" />
       <updated>1708868636921</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="support for system calls - built the entry point and routing logic for system calls">
+      <created>1709348741028</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1709348741028</updated>
+    </task>
+    <task id="LOCAL-00026" summary="support for system calls - built the entry point and routing logic for system calls">
+      <created>1709348785097</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1709348785097</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -440,6 +437,7 @@
     <MESSAGE value="fix issue with file-read by not converting pointer to unsigned" />
     <MESSAGE value="generate kernel.ld from cmake, to replace cmake env variables in kernel.ld for absolute paths" />
     <MESSAGE value="changes to support loading user process from storage" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes to support loading user process from storage" />
+    <MESSAGE value="support for system calls - built the entry point and routing logic for system calls" />
+    <option name="LAST_COMMIT_MESSAGE" value="support for system calls - built the entry point and routing logic for system calls" />
   </component>
 </project>

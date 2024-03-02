@@ -26,7 +26,6 @@
 #define ELF64_R_SYM(i) ((i) >> 32)
 #define ELF64_R_TYPE(i) (i & 0xFFFFFFFFL)
 #define ELF64_R_INFO(s, t) (((s) << 32) + ((t) & 0xFFFFFFFFL))
-#define ELF64_REL_ENT(p, off) ((Elf64_Rel*)((byte*)p + off))
 
 namespace ElfRelocSection {
 	typedef struct {

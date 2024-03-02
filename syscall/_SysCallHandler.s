@@ -130,3 +130,26 @@ _syscall_handler:
   movq (%rax), %rax
 
   sysretq
+
+.global _runtime_dll_resolver
+.global _runtime_dll_resolver_end
+_runtime_dll_resolver:
+# Two Double Words (8 bytes) are already pushed onto
+# Stack by Dynamic Relocation Process which are Second Entry GOT
+# and Relocation Offset. These are sent as Arg 4 and Arg 5 for SysCall
+  pushq $3
+  pushq $2
+  pushq $1
+  pushq $601
+
+  syscall
+
+  add $48, %rsp
+L2:
+  jmp L2
+
+  jmp *%rax
+
+  ret
+
+_runtime_dll_resolver_end:

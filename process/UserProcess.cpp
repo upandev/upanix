@@ -25,7 +25,6 @@
 #include <UserProcess.h>
 #include <UserThread.h>
 #include <ProcessManager.h>
-#include <ProcessLoader.h>
 #include <DynamicLinkLoader.h>
 #include <MountManager.h>
 #include <UserManager.h>
@@ -36,8 +35,8 @@
 #include <DMM.h>
 #include <GraphicsVideo.h>
 
-#define REL_DYN_SUB_NAME	".dyn"
-#define BSS_SEC_NAME		".bss"
+#define REL_DYN_SUB_NAME  ".dyn"
+#define BSS_SEC_NAME      ".bss"
 #define DLL_ELF_SEC_HEADER_PAGE 1
 
 UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
@@ -48,7 +47,6 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
   _pml4Table = nullptr;
   Load(noOfParams, args);
   _totalNoOfPagesForDLL = 0;
-  //_processLDT.BuildForUser();
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
@@ -71,12 +69,8 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   if((minMemAddr % PAGE_SIZE) != 0)
     throw upan::exception(XLOC, "process min load address %x is not page aligned", minMemAddr);
 
-  uint32_t uiDLLSectionSize = 0;
-
-  //upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
-
-  uint64_t processImageSize = ProcessLoader_GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
-  uint64_t uiMemImageSize = processImageSize + uiDLLSectionSize ;
+  uint64_t processImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
+  uint64_t uiMemImageSize = processImageSize + DynamicLinkLoader::Instance().dllResolverSize();
 
   _processBase = minMemAddr;
   uint64_t alignAdjustProcessSpace = _processBase % PAGE_SIZE ? PAGE_SIZE : 0;
@@ -92,25 +86,20 @@ void UserProcess::Load(int numOfParams, char** argvList) {
 
   upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * uiMemImageSize]);
 
-  upan::trycall([&] { mELFParser.CopyProcessImage(bProcessImage.get(), _processBase, uiMemImageSize); }).onBad([&] (const upan::error& err) {
+  upan::trycall([&] { mELFParser.CopyProcessImage(bProcessImage.get(), _processBase, processImageSize); }).onBad([&] (const upan::error& err) {
     DeallocateResources();
     throw upan::exception(XLOC, err);
   });
 
-  auto r = mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_PROGBITS, ".dll");
-  r.onGood([&mELFParser, &bProcessImage, &minMemAddr](Elf64_Shdr* dllSectionHeader) {
-    mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
-      uiGOT[1] = -1;
-      uiGOT[2] = dllSectionHeader->sh_addr;
-    });
+  memcpy((void*)(bProcessImage.get() + processImageSize),
+         DynamicLinkLoader::Instance().dllResolverProgBits(),
+         DynamicLinkLoader::Instance().dllResolverSize());
+
+  // Setting the Dynamic Link Loader Address in GOT
+  mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
+    uiGOT[1] = -1;
+    uiGOT[2] = minMemAddr + processImageSize;
   });
-//  memcpy((void*)(bProcessImage.get() + processImageSize), (void*)bDLLSectionImage.get(), uiDLLSectionSize) ;
-//
-//  // Setting the Dynamic Link Loader Address in GOT
-//  mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
-//    uiGOT[1] = -1;
-//    uiGOT[2] = minMemAddr + processImageSize;
-//  });
 
   // Initialize BSS segment to 0
   mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_NOBITS, BSS_SEC_NAME).onGood([&] (Elf64_Shdr* bssSectionHeader) {
@@ -121,7 +110,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   CopyElfImage(bProcessImage.get(), uiMemImageSize);
 
   const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
-  const auto entryAdddress = mELFParser.GetProgramStartAddress();// minMemAddr + processImageSize ;
+  const auto entryAdddress = mELFParser.GetProgramStartAddress();
 
   _taskContext.rdi = numOfParams; //argc
   _taskContext.rsi = stackTopAddress; //argv
@@ -131,7 +120,6 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   _taskContext.interruptState.ss = USER_DATA_SELECTOR | 0x3;
   _taskContext.interruptState.rsp = stackTopAddress;
   _taskContext.interruptState.rflags = 0x202;
-  //_taskState.BuildForUser(stackTopAddress, (uint64_t)_pml4Table, entryAdddress, processEntryStackSize);
 }
 
 uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList) {
@@ -193,11 +181,8 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   if(minMemAddr != 0)
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
 
-  unsigned uiDLLSectionSize ;
-  upan::uniq_ptr<byte[]> bDLLSectionImage(ProcessLoader::Instance().LoadDLLInitSection(uiDLLSectionSize));
-
-  const uint32_t uiDLLImageSize = ProcessLoader_GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
-  const uint32_t uiMemImageSize = uiDLLImageSize + uiDLLSectionSize ;
+  const uint32_t uiDLLImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
+  const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
   const uint32_t uiNoOfPagesForDLL = MemManager::Instance().GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
 
   if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE)
@@ -219,7 +204,9 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
     throw upan::exception(XLOC, err);
   });
 
-  memcpy((void*)(bDLLImage.get() + uiDLLImageSize), (void*)bDLLSectionImage.get(), uiDLLSectionSize);
+  memcpy((void*)(bDLLImage.get() + uiDLLImageSize),
+         DynamicLinkLoader::Instance().dllResolverProgBits(),
+         DynamicLinkLoader::Instance().dllResolverSize());
 
   // Setting the Dynamic Link Loader Address in GOT
   mELFParser.GetGOTAddress(bDLLImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {

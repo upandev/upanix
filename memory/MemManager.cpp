@@ -508,6 +508,15 @@ uintptr_t MemManager::GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualA
   return PAGE_ADDRESS(ptTable, ptIndex) + PAGE_INDEX(virtualAddress);
 }
 
+uint64_t MemManager::GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign) {
+  while(true) {
+    if((uiAddress % uiAlign) == 0)
+      return uiAddress;
+    uiAddress++;
+  }
+  return 0;
+}
+
 void MemManager::DisplayNoOfFreePages() {
 	uint32_t freePageCount = 0 ;
 	for(auto pageMapPosition = _kernelReservedMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {

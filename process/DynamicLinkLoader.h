@@ -24,5 +24,27 @@
 #include <ProcessManager.h>
 #include <KernelService.h>
 
-bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* szSymName, unsigned* uiDynSymOffset, Process* processAddressSpace) ;
-void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) ;
+bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* szSymName, uint64_t* uiDynSymOffset, Process* processAddressSpace) ;
+void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) ;
+
+class DynamicLinkLoader {
+private:
+  DynamicLinkLoader();
+public:
+  static DynamicLinkLoader& Instance() {
+    static DynamicLinkLoader instance;
+    return instance;
+  }
+
+  uint32_t dllResolverSize() {
+    return _dll_resolver_size;
+  }
+
+  uint8_t* dllResolverProgBits() {
+    return _dll_resolver;
+  }
+
+private:
+  uint8_t* _dll_resolver;
+  uint32_t _dll_resolver_size;
+};
