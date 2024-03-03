@@ -130,19 +130,22 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
     argumentSize += (strlen(argvList[i]) + 1);
   }
 
-  const uint32_t processEntryStackSize = argvEntriesSize + argumentSize;
-
-  const auto virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize;
-  const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
-
+  //The stack must be aligned to 16 byte otherwise SSE/SSE2/SSE3 instructions will cause General Protection Fault
+  const uint32_t processEntryStackSize = MemManager::GetCeilAlignedAddress(argvEntriesSize + argumentSize, 16);
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {
     throw upan::exception(XLOC, "Startup arguments size is larger than reserved init stack size of %u", PROCESS_INIT_STACK_SIZE);
   }
 
+  const uint64_t virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize;
+  const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
+
   argumentSize = 0 ;// argv[0] through argv[argc - 1]
   for(int i = 0; i < numOfParams; i++) {
     const uint64_t argAddress = realStackTopAddress + argvEntriesSize + argumentSize;
+    //first dimension of argv
     ((uint64_t*)realStackTopAddress)[i] = argAddress;
+
+    //second dimension of argv
     strcpy((char*)argAddress, argvList[i]);
     argumentSize += (strlen(argvList[i]) + 1);
   }
