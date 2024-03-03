@@ -138,15 +138,18 @@ _runtime_dll_resolver:
 # Stack by Dynamic Relocation Process which are Second Entry GOT
 # and Relocation Offset. These are sent as Arg 4 and Arg 5 for SysCall
   pushq $3
-  pushq $2
-  pushq $1
+  push %r11 #need to save rcx and r11 as they are modifed by syscall (rcx = return rip, r11 = rflags)
+  push %rcx
   pushq $601
 
   syscall
 
+  #rcx is the 4th param of any function. So, it's important we save and restore it after syscall
+  #now the restored rcx value will be the 4th param of the relocated function that is being jumped into by jmp *%rax
+  movq 8(%rsp), %rcx
+  movq 16(%rsp), %r11
+
   add $48, %rsp
-L2:
-  jmp L2
 
   jmp *%rax
 

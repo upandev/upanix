@@ -35,7 +35,7 @@
 #include <DMM.h>
 #include <GraphicsVideo.h>
 
-#define REL_DYN_SUB_NAME  ".dyn"
+#define REL_DYN_SUB_NAME  ".rela.dyn"
 #define BSS_SEC_NAME      ".bss"
 #define DLL_ELF_SEC_HEADER_PAGE 1
 
@@ -176,7 +176,6 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   ElfParser mELFParser(szDLLName) ;
 
   uint64_t minMemAddr, maxMemAddr ;
-
   mELFParser.GetMemImageSize(minMemAddr, maxMemAddr) ;
   if(minMemAddr != 0)
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
@@ -220,11 +219,10 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   });
 
 /* Dynamic Relocation Entries are resolved here in Global Offset Table */
-  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_REL, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* pRelocationSectionHeader) {
-    Elf64_Shdr *pDynamicSymSectiomHeader = mELFParser.GetSectionHeaderByIndex(
-        pRelocationSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* pRelocationSectionHeader) {
+    Elf64_Shdr *pDynamicSymSectiomHeader = mELFParser.GetSectionHeaderByIndex(pRelocationSectionHeader->sh_link).goodValueOrThrow(XLOC);
 
-    auto pELFDynRelTable = (ElfRelocSection::Elf64_Rel*)((uint64_t) bDLLImage.get() + pRelocationSectionHeader->sh_addr);
+    auto pELFDynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) bDLLImage.get() + pRelocationSectionHeader->sh_addr);
     unsigned uiNoOfDynRelEntries = pRelocationSectionHeader->sh_size / pRelocationSectionHeader->sh_entsize;
 
     auto pELFDynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + pDynamicSymSectiomHeader->sh_addr);
@@ -232,14 +230,15 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
     for (uint32_t i = 0; i < uiNoOfDynRelEntries; i++) {
       const auto uiRelType = ELF64_R_TYPE(pELFDynRelTable[i].r_info);
 
-      if (uiRelType == ElfRelocSection::R_386_RELATIVE) {
-        ((unsigned *) ((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] += uiDLLLoadAddress;
-      } else if (uiRelType == ElfRelocSection::R_386_GLOB_DAT) {
-        ((unsigned *) ((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] =
-                pELFDynSymTable[ELF64_R_SYM(pELFDynRelTable[i].r_info)].st_value + uiDLLLoadAddress;
+      if (uiRelType == ElfRelocSection::R_X86_64_RELATIVE) {
+        ((uint64_t*)((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] += uiDLLLoadAddress;
+      } else if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
+        ((uint64_t*)((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] =
+                pELFDynSymTable[ELF64_R_SYM(pELFDynRelTable[i].r_info)].st_value + uiDLLLoadAddress + pELFDynRelTable[i].r_addend;
       }
     }
   });
+
   /* End of Dynamic Relocation Entries resolution */
   memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
@@ -277,11 +276,10 @@ void UserProcess::DeallocateResources() {
 
 void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
   const auto virtualDLLLoadAddress = PROCESS_DLL_START_ADDRESS + _totalNoOfPagesForDLL * PAGE_SIZE;
+  //printf("\n DLL Addr: %llx, %d", virtualDLLLoadAddress, noOfPagesForDLL);
   MemManager::Instance().AllocateAddressSpace(pml4Table(), 0x7, virtualDLLLoadAddress, noOfPagesForDLL * PAGE_SIZE);
-
   _loadedDLLs.push_back(dllName);
   _dllInfoMap.insert(DLLInfoMap::value_type(dllName, ProcessDLLInfo(_loadedDLLs.size() - 1, virtualDLLLoadAddress, noOfPagesForDLL)));
-
   _totalNoOfPagesForDLL += noOfPagesForDLL;
 }
 

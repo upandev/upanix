@@ -652,7 +652,9 @@ void ProcessManager::WaitOnKernelService() {
 	auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    p.stateInfo().KernelServiceComplete(false);
+    if (!p.stateInfo().IsKernelServiceComplete()) {
+      p.stateInfo().KernelServiceComplete(false);
+    }
     p.setStatus(WAIT_KERNEL_SERVICE);
   }
   p.yield();

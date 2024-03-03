@@ -55,11 +55,9 @@ static unsigned long DynamicLinkLoader_GetHashValue(const char* name) {
   return h;
 }
 
-static void DynamicLinkLoader_LoadDLL(const char* szJustDLLName, Process* processAddressSpace)
-{
+static void DynamicLinkLoader_LoadDLL(const char* szJustDLLName, Process* processAddressSpace) {
   auto dllInfo = processAddressSpace->getDLLInfo(szJustDLLName);
-	if(dllInfo.isEmpty())
-	{
+	if(dllInfo.isEmpty())	{
 		char szDLLFullName[128] ;
 		char szLibPath[128] = "" ;
 
@@ -141,9 +139,9 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, u
 	Elf64_Sym* pELFDynSymTable = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynamicSymSectionHeader->sh_addr, uiBaseAddress)) ;
 	const char* pDynStrTable = (const char*)(GLOBAL_REL_ADDR(pDynamicSymStringSectionHeader->sh_addr, uiBaseAddress)) ;
 	unsigned uiSymIndex = ELF64_R_SYM(pELFRelTable[relocationOffset].r_info);
-	unsigned uiSymStrIndex = pELFDynSymTable[0x1a].st_name ;
+	unsigned uiSymStrIndex = pELFDynSymTable[uiSymIndex].st_name ;
 	char* szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
-
+  printf("\n %s", szSymName);
 	pProcessELFHeader = (Elf64_Ehdr*)processAddressSpace->getProcessBase();
 	pProcessELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
 	pProcessSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
@@ -173,7 +171,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, u
 			const char* pProcessDynStrTable ;
 			if(iID >= 0)
 			{
-			  Elf64_Shdr* pProcRelocSectionHeader = mProgELFParser.GetSectionHeaderByTypeAndName(SHT_REL, REL_PLT_SUB_NAME).goodValueOrThrow(XLOC);
+			  Elf64_Shdr* pProcRelocSectionHeader = mProgELFParser.GetSectionHeaderByTypeAndName(SHT_RELA, REL_PLT_SUB_NAME).goodValueOrThrow(XLOC);
 			  Elf64_Shdr* pProcDynamicSymSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcRelocSectionHeader->sh_link).goodValueOrThrow(XLOC);
 			  Elf64_Shdr* pProcDynamicSymStringSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcDynamicSymSecHeader->sh_link).goodValueOrThrow(XLOC);
 			  pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, 0)) ;
@@ -184,10 +182,8 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, u
 			}
 			char* szDLLName = (char*)&pProcessDynStrTable[ pELFDynSection[uiIndex].d_un.d_val ] ;
 
-      if(DynamicLinkLoader_GetSymbolOffset(szDLLName, szSymName, &uiDynSymOffset, processAddressSpace))
-      {
+      if(DynamicLinkLoader_GetSymbolOffset(szDLLName, szSymName, &uiDynSymOffset, processAddressSpace)) {
         DynamicLinkLoader_LoadDLL(szDLLName, processAddressSpace);
-
         uint64_t* uiGOTAddress = (uint64_t*)GLOBAL_REL_ADDR(pELFRelTable[relocationOffset].r_offset, uiBaseAddress) ;
         uint64_t uiDynSymAddress = processAddressSpace->getDLLInfo(szDLLName).value().loadAddressForProcess() + uiDynSymOffset + pELFRelTable[relocationOffset].r_addend;
         uiGOTAddress[0] = uiDynSymAddress;
@@ -224,27 +220,23 @@ bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* sz
   upan::uniq_ptr<ElfParser> pELFParser(nullptr);
   auto dllInfo = processAddressSpace->getDLLInfo(szJustDLLName);
 
-	if(dllInfo.isEmpty())
-	{
-		char szDLLFullName[128] ;
-		char szLibPath[128] = "" ;
+	if(dllInfo.isEmpty()) {
+		char szDLLFullName[128];
+		char szLibPath[128] = "";
 
 		if(!GenericUtil_GetFullFilePathFromEnv(LD_LIBRARY_PATH_ENV, LIB_PATH, szJustDLLName, szLibPath))
       throw upan::exception(XLOC, "Failed to find dll (shared object): %s", szJustDLLName);
 
-		strcpy(szDLLFullName, szLibPath) ;
-		strcat(szDLLFullName, szJustDLLName) ;
+		strcpy(szDLLFullName, szLibPath);
+		strcat(szDLLFullName, szJustDLLName);
 
     pELFParser.reset(new ElfParser(szDLLFullName));
-
     dllImage.reset(DynamicLinkLoader_LoadDLLFileIntoMemory(*pELFParser));
-	}
-	else
-	{
+	} else {
     dllImage.disown();
     dllImage.reset((byte*) dllInfo.value().loadAddress());
 
-    Elf64_Ehdr* pELFHeader = (Elf64_Ehdr*)(dllImage.get()) ;
+    Elf64_Ehdr* pELFHeader = (Elf64_Ehdr*)(dllImage.get());
     Elf64_Shdr* pELFSectionHeader = dllInfo.value().elfInfo()._elfSectionHeaders;
     pELFParser.reset(new ElfParser(pELFHeader, pELFSectionHeader, NULL));
 	}
@@ -252,33 +244,26 @@ bool DynamicLinkLoader_GetSymbolOffset(const char* szJustDLLName, const char* sz
   Elf64_Shdr* pHashSectionHeader = pELFParser->GetSectionHeaderByType(SHT_HASH).goodValueOrThrow(XLOC);
   Elf64_Shdr* pDynamicSymSectionHeader = pELFParser->GetSectionHeaderByIndex(pHashSectionHeader->sh_link).goodValueOrThrow(XLOC);
   Elf64_Shdr* pDynamicSymStringSectionHeader = pELFParser->GetSectionHeaderByIndex(pDynamicSymSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  Elf64_Sym* pELFDynSymTable = (Elf64_Sym*)(dllImage.get() + pDynamicSymSectionHeader->sh_addr);
+  const char* pDynStrTable = (const char*)(dllImage.get() + pDynamicSymStringSectionHeader->sh_addr);
+  auto pHashTable = (Elf64_Word*)(dllImage.get() + pHashSectionHeader->sh_addr);
+	auto uiNoOfBuckets = pHashTable[0];
+	__attribute__((unused)) auto uiNoOfChains = pHashTable[1];
+	auto pBucket = (Elf64_Word*)((Elf64_Word*)pHashTable + 2);
+	auto pChain = (Elf64_Word*)((Elf64_Word*)pHashTable + 2 + uiNoOfBuckets);
+	auto uiHashValue = DynamicLinkLoader_GetHashValue(szSymName);
+	uint32_t uiSymTabIndex = pBucket[uiHashValue % uiNoOfBuckets];
+  uint32_t uiSymStrIndex;
 
-  Elf64_Sym* pELFDynSymTable = (Elf64_Sym*)(dllImage.get() + pDynamicSymSectionHeader->sh_addr) ;
-  const char* pDynStrTable = (const char*)(dllImage.get() + pDynamicSymStringSectionHeader->sh_addr) ;
-
-  auto pHashTable = (Elf64_Word*)(dllImage.get() + pHashSectionHeader->sh_addr) ;
-	auto uiNoOfBuckets = pHashTable[0] ;
-	__attribute__((unused)) auto uiNoOfChains = pHashTable[1] ;
-	auto pBucket = (Elf64_Word*)((Elf64_Word*)pHashTable + 2) ;
-	auto pChain = (Elf64_Word*)((Elf64_Word*)pHashTable + 2 + uiNoOfBuckets) ;
-	
-	auto uiHashValue = DynamicLinkLoader_GetHashValue(szSymName) ;
-	uint32_t uiSymTabIndex = pBucket[uiHashValue % uiNoOfBuckets] ;
-  uint32_t uiSymStrIndex ;
-
-	for(; uiSymTabIndex != STN_UNDEF;)
-	{
-		uiSymStrIndex = pELFDynSymTable[uiSymTabIndex].st_name ;
-		if(strcmp(&pDynStrTable[uiSymStrIndex], szSymName) == 0)
-		{
-			if(pELFDynSymTable[uiSymTabIndex].st_value != 0)
-			{
-				*uiDynSymOffset = pELFDynSymTable[uiSymTabIndex].st_value ;
+	for(; uiSymTabIndex != STN_UNDEF;) {
+		uiSymStrIndex = pELFDynSymTable[uiSymTabIndex].st_name;
+		if(strcmp(&pDynStrTable[uiSymStrIndex], szSymName) == 0) {
+			if(pELFDynSymTable[uiSymTabIndex].st_value != 0) {
+				*uiDynSymOffset = pELFDynSymTable[uiSymTabIndex].st_value;
         return true;
 			}
 		}
-
-		uiSymTabIndex = pChain[uiSymTabIndex] ;
+		uiSymTabIndex = pChain[uiSymTabIndex];
 	}
 
   return false;

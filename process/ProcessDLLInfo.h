@@ -37,7 +37,7 @@ public:
     char* _elfSecStrTable;
   };
 
-  ProcessDLLInfo(int id, uint32_t loadAddress, uint32_t noOfPages) : _id(id), _loadAddress(loadAddress), _noOfPages(noOfPages) {
+  ProcessDLLInfo(int id, uint64_t loadAddress, uint32_t noOfPages) : _id(id), _loadAddress(loadAddress), _noOfPages(noOfPages) {
   }
 
   int id() const { return _id; }

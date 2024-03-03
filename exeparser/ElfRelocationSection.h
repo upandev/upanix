@@ -39,29 +39,27 @@ namespace ElfRelocSection {
 		Elf64_Sxword r_addend;
 	} PACKED Elf64_Rela;
 
-	static const unsigned R_386_NONE = 0;
-	static const unsigned R_386_32 = 1;
-	static const unsigned R_386_PC32 = 2;
-	static const unsigned R_386_GOT32  = 3;
-	static const unsigned R_386_PLT32 = 4;
-	static const unsigned R_386_COPY = 5;
-	static const unsigned R_386_GLOB_DAT = 6;
-	static const unsigned R_386_JMP_SLOT = 7;
-	static const unsigned R_386_RELATIVE = 8;
-	static const unsigned R_386_GOTOFF = 9;
-	static const unsigned R_386_GOTPC = 10;
+	static const unsigned R_X86_64_NONE = 0;
+	static const unsigned R_X86_64_64 = 1;
+	static const unsigned R_X86_64_PC32 = 2;
+	static const unsigned R_X86_64_GOT32  = 3;
+	static const unsigned R_X86_64_PLT32 = 4;
+	static const unsigned R_X86_64_COPY = 5;
+	static const unsigned R_X86_64_GLOB_DAT = 6;
+	static const unsigned R_X86_64_JMP_SLOT = 7;
+	static const unsigned R_X86_64_RELATIVE = 8;
+	static const unsigned R_X86_64_GOTPCREL = 9;
 
 	static const char RelocationType[11][40] = {
-		"R_386_NONE",
-		"R_386_32",
-		"R_386_PC32",
-		"R_386_GOT32 ",
-		"R_386_PLT32",
-		"R_386_COPY",
-		"R_386_GLOB_DAT",
-		"R_386_JMP_SLOT",
-		"R_386_RELATIVE",
-		"R_386_GOTOFF",
-		"R_386_GOTPC",
+		"R_X86_64_NONE",
+		"R_X86_64_32",
+		"R_X86_64_PC32",
+		"R_X86_64_GOT32 ",
+		"R_X86_64_PLT32",
+		"R_X86_64_COPY",
+		"R_X86_64_GLOB_DAT",
+		"R_X86_64_JMP_SLOT",
+		"R_X86_64_RELATIVE",
+		"R_X86_64_GOTPCREL"
 	};
 };

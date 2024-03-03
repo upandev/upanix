@@ -200,7 +200,7 @@ void ElfParser::GetMemImageSize(uint64_t& minMemAddr, uint64_t& maxMemAddr) cons
 
 	bool bFirstTime = true;
 
-	for(unsigned i = 0; i < _header->e_phnum; i++) {
+	for(auto i = 0; i < _header->e_phnum; i++) {
 		if(_programHeader[i].p_type == ElfProgramHeader::PT_LOAD) {
 			if(bFirstTime == true) {
 				bFirstTime = false;
