@@ -55,6 +55,7 @@ IDT::IDT() {
 extern "C" {
   void _page_fault_interrupt_handler();
   void _isr_0x27_interrupt_handler();
+  void _timer_interrupt_handler();
 }
 
 void IDT::LoadHandlers() {
@@ -91,7 +92,18 @@ void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t
   idtEntry->_midOffset = (offset >> 16) & 0xFFFF;
   idtEntry->_higherOffset = (offset >> 32) & 0xFFFFFFFF;
 	idtEntry->_selector = selector;
-  idtEntry->_ist = 1;
 	idtEntry->_reserved = 0;
 	idtEntry->_options = options;
+
+	//we need to keep the stack separate for timer (int 0x20) and page-fault because page-fault handler
+	//delegates page allocation to kernel-service and yields by calling int 0x20
+	//This leads to nested interrupt/exception scenario and hence they both must use a different stack frame
+	//In general, if any interrupt or exception invokes another interrupt then we need to ensure they both use different stack frame
+	if (offset == (uintptr_t)&_timer_interrupt_handler) {
+    idtEntry->_ist = 1;
+	}	else if (offset == (uintptr_t)&_page_fault_interrupt_handler) {
+    idtEntry->_ist = 2;
+	} else {
+    idtEntry->_ist = 3;
+	}
 }

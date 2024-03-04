@@ -28,11 +28,10 @@
 #include <mutex.h>
 #include <exception.h>
 #include <stdlib.h>
-#include <PortCom.h>
 
 void MemManager::PageFaultHandler() {
-	__volatile__ uint64_t faultyAddress ;
-	__asm__ __volatile__("mov %%cr2, %0" : "=r"(faultyAddress) : ) ;
+	uint64_t faultyAddress ;
+  __asm__ __volatile__("movq %%cr2, %0" : "=rm"(faultyAddress) : ) ;
 
 	if (IS_KERNEL()) {
     printf("\n Page Fault in Kernel! FIX THIS !!! @ %lx", faultyAddress);
@@ -74,7 +73,9 @@ void MemManager::InitTaskState64() {
   memset(taskState64, 0, sizeof(TaskState64));
   taskState64->_ioMapBase = 103;
   taskState64->_rsp0 = MEM_KERNEL_RING0_STACK_TOP;
-  taskState64->_ist1 = MEM_KERNEL_IST1_STACK_TOP;
+  taskState64->_ist1 = MEM_KERNEL_IST1_TIMER_STACK_TOP;
+  taskState64->_ist2 = MEM_KERNEL_IST2_PAGE_FAULT_STACK_TOP;
+  taskState64->_ist3 = MEM_KERNEL_IST3_COMMON_STACK_TOP;
 
   __asm__ __volatile__("mov %0, %%ax;"
                        "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);
@@ -432,10 +433,9 @@ ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
   upan::mutex_guard g(ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pageAllocMutex().value());
 
   const auto virtualPageNo = faultyAddress / PAGE_SIZE;
-
   if (ProcessManager::Instance().IsKernelProcess(iProcessID)) {
     printf("\n Page Fault in Kernel! FIX THIS !!!");
-    printf("\n Page Fault Address/Page: %lx / %u", faultyAddress, virtualPageNo);
+    printf("\n Page Fault Address/Page: %llx / %u", faultyAddress, virtualPageNo);
     __asm__ __volatile__ ("HLT");
     while (true);
   }
