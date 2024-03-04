@@ -102,7 +102,7 @@ DynamicLinkLoader::DynamicLinkLoader() {
 }
 
 void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) {
-  printf("\n %lld, %lu", iID, relocationOffset);
+  //printf("\n %lld, %lu", iID, relocationOffset);
   //multithread synchronization
   upan::mutex_guard g(processAddressSpace->dllMutex().value());
 
@@ -141,7 +141,7 @@ void DynamicLinkLoader_DoRelocation(Process* processAddressSpace, int64_t iID, u
 	unsigned uiSymIndex = ELF64_R_SYM(pELFRelTable[relocationOffset].r_info);
 	unsigned uiSymStrIndex = pELFDynSymTable[uiSymIndex].st_name ;
 	char* szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
-  printf("\n %s", szSymName);
+  //printf("\n %s", szSymName);
 	pProcessELFHeader = (Elf64_Ehdr*)processAddressSpace->getProcessBase();
 	pProcessELFSectionHeader = processAddressSpace->getELFInfo()._elfSectionHeaders;
 	pProcessSecHeaderStrTable = processAddressSpace->getELFInfo()._elfSecStrTable;
