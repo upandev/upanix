@@ -141,12 +141,13 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
 
   argumentSize = 0 ;// argv[0] through argv[argc - 1]
   for(int i = 0; i < numOfParams; i++) {
-    const uint64_t argAddress = realStackTopAddress + argvEntriesSize + argumentSize;
+    const uint64_t realArgAddress = realStackTopAddress + argvEntriesSize + argumentSize;
+    const uint64_t virtualArgAddress = virtualStackTopAddress + argvEntriesSize + argumentSize;
     //first dimension of argv
-    ((uint64_t*)realStackTopAddress)[i] = argAddress;
+    ((uint64_t*)realStackTopAddress)[i] = virtualArgAddress;
 
     //second dimension of argv
-    strcpy((char*)argAddress, argvList[i]);
+    strcpy((char*)realArgAddress, argvList[i]);
     argumentSize += (strlen(argvList[i]) + 1);
   }
 
