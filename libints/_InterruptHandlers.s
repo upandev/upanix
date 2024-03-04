@@ -38,12 +38,11 @@
     push %r14
     push %r15
 
-
     subq $512, %rsp
-    //As per Intel manuals, when TS flag is set and EM is clear then SSE instructions will cause GP
-    //But in Qemu, this didn't cause any GP but I am doing it just to go by the doc
+    #As per Intel manuals, when TS flag is set and EM is clear then SSE instructions will cause GP
+    #But in Qemu, this didn't cause any GP but I am doing it just to go by the doc
     clts
-    //sse pointer on stack must be 16 byte aligned otherwise it will cause General Protection fault
+    #sse pointer on stack must be 16 byte aligned otherwise it will cause General Protection fault
     fxsave (%rsp)
 .endm
 
@@ -74,20 +73,21 @@
 .extern \name\()_interrupt_handler
 
 _\name\()_interrupt_handler:
-    _save_interrupt_regs
-
-    mov %rsp, %rdi //set the TaskContext param
-    cld //clear direction flag
-    call \name\()_interrupt_handler
-
-    _restore_interrupt_regs
-
   .if \ec == 1
-    //discard error code
+    #if an ec is on the stack, then, rsp is not 16 byte aligned
+    #for now, discard the error code
     addq $8, %rsp
   .endif
 
-    iretq
+  _save_interrupt_regs
+
+  mov %rsp, %rdi //set the TaskContext param
+  cld //clear direction flag
+  call \name\()_interrupt_handler
+
+  _restore_interrupt_regs
+
+  iretq
 .endm
 
 interrupt_handler timer
