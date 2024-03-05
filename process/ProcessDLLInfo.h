@@ -31,7 +31,7 @@ public:
     ELFInfo() : _elfSectionHeaders(nullptr), _elfSecStrTable(nullptr) {}
     ~ELFInfo() {
       delete []_elfSectionHeaders;
-      delete _elfSectionHeaders;
+      delete []_elfSecStrTable;
     }
     ElfSectionHeader::Elf64_Shdr* _elfSectionHeaders;
     char* _elfSecStrTable;

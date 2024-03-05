@@ -24,16 +24,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Remove the error-code (if any) from stack in interrupt/exception handler upfront before saving the registers to ensure rsp is 16 byte aligned. without error-code, the stack has 5 params * 8 byte = 40 bytes. Save registers will push 120 bytes for registers and 512 bytes for xxm registers - total 512 + 120 + 40 = 672 -&gt; 16 byte aligned. Adding error-code will make rsp 680 bytes which is not 16 byte aligned, which makes fxsave fail with General Protection Fault">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="commented debug print statements">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessDLLInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,11 +89,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -140,6 +132,11 @@
     <configuration name="upanix.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="upanix.elf" CONFIG_NAME="Default" RUN_TARGET_PROJECT_NAME="Upanix" RUN_TARGET_NAME="upanix.elf">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="run" type="ShConfigurationType">
@@ -198,6 +195,7 @@
       <workItem from="1708866827126" duration="30734000" />
       <workItem from="1709200466294" duration="11226000" />
       <workItem from="1709291039257" duration="72716000" />
+      <workItem from="1709547586064" duration="10496000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -409,7 +407,28 @@
       <option name="project" value="LOCAL" />
       <updated>1709547510224</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="separate stack frame for timer vs page-fault vs rest. It is paricurlarly important to keep stack separate for time vs page-fault because page-fault handler yields by calling timer interrupt (int 0x20) and hence they can't both use same stack frame. This is achieved using different IST values in IDT definition of these interrupts">
+      <created>1709547758990</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1709547758990</updated>
+    </task>
+    <task id="LOCAL-00032" summary="fix issue with populating main() method arguments on user stack">
+      <created>1709547785998</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1709547785998</updated>
+    </task>
+    <task id="LOCAL-00033" summary="commented debug print statements">
+      <created>1709547814531</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1709547814531</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -438,9 +457,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="PAT, IRQ, Graphics Init for 64bit" />
-    <MESSAGE value="Handling interrupts in 64 bit" />
-    <MESSAGE value="more changes to memory management in migrating to 64bit" />
     <MESSAGE value="more changes to process memory management in migrating to 64bit" />
     <MESSAGE value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
     <MESSAGE value="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic" />
@@ -463,6 +479,9 @@
     <MESSAGE value="more changes to handle syscall and dll resolution" />
     <MESSAGE value="align stack for loaded user-process to 16 byte to ensure SSE/SSE2/SSE3 instructions don't cause General Protection Fault" />
     <MESSAGE value="Remove the error-code (if any) from stack in interrupt/exception handler upfront before saving the registers to ensure rsp is 16 byte aligned. without error-code, the stack has 5 params * 8 byte = 40 bytes. Save registers will push 120 bytes for registers and 512 bytes for xxm registers - total 512 + 120 + 40 = 672 -&gt; 16 byte aligned. Adding error-code will make rsp 680 bytes which is not 16 byte aligned, which makes fxsave fail with General Protection Fault" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove the error-code (if any) from stack in interrupt/exception handler upfront before saving the registers to ensure rsp is 16 byte aligned. without error-code, the stack has 5 params * 8 byte = 40 bytes. Save registers will push 120 bytes for registers and 512 bytes for xxm registers - total 512 + 120 + 40 = 672 -&gt; 16 byte aligned. Adding error-code will make rsp 680 bytes which is not 16 byte aligned, which makes fxsave fail with General Protection Fault" />
+    <MESSAGE value="separate stack frame for timer vs page-fault vs rest. It is paricurlarly important to keep stack separate for time vs page-fault because page-fault handler yields by calling timer interrupt (int 0x20) and hence they can't both use same stack frame. This is achieved using different IST values in IDT definition of these interrupts" />
+    <MESSAGE value="fix issue with populating main() method arguments on user stack" />
+    <MESSAGE value="commented debug print statements" />
+    <option name="LAST_COMMIT_MESSAGE" value="commented debug print statements" />
   </component>
 </project>

@@ -274,10 +274,10 @@ bool DMM_DeAllocateForKernel(uintptr_t address) {
   uint64_t size = freeAUT->size;
   const uint64_t calcCheckSum = calculateCheckSum(*freeAUT);
   if (calcCheckSum != freeAUT->checkSum) {
-    throw upan::exception(XLOC, "bad address dealloc %x", address);
+    throw upan::exception(XLOC, "bad address dealloc %llx", address);
   }
   if (freeAUT->returnAddress == NULL) {
-    throw upan::exception(XLOC, "double delete %x", address);
+    throw upan::exception(XLOC, "double delete %llx", address);
   }
   freeAUT = (AllocationUnitTracker*)allocatedAddress;
   freeAUT->allocatedAddress = freeAUT;

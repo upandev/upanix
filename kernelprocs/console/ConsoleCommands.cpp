@@ -640,7 +640,7 @@ void ConsoleCommands_LoadExe() {
   if (iChildProcessID < 0) {
     printf("\n Load User Process Failed: %d", iChildProcessID);
   } else if (!runInBG) {
-    //ProcessManager::Instance().WaitOnChild(iChildProcessID);
+    ProcessManager::Instance().WaitOnChild(iChildProcessID);
   }
 }
 

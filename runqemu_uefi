@@ -71,6 +71,7 @@ sleep 1
 #-net tap,ifname=tap0,script=no,downscript=no \
 
 #~/workspace/tools/qemu/build/qemu-system-x86_64 \
+# -s -S \ -> for debugging. -s is localhost:1234, -S is pause until lldb/gdb connection
 qemu-system-x86_64 \
 -serial file:serial_debug.log \
 -pflash $UPANIX_TOOLS/OVMF.fd \
