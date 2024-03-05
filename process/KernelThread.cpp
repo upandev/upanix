@@ -43,9 +43,6 @@ KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintpt
   _taskContext.interruptState.rsp = stackTop;
   _taskContext.interruptState.rflags = 0x202;
 
-  //_taskState.BuildForKernel(threadCaller, uiStackTop, params);
-  //_processLDT.BuildForKernel();
-
   _parent.addToThreadScheduler(*this);
 }
 

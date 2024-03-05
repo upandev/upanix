@@ -24,13 +24,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="commented debug print statements">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessDLLInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -195,7 +203,7 @@
       <workItem from="1708866827126" duration="30734000" />
       <workItem from="1709200466294" duration="11226000" />
       <workItem from="1709291039257" duration="72716000" />
-      <workItem from="1709547586064" duration="10496000" />
+      <workItem from="1709547586064" duration="11949000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -428,7 +436,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709547814531</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop">
+      <created>1709647973227</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1709647973227</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -457,7 +472,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="more changes to process memory management in migrating to 64bit" />
     <MESSAGE value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
     <MESSAGE value="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic" />
     <MESSAGE value="a separate handler for timer interrupt written in assembly to make it specific and clean without any compiler dependent/generated code in order to make it suitable for use in context switching" />
@@ -482,6 +496,7 @@
     <MESSAGE value="separate stack frame for timer vs page-fault vs rest. It is paricurlarly important to keep stack separate for time vs page-fault because page-fault handler yields by calling timer interrupt (int 0x20) and hence they can't both use same stack frame. This is achieved using different IST values in IDT definition of these interrupts" />
     <MESSAGE value="fix issue with populating main() method arguments on user stack" />
     <MESSAGE value="commented debug print statements" />
-    <option name="LAST_COMMIT_MESSAGE" value="commented debug print statements" />
+    <MESSAGE value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
   </component>
 </project>

@@ -36,31 +36,6 @@
 
 #include <PIT.h>
 
-#define ProcessManager_EXIT()
-/*\
-	__asm__ __volatile__("pusha") ; \
-	__asm__ __volatile__("pushf") ; \
-	__asm__ __volatile__("popl %eax") ; \
-	__asm__ __volatile__("mov $0x4000, %ebx") ; \
-	__asm__ __volatile__("or %ebx, %eax") ; \
-	__asm__ __volatile__("pushl %eax") ; \
-	__asm__ __volatile__("popf") ; \
-	__asm__ __volatile__("popa") ; \
-	__asm__ __volatile__("iret") 
-	*/
-#define ProcessManager_RESTORE()
-/*
-	__asm__ __volatile__("pusha") ; \
-	__asm__ __volatile__("pushf") ; \
-	__asm__ __volatile__("popl %eax") ; \
-	__asm__ __volatile__("mov $0xBFFF, %ebx") ; \
-	__asm__ __volatile__("and %ebx, %eax") ; \
-	__asm__ __volatile__("pushl %eax") ; \
-	__asm__ __volatile__("popf") ; \
-	__asm__ __volatile__("popa") ; \
-	__asm__ __volatile__("leave") ; \
-	__asm__ __volatile__("ret") ;
-*/
 void ProcessManager_Exit();
 
 class AutonomousProcess;
@@ -109,7 +84,6 @@ class ProcessManager
     void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors);
     void WaitOnKernelService();
     bool IsKernelProcess(int iProcessID);
-    void BuildCallGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount);
     bool ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor);
     void WaitForEvent();
     void EventCompleted(int pid);
@@ -135,8 +109,6 @@ class ProcessManager
     void PrepareToRun(SchedulableProcess& process);
     void Destroy(SchedulableProcess& pas);
     bool DoPollWait();
-    void BuildIntTaskState(const unsigned uiTaskAddress, const unsigned uiTSSAddress, const int stack);
-    void BuildIntGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount);
     bool IsEventCompleted(int pid);
     ProcessStateInfo& GetProcessStateInfo(int pid);
 

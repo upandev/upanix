@@ -68,6 +68,29 @@ void MemManager::PrintInitStatus() const {
   printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
 }
 
+class TaskState64 {
+public:
+  uint32_t _reserved1;
+
+  uint64_t _rsp0;
+  uint64_t _rsp1;
+  uint64_t _rsp2;
+
+  uint64_t _reserved2;
+
+  uint64_t _ist1;
+  uint64_t _ist2;
+  uint64_t _ist3;
+  uint64_t _ist4;
+  uint64_t _ist5;
+  uint64_t _ist6;
+  uint64_t _ist7;
+
+  uint64_t _reserved3;
+  uint16_t _reserved4;
+  uint16_t _ioMapBase;
+} PACKED;
+
 void MemManager::InitTaskState64() {
   TaskState64* taskState64 = (TaskState64*)(TSS_BASE_ADDR);
   memset(taskState64, 0, sizeof(TaskState64));

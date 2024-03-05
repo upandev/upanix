@@ -27,7 +27,6 @@
 #include <option.h>
 #include <uniq_ptr.h>
 #include <atomicop.h>
-#include <TaskStructures.h>
 #include <FileOperations.h>
 #include <ProcessConstants.h>
 #include <IODescriptorTable.h>
@@ -101,8 +100,6 @@ public:
   void setProcessGroup(ProcessGroup* processGroup) override { _processGroup = processGroup; }
 
   ProcessStateInfo& stateInfo() override { return _stateInfo; }
-  TaskState& taskState() { return _taskState; }
-  ProcessLDT& processLDT() { return _processLDT; }
   FileSystem::PresentWorkingDirectory& processPWD() override { return _processPWD; }
   const FileSystem::PresentWorkingDirectory& processPWD() const override { return _processPWD; }
 
@@ -146,8 +143,6 @@ protected:
   uint32_t _runTick;
   ProcessStateInfo& _stateInfo;
   TaskContext _taskContext;
-  TaskState _taskState;
-  ProcessLDT _processLDT;
   FileSystem::PresentWorkingDirectory _processPWD;
   //this is managed like a shared_ptr
   ProcessGroup* _processGroup;

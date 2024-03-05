@@ -94,7 +94,7 @@ int debug_point ;
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
     ProcessManager::Instance().WaitOnChild(pid);
   }
-	ProcessManager_EXIT() ;
+	ProcessManager_Exit() ;
 }
 
 extern "C" void _cxx_global_init();

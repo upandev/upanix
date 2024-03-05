@@ -57,8 +57,6 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   _taskContext.interruptState.ss = SYS_DATA_SELECTOR;
   _taskContext.interruptState.rsp = stackTop;
   _taskContext.interruptState.rflags = 0x202;
-  //_taskState.BuildForKernel(taskAddress, stackTop, params);
-  //_processLDT.BuildForKernel();
   _userID = ROOT_USER_ID ;
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);

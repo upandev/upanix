@@ -37,8 +37,7 @@
 #include <KernelProcess.h>
 #include <UserThread.h>
 #include <Cpu.h>
-#include <PortCom.h>
-#include "KernelRootProcess.h"
+#include <KernelRootProcess.h>
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
@@ -99,62 +98,6 @@ Process& ProcessManager::GetCurrentPAS() {
   //This function is a utility that assumes that a ProcessAddressSpace entry always exists for current (active) process
   //Caller should take care of cases when ProcessID = NO_PROCESS_ID - which is usually the case before kernel scheduler is initialized
   return GetSchedulableProcess(_currentProcessID).value();
-}
-
-void ProcessManager::BuildCallGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount)
-{
-	GateDescriptor* gateEntry = (GateDescriptor*)(/*GDT_BASE_ADDR + */usGateSelector) ;
-	
-//	__asm__ __volatile__("push %ds") ;
-//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
-
-	gateEntry->lowerOffset = uiOffset & 0x0000FFFF ;
-	gateEntry->selector = usSelector ;
-	gateEntry->parameterCount = bParameterCount & 0x1F ;
-	gateEntry->options = 0xEC ; // 11101100 --> 1 = Present. 11 = DPL. 01100 = CallGateType 
-	gateEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
-
-//	__asm__ __volatile__("pop %ds") ;
-}
-
-void ProcessManager::BuildIntGate(unsigned short usGateSelector, unsigned uiOffset, unsigned short usSelector, byte bParameterCount)
-{
-	GateDescriptor* gateEntry = (GateDescriptor*)(/*GDT_BASE_ADDR + */usGateSelector) ;
-	
-	//__asm__ __volatile__("push %ds") ;
-//	MemUtil_SetDS(SYS_LINEAR_SELECTOR_DEFINED) ;
-
-	gateEntry->lowerOffset = uiOffset & 0x0000FFFF ;
-	gateEntry->selector = usSelector ;
-	gateEntry->parameterCount = bParameterCount & 0x1F ;
-	gateEntry->options = 0xEE ; // 11101110 --> 1 = Present. 11 = DPL. 01110 = IntGateType 
-	
-	gateEntry->upperOffset = (uiOffset & 0xFFFF0000) >> 16 ;
-
-	//__asm__ __volatile__("pop %ds") ;
-}
-
-void ProcessManager::BuildIntTaskState(const unsigned uiTaskAddress, const unsigned uiTSSAddress, const int stack)
-{
-	TaskState* taskState = (TaskState*)(uiTSSAddress - GLOBAL_DATA_SEGMENT_BASE) ;
-	memset(taskState, 0, sizeof(TaskState)) ;
-
-	taskState->EIP = uiTaskAddress ;
-	taskState->ESP = stack ;
-
-	taskState->ES = 0x8 ;
-
-	taskState->CS = 0x10 ;
-	taskState->DS = 0x18 ;
-	taskState->SS = 0x18 ;
-	taskState->FS = 0x18 ;
-	taskState->GS = 0x18 ;
-	taskState->LDT = 0x0 ;
-
-	//taskState->CR3_PDBR = MEM_PML4 ;
-	taskState->EFLAGS = 0x202 ;
-	taskState->DEBUG_T_BIT = 0x00 ;
-	taskState->IO_MAP_BASE = 103 ; // > TSS Limit => No I/O Permission Bit Map present
 }
 
 void ProcessManager::AddToSchedulerList(SchedulableProcess& process) {

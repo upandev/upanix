@@ -120,22 +120,6 @@ constexpr uint64_t MEM_KERNEL_PAGE_POOL_START = MEM_KERNEL_IST3_COMMON_STACK_TOP
 constexpr uint32_t MEM_KERNEL_PAGE_POOL_SIZE = 16 MB;
 constexpr uint32_t MEM_KERNEL_RESV_SIZE = MEM_KERNEL_PAGE_POOL_START + MEM_KERNEL_PAGE_POOL_SIZE;
 
-/***** These addresses are Relative to Kernel Base ===> Their Phy Addr = Addr + Kernel Base ******/
-#define MEM_PTE_START		0x1000000 // 16 MB
-#define MEM_PTE_END			0x1400000 // 20 MB
-
-#define MEM_PDE_START		0x1420000 // 20 MB + 128 KB
-#define MEM_PDE_END			0x1421000 // 20 MB + 132 KB
-
-#define MEM_PAS_START		0x1421000 // 20 MB + 132 KB
-#define MEM_PAS_END			0x1521000 // 21 MB + 132 KB
-
-#define MEM_PAGE_FAULT_HANDLER_STACK	0x1528FFF // (21 MB + 132 KB + 8 * PAGE_SIZE - 1)
-#define MEM_KERNEL_SERVICE_STACK		0x1530FFF // (21 MB + 132 KB + 16 * PAGE_SIZE - 1)
-
-
-#define PROCESS_KERNEL_SHARE_SPACE		0x153C400 // 21 MB + 241 KB
-
 constexpr uint64_t PAGE_CONFIG_MASK = 0x1FF;
 constexpr uint64_t PAGE_MASK = ~PAGE_CONFIG_MASK;
 

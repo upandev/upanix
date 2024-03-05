@@ -30,8 +30,6 @@ UserThread::UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintpt
   //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
   //but a thread function - unlike a typical c function, should exit() instead of return
   const auto stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - sizeof(uint64_t);
-//  _taskState.BuildForUser(stackTopAddress, _parent.taskState().CR3_PDBR, threadCaller, stackArgSize);
-  //_processLDT.BuildForUser();
 
   _taskContext.rdi = entryAddress;
   _taskContext.rsi = (uintptr_t)arg;

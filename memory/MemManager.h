@@ -25,10 +25,7 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
-#include <TaskStructures.h>
 #include "DMM.h"
-
-#define KERNEL_PROCESS_PDE_ID	1022
 
 extern "C" {
 	void Mem_FlushTLB() ;
