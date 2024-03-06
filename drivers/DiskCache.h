@@ -189,9 +189,9 @@ class DiskCache
     DiskCacheKey* CreateKey(unsigned uiSectorID);
     DiskCacheValue* CreateValue(const byte* pSrc);
 
-		//static const int MAX_CACHE_SECTORS = 16384;
+		static const int MAX_CACHE_SECTORS = 8 KB;
 		//has to be a multiple of 1024
-    static const int MAX_CACHE_SECTORS = 32;
+    //static const int MAX_CACHE_SECTORS = 32;
 		DestroyDiskCacheKeyValue* _destroyKeyValue;
 		MemPool<DiskCacheKey>& _cacheKeyMemPool;
 		MemPool<DiskCacheValue>& _cacheValueMemPool;
