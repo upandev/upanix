@@ -177,7 +177,7 @@ class EndPointContext
       _trDQPtr = (uint64_t)(dqPtr | 0x1);
     }
 
-    void Init(uint32_t dqPtr, USBStandardEndPt::DirectionTypes dir, USBStandardEndPt::Types type, int32_t maxPacketSize, byte interval);
+    void Init(uint64_t dqPtr, USBStandardEndPt::DirectionTypes dir, USBStandardEndPt::Types type, int32_t maxPacketSize, byte interval);
 
     void SetMaxBurstSize(uint32_t maxBurstSize)
     {
@@ -317,7 +317,7 @@ class EndPoint
     static const int TRANSFER_RING_SIZE = 64;
   public:
     uint32_t Id() const { return _id; }
-    void UpdateDeEnQPtr(uint32_t dnqPtr) { _tRing->UpdateDeEnQPtr(dnqPtr); }
+    void UpdateDeEnQPtr(uint64_t dnqPtr) { _tRing->UpdateDeEnQPtr(dnqPtr); }
   protected:
     EndPoint(uint32_t maxPacketSize);
     virtual ~EndPoint();
@@ -347,14 +347,14 @@ class BulkInEndPoint : public DataEndPoint
 {
   public:
     BulkInEndPoint(InputContext&, const USBStandardEndPt&);
-    TRB::Result SetupTransfer(uint32_t bufferAddress, uint32_t len);
+    TRB::Result SetupTransfer(uint64_t bufferAddress, uint32_t len);
 };
 
 class BulkOutEndPoint : public DataEndPoint
 {
   public:
     BulkOutEndPoint(InputContext&, const USBStandardEndPt&);
-    TRB::Result SetupTransfer(uint32_t bufferAddress, uint32_t len);
+    TRB::Result SetupTransfer(uint64_t bufferAddress, uint32_t len);
 };
 
 class InterruptEndPoint : public DataEndPoint
@@ -367,7 +367,7 @@ class InterruptInEndPoint : public InterruptEndPoint
 {
   public:
     InterruptInEndPoint(InputContext&, const USBStandardEndPt&);
-    TRB::Result SetupTransfer(uint32_t bufferAddress, uint32_t len);
+    TRB::Result SetupTransfer(uint64_t bufferAddress, uint32_t len);
     uint32_t Interval() const { return _interval; }
 
   private:
@@ -391,9 +391,9 @@ class InputContext
     void SendCommand(uint32_t bmRequestType, uint32_t bmRequest,
                      uint32_t wValue, uint32_t wIndex, uint32_t wLength,
                      TransferType trt, void* dataBuffer);
-    void SendData(uint32_t bufferAddress, uint32_t len);
-    void ReceiveData(uint32_t bufferAddress, uint32_t len);
-    bool ReceiveInterruptData(uint32_t bufferAddress, uint32_t len);
+    void SendData(uint64_t bufferAddress, uint32_t len);
+    void ReceiveData(uint64_t bufferAddress, uint32_t len);
+    bool ReceiveInterruptData(uint64_t bufferAddress, uint32_t len);
     int GetInterruptInEPInterval() { return InterruptInEP().Interval(); }
 
     void SetInterruptDataHandler(USBInterruptDataHandler* handler)
@@ -442,7 +442,7 @@ class InputContext
       return *_interruptOutEPs[index];
     }
 
-    void OnInterrupt(const EventTRB&, uint32_t interruptDataAddress);
+    void OnInterrupt(const EventTRB &result, uint64_t interruptDataAddress);
 
     friend class ControlEndPoint;
     friend class DataEndPoint;

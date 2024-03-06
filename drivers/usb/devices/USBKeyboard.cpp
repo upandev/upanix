@@ -219,7 +219,7 @@ bool USBKeyboard::TimerTrigger()
   return true;
 }
 
-void USBKeyboard::Handle(uint32_t data)
+void USBKeyboard::Handle(uint64_t data)
 {
   byte* report = (byte*)data;
   //printf("\n%d %d %d %d %d %d", report[2], report[3], report[4], report[5], report[6], report[7]);

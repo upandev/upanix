@@ -42,7 +42,7 @@ void USBDataHandler_DeAllocConfigDesc(USBStandardConfigDesc* pCD, char bNumConfi
 class USBInterruptDataHandler
 {
 public:
-  virtual void Handle(uint32_t data) = 0;
+  virtual void Handle(uint64_t data) = 0;
 };
 
 #endif

@@ -35,7 +35,7 @@ enum DataDirection { OUT, IN };
 class TRB
 {
   public:
-    typedef upan::result<uint32_t> Result;
+    typedef upan::result<uint64_t> Result;
 
   public:
     TRB() : _b1(0), _b2(0), _b3(0), _b4(0)
@@ -255,7 +255,7 @@ class TransferRing
     void AddEventDataTRB(uintptr_t statusAddr, bool ioc);
     TRB::Result AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize);
     TRB* RingBase() { return _trbs; }
-    void UpdateDeEnQPtr(uint32_t dnqPtr);
+    void UpdateDeEnQPtr(uint64_t dnqPtr);
 
   private:
     TRB& NextTRB();

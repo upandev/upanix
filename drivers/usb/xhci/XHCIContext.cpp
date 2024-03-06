@@ -111,21 +111,21 @@ void InputContext::SendCommand(uint32_t bmRequestType, uint32_t bmRequest,
   _controller.InitiateTransfer(trbId, _slotID, _controlEP->Id());
 }
 
-void InputContext::SendData(uint32_t bufferAddress, uint32_t len)
+void InputContext::SendData(uint64_t bufferAddress, uint32_t len)
 {
-  const uint32_t trbId = BulkOutEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
+  const uint64_t trbId = BulkOutEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
   const auto& result = _controller.InitiateTransfer(trbId, _slotID, BulkOutEP().Id());
   BulkOutEP().UpdateDeEnQPtr(result.TRBPointer());
 }
 
-void InputContext::ReceiveData(uint32_t bufferAddress, uint32_t len)
+void InputContext::ReceiveData(uint64_t bufferAddress, uint32_t len)
 {
   const uint32_t trbId = BulkInEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
   const auto& result = _controller.InitiateTransfer(trbId, _slotID, BulkInEP().Id());
   BulkInEP().UpdateDeEnQPtr(result.TRBPointer());
 }
 
-bool InputContext::ReceiveInterruptData(uint32_t bufferAddress, uint32_t len)
+bool InputContext::ReceiveInterruptData(uint64_t bufferAddress, uint32_t len)
 {
   const TRB::Result& trbResult = InterruptInEP().SetupTransfer(bufferAddress, len);
   if(trbResult.isBad())
@@ -134,7 +134,7 @@ bool InputContext::ReceiveInterruptData(uint32_t bufferAddress, uint32_t len)
   return true;
 }
 
-void InputContext::OnInterrupt(const EventTRB& result, uint32_t interruptDataAddress)
+void InputContext::OnInterrupt(const EventTRB& result, uint64_t interruptDataAddress)
 {
   InterruptInEP().UpdateDeEnQPtr(result.TRBPointer());
   if(_interruptDataHandler)
@@ -236,7 +236,7 @@ BulkInEndPoint::BulkInEndPoint(InputContext& inContext, const USBStandardEndPt& 
   inContext.AddBulkInEP(this);
 }
 
-TRB::Result BulkInEndPoint::SetupTransfer(uint32_t bufferAddress, uint32_t len)
+TRB::Result BulkInEndPoint::SetupTransfer(uint64_t bufferAddress, uint32_t len)
 {
   return _tRing->AddDataTRB(bufferAddress, len, DataDirection::IN, _maxPacketSize);
 }
@@ -246,7 +246,7 @@ BulkOutEndPoint::BulkOutEndPoint(InputContext& inContext, const USBStandardEndPt
   inContext.AddBulkOutEP(this);
 }
 
-TRB::Result BulkOutEndPoint::SetupTransfer(uint32_t bufferAddress, uint32_t len)
+TRB::Result BulkOutEndPoint::SetupTransfer(uint64_t bufferAddress, uint32_t len)
 {
   return _tRing->AddDataTRB(bufferAddress, len, DataDirection::OUT, _maxPacketSize);
 }
@@ -297,7 +297,7 @@ InterruptInEndPoint::InterruptInEndPoint(InputContext& inContext, const USBStand
   inContext.AddInterruptInEP(this);
 }
 
-TRB::Result InterruptInEndPoint::SetupTransfer(uint32_t bufferAddress, uint32_t len)
+TRB::Result InterruptInEndPoint::SetupTransfer(uint64_t bufferAddress, uint32_t len)
 {
   return _tRing->AddDataTRB(bufferAddress, len, DataDirection::IN, _maxPacketSize);
 }
@@ -307,7 +307,7 @@ InterruptOutEndPoint::InterruptOutEndPoint(InputContext& inContext, const USBSta
   inContext.AddInterruptOutEP(this);
 }
 
-void EndPointContext::Init(uint32_t dqPtr, USBStandardEndPt::DirectionTypes dir, USBStandardEndPt::Types type, int32_t maxPacketSize, byte interval)
+void EndPointContext::Init(uint64_t dqPtr, USBStandardEndPt::DirectionTypes dir, USBStandardEndPt::Types type, int32_t maxPacketSize, byte interval)
 {
   uint32_t epType = 4;
 

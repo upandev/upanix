@@ -53,8 +53,8 @@ class XHCIController
     void LoadXCaps(uint64_t base);
     void PerformBiosToOSHandoff();
     EventTRB InitiateCommand();
-    EventTRB InitiateTransfer(uint32_t trbId, uint32_t slotID, uint32_t ep);
-    void InitiateInterruptTransfer(InputContext& context, uint32_t trbId, uint32_t slotID, uint32_t ep, uint32_t interruptDataAddress);
+    EventTRB InitiateTransfer(uint64_t trbId, uint32_t slotID, uint32_t ep);
+    void InitiateInterruptTransfer(InputContext& context, uint64_t trbId, uint32_t slotID, uint32_t ep, uint64_t interruptDataAddress);
     void SetDeviceContext(uint32_t slotID, SlotContext& slotContext);
     void RingDoorBell(unsigned index, unsigned value);
     unsigned EnableSlot(unsigned slotType);
@@ -62,15 +62,15 @@ class XHCIController
     void ConfigureEndPoint(unsigned icptr, unsigned slotID);
     void EvaluateContext(unsigned icptr, unsigned slotID);
     EventTRB WaitForCmdCompletion();
-    EventTRB WaitForTransferCompletion(uint32_t trbId);
-    EventTRB WaitForEvent(uint32_t trbId);
+    EventTRB WaitForTransferCompletion(uint64_t trbId);
+    EventTRB WaitForEvent(uint64_t trbId);
 
     SupProtocolXCap* GetSupportedProtocol(unsigned portId) const;
     const char* PortProtocolName(USB_PROTOCOL) const;
     const char* PortSpeedName(DEVICE_SPEED speed) const;
 
-    void RegisterForWaitedEventResult(uint32_t trbId);
-    EventResult& ConsumeEventResult(uint32_t trbId);
+    void RegisterForWaitedEventResult(uint64_t trbId);
+    EventResult& ConsumeEventResult(uint64_t trbId);
     void PublishEventResult(const EventTRB& result);
 
     static unsigned  _memMapBaseAddress;
@@ -83,7 +83,7 @@ class XHCIController
     LegSupXCap*      _legSupXCap;
     volatile unsigned* _doorBellRegs;
     upan::list<SupProtocolXCap*> _supProtoXCaps;
-    upan::map<uint32_t, EventResult*> _eventResults;
+    upan::map<uint64_t, EventResult*> _eventResults;
 		upan::map<uint32_t, XHCIDevice*> _devices;
 
     friend class XHCIManager;
@@ -128,7 +128,7 @@ class EventManager
 {
   public:
     void DebugPrint() const;
-    bool WaitForEvent(uint32_t trbId, EventTRB& result);
+    bool WaitForEvent(uint64_t trbId, EventTRB& result);
     void NotifyEvents();
 
   private:
@@ -252,13 +252,13 @@ public:
 class InterruptEventResult : public EventResult
 {
 public:
-  InterruptEventResult(InputContext& context, int pid, uint32_t dataAddress) : EventResult(pid), _context(context), _dataAddress(dataAddress) { }
+  InterruptEventResult(InputContext& context, int pid, uint64_t dataAddress) : EventResult(pid), _context(context), _dataAddress(dataAddress) { }
   void Consume(const EventTRB &r);
-  uint32_t InterruptDataAddress() const { return _dataAddress; }
+  uint64_t InterruptDataAddress() const { return _dataAddress; }
 
 private:
   InputContext& _context;
-  uint32_t _dataAddress;
+  uint64_t _dataAddress;
 };
 
 #endif

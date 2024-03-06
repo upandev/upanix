@@ -24,18 +24,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="vertical scroller integration">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DiskCache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDataHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDataHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -440,7 +440,35 @@
       <option name="project" value="LOCAL" />
       <updated>1709647973227</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="clean up code">
+      <created>1709730866786</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1709730866786</updated>
+    </task>
+    <task id="LOCAL-00036" summary="increase disk driver cache size to 4MB">
+      <created>1709730894555</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1709730894555</updated>
+    </task>
+    <task id="LOCAL-00037" summary="fix the pointer type">
+      <created>1709730930205</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1709730930206</updated>
+    </task>
+    <task id="LOCAL-00038" summary="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec">
+      <created>1709730987945</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1709730987945</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -469,10 +497,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping" />
-    <MESSAGE value="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic" />
-    <MESSAGE value="a separate handler for timer interrupt written in assembly to make it specific and clean without any compiler dependent/generated code in order to make it suitable for use in context switching" />
-    <MESSAGE value="XHCI controller initializing upgraded for 64bit kernel" />
     <MESSAGE value="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop." />
     <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
     <MESSAGE value="kernel process and thread modified for 64bit kernel" />
@@ -494,6 +518,10 @@
     <MESSAGE value="fix issue with populating main() method arguments on user stack" />
     <MESSAGE value="commented debug print statements" />
     <MESSAGE value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
+    <MESSAGE value="clean up code" />
+    <MESSAGE value="increase disk driver cache size to 4MB" />
+    <MESSAGE value="fix the pointer type" />
+    <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
+    <option name="LAST_COMMIT_MESSAGE" value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
   </component>
 </project>

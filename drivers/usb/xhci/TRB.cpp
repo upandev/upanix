@@ -40,7 +40,7 @@ TransferRing::~TransferRing()
   DMM_DeAllocateForKernel((uintptr_t)_trbs);
 }
 
-void TransferRing::UpdateDeEnQPtr(uint32_t dnqPtr)
+void TransferRing::UpdateDeEnQPtr(uint64_t dnqPtr)
 {
   const auto curdqIndex = (dnqPtr - (uintptr_t)&_trbs[0]) / sizeof(TRB);
   uint32_t freeSlots = 0;
@@ -182,5 +182,5 @@ TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, Dat
     if(ioc)
       lastTRB = &trb;
   }
-  return TRB::Result((uint32_t)lastTRB);
+  return TRB::Result((uint64_t)lastTRB);
 }

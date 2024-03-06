@@ -366,7 +366,7 @@ EventTRB XHCIController::InitiateCommand()
   return WaitForCmdCompletion();
 }
 
-EventTRB XHCIController::InitiateTransfer(uint32_t trbId, uint32_t slotID, uint32_t ep)
+EventTRB XHCIController::InitiateTransfer(uint64_t trbId, uint32_t slotID, uint32_t ep)
 {
   RegisterForWaitedEventResult(trbId);
   RingDoorBell(slotID, ep);
@@ -374,7 +374,7 @@ EventTRB XHCIController::InitiateTransfer(uint32_t trbId, uint32_t slotID, uint3
   return WaitForTransferCompletion(trbId);
 }
 
-void XHCIController::InitiateInterruptTransfer(InputContext& context, uint32_t trbId, uint32_t slotID, uint32_t ep, uint32_t interruptDataAddress)
+void XHCIController::InitiateInterruptTransfer(InputContext& context, uint64_t trbId, uint32_t slotID, uint32_t ep, uint64_t interruptDataAddress)
 {
   {
     //TODO: Find an efficient way w/o disabling interrupts
@@ -415,7 +415,7 @@ EventTRB XHCIController::WaitForCmdCompletion()
   return result;
 }
 
-EventTRB XHCIController::WaitForTransferCompletion(uint32_t trbId)
+EventTRB XHCIController::WaitForTransferCompletion(uint64_t trbId)
 {
   auto result = WaitForEvent(trbId);
 
@@ -425,7 +425,7 @@ EventTRB XHCIController::WaitForTransferCompletion(uint32_t trbId)
   return result;
 }
 
-EventTRB XHCIController::WaitForEvent(uint32_t trbId)
+EventTRB XHCIController::WaitForEvent(uint64_t trbId)
 {
   if(XHCIManager::Instance().GetEventMode() == XHCIManager::Poll)
   {
@@ -444,7 +444,7 @@ EventTRB XHCIController::WaitForEvent(uint32_t trbId)
   }
 }
 
-void XHCIController::RegisterForWaitedEventResult(uint32_t trbId)
+void XHCIController::RegisterForWaitedEventResult(uint64_t trbId)
 {
   //TODO: Find an efficient way w/o disabling interrupts
   IrqGuard g;
@@ -452,7 +452,7 @@ void XHCIController::RegisterForWaitedEventResult(uint32_t trbId)
   _eventResults[trbId] = new WaitedEventResult(ProcessManager::Instance().GetCurProcId());
 }
 
-EventResult& XHCIController::ConsumeEventResult(uint32_t trbId)
+EventResult& XHCIController::ConsumeEventResult(uint64_t trbId)
 {
   //TODO: Find an efficient way w/o disabling interrupts
   IrqGuard g;
@@ -471,8 +471,8 @@ void XHCIController::PublishEventResult(const EventTRB& result)
   auto it = _eventResults.find(result.TRBPointer());
   if(it == _eventResults.end())
   {
-    printf("\n No entry found in EventResults for TRB Id: %x, Event Type: %d CC: %d, TLen: %d\n",
-           (uint32_t)result.TRBPointer(), result.Type(), result.CompletionCode(), result.TransferLength());
+    printf("\n No entry found in EventResults for TRB Id: %llx, Event Type: %d CC: %d, TLen: %d\n",
+           (uint64_t)result.TRBPointer(), result.Type(), result.CompletionCode(), result.TransferLength());
     ((TRB*)KERNEL_VIRTUAL_ADDRESS(result.TRBPointer()))->Print();
     return;
   }
@@ -582,7 +582,7 @@ void EventManager::DebugPrint() const
   _iregs[0].DebugPrint();
 }
 
-bool EventManager::WaitForEvent(uint32_t trbId, EventTRB& result)
+bool EventManager::WaitForEvent(uint64_t trbId, EventTRB& result)
 {
   int timeout = 2000;//2 seconds
   while(timeout > 10)
