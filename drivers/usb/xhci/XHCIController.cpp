@@ -33,7 +33,7 @@
 #include <XHCIDevice.h>
 #include <Cpu.h>
 
-unsigned XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
+uint64_t XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
 
 XHCIController::XHCIController(PCIEntry* pPCIEntry)
   : _pPCIEntry(pPCIEntry), _capReg(nullptr), _opReg(nullptr),
@@ -105,7 +105,7 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
   _opReg->SetDNCTRL(0x2);
 
   //program device context base address pointer
-  unsigned deviceContextTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
+  uint64_t deviceContextTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
   _deviceContextAddrArray = (uint64_t*)KERNEL_VIRTUAL_ADDRESS(deviceContextTable);
   memset((void*)_deviceContextAddrArray, 0, PAGE_SIZE);
   _opReg->SetDCBaap(deviceContextTable);
@@ -552,7 +552,7 @@ EventManager::InterrupterRegister::InterrupterRegister()
 
 void EventManager::InterrupterRegister::DebugPrint()
 {
-  printf("\n IMAN: %x, IMON: %x, DQPTR: %x", _iman, _imod, (unsigned)DQPtr());
+  printf("\n IMAN: %x, IMON: %x, DQPTR: %llx", _iman, _imod, (uint64_t)DQPtr());
 //  _erdqPtr = _erdqPtr | 0x8;
 //  _iman = _iman | 0x1;
   for(int i = 0; i < 16; ++i)
@@ -562,7 +562,7 @@ void EventManager::InterrupterRegister::DebugPrint()
 const int EventManager::ERST_SIZE = 256;
 EventManager::ERSTEntry::ERSTEntry() : _size(ERST_SIZE)
 {
-  unsigned eventSegmentTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
+  uint64_t eventSegmentTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
   EventTRB* events = new ((void*)KERNEL_VIRTUAL_ADDRESS(eventSegmentTable))EventTRB[_size];
   _ersAddr = (uint64_t)KERNEL_REAL_ADDRESS(events);
 }
@@ -570,7 +570,7 @@ EventManager::ERSTEntry::ERSTEntry() : _size(ERST_SIZE)
 EventManager::EventManager(XHCIController& controller, XHCICapRegister& creg, XHCIOpRegister& oreg)
   : _eventCycleBit(true), _capReg(creg), _opReg(oreg), _controller(controller)
 {
-  _iregs = (InterrupterRegister*)((unsigned)&_capReg + _capReg.RTSOffset() + 0x20);
+  _iregs = (InterrupterRegister*)((uint64_t)&_capReg + _capReg.RTSOffset() + 0x20);
   for(unsigned i = 0; i < _capReg.MaxIntrs(); ++i)
     new ((void*)&_iregs[i])InterrupterRegister();
   _iregs[0].EnableInterrupt();

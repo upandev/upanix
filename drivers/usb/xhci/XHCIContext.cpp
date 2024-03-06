@@ -31,7 +31,7 @@
 InputContext::InputContext(XHCIController& controller, uint32_t slotID, const XHCIPortRegister& port, uint32_t portId, uint32_t routeString)
   : _slotID(slotID), _controller(controller), _interruptDataHandler(nullptr)
 {
-  unsigned addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
+  uint64_t addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
   if(_controller.CapReg().IsContextSize64())
   {
     auto context64 = new ((void*)addr)InputContext64();
@@ -52,7 +52,7 @@ InputContext::InputContext(XHCIController& controller, uint32_t slotID, const XH
 
 InputContext::~InputContext()
 {
-  unsigned addr = KERNEL_REAL_ADDRESS(_control);
+  uint64_t addr = KERNEL_REAL_ADDRESS(_control);
   MemManager::Instance().DeAllocatePageForKernel(addr / PAGE_SIZE);
   delete _devContext;
   delete _controlEP;
@@ -143,7 +143,7 @@ void InputContext::OnInterrupt(const EventTRB& result, uint64_t interruptDataAdd
 
 DeviceContext::DeviceContext(bool use64) : _allocated(true)
 {
-  unsigned addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
+  uint64_t addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
   if(use64)
     Init64(*new ((void*)addr)DeviceContext64());
   else
@@ -180,7 +180,7 @@ DeviceContext::~DeviceContext()
 {
   if(_allocated)
   {
-    unsigned addr = KERNEL_REAL_ADDRESS(_slot);
+    uint64_t addr = KERNEL_REAL_ADDRESS(_slot);
     MemManager::Instance().DeAllocatePageForKernel(addr / PAGE_SIZE);
   }
 }

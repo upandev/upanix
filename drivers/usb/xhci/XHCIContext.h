@@ -159,7 +159,7 @@ class EndPointContext
     {
     } 
 
-    void EP0Init(unsigned dqPtr, int32_t maxPacketSize)
+    void EP0Init(uint64_t dqPtr, int32_t maxPacketSize)
     {
       //Control EP
       EPType(4);
@@ -226,7 +226,7 @@ class EndPointContext
 
     void DebugPrint()
     {
-      printf("\n EP C1: %x, C2: %x, TDQPTR: %x, C3: %x", _context1, _context2, (unsigned)_trDQPtr, _context3);
+      printf("\n EP C1: %x, C2: %x, TDQPTR: %llx, C3: %x", _context1, _context2, (uint64_t)_trDQPtr, _context3);
     }
   private:
 

@@ -81,7 +81,7 @@ qemu-system-x86_64 \
 -drive if=none,id=usbbootdrive,file=$BOOT_DRIVE \
 -drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img \
 -device usb-ehci,id=ehci \
--device usb-storage,bus=ehci.0,drive=usbdrive1 \
+-device usb-storage,bus=ehci.0,drive=usbbootdrive \
 -device nec-usb-xhci,id=xhci \
--device usb-storage,bus=xhci.0,port=1,drive=usbbootdrive \
+-device usb-storage,bus=xhci.0,port=1,drive=usbdrive1 \
 -device usb-hub,bus=xhci.0,port=3

@@ -73,7 +73,7 @@ class XHCIController
     EventResult& ConsumeEventResult(uint64_t trbId);
     void PublishEventResult(const EventTRB& result);
 
-    static unsigned  _memMapBaseAddress;
+    static uint64_t  _memMapBaseAddress;
     PCIEntry*        _pPCIEntry;
     uint64_t*        _deviceContextAddrArray;
     XHCICapRegister* _capReg;
@@ -208,7 +208,7 @@ class EventManager
       void DebugPrint();
 
     private:
-      unsigned DQPtr() { return KERNEL_VIRTUAL_ADDRESS(_erdqPtr) & ~(0xF); }
+      uint64_t DQPtr() { return KERNEL_VIRTUAL_ADDRESS(_erdqPtr) & ~(0xF); }
       void DQPtr(uint64_t addr) { _erdqPtr = (addr & ~(0xF)) | (1 << 3); }
 
       unsigned _iman;

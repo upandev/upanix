@@ -24,18 +24,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix address variable type to uint64_t from uint32_t">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDataHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDataHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBKeyboard.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -468,7 +463,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709730987945</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="fix address variable type to uint64_t from uint32_t">
+      <created>1709735450128</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1709735450128</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -497,7 +499,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop." />
     <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
     <MESSAGE value="kernel process and thread modified for 64bit kernel" />
     <MESSAGE value="map APIC MMIO space as uncacheable" />
@@ -522,6 +523,7 @@
     <MESSAGE value="increase disk driver cache size to 4MB" />
     <MESSAGE value="fix the pointer type" />
     <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
-    <option name="LAST_COMMIT_MESSAGE" value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
+    <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix address variable type to uint64_t from uint32_t" />
   </component>
 </project>

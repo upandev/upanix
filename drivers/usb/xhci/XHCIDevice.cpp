@@ -320,7 +320,7 @@ bool XHCIDevice::BulkRead(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
     return false ;
   }
   //printf("\n Read: %d", uiLen);
-  _inputContext->ReceiveData((unsigned)pDisk->pRawAlignedBuffer, uiLen);
+  _inputContext->ReceiveData((uint64_t)pDisk->pRawAlignedBuffer, uiLen);
   memcpy(pDataBuf, pDisk->pRawAlignedBuffer, uiLen) ;
   return true ;
 }
@@ -338,7 +338,7 @@ bool XHCIDevice::BulkWrite(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
   }
   //printf("\n Write: %d", uiLen);
   memcpy(pDisk->pRawAlignedBuffer, pDataBuf, uiLen) ;
-  _inputContext->SendData((unsigned)pDisk->pRawAlignedBuffer, uiLen);
+  _inputContext->SendData((uint64_t)pDisk->pRawAlignedBuffer, uiLen);
   return true;
 }
 
