@@ -66,6 +66,7 @@
 #include <metrics.h>
 #include <BmpEncoder.h>
 #include <PngEncoder.h>
+#include <metrics.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -125,6 +126,7 @@ static void ConsoleCommands_ShowRawDiskList() ;
 static void ConsoleCommands_InitFloppyController() ;
 static void ConsoleCommands_InitATAController() ;
 static void ConsoleCommands_InitMountManager() ;
+static void ConsoleCommands_PrintKPIs();
 static void ConsoleCommands_Test() ;
 static void ConsoleCommands_Testv() ;
 static void ConsoleCommands_TestNet() ;
@@ -198,6 +200,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "initfdc",	&ConsoleCommands_InitFloppyController },
 	{ "initata",	&ConsoleCommands_InitATAController },
 	{ "initmntmgr",	&ConsoleCommands_InitMountManager },
+  { "kpi",	&ConsoleCommands_PrintKPIs },
 	{ "testg",		&ConsoleCommands_TestGraphics },
 	{ "test",		&ConsoleCommands_Test },
   { "photos",		&ConsoleCommands_Testv },
@@ -1653,9 +1656,21 @@ void aThread(void* x) {
   }
 }
 
+void ConsoleCommands_PrintKPIs() {
+  if (CommandLineParser::Instance().GetNoOfParameters() >= 1) {
+    const upan::string& name = CommandLineParser::Instance().GetParameterAt(0);
+    const upan::metrics::stats& s = upan::metrics::instance().get(name);
+    printf("\navg(%s): %lf", name.c_str(), upan::metrics::instance().avg(name));
+  } else {
+    const auto& names = upan::metrics::instance().kpis();
+    for(const auto& e : names) {
+      printf("\navg(%s): %lf", e.c_str(), upan::metrics::instance().avg(e));
+    }
+  }
+}
+
 void ConsoleCommands_Test() {
-  printf("\n Avg time for graphics plot: %lf", upan::metrics::instance().avg("gvt"));
-  printf("\n Avg time for LFB copy: %lf", upan::metrics::instance().avg("lfb"));
+  _DisplayReadStat();
 }
 
 extern uint32_t dmm_alloc_count;

@@ -46,7 +46,7 @@ public:
   int GetNoOfParameters() const { return _params.size(); }
   int GetNoOfOptions() const { return _options.size(); }
   const char* GetParameterAt(const int iPos) const;
-  bool IsOptPresent(const char* opt) const;
+  bool IsOptPresent(const upan::string& opt) const;
 
 public:
   upan::string _command;

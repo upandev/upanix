@@ -290,7 +290,7 @@ bool ProcessManager::DisableTaskSwitch() {
   return upan::atomic::op::swap(_taskSwitch, 0) == 1;
 }
 
-void ProcessManager::Sleep(__volatile__ unsigned sleepTime) // in Milli Seconds
+void ProcessManager::Sleep(uint32_t sleepTime) // in Milli Seconds
 {
 	if(DoPollWait()) {
 		KernelUtil::Wait(sleepTime) ;
@@ -300,7 +300,6 @@ void ProcessManager::Sleep(__volatile__ unsigned sleepTime) // in Milli Seconds
   auto &p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    //ProcessManager::DisableTaskSwitch() ;
     p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(sleepTime));
     p.setStatus(WAIT_SLEEP);
   }

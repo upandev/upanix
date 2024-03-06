@@ -23,7 +23,6 @@
 # include <string.h>
 # include <ctype.h>
 # include <stdlib.h>
-# include <vector.h>
 
 bool CommandLineParser_TokenCompare(char ch)
 {
@@ -96,7 +95,7 @@ const char* CommandLineParser::GetParameterAt(const int pos) const
   return _params[pos].c_str();
 }
 
-bool CommandLineParser::IsOptPresent(const char* opt) const
+bool CommandLineParser::IsOptPresent(const upan::string& opt) const
 {
   return _options.find(opt) != _options.end();
 }

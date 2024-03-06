@@ -31,7 +31,6 @@
 #include <ElfParser.h>
 #include <ElfRelocationSection.h>
 #include <ElfSymbolTable.h>
-#include <ProcessGroup.h>
 #include <DMM.h>
 #include <GraphicsVideo.h>
 
