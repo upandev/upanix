@@ -24,21 +24,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="vertical scroller integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/TaskStructures.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

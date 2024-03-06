@@ -339,7 +339,7 @@ void EHCIController::Probe()
 		if(bPPC)
 		{
 			*pPort |= (1 << 12) ;
-			ProcessManager::Instance().Sleep(100) ;
+			ProcessManager::Instance().Sleep(30) ;
 		}
 
 		if((*pPort & (1 << 13)))
@@ -356,9 +356,9 @@ void EHCIController::Probe()
 
 		// Perform Port Reset
 		*pPort = (*pPort | 0x100) & ~(0x4) ;
-		ProcessManager::Instance().Sleep(200) ;
+		ProcessManager::Instance().Sleep(30) ;
 		*pPort &= (~(0x100)) ;
-		ProcessManager::Instance().Sleep(500) ;
+		ProcessManager::Instance().Sleep(30) ;
 
 		if(!(*pPort & 0x4))
 		{

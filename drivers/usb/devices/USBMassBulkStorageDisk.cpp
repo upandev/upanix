@@ -82,7 +82,7 @@ byte USBMassBulkStorageDisk::DoReset()
 	printf("\n Command Reset Complete");
 
 	// Long Wait For Reset
-	ProcessManager::Instance().Sleep( 5 * 1000 );
+	ProcessManager::Instance().Sleep( 200);
 
 	printf("\n Doing IN EndPoint Clear Halt");
 
