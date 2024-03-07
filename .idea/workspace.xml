@@ -24,13 +24,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix address variable type to uint64_t from uint32_t">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix address/pointer type to uint64_t from uint32_t">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -470,7 +468,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709735450128</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="fix address/pointer type to uint64_t from uint32_t">
+      <created>1709736267256</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1709736267256</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -499,7 +504,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="upgrade EHCI controler initialization to support 64bit kernel" />
     <MESSAGE value="kernel process and thread modified for 64bit kernel" />
     <MESSAGE value="map APIC MMIO space as uncacheable" />
     <MESSAGE value="save fx states and protect framebuffer copy by disabling all interrupts" />
@@ -524,6 +528,7 @@
     <MESSAGE value="fix the pointer type" />
     <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
     <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix address variable type to uint64_t from uint32_t" />
+    <MESSAGE value="fix address/pointer type to uint64_t from uint32_t" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix address/pointer type to uint64_t from uint32_t" />
   </component>
 </project>

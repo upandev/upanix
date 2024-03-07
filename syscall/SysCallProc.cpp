@@ -91,7 +91,9 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 
 	  case SYS_CALL_PROCESS_YIELD:
       {
-        ProcessManager::Instance().GetCurrentPAS().yield();
+        //Sleep will change process status to WAIT_SLEEP which will ensure the process is preempted
+        //even if CanPreempt() returns false
+        ProcessManager::Instance().Sleep(0);
       }
       break;
 

@@ -27,13 +27,13 @@
 
 [[noreturn]] void schedule_runner_process() {
   while(true) {
-    ProcessManager::Instance().GetCurrentPAS().yield();
+    ProcessManager::Instance().Sleep(0);
   }
 }
 
 void KernelRootProcess::createScheduleRunner() {
   ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
-                                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }
 
 void KernelRootProcess::initGuiFrame() {

@@ -1660,11 +1660,11 @@ void ConsoleCommands_PrintKPIs() {
   if (CommandLineParser::Instance().GetNoOfParameters() >= 1) {
     const upan::string& name = CommandLineParser::Instance().GetParameterAt(0);
     const upan::metrics::stats& s = upan::metrics::instance().get(name);
-    printf("\navg(%s): %lf", name.c_str(), upan::metrics::instance().avg(name));
+    printf("\navg(%s): %lf (%d)", name.c_str(), upan::metrics::instance().avg(name), upan::metrics::instance().count(name));
   } else {
     const auto& names = upan::metrics::instance().kpis();
     for(const auto& e : names) {
-      printf("\navg(%s): %lf", e.c_str(), upan::metrics::instance().avg(e));
+      printf("\navg(%s): %lf (%d)", e.c_str(), upan::metrics::instance().avg(e), upan::metrics::instance().count(e));
     }
   }
 }
