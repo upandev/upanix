@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <ATATimingManager.h>
-# include <MemUtil.h>
 # include <DMM.h>
 
 static ATATiming ATATimingManager_Timings[] = {
@@ -89,7 +88,7 @@ void ATATimingManager_Compute(ATAPort* pPort, int iSpeed, ATATiming* pATATiming,
 
 	if(pPort->id.usValid & 0x2) //EIDE Drive
 	{
-		MemUtil_Set((byte*)&ataTimingP, 0, sizeof(ATATiming)) ;
+    memset((byte*)&ataTimingP, 0, sizeof(ATATiming));
 
 		if(iSpeed == ATA_SPEED_PIO)
 			ataTimingP.usCyc = ataTimingP.usCyc8b = pPort->id.usEIDEPIO ;

@@ -29,6 +29,9 @@
 #include <RTC.h>
 #include <XHCIManager.h>
 #include <PortCom.h>
+#include <ATADeviceController.h>
+#include <E1000NICDevice.h>
+#include <Floppy.h>
 
 extern "C" {
   void timer_interrupt_handler(TaskContext *state) {
@@ -61,6 +64,22 @@ extern "C" {
 
   void isr_0x27_interrupt_handler() {
     COM1::Instance().Write("\nInt 0x27.");
+  }
+
+  void ata_primary_interrupt_handler() {
+    ATADeviceController_PrimaryIRQHandler();
+  }
+
+  void ata_secondary_interrupt_handler() {
+    ATADeviceController_SecondaryIRQHandler();
+  }
+
+  void floppy_interrupt_handler() {
+    Floppy_Handler();
+  }
+
+  void e1000_nic_interrupt_handler() {
+    E1000NICDevice::InterruptHandler();
   }
 }
 

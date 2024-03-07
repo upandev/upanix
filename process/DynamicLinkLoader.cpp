@@ -29,7 +29,6 @@
 #include <ElfSymbolTable.h>
 #include <ElfDynamicSection.h>
 #include <DMM.h>
-#include <MemUtil.h>
 #include <BufferedReader.h>
 #include <MountManager.h>
 #include <GenericUtil.h>

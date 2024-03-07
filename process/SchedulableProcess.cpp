@@ -24,13 +24,9 @@
 #include <MountManager.h>
 #include <UserManager.h>
 #include <ProcessGroup.h>
-#include <MemUtil.h>
 #include <ProcessManager.h>
 #include <DMM.h>
 #include <Cpu.h>
-
-//#define INIT_NAME "_stdio_init-NOTINUSE"
-//#define TERM_NAME "_stdio_term-NOTINUSE"
 
 int SchedulableProcess::_nextPid = 0;
 

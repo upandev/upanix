@@ -21,7 +21,6 @@
  */
 # include <ATASIS.h>
 # include <StringUtil.h>
-# include <MemUtil.h>
 # include <DMM.h>
 
 static SISIDE SISIDEList[] = {

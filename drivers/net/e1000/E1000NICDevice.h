@@ -28,6 +28,7 @@
 #include <EthernetHandler.h>
 #include <NetworkPacketComponents.h>
 #include <NetworkUtil.h>
+#include <NetworkDevice.h>
 #include <ARPHandler.h>
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>

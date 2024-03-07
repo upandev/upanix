@@ -25,16 +25,10 @@
 #include <Global.h>
 #include <StringUtil.h>
 #include <FileSystem.h>
-#include <MemConstants.h>
-#include <MemUtil.h>
 #include <DeviceDrive.h>
 #include <UserManager.h>
 #include <SystemUtil.h>
-#include <FileOperations.h>
 #include <DMM.h>
-#include <RTC.h>
-#include <KernelUtil.h>
-#include <DiskCache.h>
 
 #define BLOCK_ID(SectorID) (SectorID / ENTRIES_PER_TABLE_SECTOR)
 #define BLOCK_OFFSET(SectorID) (SectorID % ENTRIES_PER_TABLE_SECTOR)

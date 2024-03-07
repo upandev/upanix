@@ -29,9 +29,7 @@
 # include <ATAAMD.h>
 # include <ATAVIA.h>
 # include <ATASIS.h>
-# include <AsmUtil.h>
 # include <ATADrive.h>
-# include <MemUtil.h>
 # include <PartitionManager.h>
 # include <FileSystem.h>
 # include <stdio.h>
@@ -97,36 +95,21 @@ ATAPCIDevice ATADeviceController_Devices[] = {
 
 /******************************** static functions **************************************************/
 
-static void ATADeviceController_PrimaryIRQHandler()
-{
-	AsmUtil_STORE_GPR() ;
-	AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
-  HD_PRIMARY_IRQ->Signal();
-
-	IrqManager::Instance().SendEOI(*HD_PRIMARY_IRQ) ;
-	
-	AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-	AsmUtil_RESTORE_GPR() ;
-
-	__asm__ __volatile__("leave") ;
-	__asm__ __volatile__("IRET") ;
+extern "C" {
+  void _ata_primary_interrupt_handler();
+  void _ata_secondary_interrupt_handler();
 }
 
-static void ATADeviceController_SecondaryIRQHandler()
+void ATADeviceController_PrimaryIRQHandler()
 {
-	AsmUtil_STORE_GPR() ;
-	AsmUtil_SET_KERNEL_DATA_SEGMENTS
+  HD_PRIMARY_IRQ->Signal();
+	IrqManager::Instance().SendEOI(*HD_PRIMARY_IRQ) ;
+}
 
+void ATADeviceController_SecondaryIRQHandler()
+{
   HD_SECONDARY_IRQ->Signal();
-	
 	IrqManager::Instance().SendEOI(*HD_SECONDARY_IRQ) ;
-
-	AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-	AsmUtil_RESTORE_GPR() ;
-
-	asm("leave") ;
-	asm("IRET") ;
 }
 
 static unsigned ATADeviceController_GetNextPortID()
@@ -357,7 +340,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 
 	if(bDMAPossible)
 	{
-		HD_PRIMARY_IRQ = IrqManager::Instance().RegisterIRQ(bPrimaryIRQ, (uintptr_t)&ATADeviceController_PrimaryIRQHandler) ;
+		HD_PRIMARY_IRQ = IrqManager::Instance().RegisterIRQ(bPrimaryIRQ, (uintptr_t)&_ata_primary_interrupt_handler) ;
 		if(!HD_PRIMARY_IRQ)
       throw upan::exception(XLOC, "Failed to register HD Primary IRQ %d", bPrimaryIRQ);
 
@@ -365,7 +348,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 
 		if(bPrimaryIRQ != bSecondaryIRQ)
 		{
-			HD_SECONDARY_IRQ = IrqManager::Instance().RegisterIRQ(bSecondaryIRQ, (uintptr_t)&ATADeviceController_SecondaryIRQHandler) ;
+			HD_SECONDARY_IRQ = IrqManager::Instance().RegisterIRQ(bSecondaryIRQ, (uintptr_t)&_ata_secondary_interrupt_handler) ;
 			if(!HD_SECONDARY_IRQ)
         throw upan::exception(XLOC, "Failed to register HD Secondary IRQ %d", bSecondaryIRQ);
 

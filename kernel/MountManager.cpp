@@ -20,10 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <DMM.h>
-# include <MemUtil.h>
-# include <StringUtil.h>
 # include <Directory.h>
-# include <IODescriptorTable.h>
 # include <FileOperations.h>
 # include <MultiBoot.h>
 # include <MountManager.h>

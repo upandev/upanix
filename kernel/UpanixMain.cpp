@@ -21,21 +21,15 @@
  */
 # include <stdio.h>
 # include <UpanixMain.h>
-# include <MemUtil.h>
 
-# include <FileSystem.h>
 # include <ProcessManager.h>
 # include <SysCall.h>
 # include <MemManager.h>
 # include <PCIBusHandler.h>
 # include <DMM.h>
-# include <Directory.h>
 # include <Floppy.h>
-# include <MemUtil.h>
-# include <StringUtil.h>
 # include <KernelService.h>
 # include <ATADeviceController.h>
-# include <IODescriptorTable.h>
 # include <SessionManager.h>
 # include <UserManager.h>
 # include <PartitionManager.h>
@@ -43,7 +37,6 @@
 # include <MultiBoot.h>
 # include <MountManager.h>
 # include <USBController.h>
-# include <UHCIManager.h>
 # include <EHCIManager.h>
 # include <XHCIManager.h>
 # include <USBMassBulkStorageDisk.h>
@@ -195,8 +188,7 @@ void Initialize() {
     RTC::Initialize() ;
     //USB
     USBController::Instance();
-    //UHCIManager::Instance();
-    //EHCIManager::Instance();
+    EHCIManager::Instance();
     XHCIManager::Instance().Initialize();
 
     USBDiskDriver::Register();

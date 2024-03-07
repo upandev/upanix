@@ -21,7 +21,6 @@
  */
 # include <KernelService.h>
 # include <DMM.h>
-# include <AsmUtil.h>
 # include <DynamicLinkLoader.h>
 # include <UserManager.h>
 # include <GenericUtil.h>

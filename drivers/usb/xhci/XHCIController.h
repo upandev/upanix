@@ -22,7 +22,6 @@
 #ifndef _XHCI_CONTROLLER_H_
 #define _XHCI_CONTROLLER_H_
 
-#include <AsmUtil.h>
 #include <USBController.h>
 #include <PCIBusHandler.h>
 #include <XHCIStructures.h>

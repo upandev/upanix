@@ -21,15 +21,11 @@
  */
 # include <SessionManager.h>
 # include <StringUtil.h>
-# include <FileSystem.h>
 # include <Directory.h>
 # include <DMM.h>
-# include <ATADrive.h>
-# include <MemUtil.h>
 # include <UserManager.h>
 # include <GenericUtil.h>
 # include <KeyboardHandler.h>
-# include <ProcessGroup.h>
 # include <KernelService.h>
 
 #define MAX_NO_OF_SESSIONS 8

@@ -21,10 +21,8 @@
  */
 #include <Directory.h>
 #include <StringUtil.h>
-#include <MemUtil.h>
 #include <DeviceDrive.h>
 #include <DMM.h>
-#include <SystemUtil.h>
 #include <FileOperations.h>
 #include <FileDescriptor.h>
 
@@ -567,8 +565,7 @@ void Directory_ActualFileWrite(DiskDrive* pDiskDrive, byte* bDataBuffer, FileDes
 		if(uiDataSize <= uiWrittenCount)
 			uiWrittenCount = uiDataSize ;
 
-    MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)bDataBuffer, MemUtil_GetDS(),
-                       (unsigned)(bSectorBuffer + iStartWriteSectorPos), uiWrittenCount) ;
+    memcpy(bSectorBuffer + iStartWriteSectorPos, bDataBuffer, uiWrittenCount);
 
     pDiskDrive->xWrite(bSectorBuffer, uiCurrentSectorID, 1);
 			

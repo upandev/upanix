@@ -61,7 +61,7 @@ void RootVGAConsole::gotoCursor() {
 }
 
 void RootVGAConsole::putChar(int iPos, byte ch, const upanui::CharStyle& attr) {
-  static byte* vga_frame_buffer = (byte*)(VIDEO_BUFFER_ADDRESS - GLOBAL_DATA_SEGMENT_BASE);
+  static byte* vga_frame_buffer = (byte*)(VIDEO_BUFFER_ADDRESS);
   vga_frame_buffer[iPos] = ch;
   vga_frame_buffer[iPos + 1] = attr.get();
 }
@@ -70,7 +70,7 @@ void RootVGAConsole::scrollDown() {
   static const unsigned NO_OF_DISPLAY_BYTES = (_consoleBuffer.maxRows() - 1) * _consoleBuffer.maxColumns() * upanui::ConsoleBuffer::NO_BYTES_PER_CHARACTER;
   static const unsigned OFFSET = _consoleBuffer.maxColumns() * upanui::ConsoleBuffer::NO_BYTES_PER_CHARACTER;
 
-  static byte* vga_frame_buffer = (byte*)(VIDEO_BUFFER_ADDRESS - GLOBAL_DATA_SEGMENT_BASE);
+  static byte* vga_frame_buffer = (byte*)(VIDEO_BUFFER_ADDRESS);
   memcpy(vga_frame_buffer, vga_frame_buffer + OFFSET, NO_OF_DISPLAY_BYTES);
   for(unsigned i = NO_OF_DISPLAY_BYTES;
     i < NO_OF_DISPLAY_BYTES + _consoleBuffer.maxColumns() * upanui::ConsoleBuffer::NO_BYTES_PER_CHARACTER;

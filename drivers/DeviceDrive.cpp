@@ -26,7 +26,6 @@
 # include <PartitionManager.h>
 # include <DMM.h>
 # include <StringUtil.h>
-# include <MemUtil.h>
 # include <ProcessManager.h>
 # include <SCSIHandler.h>
 # include <stdio.h>

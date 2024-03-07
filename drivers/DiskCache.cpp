@@ -21,12 +21,9 @@
  */
 # include <DiskCache.h>
 # include <Floppy.h>
-# include <ATADrive.h>
 # include <ATADeviceController.h>
 # include <DMM.h>
-# include <SCSIHandler.h>
 # include <stdio.h>
-# include <MemUtil.h>
 # include <ProcessManager.h>
 
 LFUSectorManager::LFUSectorManager(DiskCache& mCache) :

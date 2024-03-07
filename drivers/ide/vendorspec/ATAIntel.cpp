@@ -22,7 +22,6 @@
 # include <ATAIntel.h>
 # include <StringUtil.h>
 # include <DMM.h>
-# include <MemUtil.h>
 
 static IntelIDE IntelIDEList[] = {
     { "PIIXa",     0x122E, 0 },

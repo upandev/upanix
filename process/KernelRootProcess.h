@@ -62,7 +62,7 @@ public:
   }
 
   uint64_t getProcessBase() const override {
-    return GLOBAL_DATA_SEGMENT_BASE;
+    return 0;
   }
 
   int userID() const override {

@@ -24,7 +24,6 @@
 #include <StringUtil.h>
 #include <string.h>
 #include <DMM.h>
-#include <MemUtil.h>
 #include <ProcessManager.h>
 
 static const char SCSIHandler_commandSize[ 8 ] = {

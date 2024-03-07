@@ -22,10 +22,8 @@
 
 #include <Floppy.h>
 #include <IDT.h>
-#include <AsmUtil.h>
 #include <PIC.h>
 #include <DMA.h>
-#include <MemUtil.h>
 #include <PortCom.h>
 #include <ProcessManager.h>
 #include <DeviceDrive.h>
@@ -404,8 +402,8 @@ static void Floppy_FullFormat(const DiskDrive* pDiskDrive)
 				Floppy_FormatData[uiSectorCount].bSector = uiSectorCount + 1 ;
 				Floppy_FormatData[uiSectorCount].bSectorSize = 2 ; /* 512bytes/Sector */
 			}
-			
-      MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&Floppy_FormatData, SYS_LINEAR_SELECTOR_DEFINED, MEM_DMA_FLOPPY_START, uiWordCount) ;
+
+      memcpy((void*)MEM_DMA_FLOPPY_START, &Floppy_FormatData, uiWordCount);
 
       Floppy_FormatTrack(pDiskDrive, (Floppy_HEAD_NO)uiHeadCount);
 		}
@@ -413,20 +411,14 @@ static void Floppy_FullFormat(const DiskDrive* pDiskDrive)
 }
 
 /********************************************************************************************/
+extern "C" {
+  void _floppy_interrupt_handler();
+}
+
 void Floppy_Handler()
 {
-	AsmUtil_STORE_GPR() ;
-	AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
 	StdIRQ::Instance().FLOPPY_IRQ.Signal();
-
 	IrqManager::Instance().SendEOI(StdIRQ::Instance().FLOPPY_IRQ);
-
-	AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-	AsmUtil_RESTORE_GPR() ;
-
-	asm("leave") ;
-	asm("IRET") ;
 }
 
 void Floppy_Initialize()
@@ -435,7 +427,7 @@ void Floppy_Initialize()
 	Floppy_bInitStatus = false ;
 	Floppy_Reset() ;
 
-	if(IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().FLOPPY_IRQ, (unsigned)&Floppy_Handler))
+	if(IrqManager::Instance().RegisterIRQ(StdIRQ::Instance().FLOPPY_IRQ, (uint64_t)&_floppy_interrupt_handler))
 	{
 		IrqManager::Instance().EnableIRQ(StdIRQ::Instance().FLOPPY_IRQ) ;
 		
@@ -507,17 +499,15 @@ void Floppy_Read(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned
   DMA_ReleaseChannel(DMA_CH2) ;
 
   if(result.isGood())
-		MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, MEM_DMA_FLOPPY_START, MemUtil_GetDS(), 
-						(unsigned)bSectorBuffer, (uiEndSectorNo - uiStartSectorNo) * 512) ;
+    memcpy(bSectorBuffer, (void*)MEM_DMA_FLOPPY_START, (uiEndSectorNo - uiStartSectorNo) * 512);
 
   result.goodValueOrThrow(XLOC);
 }
 
 void Floppy_Write(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer)
 {
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)bSectorBuffer, SYS_LINEAR_SELECTOR_DEFINED, 
-					MEM_DMA_FLOPPY_START, (uiEndSectorNo - uiStartSectorNo) * 512) ;
-					
+  memcpy((void*)MEM_DMA_FLOPPY_START, bSectorBuffer, (uiEndSectorNo - uiStartSectorNo) * 512);
+
   auto result = upan::trycall([&]() { Floppy_ReadWrite(pDiskDrive, uiStartSectorNo, uiEndSectorNo, FD_WRITE); });
 	Floppy_StopMotor(pDiskDrive->DriveNumber()) ;
 	DMA_ReleaseChannel(DMA_CH2) ;

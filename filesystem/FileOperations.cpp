@@ -20,13 +20,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <FileOperations.h>
-# include <IODescriptorTable.h>
 # include <FileDescriptor.h>
 # include <Directory.h>
 # include <FileSystem.h>
 # include <ProcessManager.h>
-# include <MemUtil.h>
-# include <UserManager.h>
 # include <MountManager.h>
 # include <SystemUtil.h>
 # include <DMM.h>

@@ -23,7 +23,6 @@
 # include <ATATimingManager.h>
 # include <DMM.h>
 # include <StringUtil.h>
-# include <MemUtil.h>
 
 static VIAIDE VIAIDEList[] = {
     { "VT8237",    0x3227, 0x00, 0x2F, VIA_UDMA_133 | VIA_BAD_AST	},

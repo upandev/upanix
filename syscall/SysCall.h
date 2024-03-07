@@ -19,12 +19,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _SYS_CALL_H_
-#define _SYS_CALL_H_
+#pragma once
 
 #include <DMM.h>
 #include <ProcessManager.h>
-#include <AsmUtil.h>
 #include <DynamicLinkLoader.h>
 #include <Directory.h>
 #include <PS2KeyboardDriver.h>
@@ -45,16 +43,3 @@
 #define KERNEL_ADDR(DO, TYPE, ADDR) (TYPE)( (DO) ? (IKP ? (uintptr_t)(ADDR) : PROCESS_REAL_ALLOCATED_ADDRESS(ADDR)) : (uintptr_t)(ADDR) )
 
 void SysCall_Initialize() ;
-void SysCall_Entry(__volatile__ unsigned uiCSCorrection,
-__volatile__ unsigned uiSysCallID, 
-__volatile__ unsigned uiP1, 
-__volatile__ unsigned uiP2, 
-__volatile__ unsigned uiP3, 
-__volatile__ unsigned uiP4, 
-__volatile__ unsigned uiP5, 
-__volatile__ unsigned uiP6, 
-__volatile__ unsigned uiP7, 
-__volatile__ unsigned uiP8, 
-__volatile__ unsigned uiP9) ;
-
-#endif

@@ -24,7 +24,6 @@
 # include <PIC.h>
 # include <PortCom.h>
 # include <KernelUtil.h>
-# include <MemUtil.h>
 # include <MemConstants.h>
 # include <ProcessManager.h>
 
@@ -33,7 +32,7 @@
 
 byte ATAPortOperation_PreparePortDMATable(ATAPort* pPort, unsigned uiLength)
 {
-	unsigned uiTransferAddress = pPort->pDMATransferAddr + GLOBAL_DATA_SEGMENT_BASE ;
+	auto uiTransferAddress = pPort->pDMATransferAddr;
 	if(uiLength % 2)
 		uiLength++ ;
 	
@@ -106,7 +105,7 @@ byte ATAPortOperation_PortPrepareDMARead(ATAPort* pPort, unsigned uiLength)
 	RETURN_IF_NOT(bStatus, ATAPortOperation_PreparePortDMATable(pPort, uiLength), ATAPortOperation_SUCCESS) ;
 
 	// Write Registers 
-	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (uintptr_t)pPort->pPRDTable - GLOBAL_DATA_SEGMENT_BASE) ;
+	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (uintptr_t)pPort->pPRDTable) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_CONTROL, ATA_DMA_CONTROL_READ) ;
 	ATA_READ_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus | ATA_DMA_STATUS_IRQ | ATA_DMA_STATUS_ERROR) ;
@@ -125,7 +124,7 @@ byte ATAPortOperation_PortPrepareDMAWrite(ATAPort* pPort, unsigned uiLength)
 	RETURN_IF_NOT(bStatus, ATAPortOperation_PreparePortDMATable(pPort, uiLength), ATAPortOperation_SUCCESS) ;
 
 	// Write Registers 
-	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (unsigned)pPort->pPRDTable - GLOBAL_DATA_SEGMENT_BASE)
+	ATA_WRITE_DMA_REG32(pPort, ATA_REG_DMA_TABLE, (uint64_t)pPort->pPRDTable)
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_CONTROL, ATA_DMA_CONTROL_WRITE) ;
 	ATA_READ_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_STATUS, bStatus | ATA_DMA_STATUS_IRQ | ATA_DMA_STATUS_ERROR) ;
@@ -164,12 +163,12 @@ byte ATAPortOperation_StartDMA(ATAPort* pPort)
 
 void ATAPortOperation_CopyToUserBufferFromKernelBuffer(ATAPort* pPort, byte* pBuffer, unsigned uiLength)
 {
-	MemUtil_CopyMemory(MemUtil_GetDS(), pPort->pDMATransferAddr, MemUtil_GetDS(), (unsigned)pBuffer, uiLength) ;
+  memcpy(pBuffer, (void*)pPort->pDMATransferAddr, uiLength);
 }
 
 void ATAPortOperation_CopyToKernelBufferFromUserBuffer(ATAPort* pPort, byte* pBuffer, unsigned uiLength)
 {
-	MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)pBuffer, MemUtil_GetDS(), pPort->pDMATransferAddr, uiLength) ;
+  memcpy((void*)pPort->pDMATransferAddr, pBuffer, uiLength);
 }
 
 byte ATAPortOperation_PortReset(ATAPort* pPort)

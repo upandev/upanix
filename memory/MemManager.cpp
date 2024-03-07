@@ -24,7 +24,6 @@
 #include <DMM.h>
 #include <KernelService.h>
 #include <MultiBoot.h>
-#include <MemUtil.h>
 #include <mutex.h>
 #include <exception.h>
 #include <stdlib.h>

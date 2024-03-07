@@ -23,7 +23,6 @@
 #include <Global.h>
 #include <exception.h>
 #include <Bit.h>
-#include <AsmUtil.h>
 #include <DMM.h>
 #include <PCIBusHandler.h>
 #include <NetworkDevice.h>
@@ -36,6 +35,10 @@
 #define ICR_LINK_CHANGE (1 << 2)
 #define ICR_RECEIVE     (1 << 7)
 #define STATUS_LINK_UP  (1 << 1)
+
+extern "C" {
+  void _e1000_nic_interrupt_handler();
+}
 
 E1000NICDevice* E1000NICDevice::_instance = nullptr;
 
@@ -57,16 +60,7 @@ E1000NICDevice& E1000NICDevice::Instance() {
 
 void E1000NICDevice::InterruptHandler()
 {
-  AsmUtil_STORE_GPR();
-  AsmUtil_SET_KERNEL_DATA_SEGMENTS
-
   E1000NICDevice::Instance().NotifyEvent();
-
-  AsmUtil_REVOKE_KERNEL_DATA_SEGMENTS
-  AsmUtil_RESTORE_GPR();
-
-  asm("leave");
-  asm("IRET");
 }
 
 E1000NICDevice::E1000NICDevice(const PCIEntry& pciEntry) : NetworkDevice(pciEntry),
@@ -126,7 +120,7 @@ void E1000NICDevice::Initialize() {
   _pciEntry.WritePCIConfig(PCI_COMMAND, 2, usCommand | PCI_COMMAND_IO | PCI_COMMAND_MASTER) ;
   printf("\n Enabled PCI bus master for NIC");
 
-  _irq = IrqManager::Instance().RegisterIRQ(_pciEntry.BusEntity.NonBridge.bInterruptLine, (uintptr_t)E1000NICDevice::InterruptHandler);
+  _irq = IrqManager::Instance().RegisterIRQ(_pciEntry.BusEntity.NonBridge.bInterruptLine, (uintptr_t)_e1000_nic_interrupt_handler);
   IrqManager::Instance().EnableIRQ(*_irq);
 
   regEEPROM = new RegEEPROM(_memIOBase);

@@ -170,7 +170,7 @@ typedef void VendorSpecificATAController_Initialize(const PCIEntry* pPCIEntry, A
 
 struct ATAPRD
 {
-	unsigned uiAddress ; // AD[31:1], Bit 0 is always 0
+	uint64_t uiAddress ; // AD[31:1], Bit 0 is always 0
 	unsigned short usLength ; // Bit 0 Not used, AD[15:1] - byte count
 	unsigned short usPRDTerminateIndicator ; // AD[16:30] - Reserved, Bit 31 - EOT (1->Terminate, 0->Continue)
 } PACKED ;
@@ -313,7 +313,7 @@ struct ATAPort
 	void* pVendorSpecInfo ;
 
 	ATAPRD* pPRDTable ;
-	unsigned pDMATransferAddr ;
+	uint64_t pDMATransferAddr ;
 } ;
 
 struct ATAPCIDevice
@@ -327,6 +327,8 @@ void ATADeviceController_Initialize() ;
 bool ATADeviceController_GetInitStatus() ;
 unsigned ATADeviceController_GetDeviceSectorLimit(ATAPort* pPort) ;
 const IRQ& ATADeviceController_GetHDInterruptNo(ATAPort* pPort) ;
+void ATADeviceController_PrimaryIRQHandler();
+void ATADeviceController_SecondaryIRQHandler();
 
 #define ATA_READ_REG(port, reg, value) \
 { \

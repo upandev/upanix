@@ -22,9 +22,7 @@
 # include <RTC.h>
 # include <PIC.h>
 # include <PortCom.h>
-# include <AsmUtil.h>
 # include <MemConstants.h>
-# include <MemUtil.h>
 # include <InterruptHandlers.h>
 
 #define RTC_COMMAND_PORT		0x70

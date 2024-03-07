@@ -22,7 +22,6 @@
 # include <ATAAMD.h>
 # include <DMM.h>
 # include <StringUtil.h>
-# include <MemUtil.h>
 # include <ATATimingManager.h>
 
 AMDIDE AMDIDEList[] = {

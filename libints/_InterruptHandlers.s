@@ -98,3 +98,7 @@ interrupt_handler rtc
 interrupt_handler xhci
 interrupt_handler page_fault, 1
 interrupt_handler isr_0x27
+interrupt_handler ata_primary
+interrupt_handler ata_secondary
+interrupt_handler floppy
+interrupt_handler e1000_nic

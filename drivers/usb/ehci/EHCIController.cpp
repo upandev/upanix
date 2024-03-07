@@ -23,7 +23,6 @@
 #include <PCIBusHandler.h>
 #include <DMM.h>
 #include <MemManager.h>
-#include <MemUtil.h>
 #include <PortCom.h>
 #include <stdio.h>
 #include <string.h>
@@ -169,13 +168,13 @@ void EHCIController::SetupPeriodicFrameList()
 {
 	unsigned uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
 
-	unsigned* pFrameList = (unsigned*)(uiFreePageNo * PAGE_SIZE - GLOBAL_DATA_SEGMENT_BASE) ;
+	unsigned* pFrameList = (unsigned*)(uiFreePageNo * PAGE_SIZE) ;
 	
 	int i ;
 	for(i = 0; i < 1024; i++)
 		pFrameList[ i ] = 0x1 ;
 
-	_pOpRegs->uiPeriodicListBase = (unsigned)pFrameList + GLOBAL_DATA_SEGMENT_BASE ;
+	_pOpRegs->uiPeriodicListBase = (uint64_t)pFrameList;
 }
 
 void EHCIController::SetupAsyncList()

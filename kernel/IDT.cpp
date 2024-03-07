@@ -20,20 +20,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <IDT.h>
-#include <MemUtil.h>
 #include <MemConstants.h>
 #include <MemManager.h>
-#include <ProcessManager.h>
 #include <PIT.h>
 #include <UpanixMain.h>
-#include <AsmUtil.h>
 #include <InterruptHandlers.h>
-
-// Do not use this. else make sure to restore DS and ES
-// to their initial value. Might be used for adhoc tests
-#define INIT_DISPLAY \
-	MemUtil_SetDS(SYS_DATA_SELECTOR_DEFINED) ; \
-	MemUtil_SetES(SYS_DATA_SELECTOR_DEFINED) ;
 
 IDT::IDT() {
   const int MAX_IDT_ENTRIES = 50;

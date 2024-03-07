@@ -22,7 +22,6 @@
 #include <PartitionManager.h>
 #include <ATADrive.h>
 #include <DMM.h>
-#include <MemUtil.h>
 
 #define SI_EXT	5
 #define SI_EMTY	0x01
@@ -306,7 +305,7 @@ void PartitionTable::CreateExtPartitionEntry(unsigned uiSizeInSectors)
 	MBRPartitionInfo* pRealPartitionTableEntry = ((MBRPartitionInfo*)(bBootSectorBuffer + 0x1BE)) ;
 
 	pRealPartitionTableEntry[0] = extPartitionInfo;
-	MemUtil_Set((byte*)&(pRealPartitionTableEntry[1]), 0, sizeof(MBRPartitionInfo)) ;
+  memset(&(pRealPartitionTableEntry[1]), 0, sizeof(MBRPartitionInfo));
 
 	_disk.Write(uiNewPartitionSector, 1, bBootSectorBuffer);
 
@@ -395,7 +394,7 @@ void PartitionTable::DeleteExtPartition()
 
 	_disk.Read(uiCurrentExtPartitionStartSector, 1, bExtBootSectorBuffer);
 
-	MemUtil_Set((byte*)(bExtBootSectorBuffer + 0x1BE), 0, sizeof(MBRPartitionInfo) * 2) ;
+  memset((byte*)(bExtBootSectorBuffer + 0x1BE), 0, sizeof(MBRPartitionInfo) * 2);
 
 	_disk.Write(uiCurrentExtPartitionStartSector, 1, bExtBootSectorBuffer);
 

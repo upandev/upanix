@@ -22,16 +22,13 @@
 #include <PCIBusHandler.h>
 #include <DMM.h>
 #include <MemManager.h>
-#include <MemUtil.h>
 #include <stdio.h>
 #include <uniq_ptr.h>
-#include <KeyboardHandler.h>
 #include <XHCIController.h>
 #include <XHCIContext.h>
 #include <XHCIManager.h>
 #include <USBDataHandler.h>
 #include <XHCIDevice.h>
-#include <Cpu.h>
 
 uint64_t XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
 

@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <ATACommandManager.h>
-# include <MemUtil.h>
 # include <ATAPortManager.h>
 # include <ATAPortOperation.h>
 # include <PortCom.h>
@@ -480,7 +479,7 @@ void ATACommandManager_ExecuteATAPICommand(ATACommand* pCommand)
 
 void ATACommandManager_InitCommand(ATACommand* pCommand, ATAPort* pPort)
 {
-	MemUtil_Set((byte*)pCommand, 0, sizeof(ATACommand)) ;
+  memset((byte*)pCommand, 0, sizeof(ATACommand));
 	pCommand->pPort = pPort ;
 }
 

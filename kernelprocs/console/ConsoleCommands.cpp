@@ -23,7 +23,6 @@
 # include <CommandLineParser.h>
 
 #include <Floppy.h>
-#include <MemUtil.h>
 #include <ProcessManager.h>
 #include <FileSystem.h>
 #include <Directory.h>
@@ -40,7 +39,6 @@
 #include <MultiBoot.h>
 #include <SystemUtil.h>
 #include <MountManager.h>
-#include <UHCIManager.h>
 #include <EHCIManager.h>
 #include <XHCIManager.h>
 #include <BTree.h>
@@ -113,7 +111,6 @@ static void ConsoleCommands_ListProcess() ;
 static void ConsoleCommands_ChangeRootDrive() ;
 static void ConsoleCommands_Echo() ;
 static void ConsoleCommands_Export() ;
-static void ConsoleCommands_ProbeUHCIUSB() ;
 static void ConsoleCommands_PerformECHIHandoff() ;
 static void ConsoleCommands_ProbeEHCIUSB() ;
 static void ConsoleCommands_ProbeXHCIUSB() ;
@@ -187,7 +184,6 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "crd",		&ConsoleCommands_ChangeRootDrive },
 	{ "echo",		&ConsoleCommands_Echo },
 	{ "export",		&ConsoleCommands_Export },
-	{ "usbprobe",	&ConsoleCommands_ProbeUHCIUSB },
 	{ "ehcihoff",	&ConsoleCommands_PerformECHIHandoff },
 	{ "eusbprobe",	&ConsoleCommands_ProbeEHCIUSB },
 	{ "xusbprobe",	&ConsoleCommands_ProbeXHCIUSB },
@@ -242,11 +238,8 @@ void ConsoleCommands_ExecuteInternalCommand(const char* szCommand)
 void ConsoleCommands_ChangeDrive()
 {
   DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
-
 	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
-
-  MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&(pDiskDrive->_fileSystem.FSpwd), MemUtil_GetDS(),
-                     (unsigned)&ProcessManager::Instance().GetCurrentPAS().processPWD(), sizeof(FileSystem::PresentWorkingDirectory)) ;
+  memcpy(&ProcessManager::Instance().GetCurrentPAS().processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
 }
 
 void ConsoleCommands_ShowDrive()
@@ -750,22 +743,6 @@ void ConsoleCommands_Export()
       printf("\n Failed to set env variable\n") ;
       return ;
     }
-}
-
-void ConsoleCommands_ProbeUHCIUSB()
-{
-	RTCDateTime rtcStartTime, rtcStopTime ;
-	RTC::GetDateTime(rtcStartTime) ;
-  UHCIManager::Instance().Probe();
-	RTC::GetDateTime(rtcStopTime) ;
-
-	printf("\n %d/%d/%d - %d:%d:%d", rtcStartTime._dayOfMonth, rtcStartTime._month,
-		rtcStartTime._century * 100 + rtcStartTime._year, rtcStartTime._hour, rtcStartTime._minute,
-		rtcStartTime._second) ;
-	
-	printf("\n %d/%d/%d - %d:%d:%d", rtcStopTime._dayOfMonth, rtcStopTime._month,
-		rtcStopTime._century * 100 + rtcStopTime._year, rtcStopTime._hour, rtcStopTime._minute,
-		rtcStopTime._second) ;
 }
 
 void ConsoleCommands_PerformECHIHandoff()

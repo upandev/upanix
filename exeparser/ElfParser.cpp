@@ -25,12 +25,7 @@
 #include <ElfProgHeader.h>
 #include <ElfSectionHeader.h>
 #include <ElfSymbolTable.h>
-#include <MemUtil.h>
-#include <DMM.h>
 #include <StringUtil.h>
-#include <DynamicLinkLoader.h>
-#include <IODescriptorTable.h>
-#include <FileOperations.h>
 #include <BufferedReader.h>
 #include <uniq_ptr.h>
 

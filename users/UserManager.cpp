@@ -21,14 +21,9 @@
  */
 # include <UserManager.h>
 # include <FileOperations.h>
-# include <MountManager.h>
-# include <MemConstants.h>
 # include <IODescriptorTable.h>
-# include <Directory.h>
 # include <StringUtil.h>
-# include <DMM.h>
 # include <GenericUtil.h>
-# include <MemUtil.h>
 # include <uniq_ptr.h>
 
 UserManager::UserManager() : _userListFileName(upan::string(OSIN_PATH) + ".user.lst")

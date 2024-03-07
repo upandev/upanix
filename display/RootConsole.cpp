@@ -28,7 +28,7 @@
 #include <MultiBoot.h>
 
 RootConsole::RootConsole(uint32_t rows, uint32_t columns)
-  : _consoleBuffer(*this, (byte*)(MEM_GRAPHICS_TEXT_BUFFER_START - GLOBAL_DATA_SEGMENT_BASE), rows, columns) {
+  : _consoleBuffer(*this, (byte*)(MEM_GRAPHICS_TEXT_BUFFER_START), rows, columns) {
 }
 
 void RootConsole::LoadMessage(const char* loadMessage, ReturnCode result) {
