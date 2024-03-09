@@ -300,7 +300,7 @@ void MemManager::DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAd
     auto ptTable = GetPTTable(pml4Table, virtualAddress);
     auto ptIndex = PT_INDEX(virtualAddress);
     if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
-      DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+      DeAllocatePhysicalPage(PAGE_NUMBER(ptTable, ptIndex));
     }
   }
 }
@@ -315,7 +315,7 @@ void MemManager::DeallocateAddressSpace(uint64_t* pml4Table) {
           DeallocatePDAddressSpace(pdTable);
         }
       }
-      DeAllocatePhysicalPage(PAGE_ADDRESS(pml4Table, pml4Index));
+      DeAllocatePhysicalPage(PAGE_NUMBER(pml4Table, pml4Index));
     }
   }
   DeAllocatePhysicalPage((uint64_t)pml4Table / PAGE_SIZE);
@@ -327,10 +327,10 @@ void MemManager::DeallocatePDAddressSpace(uint64_t* pdTable) {
       auto ptTable = PAGE_TABLE(pdTable, pdIndex);
       for(int ptIndex = 0; ptIndex < ENTRIES_PER_PAGE_TABLE; ++ptIndex) {
         if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
-          DeAllocatePhysicalPage(PAGE_ADDRESS(ptTable, ptIndex));
+          DeAllocatePhysicalPage(PAGE_NUMBER(ptTable, ptIndex));
         }
       }
-      DeAllocatePhysicalPage(PAGE_ADDRESS(pdTable, pdIndex));
+      DeAllocatePhysicalPage(PAGE_NUMBER(pdTable, pdIndex));
     }
   }
   DeAllocatePhysicalPage((uint64_t)pdTable / PAGE_SIZE);
@@ -539,35 +539,22 @@ uint64_t MemManager::GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign)
   return 0;
 }
 
-void MemManager::DisplayNoOfFreePages() {
+void MemManager::DisplayPageAllocationStats() {
 	uint32_t freePageCount = 0 ;
+  uint32_t allocPageCount = 0 ;
 	for(auto pageMapPosition = _kernelReservedMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
 		if((_pageMap[pageMapPosition] & UINT64_MAX) != UINT64_MAX) {
       auto pageMapEntry = _pageMap[pageMapPosition] ;
 			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
 				if((pageMapEntry & 0x1) == 0x0) {
-          freePageCount++;
-        }
-        pageMapEntry >>= 1 ;
-			}
-		}
-	}
-	printf("\n Free Page Count = %d", freePageCount);
-}
-
-void MemManager::DisplayNoOfAllocPages() {
-	uint32_t allocPageCount = 0 ;
-	for(auto pageMapPosition = _kernelReservedMapSize + _kernelHeapMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
-		if((_pageMap[pageMapPosition] & UINT64_MAX) != 0) {
-      auto pageMapEntry = _pageMap[pageMapPosition] ;
-			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
-				if((pageMapEntry & 0x1) == 0x1) {
-					++allocPageCount;
+				  ++freePageCount;
+        } else {
+				  ++allocPageCount;
 				}
         pageMapEntry >>= 1 ;
 			}
 		}
 	}
-	printf("\n Alloc Page Count = %u\n", allocPageCount) ;
+	printf("\n Free Page Count = %u", freePageCount);
+  printf("\n Alloc Page Count = %u\n", allocPageCount);
 }
-

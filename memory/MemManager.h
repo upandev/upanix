@@ -52,8 +52,7 @@ class MemManager
 		ReturnCode AllocatePage(int iProcessID, uintptr_t faultyAddress) ;
     uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
     uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
-		void DisplayNoOfFreePages() ;
-		void DisplayNoOfAllocPages() ;
+		void DisplayPageAllocationStats() ;
 
     static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);
     uint64_t* GetPTTable(uint64_t* pml4Table, uintptr_t virtualAddress);
