@@ -30,7 +30,7 @@ ARPSendPacket::ARPSendPacket(uint16_t hType, EtherType pType, uint8_t hLen, uint
                              const uint8_t* sha, const uint8_t* spa, const uint8_t* tha, const uint8_t* tpa)
                              : _len(0), _buf(nullptr) {
   _len = NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE + NetworkPacket::ARP::IPV4_SIZE;
-  _buf = new ((void*)DMM_AllocateForKernel(_len, 16))uint8_t[_len];
+  _buf = new ((void*)KernelDMM::Instance().allocate(_len, 16))uint8_t[_len];
 
   auto arpHeader = reinterpret_cast<NetworkPacket::ARP::Header*>(
       _buf + NetworkPacket::Ethernet::HEADER_SIZE);

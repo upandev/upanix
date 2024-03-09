@@ -82,7 +82,7 @@ void EHCITransaction::Clear()
   for(auto i : _dStorageList)
 	{
 		if(i != NULL)
-			DMM_DeAllocateForKernel(i);
+			KernelDMM::Instance().free(i);
 	}
   _dStorageList.clear();
 }

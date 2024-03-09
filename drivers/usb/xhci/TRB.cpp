@@ -29,7 +29,7 @@
 
 TransferRing::TransferRing(unsigned size) : _size(size), _cycleState(true), _nextTRBIndex(0), _freeSlots(size - 1), _dqIndex(0)
 {
-  _trbs = new ((void*)DMM_AllocateForKernel(sizeof(TRB) * _size, 16))TRB[_size];
+  _trbs = new ((void*)KernelDMM::Instance().allocate(sizeof(TRB) * _size, 16))TRB[_size];
   auto& link = *new (&_trbs[_size - 1])LinkTRB();
   link.SetLinkAddr(KERNEL_REAL_ADDRESS(_trbs));
   link.SetToggleBit(true);
@@ -37,7 +37,7 @@ TransferRing::TransferRing(unsigned size) : _size(size), _cycleState(true), _nex
 
 TransferRing::~TransferRing()
 {
-  DMM_DeAllocateForKernel((uintptr_t)_trbs);
+  KernelDMM::Instance().free((uintptr_t)_trbs);
 }
 
 void TransferRing::UpdateDeEnQPtr(uint64_t dnqPtr)
@@ -109,7 +109,7 @@ void TransferRing::AddDataStageTRB(uintptr_t dataBufferAddr, uint32_t len, DataD
     trbType = 1; //Normal
     dir = DataDirection::OUT;
   }
-//  auto statusAddr = DMM_AllocateForKernel(4, 16);
+//  auto statusAddr = KernelDMM::Instance().allocate(4, 16);
 //  AddEventDataTRB(statusAddr, true);
 }
 

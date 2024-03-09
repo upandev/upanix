@@ -179,7 +179,7 @@ void EHCIController::SetupPeriodicFrameList()
 
 void EHCIController::SetupAsyncList()
 {
-	unsigned uiQHAddress = DMM_AllocateForKernel(sizeof(EHCIQueueHead), 32);
+	unsigned uiQHAddress = KernelDMM::Instance().allocate(sizeof(EHCIQueueHead), 32);
 	memset((void*)(uiQHAddress), 0, sizeof(EHCIQueueHead));
 	_pOpRegs->uiAsyncListBase = KERNEL_REAL_ADDRESS(uiQHAddress);
 

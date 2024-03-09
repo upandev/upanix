@@ -19,22 +19,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _DMM_H_
-#define _DMM_H_
+#pragma once
 
 #include <Global.h>
 #include <MemConstants.h>
+#include <ProcessConstants.h>
 #include <mutex.h>
 
 #define NULL 0x0
-
-#define DMM_SUCCESS				0
-#define DMM_BAD_DEALLOC			1
-#define DMM_BAD_ALIGN			2
-#define DMM_FAILURE				3
-
-#define PROCESS_VIRTUAL_ALLOCATED_ADDRESS(RealAddress) ((uintptr_t)(RealAddress))
-#define PROCESS_REAL_ALLOCATED_ADDRESS(VirtualAddress) ((uintptr_t)(VirtualAddress))
 
 typedef struct AllocationUnitTracker {
   AllocationUnitTracker* allocatedAddress;
@@ -45,21 +37,66 @@ typedef struct AllocationUnitTracker {
     AllocationUnitTracker* nextAUTAddress;
     uint32_t byteStuffForAlign;
   };
+
+  uint64_t calculateCheckSum() const;
+  void updateCheckSum();
 } PACKED AllocationUnitTracker ; // AUT
 
-class Process;
-class SchedulableProcess;
+class DMM {
+protected:
+  DMM(uint64_t heapStartAddress, uint64_t heapMaxSize);
 
-uintptr_t DMM_Allocate(Process* processAddressSpace, unsigned sizeInBytes, unsigned alignNumber = 0);
+public:
+  bool isDmmFlag() const { return _dmmFlag; }
+  virtual uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment = 0) = 0;
+  virtual bool free(uintptr_t address) = 0;
+  virtual bool getAllocSize(uintptr_t address, size_t* size) = 0;
+  virtual uint64_t availableHeapSize() = 0;
+  virtual void releaseLocks(int pid) {}
 
-void DMM_InitAUTForKernel();
-uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber = 0);
+protected:
+  uintptr_t _allocate(uint32_t sizeInBytes, uint32_t alignment);
+  bool _free(uintptr_t address);
+  bool _getAllocSize(uintptr_t address, size_t* size);
+  uint64_t _availableHeapSize();
+  virtual void accessMem(AllocationUnitTracker*) {}
 
-byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t address);
-bool DMM_DeAllocateForKernel(uintptr_t address);
+private:
+  uint32_t getByteStuffForAlign(uint64_t uiAddress, uint32_t uiAlignNumber) const;
+  void validateAlignParam(uint32_t alignment) const;
 
-bool DMM_GetAllocSize(uintptr_t address, size_t* size);
-bool DMM_GetAllocSizeForKernel(uintptr_t address, size_t* size);
-unsigned DMM_KernelHeapAllocSize() ;
+private:
+  const uint64_t _heapStartAddress;
+  const uint64_t _heapMaxSize;
+  bool _dmmFlag;
+  AllocationUnitTracker* _rootAut;
+};
 
-#endif
+class UserDMM : public DMM {
+public:
+  UserDMM();
+  uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment) override;
+  bool free(uintptr_t address) override;
+  bool getAllocSize(uintptr_t address, size_t* size) override;
+  uint64_t availableHeapSize() override;
+  void releaseLocks(int pid) override { _mutex.unlock(pid); }
+
+private:
+  void accessMem(AllocationUnitTracker* aut) override;
+
+  upan::mutex _mutex;
+};
+
+class KernelDMM : public DMM {
+private:
+  KernelDMM();
+public:
+  static DMM& Instance() {
+    static KernelDMM dmm;
+    return dmm;
+  }
+  uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment) override;
+  bool free(uintptr_t address) override;
+  bool getAllocSize(uintptr_t address, size_t* size) override;
+  uint64_t availableHeapSize() override;
+};

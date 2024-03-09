@@ -23,7 +23,7 @@
 
 int SysMemory_Alloc(void** addr, unsigned uiSizeInBytes)
 {
-  uintptr_t ret = DMM_AllocateForKernel(uiSizeInBytes);
+  uintptr_t ret = KernelDMM::Instance().allocate(uiSizeInBytes);
   if (ret == NULL || ret < 0)
     return -1;
   *addr = (void*)ret;
@@ -32,11 +32,11 @@ int SysMemory_Alloc(void** addr, unsigned uiSizeInBytes)
 
 int SysMemory_Free(void* uiAddress)
 {
-  DMM_DeAllocateForKernel((uintptr_t)uiAddress);
+  KernelDMM::Instance().free((uintptr_t)uiAddress);
   return 0;
 }
 
 int SysMemory_GetAllocSize(void* address, size_t* size)
 {
-  return DMM_GetAllocSizeForKernel((uintptr_t)address, size);
+  return KernelDMM::Instance().getAllocSize((uintptr_t)address, size);
 }

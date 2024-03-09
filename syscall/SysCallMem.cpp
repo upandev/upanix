@@ -40,7 +40,7 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
 				void** addr = KERNEL_ADDR(doAddrTranslation, void**, p1) ;
 				// ProcessManager_DisableTaskSwitch() ;
 
-				*addr = (void*)DMM_Allocate(&ProcessManager::Instance().GetCurrentPAS(), p2) ;
+				*addr =  (void*)ProcessManager::Instance().GetCurrentPAS().dmm().allocate(p2) ;
 
 				// ProcessManager_EnableTaskSwitch() ;
 			}
@@ -54,7 +54,7 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
 
 				*retVal = 0 ;
 				
-				if(DMM_DeAllocate(&ProcessManager::Instance().GetCurrentPAS(), p1) != DMM_SUCCESS)
+				if(!ProcessManager::Instance().GetCurrentPAS().dmm().free(p1))
 					*retVal = -1 ;
 
 				// ProcessManager_EnableTaskSwitch() ;
@@ -68,7 +68,7 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
         ProcessSwitchLock pLock;
 				auto pRetAllocSize = KERNEL_ADDR(doAddrTranslation, size_t*, p2) ;
 				*retVal = 0 ;
-				if(!DMM_GetAllocSize(p1, pRetAllocSize)) {
+				if(!ProcessManager::Instance().GetCurrentPAS().dmm().getAllocSize(p1, pRetAllocSize)) {
           *retVal = -1;
         }
 			}

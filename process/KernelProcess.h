@@ -45,6 +45,8 @@ public:
     return _iodTable;
   }
 
+  DMM& dmm() override;
+
   void initGuiFrame() override;
 
   upan::option<RootFrame&> getGuiFrame() override {

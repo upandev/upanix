@@ -41,7 +41,7 @@ void EHCIDataHandler_CleanAysncQueueHead(EHCIQueueHead*  pQH)
 
 EHCIQueueHead* EHCIDataHandler_CreateAsyncQueueHead()
 {
-  uintptr_t uiQHAddress = DMM_AllocateForKernel(sizeof(EHCIQueueHead), 32) ;
+  uintptr_t uiQHAddress = KernelDMM::Instance().allocate(sizeof(EHCIQueueHead), 32) ;
 	
 	memset((void*)(uiQHAddress), 0, sizeof(EHCIQueueHead)) ;
 
@@ -50,7 +50,7 @@ EHCIQueueHead* EHCIDataHandler_CreateAsyncQueueHead()
 
 EHCIQTransferDesc* EHCIDataHandler_CreateAsyncQTransferDesc()
 {
-  uintptr_t uiTDAddress = DMM_AllocateForKernel(sizeof(EHCIQTransferDesc), 32) ;
+  uintptr_t uiTDAddress = KernelDMM::Instance().allocate(sizeof(EHCIQTransferDesc), 32) ;
 
 	memset((void*)(uiTDAddress), 0, sizeof(EHCIQTransferDesc)) ;
 
@@ -59,7 +59,7 @@ EHCIQTransferDesc* EHCIDataHandler_CreateAsyncQTransferDesc()
 
 void EHCIDataHandler_ReleaseAsyncQueueHead(EHCIQueueHead* pQH)
 {
-	DMM_DeAllocateForKernel((uintptr_t)pQH) ;
+  KernelDMM::Instance().free((uintptr_t)pQH) ;
 }
 
 

@@ -53,16 +53,8 @@ public:
     return _parent.getDLLInfo(id);
   }
 
-  AllocationUnitTracker* getAUTAddress() const override {
-    return _parent.getAUTAddress();
-  }
-
-  void setAUTAddress(AllocationUnitTracker* addr) {
-    _parent.setAUTAddress(addr);
-  }
-
-  upan::option<upan::mutex&> heapMutex() override {
-    return _parent.heapMutex();
+  DMM& dmm() override {
+    return _parent.dmm();
   }
 
   upan::option<upan::mutex&> pageAllocMutex() override {

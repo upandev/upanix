@@ -477,12 +477,12 @@ PS* ProcessManager::GetProcList(unsigned& uiListSize)
 
   if(pAddrSpc.isKernelProcess())
   {
-    pPS = pProcList = (PS*)DMM_AllocateForKernel(sizeof(PS) * uiListSize) ;
+    pPS = pProcList = (PS*)KernelDMM::Instance().allocate(sizeof(PS) * uiListSize) ;
   }
   else
   {
-    pProcList = (PS*)DMM_Allocate(&pAddrSpc, sizeof(PS) * uiListSize) ;
-    pPS = (PS*)PROCESS_REAL_ALLOCATED_ADDRESS(pProcList);
+    pProcList = (PS*)pAddrSpc.dmm().allocate(sizeof(PS) * uiListSize) ;
+    pPS = (PS*)(pProcList);
   }
 
   auto it = _processMap.begin();
@@ -499,12 +499,12 @@ PS* ProcessManager::GetProcList(unsigned& uiListSize)
     char* pname ;
     if(pAddrSpc.isKernelProcess())
     {
-      pname = pPS[i].pname = (char*)DMM_AllocateForKernel(p.name().length() + 1) ;
+      pname = pPS[i].pname = (char*)KernelDMM::Instance().allocate(p.name().length() + 1) ;
     }
     else
     {
-      pPS[i].pname = (char*)DMM_Allocate(&pAddrSpc, p.name().length() + 1) ;
-      pname = (char*)PROCESS_REAL_ALLOCATED_ADDRESS(pPS[i].pname);
+      pPS[i].pname = (char*)pAddrSpc.dmm().allocate(p.name().length() + 1) ;
+      pname = (char*)(pPS[i].pname);
     }
     strcpy(pname, p.name().c_str()) ;
   }
@@ -519,15 +519,15 @@ void ProcessManager::FreeProcListMem(PS* pProcList, unsigned uiListSize)
 	for(unsigned i = 0; i < uiListSize; i++)
 	{
 		if(pAddrSpc.isKernelProcess())
-			DMM_DeAllocateForKernel((uintptr_t)pProcList[i].pname) ;
+			KernelDMM::Instance().free((uintptr_t)pProcList[i].pname) ;
 		else
-			DMM_DeAllocate(&pAddrSpc, (uintptr_t)pProcList[i].pname) ;
+			pAddrSpc.dmm().free((uintptr_t)pProcList[i].pname) ;
 	}
 
 	if(pAddrSpc.isKernelProcess())
-		DMM_DeAllocateForKernel((uintptr_t)pProcList) ;
+		KernelDMM::Instance().free((uintptr_t)pProcList) ;
 	else
-		DMM_DeAllocate(&pAddrSpc, PROCESS_VIRTUAL_ALLOCATED_ADDRESS(pProcList));
+	  pAddrSpc.dmm().free((uintptr_t)pProcList);
 }
 
 void ProcessManager::SetDMMFlag(int iProcessID, bool flag) {
@@ -535,7 +535,7 @@ void ProcessManager::SetDMMFlag(int iProcessID, bool flag) {
 }
 
 bool ProcessManager::IsDMMOn(int iProcessID) {
-	return GetSchedulableProcess(iProcessID).value().isDmmFlag();
+	return GetSchedulableProcess(iProcessID).value().dmm().isDmmFlag();
 }
 
 bool ProcessManager::IsKernelProcess(int iProcessID) {

@@ -42,7 +42,6 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
                          bool isFGProcess, int noOfParams, char** args)
     : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
   _mainThreadID = _processID;
-  _autAddress = nullptr;
   _pml4Table = nullptr;
   Load(noOfParams, args);
   _totalNoOfPagesForDLL = 0;
@@ -336,7 +335,7 @@ void UserProcess::initGuiFrame() {
 
 void UserProcess::DeallocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
-    DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
+    KernelDMM::Instance().free((uint64_t)_frame->frameBuffer().buffer());
     MemManager::Instance().UnMapAddressSpace(pml4Table(), PROCESS_GUI_FRAMEBUFFER_ADDRESS, GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
     GraphicsVideo::Instance().removeFGProcess(processID());
   }

@@ -177,8 +177,8 @@ void ATAVIA_InitController(const PCIEntry* pPCIEntry, ATAController* pController
 	{
 		strcpy(pController->szName, "VIA Serial ATA Controller") ;
 
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[1]) ;
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[3]) ;
+		KernelDMM::Instance().free((uintptr_t)pController->pPort[1]) ;
+		KernelDMM::Instance().free((uintptr_t)pController->pPort[3]) ;
 
 		pController->pPort[1] = pController->pPort[2] ;
 		pController->pPort[2] = nullptr ;
@@ -313,7 +313,7 @@ void ATAVIA_InitController(const PCIEntry* pPCIEntry, ATAController* pController
   pIDE->WritePCIConfig(VIA_FIFO_CONFIG, 1, bFIFOConfig);
 
 	// Add Speeds
-	VIAIDEInfo* pVIAIDEInfo = (VIAIDEInfo*)DMM_AllocateForKernel(sizeof(VIAIDEInfo)) ;
+	VIAIDEInfo* pVIAIDEInfo = (VIAIDEInfo*)KernelDMM::Instance().allocate(sizeof(VIAIDEInfo)) ;
 
   memcpy(&pVIAIDEInfo->pciEntry, pPCIEntry, sizeof(PCIEntry));
 	pVIAIDEInfo->pVIAIDE = pVIAIDE ;

@@ -52,7 +52,7 @@ DHCPSendPacket::DHCPSendPacket(uint8_t op, uint8_t hType, uint8_t hLen, uint8_t 
       + NetworkPacket::UDP::HEADER_SIZE
       + NetworkPacket::DHCP::HEADER_SIZE;
 
-  _buf = new ((void*)DMM_AllocateForKernel(_len, 16))uint8_t[_len];
+  _buf = new ((void*)KernelDMM::Instance().allocate(_len, 16))uint8_t[_len];
   memset(_buf, 0, _len);
 
   auto header = reinterpret_cast<NetworkPacket::DHCP::Header*>(

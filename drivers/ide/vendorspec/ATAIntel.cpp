@@ -223,8 +223,8 @@ void ATAIntel_InitController(const PCIEntry* pPCIEntry, ATAController* pControll
 	{
 		strcpy(pController->szName, "Intel Serial ATA Controller") ;
 		
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[1]) ;
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[3]) ;
+		KernelDMM::Instance().free((uintptr_t)pController->pPort[1]) ;
+    KernelDMM::Instance().free((uintptr_t)pController->pPort[3]) ;
 		
 		pController->pPort[1] = pController->pPort[2] ;
 		pController->pPort[2] = NULL ;
@@ -295,7 +295,7 @@ void ATAIntel_InitController(const PCIEntry* pPCIEntry, ATAController* pControll
   pController->pPort[0]->uiCable = pController->pPort[1]->uiCable =  (ui80W & 0x01) ? ATA_CABLE_PATA80 : ATA_CABLE_PATA40 ;
   pController->pPort[2]->uiCable = pController->pPort[3]->uiCable = (ui80W & 0x02) ? ATA_CABLE_PATA80 : ATA_CABLE_PATA40 ;
 
-	IntelIDEInfo* pIntelIDEInfo = (IntelIDEInfo*)DMM_AllocateForKernel(sizeof(IntelIDEInfo)) ;
+	IntelIDEInfo* pIntelIDEInfo = (IntelIDEInfo*)KernelDMM::Instance().allocate(sizeof(IntelIDEInfo)) ;
 
   memcpy(&pIntelIDEInfo->pciEntry, pPCIEntry, sizeof(PCIEntry));
 	

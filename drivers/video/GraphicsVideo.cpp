@@ -477,7 +477,7 @@ upan::option<int> GraphicsVideo::getDisplayFGProcess() {
 }
 
 uint64_t GraphicsVideo::allocateFrameBuffer() {
-  auto addr = DMM_AllocateForKernel(_lfbPageCount * PAGE_SIZE, PAGE_SIZE);
+  auto addr = KernelDMM::Instance().allocate(_lfbPageCount * PAGE_SIZE, PAGE_SIZE);
   memset((void*)addr, 0, _lfbSize);
   return addr;
 }

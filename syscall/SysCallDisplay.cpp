@@ -119,7 +119,7 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
       if (process.isKernelProcess()) {
         frameBufferInfo->_frameBuffer = frame.frameBuffer().buffer();
       } else {
-        frameBufferInfo->_frameBuffer = (uint32_t*) PROCESS_VIRTUAL_ALLOCATED_ADDRESS(PROCESS_GUI_FRAMEBUFFER_ADDRESS);
+        frameBufferInfo->_frameBuffer = (uint32_t*)(PROCESS_GUI_FRAMEBUFFER_ADDRESS);
       }
     }
     break;

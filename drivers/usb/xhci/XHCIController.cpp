@@ -111,7 +111,7 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
   auto maxScratchpadBuffers = _capReg->MaxScratchpadBufSize();
   if(maxScratchpadBuffers > 0) {
     printf("\n Allocating %u scratchpad buffer entries", maxScratchpadBuffers);
-    auto scratchpadBufferArray = (uint64_t*)DMM_AllocateForKernel(sizeof(uint64_t) * maxScratchpadBuffers, 64);
+    auto scratchpadBufferArray = (uint64_t*)KernelDMM::Instance().allocate(sizeof(uint64_t) * maxScratchpadBuffers, 64);
     for(uint32_t i = 0; i < maxScratchpadBuffers; ++i)
       scratchpadBufferArray[i] = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
     _deviceContextAddrArray[0] = (uint64_t)scratchpadBufferArray;
@@ -481,7 +481,7 @@ CommandManager::CommandManager(XHCICapRegister& creg,
   EventManager& eventManager)
   : _pcs(true), _ring(nullptr), _capReg(creg), _opReg(oreg), _eventManager(eventManager)
 {
-  _ring = new ((void*)DMM_AllocateForKernel(sizeof(Ring), 64))Ring();
+  _ring = new ((void*)KernelDMM::Instance().allocate(sizeof(Ring), 64))Ring();
   uint64_t ringAddr = KERNEL_REAL_ADDRESS(_ring);
 
   _ring->_link.SetLinkAddr(ringAddr);
@@ -541,7 +541,7 @@ EventManager::InterrupterRegister::InterrupterRegister()
   const int ERST_SIZE = 1;
   _erstSize = (_erstSize & 0xFFFF0000) | ERST_SIZE;
 
-  ERSTEntry* erst = new ((void*)DMM_AllocateForKernel(sizeof(ERSTEntry) * ERST_SIZE, 64))ERSTEntry[ERST_SIZE];
+  ERSTEntry* erst = new ((void*)KernelDMM::Instance().allocate(sizeof(ERSTEntry) * ERST_SIZE, 64))ERSTEntry[ERST_SIZE];
   _erstBA = (uint64_t)KERNEL_REAL_ADDRESS(erst);
 
   _erdqPtr = erst[0]._ersAddr;

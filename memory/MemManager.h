@@ -25,7 +25,6 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
-#include "DMM.h"
 
 extern "C" {
 	void Mem_FlushTLB() ;

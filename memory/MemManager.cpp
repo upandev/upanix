@@ -49,7 +49,6 @@ MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
         if (MarkACPIInfoRegionAsAllocated()) {
           InitTaskState64();
           Mem_FlushTLB();
-          DMM_InitAUTForKernel();
           KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
           return;
         }

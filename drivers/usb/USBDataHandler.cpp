@@ -164,7 +164,7 @@ void USBDataHandler_CopyStrDescZero(USBStringDescZero* pDest, const void* pSrcv)
 	pDest->bLength = pSrc->bLength ;
 	pDest->bDescriptorType = pSrc->bDescriptorType ;
 
-	pDest->usLangID = (unsigned short*)DMM_AllocateForKernel(pSrc->bLength - 2) ;
+	pDest->usLangID = (unsigned short*)KernelDMM::Instance().allocate(pSrc->bLength - 2) ;
 
 	pSrc->usLangID = (unsigned short*)((byte*)pSrc +  2) ;
 
@@ -212,12 +212,12 @@ void USBDataHandler_DeAllocConfigDesc(USBStandardConfigDesc* pCD, char bNumConfi
 		{
 			int iI ;
 			for(iI = 0; iI < pCD[index].bNumInterfaces; iI++)
-				DMM_DeAllocateForKernel((uintptr_t)pCD[index].pInterfaces[iI].pEndPoints) ;
+				KernelDMM::Instance().free((uintptr_t)pCD[index].pInterfaces[iI].pEndPoints) ;
 
-			DMM_DeAllocateForKernel((uintptr_t)pCD[index].pInterfaces) ;
+			KernelDMM::Instance().free((uintptr_t)pCD[index].pInterfaces) ;
 		}
 	}
 	
-	DMM_DeAllocateForKernel((uintptr_t)pCD) ;
+	KernelDMM::Instance().free((uintptr_t)pCD) ;
 }
 

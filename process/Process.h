@@ -48,9 +48,8 @@ public:
   virtual int userID() const = 0;
   virtual bool isChildThread() const = 0;
 
-  virtual bool isDmmFlag() const {
-    throw upan::exception(XLOC, "isDmmFlag unsupported");
-  }
+  virtual DMM& dmm() = 0;
+
   virtual void setDmmFlag(bool dmmFlag) {
     throw upan::exception(XLOC, "setDmmFlag unsupported");
   }
@@ -72,9 +71,6 @@ public:
   virtual void setProcessGroup(ProcessGroup* processGroup) = 0;
 
   virtual IODescriptorTable& iodTable() = 0;
-  virtual upan::option<upan::mutex&> heapMutex() {
-    return upan::option<upan::mutex&>::empty();
-  }
   virtual upan::option<upan::mutex&> dllMutex() {
     throw upan::exception(XLOC, "dllMutex unsupported");
   }
@@ -97,14 +93,6 @@ public:
 
   virtual upan::option<ProcessDLLInfo&> getDLLInfo(int id) {
     throw upan::exception(XLOC, "getDLLInfo unsupported");
-  }
-
-  virtual AllocationUnitTracker* getAUTAddress() const {
-    throw upan::exception(XLOC, "getAUTAddress unsupported");
-  }
-
-  virtual void setAUTAddress(AllocationUnitTracker* addr) {
-    throw upan::exception(XLOC, "setAUTAddress unsupported");
   }
 
   virtual void dispatchKeyboardData(const upanui::KeyboardData& data) {

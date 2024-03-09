@@ -51,7 +51,6 @@ static void DiskCache_TaskFlushCache(DiskDrive* pDiskDrive, unsigned uiParam2)
 {
 	do
 	{
-	//	if(pDiskDrive->Mounted())
     pDiskDrive->FlushDirtyCacheSectors(10) ;
 		ProcessManager::Instance().Sleep(200) ;
 	} while(!pDiskDrive->StopReleaseCacheTask());
@@ -599,13 +598,13 @@ byte DiskDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 	
 	if(pAddrSpace->isKernelProcess())
 	{
-		*pDriveList = (DriveStat*)DMM_AllocateForKernel(sizeof(DriveStat) * _driveList.size());
+		*pDriveList = (DriveStat*)KernelDMM::Instance().allocate(sizeof(DriveStat) * _driveList.size());
 		pAddress = *pDriveList ;
 	}
 	else
 	{
-		*pDriveList = (DriveStat*)DMM_Allocate(pAddrSpace, sizeof(DriveStat) * _driveList.size());
-		pAddress = (DriveStat*)PROCESS_REAL_ALLOCATED_ADDRESS(*pDriveList);
+		*pDriveList = (DriveStat*)pAddrSpace->dmm().allocate(sizeof(DriveStat) * _driveList.size());
+		pAddress = (DriveStat*)(*pDriveList);
 	}
 
 	if(pAddress == NULL)

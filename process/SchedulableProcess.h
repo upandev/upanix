@@ -50,9 +50,6 @@ public:
   virtual void onLoad() = 0;
 
   //thread synchronization mutex
-  upan::option<upan::mutex&> heapMutex() override {
-    return upan::option<upan::mutex&>::empty();
-  }
   virtual upan::option<upan::mutex&> pageAllocMutex() {
     return upan::option<upan::mutex&>::empty();
   }
@@ -76,9 +73,6 @@ public:
 
   uint64_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }
-
-  bool isDmmFlag() const override { return _dmmFlag; }
-  void setDmmFlag(bool dmmFlag) override { _dmmFlag = dmmFlag; }
 
   int processID() const override { return _processID; }
   int parentProcessID() const override { return _parentProcessID; }
@@ -135,7 +129,6 @@ protected:
   int _processID;
   int _mainThreadID;
   int _parentProcessID;
-  bool _dmmFlag;
   uint64_t _processBase;
   PROCESS_STATUS _status;
   int _driveID;
@@ -148,7 +141,4 @@ protected:
   ProcessGroup* _processGroup;
 
   ProcessIDs _childProcessIDs;
-  //C++11 -> alignas() or __attribute__((aligned(16)) doesn't work on member attributes of class (in this case Process) that is allocated by new
-  //alignas(16) uint8_t _sseRegs[512];// __attribute__((aligned(16)));
-  uint8_t* _sseRegs;
 };

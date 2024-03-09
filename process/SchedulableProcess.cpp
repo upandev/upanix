@@ -31,7 +31,7 @@
 int SchedulableProcess::_nextPid = 0;
 
 SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, bool isFGProcess)
-  : _name(name), _dmmFlag(false), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr) {
+  : _name(name), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr) {
   _processID = _nextPid++;
   _parentProcessID = parentID;
   _status = NEW;
@@ -56,11 +56,9 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
   _processGroup->AddProcess();
   if(isFGProcess)
     _processGroup->PutOnFGProcessList(_processID);
-  _sseRegs = (uint8_t*) DMM_AllocateForKernel(512, 16);
 }
 
 SchedulableProcess::~SchedulableProcess() {
-  DMM_DeAllocateForKernel(reinterpret_cast<uint64_t>(_sseRegs));
   delete &_stateInfo;
 }
 
@@ -105,7 +103,7 @@ void SchedulableProcess::Destroy() {
   if(_processGroup->Size() == 0)
     delete _processGroup;
 
-  heapMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
+  dmm().releaseLocks(_processID);
   pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
 
   //TODO: release all the mutex held by the process or an individual thread

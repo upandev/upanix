@@ -118,7 +118,7 @@ static unsigned ATADeviceController_GetNextPortID()
 }
 static ATAController* ATADeviceController_AllocateController(unsigned uiChannels, unsigned uiPortsPerChannel)
 {
-	ATAController* pController = (ATAController*)DMM_AllocateForKernel(sizeof(ATAController)) ;
+	ATAController* pController = (ATAController*)KernelDMM::Instance().allocate(sizeof(ATAController)) ;
 
 	pController->uiChannels = uiChannels ;
 	pController->uiPortsPerChannel = uiPortsPerChannel ;
@@ -129,7 +129,7 @@ static ATAController* ATADeviceController_AllocateController(unsigned uiChannels
 
 static ATAPort* ATADeviceController_AllocatePort(ATAController* pController)
 {
-	ATAPort* pPort = (ATAPort*)DMM_AllocateForKernel(sizeof(ATAPort)) ;
+	ATAPort* pPort = (ATAPort*)KernelDMM::Instance().allocate(sizeof(ATAPort)) ;
 
 	// Set Default values
 	pPort->pController = pController ;
@@ -141,8 +141,8 @@ static ATAPort* ATADeviceController_AllocatePort(ATAController* pController)
 	pPort->portOperation.StartDMA = ATAPortOperation_StartDMA ;
 	pPort->portOperation.FlushRegs = NULL ;
 
-	pPort->pPRDTable = (ATAPRD*)DMM_AllocateForKernel(DMA_MEM_BLOCK_SIZE, 4) ;
-	pPort->pDMATransferAddr = DMM_AllocateForKernel(HDD_DMA_BUFFER_SIZE, 4) ;
+	pPort->pPRDTable = (ATAPRD*)KernelDMM::Instance().allocate(DMA_MEM_BLOCK_SIZE, 4) ;
+	pPort->pDMATransferAddr = KernelDMM::Instance().allocate(HDD_DMA_BUFFER_SIZE, 4) ;
 
 	return pPort ;
 }
@@ -434,7 +434,7 @@ static void ATADeviceController_Add(ATAController* pController)
 			pPort->uiChannel = i ;
 			pPort->uiPort = j ;
 // TODO: Remove Data Buffer if not required
-//			pPort->pDataBuffer = (byte*)DMM_AllocateForKernel(16 * PAGE_SIZE + 4) ;
+//			pPort->pDataBuffer = (byte*)KernelDMM::Instance().allocate(16 * PAGE_SIZE + 4) ;
 		}
 	}
 

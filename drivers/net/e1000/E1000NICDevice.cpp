@@ -259,7 +259,7 @@ E1000NICDevice::RegControl::RegControl(const uint32_t memIOBase) :
 }
 
 E1000NICDevice::RXDescriptor::RXDescriptor() {
-  addr = KERNEL_REAL_ADDRESS(DMM_AllocateForKernel(8 KB, 16));
+  addr = KERNEL_REAL_ADDRESS(KernelDMM::Instance().allocate(8 KB, 16));
   length = 0;
   checksum = 0;
   status = 0;
@@ -275,7 +275,7 @@ E1000NICDevice::RegRXDescriptor::RegRXDescriptor(const uint32_t memIOBase) :
   _tail(REG(memIOBase, REG_RDT)),
   _rxctrl(REG(memIOBase, REG_RCTL)),
   _index(0) {
-  _rxDescriptors = new ((void*)DMM_AllocateForKernel(sizeof(RXDescriptor) * NUM_OF_DESC, 16))RXDescriptor[NUM_OF_DESC];
+  _rxDescriptors = new ((void*)KernelDMM::Instance().allocate(sizeof(RXDescriptor) * NUM_OF_DESC, 16))RXDescriptor[NUM_OF_DESC];
   *_alow = KERNEL_REAL_ADDRESS(_rxDescriptors);
   *_ahigh = 0;
   *_len = NUM_OF_DESC * 16;
@@ -329,7 +329,7 @@ E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint32_t memIOBase) :
   _txctrl(REG(memIOBase, REG_TCTL)),
   _tipg(REG(memIOBase, REG_TIPG)),
   _index(0) {
-  _txDescriptors = new ((void*)DMM_AllocateForKernel(sizeof(TXDescriptor) * NUM_OF_DESC, 16))TXDescriptor[NUM_OF_DESC];
+  _txDescriptors = new ((void*)KernelDMM::Instance().allocate(sizeof(TXDescriptor) * NUM_OF_DESC, 16))TXDescriptor[NUM_OF_DESC];
   *_alow = KERNEL_REAL_ADDRESS(_txDescriptors);
   *_ahigh = 0;
   *_len = NUM_OF_DESC * 16;

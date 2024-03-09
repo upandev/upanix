@@ -33,6 +33,10 @@ public:
     return true;
   }
 
+  DMM& dmm() override {
+    return _parent.dmm();
+  }
+
   upanui::GraphicsContext* getGraphicsContext() override {
     return _parent.getGraphicsContext();
   }

@@ -47,12 +47,7 @@ public:
   upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override;
   upan::option<ProcessDLLInfo&> getDLLInfo(int id) override;
 
-  AllocationUnitTracker* getAUTAddress() const override {
-    return _autAddress;
-  }
-  void setAUTAddress(AllocationUnitTracker* addr) {
-    _autAddress = addr;
-  }
+  DMM& dmm() override { return _dmm; }
 
   uint64_t* pml4Table() const override {
     return _pml4Table;
@@ -62,9 +57,6 @@ public:
     return _iodTable;
   }
 
-  upan::option<upan::mutex&> heapMutex() override {
-    return upan::option<upan::mutex&>(_heapMutex);
-  }
   upan::option<upan::mutex&> pageAllocMutex() override {
     return upan::option<upan::mutex&>(_pageFaultMutex);
   }
@@ -88,18 +80,17 @@ private:
   void DeallocateGUIFramebuffer();
 
 private:
-  AllocationUnitTracker* _autAddress;
   uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;
   uint64_t _stackPDAddress;
   upan::vector<upan::string> _loadedDLLs;
   DLLInfoMap _dllInfoMap;
-  upan::mutex _heapMutex;
   upan::mutex _pageFaultMutex;
   upan::mutex _dllMutex;
   upan::mutex _addressSpaceMutex;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   ProcessDLLInfo::ELFInfo _elfInfo;
+  UserDMM _dmm;
   uint64_t* _pml4Table;
 };

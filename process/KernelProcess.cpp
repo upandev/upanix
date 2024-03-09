@@ -73,6 +73,10 @@ void KernelProcess::DeallocateResources() {
   upanui::GraphicsContext::Destroy();
 }
 
+DMM& KernelProcess::dmm() {
+  return KernelDMM::Instance();
+}
+
 void KernelProcess::initGuiFrame() {
   if (_frame.get() == nullptr) {
     FrameBufferInfo frameBufferInfo;
@@ -97,7 +101,7 @@ void KernelProcess::initGuiFrame() {
 
 void KernelProcess::DeAllocateGUIFramebuffer() {
   if (_frame.get() != nullptr) {
-    DMM_DeAllocateForKernel((uint64_t)_frame->frameBuffer().buffer());
+    KernelDMM::Instance().free((uint64_t)_frame->frameBuffer().buffer());
     GraphicsVideo::Instance().removeFGProcess(_processID);
   }
 }

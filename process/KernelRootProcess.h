@@ -125,6 +125,8 @@ public:
     throw upan::exception(XLOC, "setProcessGroup() unsupported");
   }
 
+  DMM& dmm() override;
+
   upan::option<RootFrame&> getGuiFrame() override {
     return upan::option<RootFrame&>(RootGUIConsole::Instance().frame());
   }

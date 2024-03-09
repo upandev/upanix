@@ -327,7 +327,7 @@ void ATASIS_InitController(const PCIEntry* pPCIEntry, ATAController* pController
   pController->pPort[2]->uiCable = pController->pPort[3]->uiCable = (ui80W & 0x02) ? ATA_CABLE_PATA80 : ATA_CABLE_PATA40 ;
 
 	//Add Speeds
-	SISIDEInfo* pSISIDEInfo = (SISIDEInfo*)DMM_AllocateForKernel(sizeof(SISIDEInfo)) ;
+	SISIDEInfo* pSISIDEInfo = (SISIDEInfo*)KernelDMM::Instance().allocate(sizeof(SISIDEInfo)) ;
 
   memcpy(&pSISIDEInfo->pciEntry, pPCIEntry, sizeof(PCIEntry));
 	pSISIDEInfo->uiSpeed = uiSpeed ;

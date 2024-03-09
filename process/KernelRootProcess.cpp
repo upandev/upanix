@@ -62,3 +62,7 @@ void KernelRootProcess::setEnv(const upan::string& key, const upan::string& valu
 upan::option<upan::string> KernelRootProcess::getEnv(const upan::string& key) {
   return upan::option<upan::string>::empty();
 }
+
+DMM& KernelRootProcess::dmm() {
+  return KernelDMM::Instance();
+}

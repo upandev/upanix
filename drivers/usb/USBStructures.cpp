@@ -180,17 +180,17 @@ USBulkDisk::USBulkDisk(USBDevice* device,
 		printf("\n Max Bulk Write Size: %d", usOutMaxPacketSize) ;
 	}
 
-  pRawAlignedBuffer = (byte*)DMM_AllocateForKernel(US_BULK_MAX_TRANSFER_SIZE, upan::max(usInMaxPacketSize, usOutMaxPacketSize)) ;
+  pRawAlignedBuffer = (byte*)KernelDMM::Instance().allocate(US_BULK_MAX_TRANSFER_SIZE, upan::max(usInMaxPacketSize, usOutMaxPacketSize)) ;
 	pHostDevice = new USBMassBulkStorageDisk(this);
 }
 
 USBulkDisk::~USBulkDisk()
 {
   if(pRawAlignedBuffer)
-		DMM_DeAllocateForKernel((uintptr_t)pRawAlignedBuffer);
+		KernelDMM::Instance().free((uintptr_t)pRawAlignedBuffer);
 
   if(pSCSIDeviceList)
-    DMM_DeAllocateForKernel((uintptr_t)pSCSIDeviceList);
+    KernelDMM::Instance().free((uintptr_t)pSCSIDeviceList);
 
   delete pHostDevice;
 }
@@ -201,7 +201,7 @@ void USBulkDisk::Initialize()
   if(bStatus != USBMassBulkStorageDisk_SUCCESS)
     throw upan::exception(XLOC, "Failed to reset");
 
-  pSCSIDeviceList = (SCSIDevice**)DMM_AllocateForKernel(sizeof(SCSIDevice**) * (bMaxLun + 1)) ;
+  pSCSIDeviceList = (SCSIDevice**)KernelDMM::Instance().allocate(sizeof(SCSIDevice**) * (bMaxLun + 1)) ;
   int iLun ;
   for(iLun = 0; iLun <= bMaxLun; iLun++)
     pSCSIDeviceList[ iLun ] = nullptr ;

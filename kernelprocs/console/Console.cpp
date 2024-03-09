@@ -53,7 +53,7 @@ void Console::DisplayCommandLine()
 	char* szPWD ;
 	Directory_PresentWorkingDirectory( &ProcessManager::Instance().GetCurrentPAS(), &szPWD) ;
   printf("\nupanix:%s > ", szPWD);
-	DMM_DeAllocateForKernel((uintptr_t)szPWD) ;
+	KernelDMM::Instance().free((uintptr_t)szPWD) ;
 }
 
 void Console::Start()

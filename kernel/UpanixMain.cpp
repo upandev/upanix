@@ -27,12 +27,7 @@
 # include <MemManager.h>
 # include <PCIBusHandler.h>
 # include <DMM.h>
-# include <Floppy.h>
-# include <KernelService.h>
-# include <ATADeviceController.h>
 # include <SessionManager.h>
-# include <UserManager.h>
-# include <PartitionManager.h>
 # include <RTC.h>
 # include <MultiBoot.h>
 # include <MountManager.h>
@@ -44,7 +39,6 @@
 # include <exception.h>
 # include <GraphicsVideo.h>
 # include <KeyboardHandler.h>
-# include <GenericUtil.h>
 # include <Acpi.h>
 # include <Cpu.h>
 # include <IrqManager.h>
@@ -59,7 +53,6 @@
 /**** Global Variable declaration/definition *****/
 byte KERNEL_MODE ;
 byte SPECIAL_TASK ;
-int debug_point ;
 /***********************************************/
 
 [[noreturn]] void UpanixMain_KernelProcess() {
@@ -131,8 +124,6 @@ void TestException()
 }
 
 void Initialize() {
-	debug_point = 0 ;
-
 	KERNEL_MODE = true ;
 	SPECIAL_TASK = false ;
 

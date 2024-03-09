@@ -225,8 +225,8 @@ void ATAAMD_InitController(const PCIEntry* pPCIEntry, ATAController* pController
 	  printf("\n\tnVIDIA Serial ATA Controller Detected");
 		strcpy(pController->szName, "nVIDIA Serial ATA Controller") ;
 
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[1]) ;
-		DMM_DeAllocateForKernel((uintptr_t)pController->pPort[3]) ;
+    KernelDMM::Instance().free((uintptr_t)pController->pPort[1]) ;
+    KernelDMM::Instance().free((uintptr_t)pController->pPort[3]) ;
 
 		pController->pPort[1] = pController->pPort[2] ;
 		pController->pPort[2] = nullptr ;
@@ -278,7 +278,7 @@ void ATAAMD_InitController(const PCIEntry* pPCIEntry, ATAController* pController
 
   pIDE->WritePCIConfig(AMD_IDE_CONFIG, 1, (pAMDIDE->usFlags & AMD_BAD_FIFO) ? (bTemp & 0x0F) : (bTemp | 0xF0));
 
-	AMDIDEInfo* pAMDIDEInfo = (AMDIDEInfo*)DMM_AllocateForKernel(sizeof(AMDIDEInfo)) ;
+	AMDIDEInfo* pAMDIDEInfo = (AMDIDEInfo*)KernelDMM::Instance().allocate(sizeof(AMDIDEInfo)) ;
 
   memcpy(&pAMDIDEInfo->pciEntry, pPCIEntry, sizeof(PCIEntry));
 	pAMDIDEInfo->pAMDIDE = pAMDIDE ;	

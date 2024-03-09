@@ -300,7 +300,7 @@ void ConsoleCommands_ListDirContent()
     printf("%-20s", pDirList[i].Name()) ;
 	}
 
-	DMM_DeAllocateForKernel((uintptr_t)pDirList) ;
+	KernelDMM::Instance().free((uintptr_t)pDirList) ;
 }
 
 void ConsoleCommands_ReadFileContent()
@@ -344,7 +344,7 @@ void ConsoleCommands_PresentWorkingDir()
 	char* szPWD ;
 	Directory_PresentWorkingDirectory(&ProcessManager::Instance().GetCurrentPAS(), &szPWD) ;
 	printf("\n%s", szPWD);
-	DMM_DeAllocateForKernel((uintptr_t)szPWD) ;
+	KernelDMM::Instance().free((uintptr_t)szPWD) ;
 }
 
 void ConsoleCommands_CopyFile()
@@ -946,7 +946,7 @@ void graphics_photos(int x, int y) {
     exit(0);
   }
 
-  DMM_DeAllocateForKernel((uintptr_t)pDirList);
+  KernelDMM::Instance().free((uintptr_t)pDirList);
 
   const int photoCanvasWidth = 500, photoCanvasHeight = 500;
   upanui::GraphicsContext::Init();
@@ -1648,7 +1648,7 @@ void ConsoleCommands_PrintKPIs() {
 
 void ConsoleCommands_Test() {
   MemManager::Instance().DisplayPageAllocationStats();
-  printf("\n Kernel Heap Size: %llu", DMM_KernelHeapAllocSize());
+  printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }
 
 extern uint32_t dmm_alloc_count;

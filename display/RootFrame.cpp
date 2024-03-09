@@ -21,12 +21,12 @@
  */
 
 #include <RootFrame.h>
-#include <DMM.h>
 #include <string.h>
+#include <DMM.h>
 
 void RootFrame::enableDoubleBuffer(bool enable) {
   if (!enable) {
-    DMM_DeAllocateForKernel((uintptr_t)_doubleBuffer);
+    KernelDMM::Instance().free((uintptr_t)_doubleBuffer);
   }
   _hasDoubleBuffer = enable;
 }
@@ -35,8 +35,8 @@ void RootFrame::updateViewport(const ViewportInfo &info) {
   bool doubleBufferReallocated = false;
   if (_hasDoubleBuffer) {
     if (viewport().width() != info._width || viewport().height() != info._height) {
-      DMM_DeAllocateForKernel((uintptr_t)_doubleBuffer);
-      _doubleBuffer = (uint32_t*)DMM_AllocateForKernel(info._width * info._height * frameBuffer().bytesPerPixel(), 32);
+      KernelDMM::Instance().free((uintptr_t)_doubleBuffer);
+      _doubleBuffer = (uint32_t*)KernelDMM::Instance().allocate(info._width * info._height * frameBuffer().bytesPerPixel(), 32);
       doubleBufferReallocated = true;
     }
   }

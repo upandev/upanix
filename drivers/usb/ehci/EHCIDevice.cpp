@@ -70,7 +70,7 @@ bool EHCIDevice::SetConfiguration(byte bConfigValue) {
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return false;
 	}
 
@@ -123,7 +123,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
   bool status = true;
 	int index ;
 
-	USBStandardConfigDesc* pCD = (USBStandardConfigDesc*)DMM_AllocateForKernel(sizeof(USBStandardConfigDesc) * _deviceDesc.bNumConfigs) ;
+	USBStandardConfigDesc* pCD = (USBStandardConfigDesc*)KernelDMM::Instance().allocate(sizeof(USBStandardConfigDesc) * _deviceDesc.bNumConfigs) ;
 
 	for(index = 0; index < (int)_deviceDesc.bNumConfigs; index++)
 		USBDataHandler_InitConfigDesc(&pCD[index]) ;
@@ -137,11 +137,11 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 
 		int iLen = pCD[index].wTotalLength;
 
-		void* pBuffer = (void*)DMM_AllocateForKernel(iLen) ;
+		void* pBuffer = (void*)KernelDMM::Instance().allocate(iLen) ;
 
 		if(!(status = GetDescriptor(usDescValue, 0, iLen, pBuffer)))
 		{
-			DMM_DeAllocateForKernel((uintptr_t)pBuffer) ;
+			KernelDMM::Instance().free((uintptr_t)pBuffer) ;
 			break ;
 		}
 
@@ -154,7 +154,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 
 		void* pInterfaceBuffer = (char*)pBuffer + pCD[index].bLength ;
 
-		pCD[index].pInterfaces = (USBStandardInterface*)DMM_AllocateForKernel(sizeof(USBStandardInterface) * pCD[index].bNumInterfaces) ;
+		pCD[index].pInterfaces = (USBStandardInterface*)KernelDMM::Instance().allocate(sizeof(USBStandardInterface) * pCD[index].bNumInterfaces) ;
 		int iI ;
 
 		for(iI = 0; iI < (int)pCD[index].bNumInterfaces; iI++)
@@ -180,7 +180,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 
 			int iNumEndPoints = pCD[index].pInterfaces[iI].bNumEndpoints ;
 
-			pCD[index].pInterfaces[iI].pEndPoints = (USBStandardEndPt*)DMM_AllocateForKernel(
+			pCD[index].pInterfaces[iI].pEndPoints = (USBStandardEndPt*)KernelDMM::Instance().allocate(
 														sizeof(USBStandardEndPt) * iNumEndPoints) ;
 
 			printf("\n Parsing EndPoints for Interface: %d of Configuration: %d", iI, index) ;
@@ -207,7 +207,7 @@ bool EHCIDevice::GetConfigDescriptor(USBStandardConfigDesc** pConfigDesc)
 			pInterfaceBuffer = (USBStandardInterface*)((char*)pEndPtBuffer + iNumEndPoints * sizeof(USBStandardEndPt)) ;
 		}
 
-		DMM_DeAllocateForKernel((uintptr_t)pBuffer) ;
+		KernelDMM::Instance().free((uintptr_t)pBuffer) ;
 		pBuffer = nullptr ;
 	}
 
@@ -233,20 +233,20 @@ bool EHCIDevice::GetStringDescriptorZero()
 	int iLen = ((USBStringDescZero*)&szPart)->bLength ;
 	printf("\n String Desc Zero Len: %d", iLen) ;
 
-	byte* pStringDescZero = (byte*)DMM_AllocateForKernel(iLen) ;
+	byte* pStringDescZero = (byte*)KernelDMM::Instance().allocate(iLen) ;
 
 	if(!GetDescriptor(usDescValue, 0, iLen, pStringDescZero))
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pStringDescZero) ;
+		KernelDMM::Instance().free((uintptr_t)pStringDescZero) ;
 		return false;
 	}
 
-	_pStrDescZero = (USBStringDescZero*)DMM_AllocateForKernel(sizeof(USBStringDescZero)) ;
+	_pStrDescZero = (USBStringDescZero*)KernelDMM::Instance().allocate(sizeof(USBStringDescZero)) ;
 
 	USBDataHandler_CopyStrDescZero(_pStrDescZero, pStringDescZero) ;
 	USBDataHandler_DisplayStrDescZero(_pStrDescZero);
 
-	DMM_DeAllocateForKernel((uintptr_t)pStringDescZero) ;
+	KernelDMM::Instance().free((uintptr_t)pStringDescZero) ;
 
 	return true;
 }
@@ -297,7 +297,7 @@ byte EHCIDevice::GetMaxLun()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
     throw upan::exception(XLOC, "Failed to setup buffer");
 	}
 
@@ -315,8 +315,8 @@ byte EHCIDevice::GetMaxLun()
 	
 	if(SetupAllocBuffer(pTD1, 1) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
-		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTD1) ;
     throw upan::exception(XLOC, "Failed to setup buffer");
 	}
 
@@ -358,7 +358,7 @@ bool EHCIDevice::CommandReset()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return false ;
 	}
 
@@ -403,7 +403,7 @@ bool EHCIDevice::ClearHaltEndPoint(USBulkDisk* pDisk, bool bIn)
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return false ;
 	}
 
@@ -633,7 +633,7 @@ bool EHCIDevice::SetAddress()
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return EHCIController_FAILURE ;
 	}
 
@@ -702,7 +702,7 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return false;
 	}
 
@@ -723,8 +723,8 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 	
 	if(SetupAllocBuffer(pTD1, iLen) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
-		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTD1) ;
 		return false;
 	}
 
@@ -765,7 +765,7 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 
 	if(SetupAllocBuffer(pTDStart, sizeof(USBDevRequest)) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
 		return false;
 	}
 
@@ -783,8 +783,8 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 	
 	if(SetupAllocBuffer(pTD1, 1) != EHCIController_SUCCESS)
 	{
-		DMM_DeAllocateForKernel((uintptr_t)pTDStart) ;
-		DMM_DeAllocateForKernel((uintptr_t)pTD1) ;
+		KernelDMM::Instance().free((uintptr_t)pTDStart) ;
+		KernelDMM::Instance().free((uintptr_t)pTD1) ;
 		return false;
 	}
 
@@ -836,7 +836,7 @@ byte EHCIDevice::SetupBuffer(EHCIQTransferDesc* pTD, uintptr_t uiAddress, unsign
 	if(uiSize > PAGE_SIZE)
 	{
 		printf("\n EHCI TD Buffer Allocation Math is incorrect in page boundary calculation !") ;
-		DMM_DeAllocateForKernel(uiAddress) ;
+		KernelDMM::Instance().free(uiAddress) ;
 		return EHCIController_FAILURE ;
 	}
 
@@ -853,7 +853,7 @@ byte EHCIDevice::SetupAllocBuffer(EHCIQTransferDesc* pTD, unsigned uiSize)
 		return EHCIController_FAILURE ;
 	}
 
-	unsigned uiAddress = DMM_AllocateForKernel(uiSize) ;
+	unsigned uiAddress = KernelDMM::Instance().allocate(uiSize) ;
 
 	return SetupBuffer(pTD, uiAddress, uiSize) ;
 }

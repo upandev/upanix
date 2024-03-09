@@ -44,7 +44,7 @@ void SystemUtil_Reboot()
       pDiskDrive->FlushDirtyCacheSectors();
       if(result.isBad())
 				printf("\n Failed to UnMount Drive\n") ;
-			else
+      else
 				printf("[ Done ]") ;
 		}
 	}

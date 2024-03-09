@@ -27,145 +27,60 @@
 #include <ProcessManager.h>
 #include <Bit.h>
 
-static AllocationUnitTracker* DMM_kernelAUTAddress = nullptr;
+uint64_t AllocationUnitTracker::calculateCheckSum() const {
+  return uint64_t(allocatedAddress) ^ size ^ returnAddress ^ uint64_t(nextAUTAddress);
+}
 
-/*************** static (private) functions ********************/
+void AllocationUnitTracker::updateCheckSum() {
+  checkSum = calculateCheckSum();
+}
 
-static uint32_t DMM_GetByteStuffForAlign(uint64_t uiAddress, uint32_t uiAlignNumber) {
+DMM::DMM(uint64_t heapStartAddress, uint64_t heapMaxSize) :
+  _heapStartAddress(heapStartAddress), _heapMaxSize(heapMaxSize), _rootAut(nullptr) {
+}
+
+uint32_t DMM::getByteStuffForAlign(uint64_t uiAddress, uint32_t uiAlignNumber) const {
   uint32_t uiByteStuffForAlign = 0 ;
-	if(uiAlignNumber != 0) {
+  if(uiAlignNumber != 0) {
     uint32_t uiAlignMod = uiAddress % uiAlignNumber ;
-		if(uiAlignMod != 0)
-			uiByteStuffForAlign = uiAlignNumber - uiAlignMod ;
-	}
-	return uiByteStuffForAlign ;
+    if(uiAlignMod != 0)
+      uiByteStuffForAlign = uiAlignNumber - uiAlignMod ;
+  }
+  return uiByteStuffForAlign ;
 }
 
-void DMM_CheckAlignNumber(uint32_t uiAlignNumber) {
-  if(uiAlignNumber == 0)
+void DMM::validateAlignParam(uint32_t alignment) const {
+  if(alignment == 0)
     return;
-  if(Bit::IsPowerOfTwo(uiAlignNumber))
+  if(Bit::IsPowerOfTwo(alignment))
     return;
-  throw upan::exception(XLOC, "%u is not 2^ power aligned address", uiAlignNumber);
+  throw upan::exception(XLOC, "%u is not 2^ power aligned address", alignment);
 }
 
-static uint64_t calculateCheckSum(AllocationUnitTracker& aut) {
-  return uint64_t(aut.allocatedAddress) ^ aut.size ^ aut.returnAddress ^ uint64_t(aut.nextAUTAddress);
-}
+uintptr_t DMM::_allocate(uint32_t sizeInBytes, uint32_t alignment) {
+  validateAlignParam(alignment);
+  _dmmFlag = true;
 
-static void updateCheckSum(AllocationUnitTracker& aut) {
-  aut.checkSum = calculateCheckSum(aut);
-}
-
-/***************************************************************/
-
-// old allocation algorithm which was maintaining a list of allocated chunks was 40 times slower
-// than the current algorithm which maintains a list of free chunks
-uintptr_t DMM_Allocate(Process* processAddressSpace, uint32_t sizeInBytes, uint32_t alignNumber) {
-  upan::mutex_guard g(processAddressSpace->heapMutex().value());
-  DMM_CheckAlignNumber(alignNumber);
-  processAddressSpace->setDmmFlag(true);
-  auto heapStartAddress = (AllocationUnitTracker*)PROCESS_HEAP_START_ADDRESS;
-
-  AllocationUnitTracker *aut, *prevAut ;
-  // TODO: Limit Check on Allocated Memory i.e, Allocation should be limited to either
-  // RAM Size OR 4GB if virtual memory management is implemented
-
-  // Dedicated Head Node. This will avoid Back Loop at Head
-  if(processAddressSpace->getAUTAddress() == nullptr) {
-    aut = heapStartAddress;
-
-    aut->allocatedAddress = heapStartAddress ;
-    aut->size = PROCESS_HEAP_SIZE ;
-    aut->returnAddress = NULL;
-    aut->nextAUTAddress = nullptr;
-    processAddressSpace->setAUTAddress(heapStartAddress);
+  //Dedicated Head Node. This will avoid Back Loop at Head
+  //lazy initialize because accessing heap address could cause page fault - so, access address after calling process is fully initialized
+  if (_rootAut == nullptr) {
+    _rootAut = (AllocationUnitTracker *) _heapStartAddress;
+    _rootAut->allocatedAddress = _rootAut;
+    _rootAut->size = _heapMaxSize;
+    _rootAut->returnAddress = NULL;
+    _rootAut->nextAUTAddress = nullptr;
+    _rootAut->updateCheckSum();
   }
 
-  aut = processAddressSpace->getAUTAddress();
-  prevAut = nullptr;
-  while(aut != nullptr) {
-    auto address = (uintptr_t)aut->allocatedAddress;
-    uint64_t maxSize = aut->size;
-    auto nextAutAddress = aut->nextAUTAddress;
-    uintptr_t byteStuffForAlign = DMM_GetByteStuffForAlign(address + sizeof(AllocationUnitTracker), alignNumber);
-    uint64_t size = sizeInBytes + sizeof(AllocationUnitTracker) + byteStuffForAlign;
-
-    if(size <= maxSize) {
-      auto allocAUT = (AllocationUnitTracker*)(address + byteStuffForAlign);
-      allocAUT->allocatedAddress = (AllocationUnitTracker*)address;
-      allocAUT->returnAddress = address + sizeof(AllocationUnitTracker) + byteStuffForAlign;
-      allocAUT->size = size;
-      allocAUT->byteStuffForAlign = byteStuffForAlign;
-
-      uint64_t remaining = maxSize - size;
-      if(remaining > (sizeof(AllocationUnitTracker) + 1)) {
-        auto freeAUT = (AllocationUnitTracker*)(address + size);
-        freeAUT->allocatedAddress = freeAUT;
-        freeAUT->returnAddress = NULL;
-        freeAUT->size = remaining;
-        freeAUT->nextAUTAddress = nextAutAddress;
-
-        if(prevAut == nullptr)
-          processAddressSpace->setAUTAddress(freeAUT->allocatedAddress);
-        else
-          prevAut->nextAUTAddress = freeAUT->allocatedAddress;
-      } else {
-        allocAUT->size += remaining;
-        if(prevAut == nullptr)
-          processAddressSpace->setAUTAddress(nextAutAddress);
-        else
-          prevAut->nextAUTAddress = nextAutAddress;
-      }
-
-      //Make sure that all pages are allocated in the requested mem block
-      uintptr_t addr = address + sizeof(AllocationUnitTracker) ;
-      UNUSED __volatile__ int x;
-      while(addr < (address + aut->size)) {
-        x = ((char*)addr)[0] ; // A read would cause a page fault
-        addr += PAGE_SIZE ;
-      }
-      x = ((char*)(address + aut->size - 1))[0] ;
-
-      processAddressSpace->setDmmFlag(false);
-      return PROCESS_VIRTUAL_ALLOCATED_ADDRESS(aut->returnAddress) ;
-    }
-
-    prevAut = aut;
-    aut = nextAutAddress;
-  }
-  throw upan::exception(XLOC, "out of memory!");
-}
-
-static uintptr_t DMM_GetKernelHeapStartAddress() {
-  return MEM_KERNEL_HEAP_START;
-}
-
-void DMM_InitAUTForKernel() {
-  auto aut = (AllocationUnitTracker*)DMM_GetKernelHeapStartAddress();
-  aut->allocatedAddress = aut;
-  aut->size = MEM_KERNEL_HEAP_SIZE;
-  aut->returnAddress = NULL;
-  aut->nextAUTAddress = nullptr;
-  updateCheckSum(*aut);
-  DMM_kernelAUTAddress = aut;
-}
-
-uint32_t dmm_alloc_count = 0;
-uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber) {
-  IrqGuard g;
-  ++dmm_alloc_count;
-	DMM_CheckAlignNumber(alignNumber);
-
-  auto aut = DMM_kernelAUTAddress;
+  auto aut = _rootAut;
   AllocationUnitTracker* prevAut = nullptr;
   while(aut != nullptr) {
     auto address = (uintptr_t)aut->allocatedAddress;
     const uint64_t maxSize = aut->size;
     auto nextAUTAddress = aut->nextAUTAddress;
-    const uintptr_t byteStuffForAlign = DMM_GetByteStuffForAlign(address + sizeof(AllocationUnitTracker), alignNumber);
+    const uintptr_t byteStuffForAlign = getByteStuffForAlign(address + sizeof(AllocationUnitTracker), alignment);
     const uint64_t size = sizeInBytes + sizeof(AllocationUnitTracker) + byteStuffForAlign;
-    const uint64_t calcCheckSum = calculateCheckSum(*aut);
+    const uint64_t calcCheckSum = aut->calculateCheckSum();
     if (calcCheckSum != aut->checkSum) {
       throw upan::exception(XLOC,"heap corrupted!");
     }
@@ -185,23 +100,25 @@ uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber) {
         freeAUT->nextAUTAddress = nextAUTAddress;
 
         if(prevAut == nullptr)
-          DMM_kernelAUTAddress = freeAUT->allocatedAddress;
+          _rootAut = freeAUT->allocatedAddress;
         else
           prevAut->nextAUTAddress = freeAUT->allocatedAddress;
-        updateCheckSum(*freeAUT);
+        freeAUT->updateCheckSum();
       }
       else
       {
         allocAUT->size += remaining;
         if(prevAut == nullptr)
-          DMM_kernelAUTAddress = nextAUTAddress;
+          _rootAut = nextAUTAddress;
         else
           prevAut->nextAUTAddress = nextAUTAddress;
       }
       if (prevAut != nullptr) {
-        updateCheckSum(*prevAut);
+        prevAut->updateCheckSum();
       }
-      updateCheckSum(*allocAUT);
+      allocAUT->updateCheckSum();
+      accessMem(allocAUT);
+      _dmmFlag = false;
       return allocAUT->returnAddress;
     }
     prevAut = aut;
@@ -210,69 +127,17 @@ uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber) {
   throw upan::exception(XLOC, "out of memory!");
 }
 
-byte DMM_DeAllocate(Process* processAddressSpace, uintptr_t address) {
-  upan::mutex_guard g(processAddressSpace->heapMutex().value());
-  // do this before converting the address to real address (by adding PROCESS_BASE)
+bool DMM::_free(uintptr_t address) {
   if(address == NULL)
-    return DMM_SUCCESS ;
+    return true;
 
-  address = PROCESS_REAL_ALLOCATED_ADDRESS(address) ;
-  uint64_t heapStartAddress = PROCESS_HEAP_START_ADDRESS;
-
-  if(address <= heapStartAddress)
-    return DMM_BAD_DEALLOC ;
+  if(address <= _heapStartAddress)
+    return false;
 
   auto freeAUT = (AllocationUnitTracker*)(address - sizeof(AllocationUnitTracker));
   uintptr_t allocatedAddress = address - sizeof(AllocationUnitTracker) - freeAUT->byteStuffForAlign;
   uintptr_t size = freeAUT->size;
-  freeAUT = (AllocationUnitTracker*)allocatedAddress;
-  freeAUT->allocatedAddress = freeAUT;
-  freeAUT->returnAddress = NULL;
-  freeAUT->size = size;
-  freeAUT->nextAUTAddress = processAddressSpace->getAUTAddress();
-  processAddressSpace->setAUTAddress(freeAUT);
-  return DMM_SUCCESS;
-}
-
-bool DMM_GetAllocSize(uintptr_t address, size_t* size) {
-  address = PROCESS_REAL_ALLOCATED_ADDRESS(address);
-  uintptr_t heapStartAddress = PROCESS_HEAP_START_ADDRESS;
-
-  if (address == NULL || address < sizeof(AllocationUnitTracker) || address == heapStartAddress) {
-    *size = 0;
-    return false;
-  }
-
-  auto aut = (AllocationUnitTracker *) (address - sizeof(AllocationUnitTracker));
-  *size = aut->size;
-  return true;
-}
-
-bool DMM_GetAllocSizeForKernel(uintptr_t uiAddress, size_t* size) {
-  IrqGuard g;
-  uintptr_t uiHeapStartAddress = DMM_GetKernelHeapStartAddress();
-  if (uiAddress == NULL || uiAddress < sizeof(AllocationUnitTracker) || uiAddress == uiHeapStartAddress) {
-    *size = 0;
-    return false;
-  }
-
-  auto aut = (AllocationUnitTracker *) (uiAddress - sizeof(AllocationUnitTracker));
-  *size = aut->size;
-  return true;
-}
-
-bool DMM_DeAllocateForKernel(uintptr_t address) {
-  IrqGuard g;
-	if(address == NULL)
-		return true;
-
-	if(address <= DMM_GetKernelHeapStartAddress())
-		return false;
-
-	auto freeAUT = (AllocationUnitTracker*)(address - sizeof(AllocationUnitTracker));
-  uintptr_t allocatedAddress = address - sizeof(AllocationUnitTracker) - freeAUT->byteStuffForAlign;
-  uint64_t size = freeAUT->size;
-  const uint64_t calcCheckSum = calculateCheckSum(*freeAUT);
+  const uint64_t calcCheckSum = freeAUT->calculateCheckSum();
   if (calcCheckSum != freeAUT->checkSum) {
     throw upan::exception(XLOC, "bad address dealloc %llx", address);
   }
@@ -283,17 +148,137 @@ bool DMM_DeAllocateForKernel(uintptr_t address) {
   freeAUT->allocatedAddress = freeAUT;
   freeAUT->returnAddress = NULL;
   freeAUT->size = size;
-  freeAUT->nextAUTAddress = DMM_kernelAUTAddress;
-  updateCheckSum(*freeAUT);
-  DMM_kernelAUTAddress = freeAUT;
+  freeAUT->nextAUTAddress = nullptr;
+
+  if (freeAUT->allocatedAddress < _rootAut) {
+    freeAUT->nextAUTAddress = _rootAut;
+    _rootAut = freeAUT;
+    freeAUT->updateCheckSum();
+  } else {
+    for (auto aut = _rootAut; aut != nullptr; aut = aut->nextAUTAddress) {
+      AllocationUnitTracker* nextAut = aut->nextAUTAddress;
+      if (nextAut == nullptr) {
+        aut->nextAUTAddress = freeAUT;
+        aut->updateCheckSum();
+        freeAUT->updateCheckSum();
+        break;
+      } else if (aut->allocatedAddress < freeAUT->allocatedAddress &&
+                 freeAUT->allocatedAddress < nextAut->allocatedAddress) {
+        aut->nextAUTAddress = freeAUT;
+        freeAUT->nextAUTAddress = nextAut;
+        aut->updateCheckSum();
+        freeAUT->updateCheckSum();
+        break;
+      }
+    }
+  }
+
+  AllocationUnitTracker* prevAut = nullptr;
+  for(auto aut = _rootAut; aut != nullptr;)	{
+    if (aut->nextAUTAddress != nullptr) {
+      if (((uint64_t) aut + aut->size) == (uint64_t) aut->nextAUTAddress) {
+        aut->size += aut->nextAUTAddress->size;
+        aut->nextAUTAddress = aut->nextAUTAddress->nextAUTAddress;
+        aut->updateCheckSum();
+      } else if (((uint64_t) aut->nextAUTAddress + aut->nextAUTAddress->size) == (uint64_t) aut) {
+        aut->nextAUTAddress->size += aut->size;
+        aut = aut->nextAUTAddress;
+        if (prevAut) {
+          prevAut->nextAUTAddress = aut;
+        } else {
+          _rootAut = aut;
+        }
+        aut->updateCheckSum();
+      } else {
+        prevAut = aut;
+        aut = aut->nextAUTAddress;
+      }
+    } else {
+      prevAut = aut;
+      aut = aut->nextAUTAddress;
+    }
+  }
+
   return true;
 }
 
-unsigned DMM_KernelHeapAllocSize() {
+bool DMM::_getAllocSize(uintptr_t address, size_t* size) {
+  if (address == NULL || address < sizeof(AllocationUnitTracker) || address == _heapStartAddress) {
+    *size = 0;
+    return false;
+  }
+  auto aut = (AllocationUnitTracker *) (address - sizeof(AllocationUnitTracker));
+  *size = aut->size;
+  return true;
+}
+
+uint64_t DMM::_availableHeapSize() {
 	uint64_t size = 0 ;
-	for(auto aut = DMM_kernelAUTAddress; aut != nullptr; aut = aut->nextAUTAddress)	{
+	uint64_t total_chunks = 0;
+	char buf[512];
+	for(auto aut = _rootAut; aut != nullptr; aut = aut->nextAUTAddress)	{
     size += aut->size;
-    printf("\n Chunk: %u", aut->size);
+    ++total_chunks;
+    sprintf(buf, "\n Chunk: %u, %u, %u", aut->allocatedAddress, aut->size, (uint64_t)aut->allocatedAddress + aut->size);
+    //COM1::Instance().Write(buf);
+    printf("%s", buf);
 	}
+	printf("\n Total chunks: %d", total_chunks);
 	return size ;
 }
+
+UserDMM::UserDMM() : DMM(PROCESS_HEAP_START_ADDRESS, PROCESS_HEAP_SIZE) {}
+
+uintptr_t UserDMM::allocate(uint32_t sizeInBytes, uint32_t alignment) {
+  upan::mutex_guard g(_mutex);
+  return _allocate(sizeInBytes, alignment);
+}
+
+void UserDMM::accessMem(AllocationUnitTracker *aut) {
+  //Make sure that all pages are allocated in the requested mem block
+  auto addr = (uintptr_t)aut->allocatedAddress;
+  const auto endAddr = addr + aut->size;
+  UNUSED __volatile__ int x;
+  while (addr < endAddr) {
+    x = ((char *) addr)[0]; // A read would cause a page fault
+    addr += PAGE_SIZE;
+  }
+  x = ((char *) (endAddr - 1))[0];
+}
+
+bool UserDMM::free(uintptr_t address) {
+  upan::mutex_guard g(_mutex);
+  return _free(address);
+}
+bool UserDMM::getAllocSize(uintptr_t address, size_t* size) {
+  upan::mutex_guard g(_mutex);
+  return _getAllocSize(address, size);
+}
+
+uint64_t UserDMM::availableHeapSize() {
+  upan::mutex_guard g(_mutex);
+  return _availableHeapSize();
+};
+
+KernelDMM::KernelDMM() : DMM(MEM_KERNEL_HEAP_START, MEM_KERNEL_HEAP_SIZE) {
+}
+
+uintptr_t KernelDMM::allocate(uint32_t sizeInBytes, uint32_t alignment) {
+  IrqGuard g;
+  return _allocate(sizeInBytes, alignment);
+}
+
+bool KernelDMM::free(uintptr_t address) {
+  IrqGuard g;
+  return _free(address);
+}
+
+bool KernelDMM::getAllocSize(uintptr_t address, size_t* size) {
+  IrqGuard g;
+  return _getAllocSize(address, size);
+}
+
+uint64_t KernelDMM::availableHeapSize() {
+  IrqGuard g;
+  return _availableHeapSize();
+};
