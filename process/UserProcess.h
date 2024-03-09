@@ -81,7 +81,7 @@ public:
 private:
   void Load(int numOfParams, char** argvList);
   void AllocateAddressSpace();
-  void CopyElfImage(byte* bProcessImage, unsigned uiMemImageSize);
+  void CopyElfImage(byte* bProcessImage);
   uint64_t PushProgramInitStackData(int numOfParams, char **argvList);
 
   void DeallocateResources() override;

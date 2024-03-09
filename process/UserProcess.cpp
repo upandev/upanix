@@ -68,12 +68,10 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   if((minMemAddr % PAGE_SIZE) != 0)
     throw upan::exception(XLOC, "process min load address %x is not page aligned", minMemAddr);
 
-  uint64_t processImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
-  uint64_t uiMemImageSize = processImageSize + DynamicLinkLoader::Instance().dllResolverSize();
+  uint64_t processImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 8) ;
+  _processSpaceSize = processImageSize + DynamicLinkLoader::Instance().dllResolverSize();
 
   _processBase = minMemAddr;
-  uint64_t alignAdjustProcessSpace = _processBase % PAGE_SIZE ? PAGE_SIZE : 0;
-  _processSpaceSize = uiMemImageSize + alignAdjustProcessSpace;
 
   if(_processSpaceSize > MAX_PROCESS_SPACE_SIZE) {
     throw upan::exception(XLOC, "process requires %lu space that's larger than supported %lu", _processSpaceSize, MAX_PROCESS_SPACE_SIZE);
@@ -83,7 +81,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   _elfInfo._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
   _elfInfo._elfSecStrTable = mELFParser.CopyELFSecStrTable();
 
-  upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * uiMemImageSize]);
+  upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * _processSpaceSize]);
 
   upan::trycall([&] { mELFParser.CopyProcessImage(bProcessImage.get(), _processBase, processImageSize); }).onBad([&] (const upan::error& err) {
     DeallocateResources();
@@ -106,7 +104,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     memset(bss, 0, bssSectionHeader->sh_size);
   });
 
-  CopyElfImage(bProcessImage.get(), uiMemImageSize);
+  CopyElfImage(bProcessImage.get());
 
   const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
   const auto entryAdddress = mELFParser.GetProgramStartAddress();
@@ -153,11 +151,11 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
   return virtualStackTopAddress;
 }
 
-void UserProcess::CopyElfImage(byte* processImage, unsigned memImageSize) {
+void UserProcess::CopyElfImage(byte* processImage) {
   uint64_t virtualAddress = _processBase;
   const uint64_t endAddress = virtualAddress + _processSpaceSize;
 
-  for(uint64_t offset = 0, copySize = memImageSize;
+  for(uint64_t offset = 0, copySize = _processSpaceSize;
     virtualAddress < endAddress;
     virtualAddress += PAGE_SIZE, offset += PAGE_SIZE, copySize -= PAGE_SIZE) {
     auto ptTable = MemManager::Instance().GetPTTable(_pml4Table, virtualAddress);
@@ -274,7 +272,6 @@ void UserProcess::DeallocateResources() {
   auto pdpPage = PAGE_TABLE(_pml4Table, 0);
   pdpPage[0] = 0;
   MemManager::Instance().DeallocateAddressSpace(pml4Table());
-  MemManager::Instance().DeAllocatePhysicalPage((uint64_t) pml4Table() / PAGE_SIZE);
 }
 
 void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
