@@ -440,7 +440,6 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
     upan::uniq_ptr<SchedulableProcess> newPAS(new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, iNumberOfParameters, szArgumentList));
     int pid = newPAS->processID();
     AddToSchedulerList(*newPAS.release());
-    //MemManager::Instance().DisplayNoOfFreePages() ;
     return pid;
   }
   catch(const upan::exception& e) {
@@ -460,7 +459,6 @@ int ProcessManager::CreateThreadTask(int parentID, uintptr_t threadCaller, uintp
     upan::uniq_ptr<SchedulableProcess> threadPAS(&parent.CreateThread(threadCaller, threadEntryAddress, arg));
     int threadID = threadPAS->processID();
     AddToProcessMap(*threadPAS.release());
-    //MemManager::Instance().DisplayNoOfFreePages() ;
     return threadID;
   } catch(const upan::exception& e) {
     e.Print();

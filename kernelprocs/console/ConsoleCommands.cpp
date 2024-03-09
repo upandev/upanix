@@ -1647,7 +1647,8 @@ void ConsoleCommands_PrintKPIs() {
 }
 
 void ConsoleCommands_Test() {
-  _DisplayReadStat();
+  MemManager::Instance().DisplayPageAllocationStats();
+  printf("\n Kernel Heap Size: %llu", DMM_KernelHeapAllocSize());
 }
 
 extern uint32_t dmm_alloc_count;

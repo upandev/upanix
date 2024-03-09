@@ -60,7 +60,6 @@ bool DMM_DeAllocateForKernel(uintptr_t address);
 
 bool DMM_GetAllocSize(uintptr_t address, size_t* size);
 bool DMM_GetAllocSizeForKernel(uintptr_t address, size_t* size);
-void DMM_DeAllocatePhysicalPages(Process* processAddressSpace);
 unsigned DMM_KernelHeapAllocSize() ;
 
 #endif

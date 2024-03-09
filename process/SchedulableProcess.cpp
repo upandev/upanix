@@ -95,9 +95,6 @@ void SchedulableProcess::Destroy() {
     });
   }
 
-  //MemManager::Instance().DisplayNoOfFreePages();
-  //MemManager::Instance().DisplayNoOfAllocPages(0,0);
-
   // Deallocate Resources
   DeallocateResources();
 
@@ -116,9 +113,6 @@ void SchedulableProcess::Destroy() {
   if(_parentProcessID == NO_PROCESS_ID) {
     Release();
   }
-
-  //MemManager::Instance().DisplayNoOfFreePages();
-  //MemManager::Instance().DisplayNoOfAllocPages(0,0);
 }
 
 void SchedulableProcess::Release() {
@@ -139,8 +133,6 @@ void SchedulableProcess::Load(TaskContext& taskContext) {
   _runTick = PIT::Instance().GetClockCount();
   onLoad();
   taskContext = _taskContext;
-  //MemUtil_CopyMemory(MemUtil_GetDS(), (uint64_t)&_processLDT, SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, sizeof(ProcessLDT)) ;
-  //MemUtil_CopyMemory(MemUtil_GetDS(), (unsigned)&_taskState, SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, sizeof(TaskState)) ;
 }
 
 void SchedulableProcess::switchPageTable() const {

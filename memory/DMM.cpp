@@ -161,10 +161,10 @@ uintptr_t DMM_AllocateForKernel(unsigned sizeInBytes, unsigned alignNumber) {
   AllocationUnitTracker* prevAut = nullptr;
   while(aut != nullptr) {
     auto address = (uintptr_t)aut->allocatedAddress;
-    uint64_t maxSize = aut->size;
+    const uint64_t maxSize = aut->size;
     auto nextAUTAddress = aut->nextAUTAddress;
-    uintptr_t byteStuffForAlign = DMM_GetByteStuffForAlign(address + sizeof(AllocationUnitTracker), alignNumber);
-    uint64_t size = sizeInBytes + sizeof(AllocationUnitTracker) + byteStuffForAlign;
+    const uintptr_t byteStuffForAlign = DMM_GetByteStuffForAlign(address + sizeof(AllocationUnitTracker), alignNumber);
+    const uint64_t size = sizeInBytes + sizeof(AllocationUnitTracker) + byteStuffForAlign;
     const uint64_t calcCheckSum = calculateCheckSum(*aut);
     if (calcCheckSum != aut->checkSum) {
       throw upan::exception(XLOC,"heap corrupted!");
@@ -269,7 +269,7 @@ bool DMM_DeAllocateForKernel(uintptr_t address) {
 	if(address <= DMM_GetKernelHeapStartAddress())
 		return false;
 
-  auto freeAUT = (AllocationUnitTracker*)(address - sizeof(AllocationUnitTracker));
+	auto freeAUT = (AllocationUnitTracker*)(address - sizeof(AllocationUnitTracker));
   uintptr_t allocatedAddress = address - sizeof(AllocationUnitTracker) - freeAUT->byteStuffForAlign;
   uint64_t size = freeAUT->size;
   const uint64_t calcCheckSum = calculateCheckSum(*freeAUT);
@@ -288,37 +288,12 @@ bool DMM_DeAllocateForKernel(uintptr_t address) {
   DMM_kernelAUTAddress = freeAUT;
   return true;
 }
-	
-void DMM_DeAllocatePhysicalPages(Process* processAddressSpace) {
-	auto pml4Table = (uint64_t*) processAddressSpace->pml4Table();
-  auto pdpTable = (uint64_t*)(pml4Table[0] & PAGE_MASK);
-
-	for(uint64_t address = PROCESS_HEAP_START_ADDRESS; address < (PROCESS_HEAP_START_ADDRESS + PROCESS_HEAP_SIZE); address += PAGE_SIZE) {
-    const auto pdpIndex = PDP_INDEX(address);
-
-    if (PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
-      auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
-
-      const auto pdIndex = PD_INDEX(address);
-      if (PAGE_IS_PRESENT(pdTable, pdIndex)) {
-        auto ptTable = PAGE_TABLE(pdTable, pdIndex);
-
-        const auto ptIndex = PT_INDEX(address);
-        if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
-          auto realAddress = PAGE_ADDRESS(ptTable, ptIndex);
-          MemManager::Instance().DeAllocatePhysicalPage(realAddress / PAGE_SIZE);
-          continue;
-        }
-      }
-    }
-    break;
-	}
-}
 
 unsigned DMM_KernelHeapAllocSize() {
 	uint64_t size = 0 ;
 	for(auto aut = DMM_kernelAUTAddress; aut != nullptr; aut = aut->nextAUTAddress)	{
     size += aut->size;
+    printf("\n Chunk: %u", aut->size);
 	}
 	return size ;
 }

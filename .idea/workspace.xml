@@ -24,70 +24,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="change direct call to yield() to sleep() to ensure the process status is set to SLEEP (!= RUN) and avoid getting not preempted for running less than 10ms">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootConsole.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootConsole.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootVGAConsole.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootVGAConsole.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DiskCache.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/PartitionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATACommandManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATACommandManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATAPortManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATAPortManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATATimingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATATimingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATASIS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATASIS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2KeyboardDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIController.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIController.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIDevice.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIDevice.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIManager.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIManager.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIStructures.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/uhci/UHCIStructures.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/BufferedReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/RTC.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/RTC.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/floppyspike.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/fsspike.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/taskspike.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/_InterruptHandlers.s" beforeDir="false" afterPath="$PROJECT_DIR$/libints/_InterruptHandlers.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemUtil.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemUtil.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/UserManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/users/UserManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/AsmUtil.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,11 +94,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -253,7 +196,8 @@
       <workItem from="1709200466294" duration="11226000" />
       <workItem from="1709291039257" duration="72716000" />
       <workItem from="1709547586064" duration="11949000" />
-      <workItem from="1709821502777" duration="1919000" />
+      <workItem from="1709821502777" duration="9015000" />
+      <workItem from="1709938569831" duration="4045000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -542,7 +486,28 @@
       <option name="project" value="LOCAL" />
       <updated>1709820717048</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="code cleanup to remove unused code">
+      <created>1709823518225</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1709823518225</updated>
+    </task>
+    <task id="LOCAL-00043" summary="fix bug in page deallocator to use page-number instead of page-address">
+      <created>1709943825060</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1709943825060</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal">
+      <created>1709943881853</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1709943881853</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -571,9 +536,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="map APIC MMIO space as uncacheable" />
-    <MESSAGE value="save fx states and protect framebuffer copy by disabling all interrupts" />
-    <MESSAGE value="enhance scheduler to support yield and preempt" />
     <MESSAGE value="Enable both APIC and PIT timer. Use APIC for process scheduling and PIT for clock/time keeping.&#10; Implement yield() for various wait scenarios.&#10; Add a schedule_runner_process that will ensure that the timer interrupt based scheduler has at-least one process to execute and return from timer irq - so, other interrupts like PIT timer interrupt will get a chance to trigger and allow sleeping processes to wake up. Basically, this will avoid the main process scheduling loop inside the timer interrupt handler from getting into an infinite loop of processes that are not ready to run." />
     <MESSAGE value="migrating some of the graphics related APIs to 64bit" />
     <MESSAGE value="Fix scheduling to track current process separately to ensure Process and Thread context switch are handled properly" />
@@ -596,6 +558,9 @@
     <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
     <MESSAGE value="fix address/pointer type to uint64_t from uint32_t" />
     <MESSAGE value="change direct call to yield() to sleep() to ensure the process status is set to SLEEP (!= RUN) and avoid getting not preempted for running less than 10ms" />
-    <option name="LAST_COMMIT_MESSAGE" value="change direct call to yield() to sleep() to ensure the process status is set to SLEEP (!= RUN) and avoid getting not preempted for running less than 10ms" />
+    <MESSAGE value="code cleanup to remove unused code" />
+    <MESSAGE value="fix bug in page deallocator to use page-number instead of page-address" />
+    <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
+    <option name="LAST_COMMIT_MESSAGE" value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
   </component>
 </project>
