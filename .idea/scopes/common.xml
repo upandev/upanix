@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="common" pattern="file[upanix]:*/&amp;&amp;!file[upanix]:bin//*&amp;&amp;!file[upanix]:build//*&amp;&amp;!file:*.o&amp;&amp;!file:osutils/.dll" />
+</component>
