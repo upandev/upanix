@@ -386,7 +386,7 @@ byte DiskDrive::FlushDirtyCacheSectors(int iCount)
 	if(!_bEnableDiskCache)
 		return DiskCache_SUCCESS ;
 
-  upan::mutex_guard g(_driveMutex);
+	upan::mutex_guard g(_driveMutex);
 
   while(iCount != 0)
   {
@@ -407,7 +407,7 @@ bool DiskDrive::FlushSector(unsigned uiSectorID, const byte* pBuffer)
 {
 	if(!pBuffer)
 		return false;
-  return upan::trycall([&]() { RawWrite(uiSectorID, 1, (byte*)pBuffer); }).isGood();
+	return upan::trycall([&]() { RawWrite(uiSectorID, 1, (byte*)pBuffer); }).isGood();
 }
 
 void DiskDrive::StartReleaseCacheTask()

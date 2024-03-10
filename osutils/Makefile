@@ -18,17 +18,10 @@
 #	 You should have received a copy of the GNU General Public License
 #	 along with this program.  If not, see <http://www.gnu.org/licenses/
 CC = ${HOME}/opt/cross/bin/x86_64-elf-gcc
-ASM = ${HOME}/opt/cross/bin/nasm
 
-DLL_SRC = dll.asm 
-DLL_OUTPUT = .dll
-
-OUTPUTS := ${DLL_OUTPUT} crti.o crtn.o
+OUTPUTS := crti.o crtn.o
 
 osutils: ${OUTPUTS}
-
-${DLL_OUTPUT}: ${DLL_SRC}
-	${ASM} -fbin ${DLL_SRC} -o ${DLL_OUTPUT}
 
 crti.o: crti.s
 	${CC} -c crti.s

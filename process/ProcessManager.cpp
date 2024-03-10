@@ -530,10 +530,6 @@ void ProcessManager::FreeProcListMem(PS* pProcList, unsigned uiListSize)
 	  pAddrSpc.dmm().free((uintptr_t)pProcList);
 }
 
-void ProcessManager::SetDMMFlag(int iProcessID, bool flag) {
-  GetSchedulableProcess(iProcessID).value().setDmmFlag(flag);
-}
-
 bool ProcessManager::IsDMMOn(int iProcessID) {
 	return GetSchedulableProcess(iProcessID).value().dmm().isDmmFlag();
 }

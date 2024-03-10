@@ -139,8 +139,6 @@ void SchedulableProcess::switchPageTable() const {
 
 void SchedulableProcess::Store(const TaskContext& taskContext) {
   _taskContext = taskContext;
-  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, LDT_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_processLDT, sizeof(ProcessLDT)) ;
-  //MemUtil_CopyMemory(SYS_LINEAR_SELECTOR_DEFINED, USER_TSS_BASE_ADDR, MemUtil_GetDS(), (unsigned)&_taskState, sizeof(TaskState)) ;
 }
 
 FILE_USER_TYPE SchedulableProcess::fileUserType(const FileSystem::Node &node) const

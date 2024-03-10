@@ -76,7 +76,6 @@ class ProcessManager
     int CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID, byte bIsFGProcess, const upan::vector<uintptr_t>& params);
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID, int iNumberOfParameters, char** szArgumentList);
     int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg);
-    void SetDMMFlag(int iProcessID, bool flag);
     bool IsDMMOn(int iProcessID);
     void WaitOnChild(int iChildProcessID);
     void WaitOnResource(RESOURCE_KEYS uiResourceType);

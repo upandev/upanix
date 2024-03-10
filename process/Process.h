@@ -50,10 +50,6 @@ public:
 
   virtual DMM& dmm() = 0;
 
-  virtual void setDmmFlag(bool dmmFlag) {
-    throw upan::exception(XLOC, "setDmmFlag unsupported");
-  }
-
   virtual int processID() const = 0;
   virtual int parentProcessID() const = 0;
 
