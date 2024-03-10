@@ -31,13 +31,13 @@ EHCITransaction::EHCITransaction(EHCIQueueHead* qh, EHCIQTransferDesc* tdStart)
 {
 	EHCIQTransferDesc* tdCur = _tdStart;
 
-	for(; (uintptr_t)tdCur != 1; tdCur = (EHCIQTransferDesc*)(KERNEL_VIRTUAL_ADDRESS(tdCur->uiNextpTDPointer)))
+	for(; (uintptr_t)tdCur != 1; tdCur = (EHCIQTransferDesc*)(tdCur->uiNextpTDPointer))
 	{
-    _dStorageList.push_back(KERNEL_VIRTUAL_ADDRESS(tdCur->uiBufferPointer[0]));
+    _dStorageList.push_back(tdCur->uiBufferPointer[0]);
     _dStorageList.push_back((uintptr_t)tdCur);
 	}
 
-	_qh->uiNextpTDPointer = KERNEL_REAL_ADDRESS(_tdStart);
+	_qh->uiNextpTDPointer = (uint64_t)_tdStart;
 }
 
 bool EHCITransaction::PollWait()
@@ -59,7 +59,7 @@ bool EHCITransaction::PollWait()
 					if((tdCur->uipTDToken & 0xFE))
 						break ;
 
-					tdCur = (EHCIQTransferDesc*)(KERNEL_VIRTUAL_ADDRESS(tdCur->uiNextpTDPointer)) ;
+					tdCur = (EHCIQTransferDesc*)(tdCur->uiNextpTDPointer) ;
 				}
 
 				if((uintptr_t)tdCur == 1)

@@ -41,9 +41,6 @@ typedef unsigned			DWORD ;
 
 #define IS_FG_PROCESS_GROUP() (ProcessManager::Instance().GetCurrentPAS().isFGProcessGroup())
 
-#define KERNEL_REAL_ADDRESS(ADDR) ((uintptr_t)ADDR)
-#define KERNEL_VIRTUAL_ADDRESS(ADDR) ((uintptr_t)ADDR)
-
 #define RETURN_IF_NOT(RetVal, Func, CheckVal) \
 RetVal = Func ;\
 if(RetVal != CheckVal) \

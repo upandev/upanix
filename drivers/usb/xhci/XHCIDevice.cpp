@@ -47,7 +47,7 @@ XHCIDevice::XHCIDevice(XHCIController& controller,
 //first, with block bit set and then with block bit cleared
 //With first request, address should be set and slot state is default (1)
 //With second request, slot state should change to Addressed (2)
-  _controller.AddressDevice(KERNEL_REAL_ADDRESS(&_inputContext->Control()), _slotID, false);
+  _controller.AddressDevice(uint64_t(&_inputContext->Control()), _slotID, false);
 
   if(_devContext->EP0().EPState() != EndPointContext::Running)
     throw upan::exception(XLOC, "After AddressDevice, EndPoint0 is in %d state", _devContext->EP0().EPState());
@@ -105,13 +105,13 @@ void XHCIDevice::ConfigureEndPoint()
   }
   _inputContext->Slot().SetContextEntries(lastEPId);
   //TODO: is it requied to update MaxPacketSize of FS device ? if so then update and call Evaluate Context with A0 and A1 set
-  _controller.EvaluateContext(KERNEL_REAL_ADDRESS(&_inputContext->Control()), _slotID);
+  _controller.EvaluateContext(uint64_t(&_inputContext->Control()), _slotID);
 
   //set A1 -> Slot and other A bits corresponding to EPs being configured
   _inputContext->Control().SetAddContextFlag(addContextFlag);
   _inputContext->Control().SetDropContextFlag((~addContextFlag) & ~(0x3));
 
-  _controller.ConfigureEndPoint(KERNEL_REAL_ADDRESS(&_inputContext->Control()), _slotID);
+  _controller.ConfigureEndPoint(uint64_t(&_inputContext->Control()), _slotID);
 
   if(_devContext->Slot().SlotState() != SlotContext::Configured)
     throw upan::exception(XLOC, "After ConfigureEndPoint, Slot is in %d state", _devContext->Slot().SlotState());

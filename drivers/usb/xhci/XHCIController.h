@@ -153,13 +153,13 @@ class EventManager
       {
         if(index >= _erstSize)
           throw upan::exception(XLOC, "\n Invalid ERST index %d - ERST Size is %d", index, _erstSize);
-        auto erst = (ERSTEntry*)KERNEL_VIRTUAL_ADDRESS(_erstBA);
+        auto erst = (ERSTEntry*)(_erstBA);
         return erst[index];
       }
 
       EventTRB* ERSegment(unsigned index)
       {
-        return (EventTRB*)KERNEL_VIRTUAL_ADDRESS(ERST(index)._ersAddr);
+        return (EventTRB*)ERST(index)._ersAddr;
       }
 
       bool IsLastDQPtr()
@@ -207,7 +207,7 @@ class EventManager
       void DebugPrint();
 
     private:
-      uint64_t DQPtr() { return KERNEL_VIRTUAL_ADDRESS(_erdqPtr) & ~(0xF); }
+      uint64_t DQPtr() { return _erdqPtr & ~(0xF); }
       void DQPtr(uint64_t addr) { _erdqPtr = (addr & ~(0xF)) | (1 << 3); }
 
       unsigned _iman;

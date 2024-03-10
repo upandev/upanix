@@ -31,7 +31,7 @@ TransferRing::TransferRing(unsigned size) : _size(size), _cycleState(true), _nex
 {
   _trbs = new ((void*)KernelDMM::Instance().allocate(sizeof(TRB) * _size, 16))TRB[_size];
   auto& link = *new (&_trbs[_size - 1])LinkTRB();
-  link.SetLinkAddr(KERNEL_REAL_ADDRESS(_trbs));
+  link.SetLinkAddr((uint64_t)_trbs);
   link.SetToggleBit(true);
 }
 
@@ -82,7 +82,6 @@ void TransferRing::AddSetupStageTRB(uint32_t bmRequestType, uint32_t bmRequest,
 
 void TransferRing::AddDataStageTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
 {
-  dataBufferAddr = KERNEL_REAL_ADDRESS(dataBufferAddr);
   int32_t transferLen = len;
   int32_t remainingPackets = ((len + (maxPacketSize - 1)) / maxPacketSize) - 1;
   if(remainingPackets < 0)
@@ -138,7 +137,6 @@ void TransferRing::AddEventDataTRB(uintptr_t statusAddr, bool ioc)
 
 TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, DataDirection dir, int32_t maxPacketSize)
 {
-  dataBufferAddr = KERNEL_REAL_ADDRESS(dataBufferAddr);
   int32_t remainingBytesToTransfer = len;
   TRB* lastTRB = nullptr;
 

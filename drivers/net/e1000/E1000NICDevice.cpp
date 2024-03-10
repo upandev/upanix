@@ -259,7 +259,7 @@ E1000NICDevice::RegControl::RegControl(const uint32_t memIOBase) :
 }
 
 E1000NICDevice::RXDescriptor::RXDescriptor() {
-  addr = KERNEL_REAL_ADDRESS(KernelDMM::Instance().allocate(8 KB, 16));
+  addr = KernelDMM::Instance().allocate(8 KB, 16);
   length = 0;
   checksum = 0;
   status = 0;
@@ -276,8 +276,8 @@ E1000NICDevice::RegRXDescriptor::RegRXDescriptor(const uint32_t memIOBase) :
   _rxctrl(REG(memIOBase, REG_RCTL)),
   _index(0) {
   _rxDescriptors = new ((void*)KernelDMM::Instance().allocate(sizeof(RXDescriptor) * NUM_OF_DESC, 16))RXDescriptor[NUM_OF_DESC];
-  *_alow = KERNEL_REAL_ADDRESS(_rxDescriptors);
-  *_ahigh = 0;
+  *_alow = (uint32_t)((uint64_t)_rxDescriptors & 0xFFFFFFFF);
+  *_ahigh = (uint32_t)((uint64_t)_rxDescriptors >> 32);
   *_len = NUM_OF_DESC * 16;
   *_head = 0;
   *_tail = NUM_OF_DESC - 1;
@@ -304,7 +304,7 @@ upan::option<RawNetPacket> E1000NICDevice::RegRXDescriptor::GetNextPacket() {
   }
 
   if (hasData) {
-    return upan::option<RawNetPacket>(RawNetPacket(KERNEL_VIRTUAL_ADDRESS(desc.addr), desc.length));
+    return upan::option<RawNetPacket>(RawNetPacket(desc.addr, desc.length));
   } else {
     return upan::option<RawNetPacket>::empty();
   }
@@ -330,8 +330,8 @@ E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint32_t memIOBase) :
   _tipg(REG(memIOBase, REG_TIPG)),
   _index(0) {
   _txDescriptors = new ((void*)KernelDMM::Instance().allocate(sizeof(TXDescriptor) * NUM_OF_DESC, 16))TXDescriptor[NUM_OF_DESC];
-  *_alow = KERNEL_REAL_ADDRESS(_txDescriptors);
-  *_ahigh = 0;
+  *_alow = (uint32_t)(uint64_t(_txDescriptors) & 0xFFFFFFFF);
+  *_ahigh = (uint32_t)(uint64_t(_txDescriptors) >> 32);
   *_len = NUM_OF_DESC * 16;
   *_head = 0;
   *_tail = 0;
@@ -345,7 +345,7 @@ E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint32_t memIOBase) :
 }
 
 void E1000NICDevice::RegTXDescriptor::SendPacket(const uint8_t* data, uint32_t len) {
-  _txDescriptors[_index].addr = KERNEL_REAL_ADDRESS(data);
+  _txDescriptors[_index].addr = (uint64_t)data;
   _txDescriptors[_index].length = len;
   _txDescriptors[_index].cmd = CMD_EOP | CMD_IFCS | CMD_RS;
   _txDescriptors[_index].status = 0;

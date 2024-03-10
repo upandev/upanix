@@ -122,7 +122,7 @@ void EHCIController::DisplayStats()
 void EHCIController::AddAsyncQueueHead(EHCIQueueHead* pQH)
 {
 	pQH->uiHeadHorizontalLink = _pAsyncReclaimQueueHead->uiHeadHorizontalLink ;
-	_pAsyncReclaimQueueHead->uiHeadHorizontalLink = KERNEL_REAL_ADDRESS(pQH) | 0x2 ;
+	_pAsyncReclaimQueueHead->uiHeadHorizontalLink = (uint64_t)pQH | 0x2 ;
 }
 
 void EHCIController::SetConfigFlag(bool bSet)
@@ -179,9 +179,9 @@ void EHCIController::SetupPeriodicFrameList()
 
 void EHCIController::SetupAsyncList()
 {
-	unsigned uiQHAddress = KernelDMM::Instance().allocate(sizeof(EHCIQueueHead), 32);
+  uint64_t uiQHAddress = KernelDMM::Instance().allocate(sizeof(EHCIQueueHead), 32);
 	memset((void*)(uiQHAddress), 0, sizeof(EHCIQueueHead));
-	_pOpRegs->uiAsyncListBase = KERNEL_REAL_ADDRESS(uiQHAddress);
+	_pOpRegs->uiAsyncListBase = uiQHAddress;
 
 	EHCIQueueHead* pQHH = (EHCIQueueHead*)uiQHAddress;
 
@@ -192,7 +192,7 @@ void EHCIController::SetupAsyncList()
 	pQHH->uiEndPointCap_Part1 = (1 << 15);
 	pQHH->uipQHToken = (1 << 6);
 
-	pQHH->uiHeadHorizontalLink = KERNEL_REAL_ADDRESS(uiQHAddress) | 0x2;
+	pQHH->uiHeadHorizontalLink = uiQHAddress | 0x2;
 
 	_pAsyncReclaimQueueHead = pQHH;
 }

@@ -103,7 +103,7 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
 
   //program device context base address pointer
   uint64_t deviceContextTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
-  _deviceContextAddrArray = (uint64_t*)KERNEL_VIRTUAL_ADDRESS(deviceContextTable);
+  _deviceContextAddrArray = (uint64_t*)deviceContextTable;
   memset((void*)_deviceContextAddrArray, 0, PAGE_SIZE);
   _opReg->SetDCBaap(deviceContextTable);
 
@@ -344,7 +344,7 @@ void XHCIController::Probe()
 
 void XHCIController::SetDeviceContext(uint32_t slotID, SlotContext& slotContext)
 {
-  _deviceContextAddrArray[slotID] = (uint64_t)KERNEL_REAL_ADDRESS(&slotContext);
+  _deviceContextAddrArray[slotID] = (uint64_t)(&slotContext);
 }
 
 void XHCIController::RingDoorBell(unsigned index, unsigned value)
@@ -470,7 +470,7 @@ void XHCIController::PublishEventResult(const EventTRB& result)
   {
     printf("\n No entry found in EventResults for TRB Id: %llx, Event Type: %d CC: %d, TLen: %d\n",
            (uint64_t)result.TRBPointer(), result.Type(), result.CompletionCode(), result.TransferLength());
-    ((TRB*)KERNEL_VIRTUAL_ADDRESS(result.TRBPointer()))->Print();
+    ((TRB*)result.TRBPointer())->Print();
     return;
   }
   it->second->Consume(result);
@@ -482,7 +482,7 @@ CommandManager::CommandManager(XHCICapRegister& creg,
   : _pcs(true), _ring(nullptr), _capReg(creg), _opReg(oreg), _eventManager(eventManager)
 {
   _ring = new ((void*)KernelDMM::Instance().allocate(sizeof(Ring), 64))Ring();
-  uint64_t ringAddr = KERNEL_REAL_ADDRESS(_ring);
+  uint64_t ringAddr = uint64_t(_ring);
 
   _ring->_link.SetLinkAddr(ringAddr);
   _ring->_link.SetToggleBit(true);
@@ -542,7 +542,7 @@ EventManager::InterrupterRegister::InterrupterRegister()
   _erstSize = (_erstSize & 0xFFFF0000) | ERST_SIZE;
 
   ERSTEntry* erst = new ((void*)KernelDMM::Instance().allocate(sizeof(ERSTEntry) * ERST_SIZE, 64))ERSTEntry[ERST_SIZE];
-  _erstBA = (uint64_t)KERNEL_REAL_ADDRESS(erst);
+  _erstBA = (uint64_t)erst;
 
   _erdqPtr = erst[0]._ersAddr;
 }
@@ -560,8 +560,8 @@ const int EventManager::ERST_SIZE = 256;
 EventManager::ERSTEntry::ERSTEntry() : _size(ERST_SIZE)
 {
   uint64_t eventSegmentTable = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
-  EventTRB* events = new ((void*)KERNEL_VIRTUAL_ADDRESS(eventSegmentTable))EventTRB[_size];
-  _ersAddr = (uint64_t)KERNEL_REAL_ADDRESS(events);
+  EventTRB* events = new ((void*)(eventSegmentTable))EventTRB[_size];
+  _ersAddr = (uint64_t)(events);
 }
 
 EventManager::EventManager(XHCIController& controller, XHCICapRegister& creg, XHCIOpRegister& oreg)

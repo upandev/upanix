@@ -74,7 +74,7 @@ bool EHCIDevice::SetConfiguration(byte bConfigValue) {
 		return false;
 	}
 
-	auto pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	auto pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = 0x00 ;
 	pDevRequest->bRequest = 9 ;
 	pDevRequest->usWValue = bConfigValue ;
@@ -82,7 +82,7 @@ bool EHCIDevice::SetConfiguration(byte bConfigValue) {
 	pDevRequest->usWLength = 0 ;
 
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = (uint64_t)pTD1 ;
 	pTD1->uiNextpTDPointer = 1 ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (3 << 10) | (1 << 8) | (1 << 7) ;
@@ -301,7 +301,7 @@ byte EHCIDevice::GetMaxLun()
     throw upan::exception(XLOC, "Failed to setup buffer");
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_DIR_IN ;
 	pDevRequest->bRequest = 0xFE ;
 	pDevRequest->usWValue = 0 ;
@@ -309,7 +309,7 @@ byte EHCIDevice::GetMaxLun()
 	pDevRequest->usWLength = 1 ;
 
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = (uint64_t)pTD1;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (1 << 16) | (3 << 10) | (1 << 8) | (1 << 7) ;
 	
@@ -322,10 +322,10 @@ byte EHCIDevice::GetMaxLun()
 
 	// It is important to store the data buffer address now for later read as the data buffer address
 	// in TD will be incremented by Host Controller with the number of bytes read
-	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = pTD1->uiBufferPointer[ 0 ] ;
 
 	EHCIQTransferDesc* pTD2 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTD1->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD2) ;
+	pTD1->uiNextpTDPointer = (uint64_t)pTD2 ;
 	pTD2->uiNextpTDPointer = 1 ;
 	pTD2->uiAltpTDPointer = 1 ;
 	pTD2->uipTDToken = (3 << 10) | (1 << 7) ;
@@ -362,7 +362,7 @@ bool EHCIDevice::CommandReset()
 		return false ;
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = USB_TYPE_CLASS | USB_RECIP_INTERFACE ;
 	pDevRequest->bRequest = 0xFF ;
 	pDevRequest->usWValue = 0 ;
@@ -370,7 +370,7 @@ bool EHCIDevice::CommandReset()
 	pDevRequest->usWLength = 0 ;
 	
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = uint64_t(pTD1) ;
 	pTD1->uiNextpTDPointer = 1 ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (3 << 10) | (1 << 8) | (1 << 7) ;
@@ -407,7 +407,7 @@ bool EHCIDevice::ClearHaltEndPoint(USBulkDisk* pDisk, bool bIn)
 		return false ;
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = USB_RECIP_ENDPOINT ;
 	pDevRequest->bRequest = 1 ;
 	pDevRequest->usWValue = 0 ;
@@ -415,7 +415,7 @@ bool EHCIDevice::ClearHaltEndPoint(USBulkDisk* pDisk, bool bIn)
 	pDevRequest->usWLength = 0 ;
 	
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = uint64_t(pTD1) ;
 	pTD1->uiNextpTDPointer = 1 ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (3 << 10) | (1 << 8) | (1 << 7) ;
@@ -506,7 +506,7 @@ bool EHCIDevice::BulkRead(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		}
 
 		if(iIndex > 0)
-			_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((uintptr_t)pTD) ;
+			_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = (uintptr_t)pTD ;
 	}
 
 	_ppBulkReadTDs[ iIndex - 1 ]->uiNextpTDPointer = 1 ;
@@ -600,7 +600,7 @@ bool EHCIDevice::BulkWrite(USBulkDisk* pDisk, void* pDataBuf, unsigned uiLen)
 		}
 
 		if(iIndex > 0)
-			_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = KERNEL_REAL_ADDRESS((uintptr_t)pTD) ;
+			_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = (uintptr_t)pTD ;
 	}
 
 	_ppBulkWriteTDs[ iIndex - 1 ]->uiNextpTDPointer = 1 ;
@@ -637,7 +637,7 @@ bool EHCIDevice::SetAddress()
 		return EHCIController_FAILURE ;
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = 0x00 ;
 	pDevRequest->bRequest = 5 ;
 	pDevRequest->usWValue = (_devAddr & 0xFF) ;
@@ -645,7 +645,7 @@ bool EHCIDevice::SetAddress()
 	pDevRequest->usWLength = 0 ;
 	
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = uint64_t(pTD1) ;
 	pTD1->uiNextpTDPointer = 1 ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (3 << 10) | (1 << 8) | (1 << 7) ;
@@ -709,7 +709,7 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 	if(iLen < 0)
 		iLen = DEF_DESC_LEN ;
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = 0x80 ;
 	pDevRequest->bRequest = 6 ;
 	pDevRequest->usWValue = usDescValue ;
@@ -717,7 +717,7 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 	pDevRequest->usWLength = iLen ;
 
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = uint64_t(pTD1) ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (iLen << 16) | (3 << 10) | (1 << 8) | (1 << 7) ;
 	
@@ -730,10 +730,10 @@ bool EHCIDevice::GetDescriptor(unsigned short usDescValue, unsigned short usInde
 
 	// It is important to store the data buffer address now for later read as the data buffer address
 	// in TD will be incremented by Host Controller with the number of bytes read
-	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = pTD1->uiBufferPointer[ 0 ] ;
 
 	EHCIQTransferDesc* pTD2 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTD1->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD2) ;
+	pTD1->uiNextpTDPointer = uint64_t(pTD2) ;
 	pTD2->uiNextpTDPointer = 1 ;
 	pTD2->uiAltpTDPointer = 1 ;
 	pTD2->uipTDToken = (3 << 10) | (1 << 7) ;
@@ -769,7 +769,7 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 		return false;
 	}
 
-	USBDevRequest* pDevRequest = (USBDevRequest*)(KERNEL_VIRTUAL_ADDRESS(pTDStart->uiBufferPointer[ 0 ])) ;
+	USBDevRequest* pDevRequest = (USBDevRequest*)(pTDStart->uiBufferPointer[ 0 ]) ;
 	pDevRequest->bRequestType = 0x80 ;
 	pDevRequest->bRequest = 8 ;
 	pDevRequest->usWValue = 0 ;
@@ -777,7 +777,7 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 	pDevRequest->usWLength = 1 ;
 	
 	EHCIQTransferDesc* pTD1 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTDStart->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD1) ;
+	pTDStart->uiNextpTDPointer = uint64_t(pTD1) ;
 	pTD1->uiAltpTDPointer = 1 ;
 	pTD1->uipTDToken = (1 << 31) | (1 << 16) | (3 << 10) | (1 << 8) | (1 << 7) ;
 	
@@ -789,12 +789,12 @@ bool EHCIDevice::GetConfigValue(byte& bConfigValue)
 	}
 
 	EHCIQTransferDesc* pTD2 = EHCIDataHandler_CreateAsyncQTransferDesc() ;
-	pTD1->uiNextpTDPointer = KERNEL_REAL_ADDRESS(pTD2) ;
+	pTD1->uiNextpTDPointer = uint64_t(pTD2) ;
 	pTD2->uiNextpTDPointer = 1 ;
 	pTD2->uiAltpTDPointer = 1 ;
 	pTD2->uipTDToken = (3 << 10) | (1 << 7) ;
 
-	uintptr_t uiDataBuffer = KERNEL_VIRTUAL_ADDRESS(pTD1->uiBufferPointer[ 0 ]) ;
+	uintptr_t uiDataBuffer = pTD1->uiBufferPointer[ 0 ] ;
 
 	EHCITransaction aTransaction(_pControlQH, pTDStart);
 
@@ -818,7 +818,7 @@ byte EHCIDevice::SetupBuffer(EHCIQTransferDesc* pTD, uintptr_t uiAddress, unsign
 {
 	unsigned uiFirstPagePart = PAGE_SIZE - (uiAddress % PAGE_SIZE) ;
 
-	pTD->uiBufferPointer[ 0 ] = KERNEL_REAL_ADDRESS(uiAddress) ;
+	pTD->uiBufferPointer[ 0 ] = uiAddress ;
 
 	if(uiFirstPagePart >= uiSize)
 		return EHCIController_SUCCESS ;
@@ -869,7 +869,7 @@ void EHCIDevice::DisplayTransactionState(EHCIQueueHead* pQH, EHCIQTransferDesc* 
 	for(;(uintptr_t)pTDCur > 1;)
 	{
 		printf("\n TD %d Token: %x", i++, pTDCur->uipTDToken) ;
-		pTDCur = (EHCIQTransferDesc*)KERNEL_VIRTUAL_ADDRESS(pTDCur->uiNextpTDPointer) ;
+		pTDCur = (EHCIQTransferDesc*)pTDCur->uiNextpTDPointer ;
 	}
 }
 

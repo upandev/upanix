@@ -24,17 +24,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="updated scope for project files">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="some 64bit corrections">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/interop/graphics_context.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/interop/graphics_context.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/osutils/dll.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -208,21 +209,7 @@
       <workItem from="1709821502777" duration="9015000" />
       <workItem from="1709938569831" duration="27231000" />
       <workItem from="1709986091907" duration="419000" />
-      <workItem from="1709986528833" duration="14163000" />
-    </task>
-    <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
-      <created>1688394036377</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1688394036378</updated>
-    </task>
-    <task id="LOCAL-00002" summary="got 64bit OS working till mem manager initialization with graphics">
-      <created>1688880757090</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1688880757090</updated>
+      <workItem from="1709986528833" duration="17552000" />
     </task>
     <task id="LOCAL-00003" summary="IDT setup for 64bit OS">
       <created>1688898298017</created>
@@ -546,7 +533,28 @@
       <option name="project" value="LOCAL" />
       <updated>1709985826845</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="code cleanup">
+      <created>1710041456794</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1710041456794</updated>
+    </task>
+    <task id="LOCAL-00050" summary="destroy graphicsContext for kernel by having kernel process explicitly pass the gc param. this is so because while destroying the context which happens typically while terminating the process, the code in kernel will be running in kernel-mode, during which, the process-lookup-table should be accessed to obtain the graphicsContext because the process-lookup will return kernel-root-process in kernel-mode">
+      <created>1710041496964</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1710041496964</updated>
+    </task>
+    <task id="LOCAL-00051" summary="some 64bit corrections">
+      <created>1710046353072</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1710046353072</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -575,8 +583,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="generate kernel.ld from cmake, to replace cmake env variables in kernel.ld for absolute paths" />
-    <MESSAGE value="changes to support loading user process from storage" />
     <MESSAGE value="support for system calls - built the entry point and routing logic for system calls" />
     <MESSAGE value="inject .dll section into executable/dll image at loading time" />
     <MESSAGE value="more changes to handle syscall and dll resolution" />
@@ -597,10 +603,12 @@
     <MESSAGE value="fix bug in page deallocator to use page-number instead of page-address" />
     <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
     <MESSAGE value="processSpaceSize is same as total image size of the process that includes dll resolver" />
-    <MESSAGE value="code cleanup" />
     <MESSAGE value="Optimize memory allocation to keep freed chunks in sorted order and then coalesce consecutive free blocks.&#10;Refactored DMM to use common code for user and kernel allocators" />
     <MESSAGE value="updated scope for project files" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated scope for project files" />
+    <MESSAGE value="code cleanup" />
+    <MESSAGE value="destroy graphicsContext for kernel by having kernel process explicitly pass the gc param. this is so because while destroying the context which happens typically while terminating the process, the code in kernel will be running in kernel-mode, during which, the process-lookup-table should be accessed to obtain the graphicsContext because the process-lookup will return kernel-root-process in kernel-mode" />
+    <MESSAGE value="some 64bit corrections" />
+    <option name="LAST_COMMIT_MESSAGE" value="some 64bit corrections" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

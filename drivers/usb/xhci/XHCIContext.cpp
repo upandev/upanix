@@ -31,7 +31,7 @@
 InputContext::InputContext(XHCIController& controller, uint32_t slotID, const XHCIPortRegister& port, uint32_t portId, uint32_t routeString)
   : _slotID(slotID), _controller(controller), _interruptDataHandler(nullptr)
 {
-  uint64_t addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
+  uint64_t addr = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
   if(_controller.CapReg().IsContextSize64())
   {
     auto context64 = new ((void*)addr)InputContext64();
@@ -52,7 +52,7 @@ InputContext::InputContext(XHCIController& controller, uint32_t slotID, const XH
 
 InputContext::~InputContext()
 {
-  uint64_t addr = KERNEL_REAL_ADDRESS(_control);
+  uint64_t addr = (uint64_t)_control;
   MemManager::Instance().DeAllocatePageForKernel(addr / PAGE_SIZE);
   delete _devContext;
   delete _controlEP;
@@ -143,7 +143,7 @@ void InputContext::OnInterrupt(const EventTRB& result, uint64_t interruptDataAdd
 
 DeviceContext::DeviceContext(bool use64) : _allocated(true)
 {
-  uint64_t addr = KERNEL_VIRTUAL_ADDRESS(MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE);
+  uint64_t addr = MemManager::Instance().AllocatePageForKernel() * PAGE_SIZE;
   if(use64)
     Init64(*new ((void*)addr)DeviceContext64());
   else
@@ -180,7 +180,7 @@ DeviceContext::~DeviceContext()
 {
   if(_allocated)
   {
-    uint64_t addr = KERNEL_REAL_ADDRESS(_slot);
+    uint64_t addr = uint64_t(_slot);
     MemManager::Instance().DeAllocatePageForKernel(addr / PAGE_SIZE);
   }
 }
@@ -197,7 +197,7 @@ EndPoint::~EndPoint()
 ControlEndPoint::ControlEndPoint(InputContext& inContext, int32_t maxPacketSize) : EndPoint(maxPacketSize)
 {
   _ep = &inContext.EP0();
-  _ep->Init(KERNEL_REAL_ADDRESS(_tRing->RingBase()), USBStandardEndPt::BI, USBStandardEndPt::CONTROL, maxPacketSize, 0);
+  _ep->Init(uint64_t(_tRing->RingBase()), USBStandardEndPt::BI, USBStandardEndPt::CONTROL, maxPacketSize, 0);
   _id = 1;
 }
 
@@ -211,7 +211,7 @@ uint32_t ControlEndPoint::SetupTransfer(uint32_t bmRequestType, uint32_t bmReque
   if(trt != TransferType::NO_DATA_STAGE)
   {
     const auto dir = trt == TransferType::IN_DATA_STAGE ? DataDirection::IN : DataDirection::OUT;
-    _tRing->AddDataStageTRB(KERNEL_REAL_ADDRESS(dataBuffer), wLength, dir, _maxPacketSize);
+    _tRing->AddDataStageTRB((uint64_t)dataBuffer, wLength, dir, _maxPacketSize);
   }
   //Status Stage
   uint32_t statusDir = DataDirection::IN;
@@ -227,7 +227,7 @@ DataEndPoint::DataEndPoint(InputContext& inContext, const USBStandardEndPt& endp
   const uint32_t epIndex = epID * 2 - epOffset;
 
   _ep = &inContext.EP(epIndex);
-  _ep->Init(KERNEL_REAL_ADDRESS(_tRing->RingBase()), endpoint.Direction(), endpoint.Type(), endpoint.wMaxPacketSize, endpoint.bInterval);
+  _ep->Init((uint64_t)_tRing->RingBase(), endpoint.Direction(), endpoint.Type(), endpoint.wMaxPacketSize, endpoint.bInterval);
   _id = epIndex + 2;
 }
 
