@@ -24,53 +24,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="code cleanup">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="updated scope for project files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootFrame.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootFrame.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAAMD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAIntel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATASIS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATASIS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/vendorspec/ATAVIA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/send/ARPSendPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/send/ARPSendPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/send/DHCPSendPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/send/DHCPSendPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDataHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDataHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDataHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDataHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCIDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/ehci/EHCITransaction.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/interop/graphics_context.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/interop/graphics_context.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/osutils/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/osutils/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/osutils/dll.asm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/SystemUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/SystemUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,6 +67,11 @@
     <setting file="file://$PROJECT_DIR$/util/SystemUtil.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../upanlibs/libc/include/fs.h" root0="FORCE_HIGHLIGHTING" />
   </component>
+  <component name="NamedScopeManager">
+    <order>
+      <scope name="common" />
+    </order>
+  </component>
   <component name="ProjectId" id="2QOvEEBy5uQqlyx0kyrNYCzmRMJ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -119,7 +88,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/syscall" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
+    <property name="settings.editor.selected.configurable" value="project.scopes" />
     <property name="settings.editor.splitter.proportion" value="0.25050917" />
   </component>
   <component name="RecentsManager">
@@ -237,7 +206,9 @@
       <workItem from="1709291039257" duration="72716000" />
       <workItem from="1709547586064" duration="11949000" />
       <workItem from="1709821502777" duration="9015000" />
-      <workItem from="1709938569831" duration="24457000" />
+      <workItem from="1709938569831" duration="27231000" />
+      <workItem from="1709986091907" duration="419000" />
+      <workItem from="1709986528833" duration="14163000" />
     </task>
     <task id="LOCAL-00001" summary="changes towards converting to 64bit OS">
       <created>1688394036377</created>
@@ -561,7 +532,21 @@
       <option name="project" value="LOCAL" />
       <updated>1709943988773</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="Optimize memory allocation to keep freed chunks in sorted order and then coalesce consecutive free blocks.&#10;Refactored DMM to use common code for user and kernel allocators">
+      <created>1709979022668</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1709979022668</updated>
+    </task>
+    <task id="LOCAL-00048" summary="updated scope for project files">
+      <created>1709985826845</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1709985826845</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -590,8 +575,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix scheduling to track current process separately to ensure Process and Thread context switch are handled properly" />
-    <MESSAGE value="fix issue with file-read by not converting pointer to unsigned" />
     <MESSAGE value="generate kernel.ld from cmake, to replace cmake env variables in kernel.ld for absolute paths" />
     <MESSAGE value="changes to support loading user process from storage" />
     <MESSAGE value="support for system calls - built the entry point and routing logic for system calls" />
@@ -615,6 +598,12 @@
     <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
     <MESSAGE value="processSpaceSize is same as total image size of the process that includes dll resolver" />
     <MESSAGE value="code cleanup" />
-    <option name="LAST_COMMIT_MESSAGE" value="code cleanup" />
+    <MESSAGE value="Optimize memory allocation to keep freed chunks in sorted order and then coalesce consecutive free blocks.&#10;Refactored DMM to use common code for user and kernel allocators" />
+    <MESSAGE value="updated scope for project files" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated scope for project files" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

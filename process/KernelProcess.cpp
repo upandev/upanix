@@ -26,6 +26,7 @@
 #include <GraphicsVideo.h>
 #include <DMM.h>
 #include <InterruptHandlers.h>
+#include <PortCom.h>
 
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
@@ -70,7 +71,10 @@ KernelThread& KernelProcess::CreateThread(uintptr_t threadCaller, uintptr_t entr
 void KernelProcess::DeallocateResources() {
   SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
   DeAllocateGUIFramebuffer();
-  upanui::GraphicsContext::Destroy();
+  //explicitly pass gc param because the underlying Destroy method
+  //can't use process-lookup-table to get current process as that will be pointing
+  //to KernelRootProcess when running in kernel-mode at the time of destroying this kernel process
+  upanui::GraphicsContext::Destroy(_graphicsContext);
 }
 
 DMM& KernelProcess::dmm() {

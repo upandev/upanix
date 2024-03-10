@@ -35,12 +35,8 @@ namespace upanui {
       process.setGraphicsContext(new GraphicsContext());
     }
 
-    void graphics_context::destroy() {
-      auto& process = ProcessManager::Instance().GetCurrentPAS();
-      if (process.getGraphicsContext()) {
-        delete process.getGraphicsContext();
-        process.setGraphicsContext(nullptr);
-      }
+    void graphics_context::destroy(GraphicsContext* gc) {
+      delete gc;
     }
 
     GraphicsContext& graphics_context::instance() {
