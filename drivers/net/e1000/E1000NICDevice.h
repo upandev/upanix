@@ -215,7 +215,7 @@ private:
   };
 
   private:
-    uint32_t _memIOBase;
+    uint64_t _memIOBase;
     const IRQ* _irq;
     const RegEEPROM* regEEPROM;
     RegIntControl* regIntControl;

@@ -75,7 +75,7 @@ E1000NICDevice::~E1000NICDevice() {
 }
 
 void E1000NICDevice::Initialize() {
-  unsigned ioAddr = _pciEntry.BusEntity.NonBridge.uiBaseAddress0;
+  uint64_t ioAddr = _pciEntry.BusEntity.NonBridge.uiBaseAddress0;
 	printf("\n PCI BaseAddr: %x", ioAddr);
 
 	ioAddr &= PCI_ADDRESS_MEMORY_32_MASK;
@@ -92,16 +92,16 @@ void E1000NICDevice::Initialize() {
     ++pagesToMap;
 
   uint64_t uiPDEAddress = (uint64_t)MEM_PML4_TABLE;
-  unsigned memMapBaseAddress = NET_E1000_MMIO_BASE_ADDR;
+  uint64_t memMapBaseAddress = NET_E1000_MMIO_BASE_ADDR;
   printf("\n Total pages to Map: %d", pagesToMap);
   ReturnCode markPageRetCode = Success;
   for(unsigned i = 0; i < pagesToMap; ++i)
   {
   	unsigned uiPDEIndex = ((memMapBaseAddress >> 22) & 0x3FF) ;
 	  unsigned uiPTEIndex = ((memMapBaseAddress >> 12) & 0x3FF) ;
-	  unsigned uiPTEAddress = (((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPDEAddress)))[uiPDEIndex]) & 0xFFFFF000 ;
+    uint64_t uiPTEAddress = (((uint64_t*)(uiPDEAddress))[uiPDEIndex]) & 0xFFFFF000 ;
     // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPTEAddress)))[uiPTEIndex] = (ioAddr & 0xFFFFF000) | 0x5 ;
+    ((uint64_t*)(uiPTEAddress))[uiPTEIndex] = (ioAddr & 0xFFFFF000) | 0x5 ;
     markPageRetCode = MemManager::Instance().MarkPageAsAllocated(ioAddr / PAGE_SIZE, markPageRetCode);
     if(markPageRetCode != Success) {
     }
@@ -112,7 +112,7 @@ void E1000NICDevice::Initialize() {
 
 	Mem_FlushTLB();
 
-  _memIOBase = KERNEL_VIRTUAL_ADDRESS(NET_E1000_MMIO_BASE_ADDR + (ioAddr % PAGE_SIZE));
+  _memIOBase = NET_E1000_MMIO_BASE_ADDR + (ioAddr % PAGE_SIZE);
 
     /* Enable busmaster */
   unsigned short usCommand;

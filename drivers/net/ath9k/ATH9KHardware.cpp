@@ -4,7 +4,7 @@
 
 ATH9KHardware::ATH9KHardware(const PCIEntry& pciEntry) : _pciEntry(pciEntry)
 {
-  unsigned uiIOAddr = pciEntry.BusEntity.NonBridge.uiBaseAddress0;
+  uint64_t uiIOAddr = pciEntry.BusEntity.NonBridge.uiBaseAddress0;
   printf("\n PCI BaseAddr: %x", uiIOAddr);
 
   uiIOAddr = uiIOAddr & PCI_ADDRESS_MEMORY_32_MASK;
@@ -19,16 +19,16 @@ ATH9KHardware::ATH9KHardware(const PCIEntry& pciEntry) : _pciEntry(pciEntry)
   if(ioSize % PAGE_SIZE)
     ++pagesToMap;
   uint64_t uiPDEAddress = (uint64_t)MEM_PML4_TABLE;
-  uint32_t memMapAddress = NET_ATH9K_MMIO_BASE_ADDR;
+  uint64_t memMapAddress = NET_ATH9K_MMIO_BASE_ADDR;
   printf("\n Total pages to Map: %d", pagesToMap);
   ReturnCode markPageRetCode = Success;
   for(unsigned i = 0; i < pagesToMap; ++i)
   {
     unsigned uiPDEIndex = ((memMapAddress >> 22) & 0x3FF) ;
     unsigned uiPTEIndex = ((memMapAddress >> 12) & 0x3FF) ;
-    unsigned uiPTEAddress = (((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPDEAddress)))[uiPDEIndex]) & 0xFFFFF000 ;
+    uint64_t uiPTEAddress = (((uint64_t*)(uiPDEAddress))[uiPDEIndex]) & 0xFFFFF000 ;
     // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((unsigned*)(KERNEL_VIRTUAL_ADDRESS(uiPTEAddress)))[uiPTEIndex] = (uiIOAddr & 0xFFFFF000) | 0x5 ;
+    ((uint64_t*)(uiPTEAddress))[uiPTEIndex] = (uiIOAddr & 0xFFFFF000) | 0x5 ;
     markPageRetCode = MemManager::Instance().MarkPageAsAllocated(uiIOAddr / PAGE_SIZE, markPageRetCode);
     if(markPageRetCode != Success) {
     }
@@ -39,7 +39,7 @@ ATH9KHardware::ATH9KHardware(const PCIEntry& pciEntry) : _pciEntry(pciEntry)
 
   Mem_FlushTLB();
 
-  _regBase = KERNEL_VIRTUAL_ADDRESS(NET_ATH9K_MMIO_BASE_ADDR + (uiIOAddr % PAGE_SIZE));
+  _regBase = NET_ATH9K_MMIO_BASE_ADDR + (uiIOAddr % PAGE_SIZE);
 
   ReadCacheLineSize();
   ReadRevisions();

@@ -46,6 +46,6 @@ private:
   void ReadRevisions();
 
   const PCIEntry& _pciEntry;
-  uint32_t  _regBase;
+  uint64_t  _regBase;
   int       _cacheLineSize;
 };
