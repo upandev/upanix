@@ -192,17 +192,17 @@ bool GraphicsVideo::TimerTrigger() {
   if (!redrawInfo._processChanged && !redrawInfo._mouseChanged) {
     return true;
   }
-
-  ProcessSwitchLock p;
   auto& gvtStats = upan::metrics::instance().get("gvt");
   auto& lfbStats = upan::metrics::instance().get("lfb");
   gvtStats.start();
+  upan::mutex_guard g(_fgProcessMutex);
+  ProcessSwitchLock p;
   if (redrawInfo._processChanged) {
     memset((void *) _zBuffer, 0, _lfbSize);
-    for (auto i = 0u; i < _fgProcesses.size(); ++i) {
-      auto process = ProcessManager::Instance().GetProcess(_fgProcesses[i]);
+    for (int fgPid : _fgProcesses) {
+      auto process = ProcessManager::Instance().GetProcess(fgPid);
       process.ifPresent([&](Process &p) {
-        const auto &frame = p.getGuiFrame().value();
+        auto &frame = p.getGuiFrame().value();
         const auto &viewport = frame.viewport();
         const auto buffer = frame.buffer();
         const auto srcBufferWidth = frame.bufferLineWidth();
@@ -227,10 +227,10 @@ bool GraphicsVideo::TimerTrigger() {
     const int drawMinY = upan::min(_mousePrevY, _mouseCursor->y());
     const int drawMaxY = upan::max(_mousePrevY, _mouseCursor->y()) + _mouseCursor->height();
 
-    for (auto i = 0u; i < _fgProcesses.size(); ++i) {
-      auto process = ProcessManager::Instance().GetProcess(_fgProcesses[i]);
+    for (int fgPid : _fgProcesses) {
+      auto process = ProcessManager::Instance().GetProcess(fgPid);
       process.ifPresent([&](Process& p) {
-        const auto& frame = p.getGuiFrame().value();
+        auto& frame = p.getGuiFrame().value();
         const auto& viewport = frame.viewport();
         const auto buffer = frame.buffer();
         const auto srcBufferWidth = frame.bufferLineWidth();
