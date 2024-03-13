@@ -24,7 +24,6 @@
 #include <UpanixMain.h>
 #include <stdio.h>
 #include <exception.h>
-#include <ProcessManager.h>
 #include <Bit.h>
 
 uint64_t AllocationUnitTracker::calculateCheckSum() const {
@@ -149,6 +148,11 @@ bool DMM::_free(uintptr_t address) {
   freeAUT->returnAddress = NULL;
   freeAUT->size = size;
   freeAUT->nextAUTAddress = nullptr;
+// old algorithm:- sorted free list with merging
+//  freeAUT->nextAUTAddress = _rootAut;
+//  _rootAut = freeAUT;
+//  freeAUT->updateCheckSum();
+//  return true;
 
   if (freeAUT->allocatedAddress < _rootAut) {
     freeAUT->nextAUTAddress = _rootAut;
