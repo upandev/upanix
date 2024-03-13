@@ -129,8 +129,8 @@ void MemManager::InitPage(uint64_t pageNum) {
 
 bool MemManager::BuildRawPageMap() {
   _pageMap = (uintptr_t*)MEM_PAGE_MAP_START;
-  _pageMapSize = (((RAM_SIZE / PAGE_SIZE) / 8) / 8) ;
-  _kernelReservedMapSize = (((MEM_KERNEL_RESV_SIZE / PAGE_SIZE) / 8) / 8);
+  _pageMapSize = (((RAM_SIZE / PAGE_SIZE) / 8) / sizeof(uint64_t)) ;
+  _kernelReservedMapSize = (((MEM_KERNEL_RESV_SIZE / PAGE_SIZE) / 8) / sizeof(uint64_t));
   _kernelReservedPages = MEM_KERNEL_RESV_SIZE / PAGE_SIZE;
   _kernelHeapMapSize = (MEM_KERNEL_HEAP_SIZE / PAGE_SIZE) / 8 / 8;
 
@@ -140,11 +140,11 @@ bool MemManager::BuildRawPageMap() {
   }
 
   for(uint32_t i = 0; i < _pageMapSize; ++i) {
-    _pageMap[i] &= 0x0;
+    _pageMap[i] = 0;
   }
 
   for(uint32_t i = 0; i < _kernelReservedMapSize; ++i) {
-    _pageMap[i] |= UINT64_MAX;
+    _pageMap[i] = UINT64_MAX;
   }
 
   return true ;
@@ -161,7 +161,7 @@ bool MemManager::BuildPagePoolMap() {
   }
 
   for(uint32_t i = 0; i < _kernelPagePoolMapSize; ++i) {
-    _kernelPagePoolMap[i] &= 0x0;
+    _kernelPagePoolMap[i] = 0;
   }
 
   return true;
@@ -300,6 +300,7 @@ void MemManager::DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAd
     auto ptIndex = PT_INDEX(virtualAddress);
     if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
       DeAllocatePhysicalPage(PAGE_NUMBER(ptTable, ptIndex));
+      ptTable[ptIndex] = 0;
     }
   }
 }
@@ -312,9 +313,11 @@ void MemManager::DeallocateAddressSpace(uint64_t* pml4Table) {
         if (PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
           auto pdTable = PAGE_TABLE(pdpTable, pdpIndex);
           DeallocatePDAddressSpace(pdTable);
+          pdpTable[pdpIndex] = 0;
         }
       }
       DeAllocatePhysicalPage(PAGE_NUMBER(pml4Table, pml4Index));
+      pml4Table[pml4Index] = 0;
     }
   }
   DeAllocatePhysicalPage((uint64_t)pml4Table / PAGE_SIZE);
@@ -327,9 +330,11 @@ void MemManager::DeallocatePDAddressSpace(uint64_t* pdTable) {
       for(int ptIndex = 0; ptIndex < ENTRIES_PER_PAGE_TABLE; ++ptIndex) {
         if (PAGE_IS_PRESENT(ptTable, ptIndex)) {
           DeAllocatePhysicalPage(PAGE_NUMBER(ptTable, ptIndex));
+          ptTable[ptIndex] = 0;
         }
       }
       DeAllocatePhysicalPage(PAGE_NUMBER(pdTable, pdIndex));
+      pdTable[pdIndex] = 0;
     }
   }
   DeAllocatePhysicalPage((uint64_t)pdTable / PAGE_SIZE);
