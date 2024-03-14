@@ -104,12 +104,6 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			}
 			break ;
 
-		case SYS_CALL_PROCESS_PID :
-			{
-				*retVal = ProcessManager::GetCurrentProcessID();
-			}
-			break ;
-
 		case SYS_CALL_PROCESS_GET_ENV:
 			//P1 - Env Var
 			{

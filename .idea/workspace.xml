@@ -24,18 +24,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="code cleanup to remove unwanted macros">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,11 +99,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -209,28 +204,8 @@
       <workItem from="1709821502777" duration="9015000" />
       <workItem from="1709938569831" duration="27231000" />
       <workItem from="1709986091907" duration="419000" />
-      <workItem from="1709986528833" duration="39576000" />
-    </task>
-    <task id="LOCAL-00004" summary="PAT, IRQ, Graphics Init for 64bit">
-      <created>1689462151507</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1689462151507</updated>
-    </task>
-    <task id="LOCAL-00005" summary="Handling interrupts in 64 bit">
-      <created>1689487629329</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1689487629329</updated>
-    </task>
-    <task id="LOCAL-00006" summary="more changes to memory management in migrating to 64bit">
-      <created>1690068941100</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1690068941100</updated>
+      <workItem from="1709986528833" duration="45285000" />
+      <workItem from="1710390006487" duration="12948000" />
     </task>
     <task id="LOCAL-00007" summary="more changes to process memory management in migrating to 64bit">
       <created>1690679180441</created>
@@ -554,7 +529,28 @@
       <option name="project" value="LOCAL" />
       <updated>1710066573375</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="comment code of old algorithm for free()">
+      <created>1710335346903</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1710335346903</updated>
+    </task>
+    <task id="LOCAL-00054" summary="use fdProcessMutex inside main screen refresh thread">
+      <created>1710335386532</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1710335386532</updated>
+    </task>
+    <task id="LOCAL-00055" summary="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly">
+      <created>1710335447414</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1710335447414</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -583,9 +579,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="inject .dll section into executable/dll image at loading time" />
-    <MESSAGE value="more changes to handle syscall and dll resolution" />
-    <MESSAGE value="align stack for loaded user-process to 16 byte to ensure SSE/SSE2/SSE3 instructions don't cause General Protection Fault" />
     <MESSAGE value="Remove the error-code (if any) from stack in interrupt/exception handler upfront before saving the registers to ensure rsp is 16 byte aligned. without error-code, the stack has 5 params * 8 byte = 40 bytes. Save registers will push 120 bytes for registers and 512 bytes for xxm registers - total 512 + 120 + 40 = 672 -&gt; 16 byte aligned. Adding error-code will make rsp 680 bytes which is not 16 byte aligned, which makes fxsave fail with General Protection Fault" />
     <MESSAGE value="separate stack frame for timer vs page-fault vs rest. It is paricurlarly important to keep stack separate for time vs page-fault because page-fault handler yields by calling timer interrupt (int 0x20) and hence they can't both use same stack frame. This is achieved using different IST values in IDT definition of these interrupts" />
     <MESSAGE value="fix issue with populating main() method arguments on user stack" />
@@ -608,14 +601,17 @@
     <MESSAGE value="destroy graphicsContext for kernel by having kernel process explicitly pass the gc param. this is so because while destroying the context which happens typically while terminating the process, the code in kernel will be running in kernel-mode, during which, the process-lookup-table should be accessed to obtain the graphicsContext because the process-lookup will return kernel-root-process in kernel-mode" />
     <MESSAGE value="some 64bit corrections" />
     <MESSAGE value="code cleanup to remove unwanted macros" />
-    <option name="LAST_COMMIT_MESSAGE" value="code cleanup to remove unwanted macros" />
+    <MESSAGE value="comment code of old algorithm for free()" />
+    <MESSAGE value="use fdProcessMutex inside main screen refresh thread" />
+    <MESSAGE value="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/process/KernelProcess.cpp</url>
-          <line>63</line>
+          <line>62</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

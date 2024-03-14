@@ -33,6 +33,7 @@
 #include <ElfSymbolTable.h>
 #include <DMM.h>
 #include <GraphicsVideo.h>
+#include <thread_context.h>
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define BSS_SEC_NAME      ".bss"
@@ -266,6 +267,12 @@ void UserProcess::DeallocateResources() {
   MemManager::Instance().DeAllocatePhysicalPage(_stackPDAddress / PAGE_SIZE);
 
   SchedulableProcess::Common::SetStackPDTable(pml4Table(), 0);
+
+  //Threads and main-thread/process share common page-table (CR3)
+  //Therefore, the allocated pages of page-table are de-allocated only in the main-thread/process
+  auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), upan::thread_context::SHARED_ADDRESS);
+  auto ptIndex = PT_INDEX(upan::thread_context::SHARED_ADDRESS);
+  ptTable[ptIndex] = 0;
 
   //release the PDP that's mapped to Kernel space
   auto pdpPage = PAGE_TABLE(_pml4Table, 0);

@@ -141,4 +141,5 @@ protected:
   ProcessGroup* _processGroup;
 
   ProcessIDs _childProcessIDs;
+  uint64_t _threadContextPageNumber;
 };
