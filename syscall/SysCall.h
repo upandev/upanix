@@ -42,4 +42,5 @@
 #define IKP ( ProcessManager::Instance().IsKernelProcess(ProcessManager::GetCurrentProcessID()) )
 #define KERNEL_ADDR(DO, TYPE, ADDR) (TYPE)( (DO) ? (IKP ? (uintptr_t)(ADDR) : (uintptr_t)(ADDR)) : (uintptr_t)(ADDR) )
 
+upan::map<uint64_t, int>& get_syscall_stats();
 void SysCall_Initialize() ;

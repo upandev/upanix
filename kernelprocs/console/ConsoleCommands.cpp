@@ -65,6 +65,7 @@
 #include <BmpEncoder.h>
 #include <PngEncoder.h>
 #include <metrics.h>
+#include <SysCall.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -1251,6 +1252,7 @@ public:
     populateSteps(_minuteSteps, r - 5);
     populateSteps(_hourSteps, r - 20);
     populateSteps(_labels, r + 3);
+    initLayout();
   }
 
   void populateSteps(upanui::Point (&steps)[60], const int r) {
@@ -1279,32 +1281,58 @@ public:
 
   void run() {
     try {
-      doRun();
+      PassThroughMouseHandler mouseHandler;
+      _clockCanvas->registerMouseEventHandler(mouseHandler);
+
+      int c = 0;
+      while(true) {
+        RTCDateTime dateTime;
+        RTC::GetDateTime(dateTime);
+        _secondHand->updateXY(_cx, _cy, _cx + _secondSteps[dateTime._second].x(), _cy - _secondSteps[dateTime._second].y());
+        _minuteHand->updateXY(_cx, _cy, _cx + _minuteSteps[dateTime._minute].x(), _cy - _minuteSteps[dateTime._minute].y());
+
+        const int h = (dateTime._hour * 5 + int(dateTime._minute * _htomFactor)) % 60;
+        _hourHand->updateXY(_cx, _cy, _cx + _hourSteps[h].x(), _cy - _hourSteps[h].y());
+
+        sleepms(1000);
+        c = (c + 1) % 20;
+        if (c >= 5 && c < 10) {
+          _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
+          _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
+        } else if (c >= 10 && c < 15){
+          _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
+          _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
+        } else if (c >= 15 && c < 20) {
+          _clockCanvas->backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(80));
+        } else {
+          _clockCanvas->backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
+          _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
+          _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
+        }
+      }
     } catch(const upan::exception& e) {
       printf("App failed with error: %s", e.ErrorMsg().c_str());
       exit(1);
     }
   }
 private:
-  void doRun() {
-    auto& clockCanvas = upanui::UIObjectFactory::createRoundCanvas(_uiRoot, PADDING, PADDING, _csize, _csize);
-    clockCanvas.borderThickness(BORDER_THICKNESS);
-    clockCanvas.backgroundColor(0xFFFEF2);
-    clockCanvas.borderColor(0x5A3828);
+  void initLayout() {
+    upanui::GraphicsContext::Transaction gcTransaction;
+    _clockCanvas = &upanui::UIObjectFactory::createRoundCanvas(_uiRoot, PADDING, PADDING, _csize, _csize);
+    _clockCanvas->borderThickness(BORDER_THICKNESS);
+    _clockCanvas->backgroundColor(0xFFFEF2);
+    _clockCanvas->borderColor(0x5A3828);
 
-    PassThroughMouseHandler mouseHandler;
-    clockCanvas.registerMouseEventHandler(mouseHandler);
+    _secondHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _secondSteps[0].x(), _cy - _secondSteps[0].y(), 2);
+    _secondHand->backgroundColor(0x41394C);
 
-    auto& secondHand = upanui::UIObjectFactory::createLine(clockCanvas, _cx, _cy, _cx + _secondSteps[0].x(), _cy - _secondSteps[0].y(), 2);
-    secondHand.backgroundColor(0x41394C);
+    _minuteHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _minuteSteps[0].x(), _cy - _minuteSteps[0].y(), 3);
+    _minuteHand->backgroundColor(0x524C4C);
 
-    auto& minuteHand = upanui::UIObjectFactory::createLine(clockCanvas, _cx, _cy, _cx + _minuteSteps[0].x(), _cy - _minuteSteps[0].y(), 3);
-    minuteHand.backgroundColor(0x524C4C);
+    _hourHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _hourSteps[0].x(), _cy - _hourSteps[0].y(), 4);
+    _hourHand->backgroundColor(0x4B4B4C);
 
-    auto& hourHand = upanui::UIObjectFactory::createLine(clockCanvas, _cx, _cy, _cx + _hourSteps[0].x(), _cy - _hourSteps[0].y(), 4);
-    hourHand.backgroundColor(0x4B4B4C);
-
-    auto& centerCircle = upanui::UIObjectFactory::createRoundCanvas(clockCanvas, _cx - 8, _cy - 8, 16, 16);
+    auto& centerCircle = upanui::UIObjectFactory::createRoundCanvas(*_clockCanvas, _cx - 8, _cy - 8, 16, 16);
     centerCircle.backgroundColor(0xFADDBD);
 
     //VGA font --> 1 character is 8 width, 16 height with font size 16
@@ -1318,7 +1346,7 @@ private:
       const int labelWidth = i == 0 || i > 9 ? labelWidth2C : labelWidth1C;
       char buf[3];
       sprintf(buf, "%d", i == 0 ? 12 : i);
-      auto& label = upanui::UIObjectFactory::createLabel(clockCanvas,
+      auto& label = upanui::UIObjectFactory::createLabel(*_clockCanvas,
                                                          _cx + _labels[stepIndex].x() - labelWidth / 2, _cy - _labels[stepIndex].y() - labelHeight / 2,
                                                          labelWidth, labelHeight,
                                                          buf, fgColor,
@@ -1326,33 +1354,6 @@ private:
                                                          upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize);
       label.backgroundColor(0);
       label.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
-    }
-
-    int c = 0;
-    while(true) {
-      RTCDateTime dateTime;
-      RTC::GetDateTime(dateTime);
-      secondHand.updateXY(_cx, _cy, _cx + _secondSteps[dateTime._second].x(), _cy - _secondSteps[dateTime._second].y());
-      minuteHand.updateXY(_cx, _cy, _cx + _minuteSteps[dateTime._minute].x(), _cy - _minuteSteps[dateTime._minute].y());
-
-      const int h = (dateTime._hour * 5 + int(dateTime._minute * _htomFactor)) % 60;
-      hourHand.updateXY(_cx, _cy, _cx + _hourSteps[h].x(), _cy - _hourSteps[h].y());
-
-      sleepms(1000);
-      c = (c + 1) % 20;
-      if (c >= 5 && c < 10) {
-        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
-        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
-      } else if (c >= 10 && c < 15){
-        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
-        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
-      } else if (c >= 15 && c < 20) {
-        clockCanvas.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(80));
-      } else {
-        clockCanvas.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
-        _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
-        _uiRoot.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
-      }
     }
   }
 
@@ -1366,6 +1367,10 @@ private:
   upanui::Point _minuteSteps[60];
   upanui::Point _hourSteps[60];
   upanui::Point _labels[60];
+  upanui::Line* _secondHand;
+  upanui::Line* _minuteHand;
+  upanui::Line* _hourHand;
+  upanui::Canvas* _clockCanvas;
 
 public:
 
@@ -1636,7 +1641,6 @@ void aThread(void* x) {
 void ConsoleCommands_PrintKPIs() {
   if (CommandLineParser::Instance().GetNoOfParameters() >= 1) {
     const upan::string& name = CommandLineParser::Instance().GetParameterAt(0);
-    const upan::metrics::stats& s = upan::metrics::instance().get(name);
     printf("\navg(%s): %lf (%d)", name.c_str(), upan::metrics::instance().avg(name), upan::metrics::instance().count(name));
   } else {
     const auto& names = upan::metrics::instance().kpis();
@@ -1647,13 +1651,14 @@ void ConsoleCommands_PrintKPIs() {
 }
 
 void ConsoleCommands_Test() {
-  MemManager::Instance().DisplayPageAllocationStats();
-  printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
+  for(auto& e : get_syscall_stats()) {
+    printf("\n %lu:%d", e.first, e.second);
+  }
+  //MemManager::Instance().DisplayPageAllocationStats();
+  //printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }
 
-extern uint32_t dmm_alloc_count;
 void ConsoleCommands_Testv() {
-  //printf("\n Alloc Count: %u", dmm_alloc_count);
   upan::vector<uintptr_t> params;
   params.push_back(0);
   params.push_back(0);
