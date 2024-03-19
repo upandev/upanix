@@ -24,18 +24,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="introduce thread local storage. it contains process/thread id to begin with">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,28 +201,7 @@
       <workItem from="1709938569831" duration="27231000" />
       <workItem from="1709986091907" duration="419000" />
       <workItem from="1709986528833" duration="45285000" />
-      <workItem from="1710390006487" duration="12948000" />
-    </task>
-    <task id="LOCAL-00007" summary="more changes to process memory management in migrating to 64bit">
-      <created>1690679180441</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1690679180441</updated>
-    </task>
-    <task id="LOCAL-00008" summary="1. avoid mapping kernel space for - i.e. use heap instead like for process-env, elf section headers&#10;2. upgrade elf parser from 32 to 64 bit&#10;3. modify address space allocation and deallocation for user-process and user-thread to suite 64 bit 4 stage pml4 based memory mapping">
-      <created>1691311095014</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1691311095014</updated>
-    </task>
-    <task id="LOCAL-00009" summary="fix bug in initializing the page table - the math to calculate the number of entries in each table should use divide and ceil logic">
-      <created>1691895237496</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1691895237497</updated>
+      <workItem from="1710390006487" duration="16484000" />
     </task>
     <task id="LOCAL-00010" summary="a separate handler for timer interrupt written in assembly to make it specific and clean without any compiler dependent/generated code in order to make it suitable for use in context switching">
       <created>1691895357344</created>
@@ -550,7 +525,28 @@
       <option name="project" value="LOCAL" />
       <updated>1710335447414</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="reduce sleep time for kernel-service to ensure requests are served quickly - particularly page-faults">
+      <created>1710423834128</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1710423834128</updated>
+    </task>
+    <task id="LOCAL-00057" summary="added code to debug and track syscalls">
+      <created>1710424084583</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1710424084583</updated>
+    </task>
+    <task id="LOCAL-00058" summary="introduce thread local storage. it contains process/thread id to begin with">
+      <created>1710424121024</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1710424121024</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -579,9 +575,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Remove the error-code (if any) from stack in interrupt/exception handler upfront before saving the registers to ensure rsp is 16 byte aligned. without error-code, the stack has 5 params * 8 byte = 40 bytes. Save registers will push 120 bytes for registers and 512 bytes for xxm registers - total 512 + 120 + 40 = 672 -&gt; 16 byte aligned. Adding error-code will make rsp 680 bytes which is not 16 byte aligned, which makes fxsave fail with General Protection Fault" />
-    <MESSAGE value="separate stack frame for timer vs page-fault vs rest. It is paricurlarly important to keep stack separate for time vs page-fault because page-fault handler yields by calling timer interrupt (int 0x20) and hence they can't both use same stack frame. This is achieved using different IST values in IDT definition of these interrupts" />
-    <MESSAGE value="fix issue with populating main() method arguments on user stack" />
     <MESSAGE value="commented debug print statements" />
     <MESSAGE value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
     <MESSAGE value="clean up code" />
@@ -604,7 +597,10 @@
     <MESSAGE value="comment code of old algorithm for free()" />
     <MESSAGE value="use fdProcessMutex inside main screen refresh thread" />
     <MESSAGE value="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly" />
+    <MESSAGE value="reduce sleep time for kernel-service to ensure requests are served quickly - particularly page-faults" />
+    <MESSAGE value="added code to debug and track syscalls" />
+    <MESSAGE value="introduce thread local storage. it contains process/thread id to begin with" />
+    <option name="LAST_COMMIT_MESSAGE" value="introduce thread local storage. it contains process/thread id to begin with" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

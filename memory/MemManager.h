@@ -48,7 +48,6 @@ class MemManager
 		unsigned AllocatePageForKernel();
 		void DeAllocatePageForKernel(unsigned pageNumber);
 
-		ReturnCode AllocatePage(int iProcessID, uintptr_t faultyAddress) ;
     uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
     uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
 		void DisplayPageAllocationStats() ;

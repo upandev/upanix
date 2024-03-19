@@ -67,6 +67,7 @@ public:
   void Destroy();
   void Release();
   void switchPageTable() const;
+  bool handlePageFault(uint64_t faultyAddress);
 
   FILE_USER_TYPE fileUserType(const FileSystem::Node&) const override;
   bool hasFilePermission(const FileSystem::Node&, byte mode) const override;

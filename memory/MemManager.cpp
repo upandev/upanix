@@ -34,10 +34,17 @@ void MemManager::PageFaultHandler() {
 
 	if (IS_KERNEL()) {
     printf("\n Page Fault in Kernel! FIX THIS !!! @ %lx", faultyAddress);
-    while(1);
+    __asm__ __volatile__ ("HLT");
+    while(true);
   }
-	if(!KC::MKernelService().RequestPageFault(faultyAddress)) {
-		ProcessManager_Exit();
+
+	const int pid = ProcessManager::Instance().GetCurProcId();
+	const auto& process = ProcessManager::Instance().GetSchedulableProcess(pid);
+	if (process.isEmpty()) {
+    printf("\n No active process found for pid: %d", pid);
+    ProcessManager_Exit();
+	} else if (!process.value().handlePageFault(faultyAddress)) {
+    ProcessManager_Exit();
 	}
 }
 
@@ -451,56 +458,6 @@ void MemManager::DeAllocatePageForKernel(uint32_t pageNumber) {
   const auto pageMapPosition = pageNumber / 64;
   const auto pageOffset = pageNumber % 64;
   _kernelPagePoolMap[pageMapPosition] = _kernelPagePoolMap[pageMapPosition] & ~(0x1 << pageOffset) ;
-}
-
-extern __volatile__ uint64_t SYS_CALL_ID;
-
-ReturnCode MemManager::AllocatePage(int iProcessID, uintptr_t faultyAddress) {
-  upan::mutex_guard g(ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pageAllocMutex().value());
-
-  const auto virtualPageNo = faultyAddress / PAGE_SIZE;
-  if (ProcessManager::Instance().IsKernelProcess(iProcessID)) {
-    printf("\n Page Fault in Kernel! FIX THIS !!!");
-    printf("\n Page Fault Address/Page: %llx / %u", faultyAddress, virtualPageNo);
-    __asm__ __volatile__ ("HLT");
-    while (true);
-  }
-
-  bool permittedAddressAccess = false;
-  //This space is for process Stack - page fault here should be only while expanding stack and not for Heap (DMM is OFF)
-  if (faultyAddress >= (PROCESS_STACK_TOP_ADDRESS - PROCESS_STACK_SIZE)
-      && faultyAddress < PROCESS_STACK_TOP_ADDRESS
-      && !ProcessManager::Instance().IsDMMOn(iProcessID)) {
-    permittedAddressAccess = true;
-  } //page fault in heap while allocating memory (DMM is ON)
-  else if (faultyAddress >= PROCESS_HEAP_START_ADDRESS
-           && faultyAddress < (PROCESS_HEAP_START_ADDRESS + PROCESS_HEAP_SIZE)
-           && ProcessManager::Instance().IsDMMOn(iProcessID)) {
-    permittedAddressAccess = true;
-  }
-  if (!permittedAddressAccess) {
-    printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
-    printf("\n Sys Call Id: %lu", SYS_CALL_ID);
-    printf("\n PID: %d, DMM Flag: %d", iProcessID, ProcessManager::Instance().IsDMMOn(iProcessID));
-    return Failure;
-  }
-
-  auto pml4Table = (uint64_t *) ProcessManager::Instance().GetSchedulableProcess(iProcessID).value().pml4Table();
-  auto ptTable = GetPTTable(pml4Table, faultyAddress);
-  const auto ptIndex = PT_INDEX(faultyAddress);
-  auto address = ptTable[ptIndex];
-
-  if ((address & 0x1) == 0) {
-    auto page = AllocatePhysicalPage();
-    ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
-  } else if ((address & 0x7) == 0x7) {
-    // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
-  } else {
-    /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
-    printf("\n Segmentation/Permission Fault @ Address: 0x%lx", faultyAddress);
-    return Failure;
-  }
-  return Success;
 }
 
 uintptr_t MemManager::GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) {

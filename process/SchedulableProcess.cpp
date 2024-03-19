@@ -237,6 +237,60 @@ void SchedulableProcess::Common::DeallocateKernelStackSpace(int stackBlockId) {
   MemManager::Instance().DeAllocateKernelStack(stackBlockId);
 }
 
+extern __volatile__ uint64_t SYS_CALL_ID;
+
+bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
+  Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
+
+  const auto virtualPageNo = faultyAddress / PAGE_SIZE;
+  if (isKernelProcess()) {
+    printf("\n Page Fault in Kernel! FIX THIS !!!");
+    printf("\n Page Fault Address/Page: %llx / %u", faultyAddress, virtualPageNo);
+    __asm__ __volatile__ ("HLT");
+    while (true);
+  }
+
+  bool permittedAddressAccess = false;
+  //This space is for process Stack - page fault here should be only while expanding stack and not for Heap (DMM is OFF)
+  if (faultyAddress >= (PROCESS_STACK_TOP_ADDRESS - PROCESS_STACK_SIZE)
+      && faultyAddress < PROCESS_STACK_TOP_ADDRESS
+      && !dmm().isDmmFlag()) {
+    permittedAddressAccess = true;
+  } //page fault in heap while allocating memory (DMM is ON)
+  else if (faultyAddress >= PROCESS_HEAP_START_ADDRESS
+           && faultyAddress < (PROCESS_HEAP_START_ADDRESS + PROCESS_HEAP_SIZE)
+           && dmm().isDmmFlag()) {
+    permittedAddressAccess = true;
+  }
+
+  if (!permittedAddressAccess) {
+    printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
+    printf("\n Sys Call Id: %lu", SYS_CALL_ID);
+    printf("\n PID: %d, DMM Flag: %d", _processID, dmm().isDmmFlag());
+    switchPageTable();
+    return false;
+  }
+
+  auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), faultyAddress);
+  const auto ptIndex = PT_INDEX(faultyAddress);
+  auto address = ptTable[ptIndex];
+
+  if ((address & 0x1) == 0) {
+    auto page = MemManager::Instance().AllocatePhysicalPage();
+    ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
+  } else if ((address & 0x7) == 0x7) {
+    // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
+  } else {
+    /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
+    printf("\n Segmentation/Permission Fault @ Address: 0x%lx", faultyAddress);
+    switchPageTable();
+    return false;
+  }
+
+  switchPageTable();
+  return true;
+}
+
 ProcessStateInfo::ProcessStateInfo() :
   _sleepTime(0),
   _irq(&StdIRQ::Instance().NO_IRQ),
