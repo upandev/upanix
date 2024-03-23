@@ -53,6 +53,7 @@
 #include <GraphicsContext.h>
 #include <MouseEventHandler.h>
 #include <Button.h>
+#include <IconButton.h>
 #include <UIObjectFactory.h>
 #include <RoundCanvas.h>
 #include <Line.h>
@@ -61,6 +62,7 @@
 #include <ImageCanvas.h>
 #include <Label.h>
 #include <VerticalScroller.h>
+#include <TextArea.h>
 #include <metrics.h>
 #include <BmpEncoder.h>
 #include <PngEncoder.h>
@@ -901,6 +903,16 @@ public:
   }
 };
 
+class CloseButtonMouseHandler : public upanui::MouseEventHandler {
+public:
+  void onEvent(upanui::UIObject& uiObject, const upanui::MouseEvent& event) override {
+    const upanui::MouseData& data = event.getData();
+    if (data.leftButtonState() == upanui::MouseData::RELEASED) {
+      exit(0);
+    }
+  }
+};
+
 class SlideShow : public upan::thread {
 public:
   SlideShow(upanui::ImageCanvas& c, const upan::vector<upanui::Image*> images) : _c(c), _images(images) {
@@ -1446,6 +1458,40 @@ void graphics_window_app(int x, int y) {
   child3.registerMouseEventHandler(mouseHandler);
   child4.registerMouseEventHandler(mouseHandler);
 
+  CloseButtonMouseHandler closeButtonMouseHandler;
+  closeBt.registerMouseEventHandler(closeButtonMouseHandler);
+
+  gc.eventManager().startEventLoop();
+
+  exit(0);
+}
+
+void graphics_text_editor(int x, int y) {
+  const int appWidth = 600;
+  const int mainHeight = 500;
+  const int menuBarHeight = 30;
+  upanui::GraphicsContext::Init();
+  auto& gc = upanui::GraphicsContext::Instance();
+  auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight);
+  uiMenuBar.backgroundColor(0xA59E9D);
+
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
+
+  const int scrollBarWidth = 20;
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth);
+
+  auto& uiTextArea = upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight);
+  uiTextArea.backgroundColor(0xEFE8E6);
+
+  DragMouseHandler mouseHandler;
+  PassThroughMouseHandler passThroughMouseHandler;
+  uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
+
+  CloseButtonMouseHandler closeButtonMouseHandler;
+  closeBt.registerMouseEventHandler(closeButtonMouseHandler);
+
   gc.eventManager().startEventLoop();
 
   exit(0);
@@ -1487,6 +1533,11 @@ void ConsoleCommands_TestGraphics() {
 
     case 5: {
       ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_window_app, NO_PROCESS_ID, true, params);
+    }
+    break;
+
+    case 6: {
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_text_editor, NO_PROCESS_ID, true, params);
     }
     break;
 

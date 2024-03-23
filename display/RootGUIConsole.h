@@ -87,6 +87,7 @@ private:
     int y() const override { return 0; }
     uint32_t width() const override { return _frame.frameBuffer().width(); }
     uint32_t height() const override { return _frame.frameBuffer().height(); }
+    uint32_t scrollHeight() const override { return height(); }
     uint32_t backgroundColor() const override { return 0; }
     uint32_t backgroundColorForDraw() const override { return 0; }
     uint8_t  backgroundColorAlpha() const override { return 100; }
@@ -145,6 +146,7 @@ private:
     void hscroll(int columns) override {}
     void registerVerticalScroller(upanui::VerticalScroller&) override {}
     void removeVerticalScroller() override {}
+    upan::option<upanui::VerticalScroller&> getVerticalScroller() override { return upan::option<upanui::VerticalScroller&>::empty(); }
 
     void notifyChange(const ChangeState) override {}
     void setChangeState(const ChangeState) override {}
