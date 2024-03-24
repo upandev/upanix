@@ -35,8 +35,6 @@ class KeyboardHandler
       return instance;
     }
 
-    KeyboardKeys mapToTTYKey(const upanui::KeyboardData& data);
-
     upanui::KeyboardData GetCharInBlockMode();
     upan::option<upanui::KeyboardData> GetCharInNonBlockMode();
     bool Process(const KeyboardKeys key, const bool isKeyReleased);
@@ -45,8 +43,6 @@ class KeyboardHandler
 
     void StartDispatcher();
   private:
-    KeyboardKeys getShiftKey(const KeyboardKeys key);
-    KeyboardKeys getCtrlKey(const KeyboardKeys key);
     upan::option<upanui::KeyboardData> GetFromQueueBuffer();
 
     upan::queue<upanui::KeyboardData> _qBuffer;
@@ -54,10 +50,6 @@ class KeyboardHandler
     bool _isAlt;
     bool _isCtrl;
     bool _isCaps;
-
-    static const int MAX_KEYS = 256;
-    KeyboardKeys _shiftedKeyMap[MAX_KEYS];
-    KeyboardKeys _ctrlKeyMap[MAX_KEYS];
 };
 
 #endif

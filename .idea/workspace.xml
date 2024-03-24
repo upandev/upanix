@@ -24,10 +24,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="page fault is resolved within the page fault handler by switching CR3, without the need for invoking kernel-service">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="test graphics code for textarea">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,14 +201,7 @@
       <workItem from="1709986091907" duration="419000" />
       <workItem from="1709986528833" duration="45285000" />
       <workItem from="1710390006487" duration="27043000" />
-      <workItem from="1711191596318" duration="5585000" />
-    </task>
-    <task id="LOCAL-00011" summary="XHCI controller initializing upgraded for 64bit kernel">
-      <created>1691914877579</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1691914877579</updated>
+      <workItem from="1711191596318" duration="12772000" />
     </task>
     <task id="LOCAL-00012" summary="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop.">
       <created>1691923542360</created>
@@ -543,7 +539,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710811359492</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="test graphics code for textarea">
+      <created>1711235703168</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1711235703169</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -572,7 +575,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix bug in ELFInfo destructor to delete the correct pointers. This was causing kernel deallocation to fail with an exception, causing infinite loop" />
     <MESSAGE value="clean up code" />
     <MESSAGE value="increase disk driver cache size to 4MB" />
     <MESSAGE value="fix the pointer type" />
@@ -597,7 +599,8 @@
     <MESSAGE value="added code to debug and track syscalls" />
     <MESSAGE value="introduce thread local storage. it contains process/thread id to begin with" />
     <MESSAGE value="page fault is resolved within the page fault handler by switching CR3, without the need for invoking kernel-service" />
-    <option name="LAST_COMMIT_MESSAGE" value="page fault is resolved within the page fault handler by switching CR3, without the need for invoking kernel-service" />
+    <MESSAGE value="test graphics code for textarea" />
+    <option name="LAST_COMMIT_MESSAGE" value="test graphics code for textarea" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

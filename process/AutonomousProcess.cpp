@@ -88,7 +88,7 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   switch (_uiType) {
     case Process::REDIRECT_TTY:
     case Process::TTY: {
-      const auto ch = (uint8_t)KeyboardHandler::Instance().mapToTTYKey(data);
+      const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
       if (ch != Keyboard_NA_CHAR) {
         iodTable().get(IODescriptorTable::STDIN).write((void*)&ch, 1);
       }

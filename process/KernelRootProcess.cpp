@@ -48,7 +48,7 @@ void KernelRootProcess::initGuiFrame() {
 }
 
 void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
-  const auto ch = (uint8_t)KeyboardHandler::Instance().mapToTTYKey(data);
+  const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
   iodTable().get(IODescriptorTable::STDIN).write((void*)&ch, 1);
 }
 

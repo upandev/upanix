@@ -1483,7 +1483,6 @@ void graphics_text_editor(int x, int y) {
   auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth);
 
   auto& uiTextArea = upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight);
-  uiTextArea.backgroundColor(0xEFE8E6);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
