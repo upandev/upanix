@@ -87,7 +87,6 @@ private:
     int y() const override { return 0; }
     uint32_t width() const override { return _frame.frameBuffer().width(); }
     uint32_t height() const override { return _frame.frameBuffer().height(); }
-    uint32_t scrollHeight() const override { return height(); }
     uint32_t backgroundColor() const override { return 0; }
     uint32_t backgroundColorForDraw() const override { return 0; }
     uint8_t  backgroundColorAlpha() const override { return 100; }
@@ -142,6 +141,8 @@ private:
     void drawTopDown() override {}
     void drawToTop() override {}
 
+    int scrollY() const override { return -y(); }
+    uint32_t scrollHeight() const override { return height(); }
     void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
     void registerVerticalScroller(upanui::VerticalScroller&) override {}

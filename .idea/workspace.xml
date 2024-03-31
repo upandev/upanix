@@ -24,13 +24,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="test graphics code for textarea">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactored to move keyboard mapping utility to upanui library">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,11 +90,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -201,14 +192,8 @@
       <workItem from="1709986091907" duration="419000" />
       <workItem from="1709986528833" duration="45285000" />
       <workItem from="1710390006487" duration="27043000" />
-      <workItem from="1711191596318" duration="12772000" />
-    </task>
-    <task id="LOCAL-00012" summary="Fix issue with timer initialize to move it to a separate member function Initialize() to ensure that PIT singleton constructor is not called again from the timer handler before PIT constructor is completed. Put the IrqGuard pushf;pop instructions in the same instruction block to avoid compiler generated code messing with the stack after pushf and before pop.">
-      <created>1691923542360</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1691923542360</updated>
+      <workItem from="1711191596318" duration="44270000" />
+      <workItem from="1711807970120" duration="7799000" />
     </task>
     <task id="LOCAL-00013" summary="upgrade EHCI controler initialization to support 64bit kernel">
       <created>1691932153889</created>
@@ -546,7 +531,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711235703169</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="refactored to move keyboard mapping utility to upanui library">
+      <created>1711252818574</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1711252818574</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -575,7 +567,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="clean up code" />
     <MESSAGE value="increase disk driver cache size to 4MB" />
     <MESSAGE value="fix the pointer type" />
     <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
@@ -600,7 +591,8 @@
     <MESSAGE value="introduce thread local storage. it contains process/thread id to begin with" />
     <MESSAGE value="page fault is resolved within the page fault handler by switching CR3, without the need for invoking kernel-service" />
     <MESSAGE value="test graphics code for textarea" />
-    <option name="LAST_COMMIT_MESSAGE" value="test graphics code for textarea" />
+    <MESSAGE value="refactored to move keyboard mapping utility to upanui library" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactored to move keyboard mapping utility to upanui library" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
