@@ -85,25 +85,25 @@ private:
   private:
     int x() const override { return 0; }
     int y() const override { return 0; }
-    uint32_t width() const override { return _frame.frameBuffer().width(); }
-    uint32_t height() const override { return _frame.frameBuffer().height(); }
+    int width() const override { return _frame.frameBuffer().width(); }
+    int height() const override { return _frame.frameBuffer().height(); }
     uint32_t backgroundColor() const override { return 0; }
     uint32_t backgroundColorForDraw() const override { return 0; }
     uint8_t  backgroundColorAlpha() const override { return 100; }
     uint32_t borderColor() const override { return 0; }
     uint8_t  borderColorAlpha() const { return 100; }
-    uint32_t borderThickness() const override { return 0; }
+    int borderThickness() const override { return 0; }
 
     void x(const int) override {}
     void y(const int) override {}
     void xy(int, int) override {}
-    void width(const uint32_t) override {}
-    void height(const uint32_t) override {}
+    void width(int) override {}
+    void height(int) override {}
     void backgroundColor(const uint32_t color) override {}
     void backgroundColorAlpha(const uint8_t) override {}
     void borderColor(const uint32_t) override {}
     void borderColorAlpha(const uint8_t) override {}
-    void borderThickness(const uint32_t) override {}
+    void borderThickness(int) override {}
 
     UIObject& parent() const override {
       throw upan::exception(XLOC, "unsupported parent()");
@@ -142,7 +142,7 @@ private:
     void drawToTop() override {}
 
     int scrollY() const override { return -y(); }
-    uint32_t scrollHeight() const override { return height(); }
+    int scrollHeight() const override { return height(); }
     void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
     void registerVerticalScroller(upanui::VerticalScroller&) override {}

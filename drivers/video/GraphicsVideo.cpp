@@ -270,11 +270,11 @@ void GraphicsVideo::NeedRefresh() {
   _needRefresh.set(true);
 }
 
-void GraphicsVideo::FillRect(unsigned sx, unsigned sy, unsigned width, unsigned height, unsigned color) {
-  uint32_t y_offset;
-  for(uint32_t y = sy; y < (sy + height) && y < _height; ++y) {
+void GraphicsVideo::FillRect(int sx, int sy, int width, int height, unsigned color) {
+  int y_offset;
+  for(int y = sy; y < (sy + height) && y < _height; ++y) {
     y_offset = y * _pitch;
-    for(uint32_t x = sx; x < (sx + width) && x < _width; ++x) {
+    for(int x = sx; x < (sx + width) && x < _width; ++x) {
       auto p = (uint32_t*)(_zBuffer + y_offset + x * _bytesPerPixel);
       *p = (color | upanui::GCoreFunctions::ALPHA_MASK);
     }
@@ -385,10 +385,10 @@ void GraphicsVideo::DrawMouseCursor() {
            _mouseCursor->data(), true);
 }
 
-void GraphicsVideo::CopyArea(const uint32_t destX, const uint32_t destY,
-                             const uint32_t srcX, const uint32_t srcY,
-                             const uint32_t srcBufferWidth,
-                             const uint32_t drawWidth, const uint32_t drawHeight,
+void GraphicsVideo::CopyArea(int destX, int destY,
+                             int srcX, int srcY,
+                             int srcBufferWidth,
+                             int drawWidth, int drawHeight,
                              const uint32_t* src, const bool checkAlpha) {
   upanui::GCoreFunctions::PixelCache pixelCache;
 

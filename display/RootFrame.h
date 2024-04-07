@@ -58,7 +58,7 @@ public:
     return _doubleBuffer ? _doubleBuffer : frameBuffer().buffer();
   }
 
-  uint32_t bufferLineWidth() {
+  int bufferLineWidth() {
     return _hasDoubleBuffer && _doubleBuffer ? viewport().width() : frameBuffer().width();
   }
 

@@ -24,9 +24,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactored to move keyboard mapping utility to upanui library">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="adhere to new scroll related UIObject interfaces">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootFrame.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootFrame.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,6 +134,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="run" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
@@ -193,14 +202,8 @@
       <workItem from="1709986528833" duration="45285000" />
       <workItem from="1710390006487" duration="27043000" />
       <workItem from="1711191596318" duration="44270000" />
-      <workItem from="1711807970120" duration="7799000" />
-    </task>
-    <task id="LOCAL-00013" summary="upgrade EHCI controler initialization to support 64bit kernel">
-      <created>1691932153889</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1691932153889</updated>
+      <workItem from="1711807970120" duration="30302000" />
+      <workItem from="1712487799840" duration="205000" />
     </task>
     <task id="LOCAL-00014" summary="kernel process and thread modified for 64bit kernel">
       <created>1692369730041</created>
@@ -538,7 +541,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711252818574</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="adhere to new scroll related UIObject interfaces">
+      <created>1711848110327</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1711848110328</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -567,7 +577,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="increase disk driver cache size to 4MB" />
     <MESSAGE value="fix the pointer type" />
     <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
     <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
@@ -592,7 +601,8 @@
     <MESSAGE value="page fault is resolved within the page fault handler by switching CR3, without the need for invoking kernel-service" />
     <MESSAGE value="test graphics code for textarea" />
     <MESSAGE value="refactored to move keyboard mapping utility to upanui library" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactored to move keyboard mapping utility to upanui library" />
+    <MESSAGE value="adhere to new scroll related UIObject interfaces" />
+    <option name="LAST_COMMIT_MESSAGE" value="adhere to new scroll related UIObject interfaces" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

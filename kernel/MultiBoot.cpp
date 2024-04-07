@@ -85,9 +85,9 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
 }
 
 void MultiBoot::InitializeGraphicsPageMap(int memTypeFlag) {
-  const uint32_t lfbSize = _framebufferInfo._width * _framebufferInfo._height * _framebufferInfo._bpp / 8;
-  const uint32_t noOfPages = ((lfbSize - 1) / PAGE_SIZE) + 1;
-  const uint32_t availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
+  const int lfbSize = _framebufferInfo._width * _framebufferInfo._height * _framebufferInfo._bpp / 8;
+  const int noOfPages = ((lfbSize - 1) / (int)PAGE_SIZE) + 1;
+  const int availablePages = MEM_GRAPHICS_VIDEO_MAP_SIZE / PAGE_SIZE;
   if (noOfPages > availablePages) {
     if (memTypeFlag >= 0) {
       printf("\n Insufficient graphics video buffer. Required pages: %u", noOfPages);

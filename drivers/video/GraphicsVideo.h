@@ -46,7 +46,7 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
     unsigned LFBSize() const { return _lfbSize; }
     uint32_t LFBPageCount() const { return _lfbPageCount; }
 
-    void FillRect(unsigned sx, unsigned sy, unsigned width, unsigned height, unsigned color);
+    void FillRect(int sx, int sy, int width, int height, unsigned color);
     void CreateRefreshTask();
     void Initialize();
 
@@ -76,11 +76,10 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
     RedrawInfo isDirty();
     bool TimerTrigger() override;
     void NeedRefresh();
-    void DrawUSFNChar(byte ch, unsigned x, unsigned y, unsigned fg, unsigned bg);
-    void CopyArea(const uint32_t destX, const uint32_t destY,
-                  const uint32_t srcX, const uint32_t srcY,
-                  const uint32_t srcBufferWidth,
-                  const uint32_t drawWidth, const uint32_t drawHeight,
+    void CopyArea(int destX, int destY,
+                  int srcX, int srcY,
+                  int srcBufferWidth,
+                  int drawWidth, int drawHeight,
                   const uint32_t* src, const bool checkAlpha);
     void DrawMouseCursor();
 
@@ -88,10 +87,10 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
     uint64_t _flatLFBAddress;
     uint64_t _mappedLFBAddress;
     uint64_t _zBuffer;
-    unsigned _pitch;
-    unsigned _width;
-    unsigned _height;
-    unsigned _lfbSize;
+    int _pitch;
+    int _width;
+    int _height;
+    int _lfbSize;
     uint32_t _lfbPageCount;
     upan::atomic::integral<bool> _needRefresh;
     byte     _bpp;
@@ -99,8 +98,8 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
 
     upanui::usfn::Context* _ssfnContext;
     bool     _initialized;
-    uint32_t _xCharScale;
-    uint32_t _yCharScale;
+    int _xCharScale;
+    int _yCharScale;
     upan::list<int> _fgProcesses;
     upan::list<int> _guiBaseStack;
     int _inputEventFGProcess;
