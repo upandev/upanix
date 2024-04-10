@@ -28,6 +28,7 @@
 #include <MouseData.h>
 #include <ProcessManager.h>
 #include <InterruptHandlers.h>
+#include <KeyboardHandler.h>
 
 extern "C" {
   void _mouse_interrupt_handler();
@@ -98,7 +99,10 @@ void PS2MouseDriver::HandleEvent() {
         bool leftPressed = status & 0x1;
         bool rightPressed = status & 0x2;
         bool middlePressed = status & 0x4;
-        const upanui::MouseData mouseData = _prevMouseData.transition(deltaX, deltaY, leftPressed, rightPressed, middlePressed);
+        const upanui::MouseData mouseData = _prevMouseData.transition(deltaX, deltaY,
+                                                                      leftPressed, rightPressed, middlePressed,
+                                                                      KeyboardHandler::Instance().isShift(),
+                                                                      KeyboardHandler::Instance().isCtrl());
 
         if (mouseData == _prevMouseData && !mouseData.anyButtonHeld()) {
           return;
@@ -125,7 +129,8 @@ upanui::MouseData PS2MouseDriver::GetMouseData(const upanui::MouseData& prevMous
         auto mouseData = prevMouseData.transition(0, 0,
                                                   prevMouseData.leftButtonState() == upanui::MouseData::PRESSED || prevMouseData.leftButtonState() == upanui::MouseData::HOLD,
                                                   prevMouseData.middleButtonState() == upanui::MouseData::PRESSED || prevMouseData.middleButtonState() == upanui::MouseData::HOLD,
-                                                  prevMouseData.rightButtonState() == upanui::MouseData::PRESSED || prevMouseData.rightButtonState() == upanui::MouseData::HOLD);
+                                                  prevMouseData.rightButtonState() == upanui::MouseData::PRESSED || prevMouseData.rightButtonState() == upanui::MouseData::HOLD,
+                                                  prevMouseData.isShiftPressed(), prevMouseData.isCtrlPressed());
         if (mouseData.anyButtonHeld()) {
           return mouseData;
         }

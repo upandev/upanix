@@ -28,9 +28,7 @@ USBDevice::USBDevice() : _usLangID(0), _pArrConfigDesc(nullptr), _pStrDescZero(n
 
 void USBDevice::SetLangId()
 {
-  static upan::set<unsigned short> SUPPORTED_LAND_IDS;
-  if(SUPPORTED_LAND_IDS.empty())
-    SUPPORTED_LAND_IDS.insert(0x409);
+  static const upan::set<unsigned short> SUPPORTED_LAND_IDS {0x409};
 
   for(int i = 0; i < (_pStrDescZero->bLength - 2) / 2; ++i)
   {

@@ -42,6 +42,9 @@ class KeyboardHandler
     void Getch();
 
     void StartDispatcher();
+
+    bool isShift() const { return _isShift; }
+    bool isCtrl() const { return _isCtrl; }
   private:
     upan::option<upanui::KeyboardData> GetFromQueueBuffer();
 

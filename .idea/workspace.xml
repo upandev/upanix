@@ -24,13 +24,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="adhere to new scroll related UIObject interfaces">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="change width, height to int from uint32">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootFrame.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootFrame.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBDevice.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,14 +201,7 @@
       <workItem from="1710390006487" duration="27043000" />
       <workItem from="1711191596318" duration="44270000" />
       <workItem from="1711807970120" duration="30302000" />
-      <workItem from="1712487799840" duration="205000" />
-    </task>
-    <task id="LOCAL-00014" summary="kernel process and thread modified for 64bit kernel">
-      <created>1692369730041</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1692369730041</updated>
+      <workItem from="1712487799840" duration="12896000" />
     </task>
     <task id="LOCAL-00015" summary="map APIC MMIO space as uncacheable">
       <created>1693106493359</created>
@@ -548,7 +539,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711848110328</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="change width, height to int from uint32">
+      <created>1712488335764</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1712488335764</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -577,7 +575,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix the pointer type" />
     <MESSAGE value="fine tune the hard coded delays during usb initialization by reducing the delay to value slightly higher than specified in USB spec" />
     <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
     <MESSAGE value="fix address/pointer type to uint64_t from uint32_t" />
@@ -602,7 +599,8 @@
     <MESSAGE value="test graphics code for textarea" />
     <MESSAGE value="refactored to move keyboard mapping utility to upanui library" />
     <MESSAGE value="adhere to new scroll related UIObject interfaces" />
-    <option name="LAST_COMMIT_MESSAGE" value="adhere to new scroll related UIObject interfaces" />
+    <MESSAGE value="change width, height to int from uint32" />
+    <option name="LAST_COMMIT_MESSAGE" value="change width, height to int from uint32" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
