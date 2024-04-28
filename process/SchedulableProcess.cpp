@@ -290,25 +290,3 @@ bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
   switchPageTable();
   return true;
 }
-
-ProcessStateInfo::ProcessStateInfo() :
-  _sleepTime(0),
-  _irq(&StdIRQ::Instance().NO_IRQ),
-  _waitChildProcId(NO_PROCESS_ID),
-  _waitResourceId(RESOURCE_NIL),
-  _eventCompleted(false),
-  _kernelServiceComplete(false) {
-}
-
-bool ProcessStateInfo::IsEventCompleted()
-{
-  if(_eventCompleted.get()) {
-    _eventCompleted.set(false);
-    return true;
-  }
-  return false;
-}
-
-void ProcessStateInfo::EventCompleted() {
-  _eventCompleted.set(true);
-}

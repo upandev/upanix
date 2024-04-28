@@ -212,6 +212,14 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 		}
 		break ;
 
+    case WAIT_LOCK:
+    {
+      if(stateInfo.IsWaitOnLockCompleted()) {
+        process.setStatus(RUN);
+      }
+    }
+    break;
+
 	  case WAIT_RESOURCE:
 		{
       if(stateInfo.WaitResourceId() == RESOURCE_NIL) {
@@ -371,6 +379,23 @@ void ProcessManager::WaitOnChild(int iChildProcessID)
     ProcessSwitchLock lock;
     p.stateInfo().WaitChildProcId(iChildProcessID);
     p.setStatus(WAIT_CHILD);
+  }
+  p.yield();
+}
+
+void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal) {
+  if(GetCurProcId() < 0)
+    return ;
+
+  auto& p = GetCurrentPAS();
+  {
+    ProcessSwitchLock lock;
+    upan::atomic::integral<int>* covertWaitLock = waitLock;
+    if (!p.isKernelProcess()) {
+      covertWaitLock = (upan::atomic::integral<int>*)MemManager::Instance().GetFlatAddress(p.pml4Table(), (uint64_t)waitLock);
+    }
+    p.stateInfo().WaitOnLock(covertWaitLock, oldVal, newVal);
+    p.setStatus(WAIT_LOCK);
   }
   p.yield();
 }

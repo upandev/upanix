@@ -48,7 +48,10 @@ protected:
 
 public:
   bool isDmmFlag() const { return _dmmFlag; }
-  virtual uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment = 0) = 0;
+  virtual uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment) = 0;
+  uintptr_t allocate(uint32_t sizeInBytes) {
+    return allocate(sizeInBytes, 0);
+  }
   virtual bool free(uintptr_t address) = 0;
   virtual bool getAllocSize(uintptr_t address, size_t* size) = 0;
   virtual uint64_t availableHeapSize() = 0;

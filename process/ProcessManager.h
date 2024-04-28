@@ -78,6 +78,7 @@ class ProcessManager
     int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg);
     bool IsDMMOn(int iProcessID);
     void WaitOnChild(int iChildProcessID);
+    void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
     void WaitOnResource(RESOURCE_KEYS uiResourceType);
     void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType);
     void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors);

@@ -82,6 +82,16 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			}
 			break ;
 
+    case SYS_CALL_PROCESS_WAIT_ON_LOCK:
+      // P1 => Atomic Lock Address
+      // P2 => new value
+      // P3 => current value
+      {
+        auto lock = (upan::atomic::integral<int>*)p1;
+        ProcessManager::Instance().WaitOnLock(lock, (int)p2, (int)p3) ;
+      }
+      break;
+
 		case SYS_CALL_PROCESS_EXIT :
 			// P1 => Exit Status
 			{

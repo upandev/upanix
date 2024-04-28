@@ -24,6 +24,8 @@
 #include <ResourceMutex.h>
 #include <atomicop.h>
 #include <pair.h>
+#include "vector.h"
+#include "mosstd.h"
 
 class IRQ;
 
@@ -57,6 +59,9 @@ public:
   bool IsEventCompleted();
   void EventCompleted();
 
+  void WaitOnLock(upan::atomic::integral<int>* lock, int oldVal, int newVal);
+  bool IsWaitOnLockCompleted();
+
 private:
   unsigned       _sleepTime ;
   const IRQ*     _irq;
@@ -65,4 +70,8 @@ private:
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete ;
   upan::vector<io_descriptor> _ioDescriptors;
+
+  upan::atomic::integral<int>* _waitLock;
+  int _newVal;
+  int _oldVal;
 };

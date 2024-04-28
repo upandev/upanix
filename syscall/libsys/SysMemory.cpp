@@ -21,9 +21,8 @@
  */
 # include <SysCall.h>
 
-int SysMemory_Alloc(void** addr, unsigned uiSizeInBytes)
-{
-  uintptr_t ret = KernelDMM::Instance().allocate(uiSizeInBytes);
+int SysMemory_AlignedAlloc(void** addr, uint32_t alignment, uint32_t uiSizeInBytes) {
+  uintptr_t ret = KernelDMM::Instance().allocate(uiSizeInBytes, alignment);
   if (ret == NULL || ret < 0)
     return -1;
   *addr = (void*)ret;

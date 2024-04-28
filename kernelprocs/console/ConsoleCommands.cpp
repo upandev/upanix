@@ -1702,7 +1702,13 @@ void ConsoleCommands_PrintKPIs() {
 
 void ConsoleCommands_Test() {
   for(auto& e : get_syscall_stats()) {
-    printf("\n %lu:%d", e.first, e.second);
+    printf("\n %lu", e.first);
+    int total = 0;
+    for(auto& i : e.second) {
+      printf("\n   %d -> %d", i.first, i.second);
+      total += i.second;
+    }
+    printf("\n   Total -> %d", total);
   }
   //MemManager::Instance().DisplayPageAllocationStats();
   //printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());

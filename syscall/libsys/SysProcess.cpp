@@ -88,6 +88,11 @@ void SysProcess_Sleep(unsigned millisec)
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SLEEP, false, millisec, 2, 3, 4, 5);
 }
 
+void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_ON_LOCK, false, lockAddress, newVal, curVal, 4, 5);
+}
+
 int SysProcess_GetEnv(const char* szVar, char* retVal)
 {
   uint64_t retStatus ;

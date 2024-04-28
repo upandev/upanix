@@ -33,20 +33,17 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
 {
 	switch(sysCallId)
 	{
-		case SYS_CALL_ALLOC : //Allocate Mem.. Ment only for User Process
-			//P1 => Return Alloc Address
-			//P2 => Size in Bytes
+		case SYS_CALL_ALIGNED_ALLOC : //Allocate Memory, meant only for User Process
+      // P1 => return allocated address
+      // P2 => alignment
+      // P3 => size in bytes
 			{
 				void** addr = KERNEL_ADDR(doAddrTranslation, void**, p1) ;
-				// ProcessManager_DisableTaskSwitch() ;
-
-				*addr =  (void*)ProcessManager::Instance().GetCurrentPAS().dmm().allocate(p2) ;
-
-				// ProcessManager_EnableTaskSwitch() ;
+				*addr =  (void*)ProcessManager::Instance().GetCurrentPAS().dmm().allocate(p3, p2) ;
 			}
 			break ;
 
-		case SYS_CALL_FREE : //Free Mem.. Ment only for User Process
+    case SYS_CALL_FREE : //Free Memory, meant only for User Process
 			//P1 => Address
 			//P2 => Status
 			{
