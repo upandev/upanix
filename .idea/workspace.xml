@@ -30,19 +30,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="mouse event will also have keyboard shift and control key status">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallMem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallMem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -227,7 +223,7 @@
       <workItem from="1713574188663" duration="12000" />
       <workItem from="1713574205212" duration="835000" />
       <workItem from="1713660028802" duration="22137000" />
-      <workItem from="1714177618421" duration="27278000" />
+      <workItem from="1714177618421" duration="28933000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -572,7 +568,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -605,7 +601,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix address variable type to uint64_t from uint32_t" />
     <MESSAGE value="fix address/pointer type to uint64_t from uint32_t" />
     <MESSAGE value="change direct call to yield() to sleep() to ensure the process status is set to SLEEP (!= RUN) and avoid getting not preempted for running less than 10ms" />
     <MESSAGE value="code cleanup to remove unused code" />
@@ -630,7 +625,8 @@
     <MESSAGE value="adhere to new scroll related UIObject interfaces" />
     <MESSAGE value="change width, height to int from uint32" />
     <MESSAGE value="mouse event will also have keyboard shift and control key status" />
-    <option name="LAST_COMMIT_MESSAGE" value="mouse event will also have keyboard shift and control key status" />
+    <MESSAGE value="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space" />
+    <option name="LAST_COMMIT_MESSAGE" value="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

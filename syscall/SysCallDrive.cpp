@@ -38,7 +38,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 		case SYS_CALL_CHANGE_DRIVE : //Change Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szDriveName = ( char*) p1;
 
 				*retVal = 0 ;
 				if(DiskDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
@@ -50,8 +50,8 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 			// P1 => Ret Drive Stat List
 			// P2 => Ret Drive Stat List Size
 			{
-				DriveStat** pDriveList = KERNEL_ADDR(doAddrTranslation, DriveStat**, p1) ;
-				int* iListSize = KERNEL_ADDR(doAddrTranslation, int*, p2) ;
+				DriveStat** pDriveList = ( DriveStat**) p1;
+				int* iListSize = ( int*) p2;
 
 				*retVal = 0 ;
 				if(DiskDriveManager::Instance().GetList(pDriveList, iListSize) != DeviceDrive_SUCCESS)
@@ -62,7 +62,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 		case SYS_CALL_MOUNT_DRIVE : //Mount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szDriveName = ( char*) p1;
         *retVal = 0;
         try
         {
@@ -78,7 +78,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 		case SYS_CALL_UNMOUNT_DRIVE : //UnMount Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szDriveName = ( char*) p1;
         *retVal = 0;
         try
         {
@@ -94,7 +94,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 		case SYS_CALL_FORMAT_DRIVE : //Format Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szDriveName = ( char*) p1;
         *retVal = 0;
         try
         {
@@ -113,7 +113,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
         *retVal = 0;
         try
         {
-          DriveStat* pDriveStat = KERNEL_ADDR(doAddrTranslation, DriveStat*, p1) ;
+          DriveStat* pDriveStat = ( DriveStat*) p1;
           DiskDriveManager::Instance().GetCurrentDriveStat(pDriveStat);
         }
         catch(...)

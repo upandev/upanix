@@ -56,11 +56,11 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			{
 				//ProcessManager_DisableTaskSwitch() ;
 				
-				char* szFile = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
-				char** szArgList = KERNEL_ADDR(doAddrTranslation, char**, p3) ;
+				char* szFile = ( char*) p1;
+				char** szArgList = ( char**) p3;
 
 				for(unsigned i = 0; i < p2; i++)
-					szArgList[i] = KERNEL_ADDR(doAddrTranslation, char*, szArgList[i]) ;
+					szArgList[i] = ( char*) szArgList[i];
 
 				*retVal = KC::MKernelService().RequestProcessExec(szFile, p2, (const char**)szArgList) ;
 
@@ -117,12 +117,12 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 		case SYS_CALL_PROCESS_GET_ENV:
 			//P1 - Env Var
 			{
-				char* szVar = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szVar = ( char*) p1;
 				const auto& val = ProcessManager::Instance().GetCurrentPAS().getEnv(szVar);
 				if (val.isEmpty()) {
 				  *retVal = -1;
 				} else {
-          char* szVal = KERNEL_ADDR(doAddrTranslation, char*, p2) ;
+          char* szVal = ( char*) p2;
           strcpy(szVal, val.value().c_str());
           *retVal = 0;
 				}
@@ -133,8 +133,8 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			//P1 - Env Var
 			//P2 - Env Val
 			{
-				char* szVar = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
-				char* szVal = KERNEL_ADDR(doAddrTranslation, char*, p2) ;
+				char* szVar = ( char*) p1;
+				char* szVal = ( char*) p2;
 
 				*retVal = 0 ;
 				try {
@@ -150,8 +150,8 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			//P1 - Proc List Ptr
 			//P2 - List Size Ptr
 			{
-				PS** pProcList = KERNEL_ADDR(doAddrTranslation, PS**, p1) ;
-				unsigned* uiListSize = KERNEL_ADDR(doAddrTranslation, unsigned*, p2) ;
+				PS** pProcList = ( PS**) p1;
+				unsigned* uiListSize = ( unsigned*) p2;
 
 				*retVal = 0;
         *pProcList = ProcessManager::Instance().GetProcList(*uiListSize);
@@ -162,7 +162,7 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 			//P1 - Proc List Ptr
 			//P2 - List size
 			{
-				PS* pProcList = KERNEL_ADDR(doAddrTranslation, PS*, p1) ;
+				PS* pProcList = ( PS*) p1;
 				ProcessManager::Instance().FreeProcListMem(pProcList, p2) ;
 			}
 			break ;

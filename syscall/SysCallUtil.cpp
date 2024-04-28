@@ -38,7 +38,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 		case SYS_CALL_UTIL_DTIME : 
 			//P1 => Ret RTC Pointer
 			{
-				RTCDateTime* pRTCTime = KERNEL_ADDR(doAddrTranslation, RTCDateTime*, p1) ;
+				RTCDateTime* pRTCTime = ( RTCDateTime*) p1;
 
 				*retVal = 0 ;
 				RTC::GetDateTime((*pRTCTime)) ;
@@ -54,7 +54,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
     case SYS_CALL_UTIL_TOD :
       // P1 => Ret timeval Pointer
       {
-        struct timeval* tv = KERNEL_ADDR(doAddrTranslation, struct timeval*, p1) ;
+        struct timeval* tv = ( struct timeval*) p1;
 
         *retVal = 0 ;
         try

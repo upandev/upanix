@@ -38,7 +38,7 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
       // P2 => alignment
       // P3 => size in bytes
 			{
-				void** addr = KERNEL_ADDR(doAddrTranslation, void**, p1) ;
+				void** addr = ( void**) p1;
 				*addr =  (void*)ProcessManager::Instance().GetCurrentPAS().dmm().allocate(p3, p2) ;
 			}
 			break ;
@@ -63,7 +63,7 @@ SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, 
 			//P2 => Ret Size
 			{
         ProcessSwitchLock pLock;
-				auto pRetAllocSize = KERNEL_ADDR(doAddrTranslation, size_t*, p2) ;
+				auto pRetAllocSize = ( size_t*) p2;
 				*retVal = 0 ;
 				if(!ProcessManager::Instance().GetCurrentPAS().dmm().getAllocSize(p1, pRetAllocSize)) {
           *retVal = -1;

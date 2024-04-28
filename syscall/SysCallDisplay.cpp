@@ -38,7 +38,7 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
 			// P1 => Address of DisplayString relative to processBase 
 			// P2 => Color Attr
 			{
-				char* szMessageAddress = KERNEL_ADDR(doAddrTranslation, char*, p1);
+				char* szMessageAddress = ( char*) p1;
         KC::MConsole().Message(szMessageAddress, p2) ;
 			}
 			break ;
@@ -88,7 +88,7 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
 
     case SYS_CALL_DISPLAY_RAW_CHAR_AREA:
       {
-        const MChar* src = KERNEL_ADDR(doAddrTranslation, MChar*, p1);
+        const MChar* src = ( MChar*) p1;
         KC::MConsole().RawCharacterArea(src, p2, p3, (int)p4);
       }
       break;
@@ -97,8 +97,8 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
       // P1 => Row size (return)
       // P2 => Column size (return)
       {
-        auto maxRows = KERNEL_ADDR(doAddrTranslation, unsigned*, p1);
-        auto maxCols = KERNEL_ADDR(doAddrTranslation, unsigned*, p2);
+        auto maxRows = ( unsigned*) p1;
+        auto maxCols = ( unsigned*) p2;
         *maxRows = KC::MConsole().MaxRows();
         *maxCols = KC::MConsole().MaxColumns();
       }
@@ -110,7 +110,7 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
       auto& process = ProcessManager::Instance().GetCurrentPAS();
       process.initGuiFrame();
       RootFrame& frame = process.getGuiFrame().value();
-      auto frameBufferInfo = KERNEL_ADDR(doAddrTranslation, FrameBufferInfo*, p1);
+      auto frameBufferInfo = ( FrameBufferInfo*) p1;
       frameBufferInfo->_pitch = frame.frameBuffer().pitch();
       frameBufferInfo->_width = frame.frameBuffer().width();
       frameBufferInfo->_height = frame.frameBuffer().height();
@@ -150,21 +150,21 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
 
 	  case SYS_CALL_DISPLAY_INIT_GUI_EVENT_STREAM:
 	  {
-	    int* fdList = KERNEL_ADDR(doAddrTranslation, int*, p1);
+	    int* fdList = ( int*) p1;
 	    ProcessManager::Instance().GetCurrentPAS().setupAsGuiProcess(fdList);
 	  }
 	  break;
 
 	  case SYS_CALL_DISPLAY_SET_VIEWPORT:
 	  {
-	    const auto* viewportInfo = KERNEL_ADDR(doAddrTranslation, ViewportInfo*, p1);
+	    const auto* viewportInfo = ( ViewportInfo*) p1;
 	    ProcessManager::Instance().GetCurrentPAS().getGuiFrame().value().updateViewport(*viewportInfo);
 	  }
 	  break;
 
 	  case SYS_CALL_DISPLAY_GET_VIEWPORT:
 	  {
-	    auto* viewportInfo = KERNEL_ADDR(doAddrTranslation, ViewportInfo*, p1);
+	    auto* viewportInfo = ( ViewportInfo*) p1;
 	    const auto& viewport = ProcessManager::Instance().GetCurrentPAS().getGuiFrame().value().viewport();
 	    viewportInfo->_x = viewport.x1();
 	    viewportInfo->_y = viewport.y1();

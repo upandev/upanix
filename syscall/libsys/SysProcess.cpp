@@ -30,8 +30,8 @@ int exec(const char* szFileName, ...) {
 	int argc;
 	char** argv = nullptr;
 
-	__volatile__ int i ;
-	__volatile__ int* ref = (int*)&szFileName + 1 ;
+	int i ;
+  uintptr_t* ref = (uintptr_t*)&szFileName + 1 ;
 	for(argc = 0; *(ref + argc); argc++) ;
 
 	if(argc)

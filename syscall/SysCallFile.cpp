@@ -38,7 +38,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_CHANGE_DIR : //Change Directory
 			//P1 => Directory Path
 			{
-				char* szPathAddress = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szPathAddress = ( char*) p1;
 
 				*retVal = 0 ;
         try
@@ -56,7 +56,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_PWD : //Get PWD
 			//P1 => Return Dir Name Pointer
 			{
-				char** szPathAddress = KERNEL_ADDR(doAddrTranslation, char**, p1) ;
+				char** szPathAddress = ( char**) p1;
         *retVal = 0;
         try
         {
@@ -74,7 +74,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			//P1 => Return Dir Name Pointer
 			//P2 => Buf Length
 			{
-				char* szPathAddress = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szPathAddress = ( char*) p1;
 				*retVal = 0;
 
         try
@@ -94,7 +94,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			//P1 => Dir Path
 			//P2 => Dir Attr
 			{
-				char* szPathAddress = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szPathAddress = ( char*) p1;
 				unsigned short usType = (sysCallId == SYS_CALL_MKDIR) ? ATTR_TYPE_DIRECTORY : ATTR_TYPE_FILE ;
 				*retVal = 0 ;
 
@@ -114,7 +114,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_RMDIR : //Delete Dir / File
 			//P1 => Dir Path
 			{
-				char* szPathAddress = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
+				char* szPathAddress = ( char*) p1;
 				*retVal = 0 ;
         try
         {
@@ -134,9 +134,9 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Ret Dir Content List Address
 			// P3 => Ret Dir Content List Size Address
 			{
-				char* szPathAddress = KERNEL_ADDR(doAddrTranslation, char*, p1) ;
-				FileSystem::Node** pRetDirContentList = KERNEL_ADDR(doAddrTranslation, FileSystem::Node**, p2) ;
-				int* pRetDirContentListSize = KERNEL_ADDR(doAddrTranslation, int*, p3) ;
+				char* szPathAddress = ( char*) p1;
+				FileSystem::Node** pRetDirContentList = ( FileSystem::Node**) p2;
+				int* pRetDirContentListSize = ( int*) p3;
 				*retVal = 0 ;
 
         try
@@ -156,7 +156,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P1 => File Name / Path
 			// P2 => Mode
 			{
-				const char* szFileNameAddr = KERNEL_ADDR(doAddrTranslation, const char*, p1) ;
+				const char* szFileNameAddr = ( const char*) p1;
 				byte mode = p2 ;
 
 				*retVal = 0 ;
@@ -189,7 +189,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P3 => Byte to read 
 			// Return Value = Bytes Read
 			{
-				char* szBufferAddr = KERNEL_ADDR(doAddrTranslation, char*, p2) ;
+				char* szBufferAddr = ( char*) p2;
 
 				*retVal = 0 ;
         try
@@ -209,7 +209,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Write buffer address
 			// P3 => Byte to write 
 			{
-				const char* szBufferAddr = KERNEL_ADDR(doAddrTranslation, const char*, p2);
+				const char* szBufferAddr = ( const char*) p2;
 
 				*retVal = 0 ;
         try
@@ -229,8 +229,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 	    // P1 => Input IO Descriptors to wait on
 	    // P2 => Output IO Descriptors that are ready
 	    {
-	      io_descriptor* in_waitIODescriptors = KERNEL_ADDR(doAddrTranslation, io_descriptor*, p1);
-	      io_descriptor* out_readyIODescriptors = KERNEL_ADDR(doAddrTranslation, io_descriptor*, p2);
+	      io_descriptor* in_waitIODescriptors = ( io_descriptor*) p1;
+	      io_descriptor* out_readyIODescriptors = ( io_descriptor*) p2;
 
 	      upan::vector<io_descriptor> waitIODescriptors;
 	      for(int i = 0; in_waitIODescriptors[i]._fd >= 0; ++i) {
@@ -302,10 +302,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => FileStat
 			{
 				*retVal = 0 ;
-				const char* szPathAddress = KERNEL_ADDR(doAddrTranslation, const char*, p1) ;
+				const char* szPathAddress = ( const char*) p1;
         try
         {
-          FileSystem_FileStat* pFileStat = KERNEL_ADDR(doAddrTranslation, FileSystem_FileStat*, p2);
+          FileSystem_FileStat* pFileStat = ( FileSystem_FileStat*) p2;
           *pFileStat = FileOperations_GetStat(szPathAddress, FROM_FILE);
         }
         catch(const upan::exception& ex)
@@ -324,7 +324,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				int iFD = p1 ;
         try
         {
-          FileSystem_FileStat* pFileStat = KERNEL_ADDR(doAddrTranslation, FileSystem_FileStat*, p2) ;
+          FileSystem_FileStat* pFileStat = ( FileSystem_FileStat*) p2;
           *pFileStat = FileOperations_GetStatFD(iFD);
         }
         catch(const upan::exception& ex)
@@ -340,7 +340,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Mode
 			{
 				*retVal = 0 ;
-				const char* szPathAddress = KERNEL_ADDR(doAddrTranslation, const char*, p1) ;
+				const char* szPathAddress = ( const char*) p1;
         if(!FileOperations_FileAccess(szPathAddress, FROM_FILE, (int)p2))
 				{
 					*retVal = -1 ;
