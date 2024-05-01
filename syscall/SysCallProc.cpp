@@ -92,7 +92,23 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
       }
       break;
 
-		case SYS_CALL_PROCESS_EXIT :
+    case SYS_CALL_PROCESS_WAIT_QUEUE:
+      // P1 => queue id
+      // P2 => mutex address
+      {
+        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), false);
+      }
+      break;
+
+    case SYS_CALL_PROCESS_WAIT_DEQUEUE:
+      // P1 => queue id
+      // P2 => all?
+      {
+        ProcessManager::Instance().WaitDequeue((int) p1, p2, false);
+      }
+      break;
+
+    case SYS_CALL_PROCESS_EXIT :
 			// P1 => Exit Status
 			{
 				ProcessManager_Exit() ;

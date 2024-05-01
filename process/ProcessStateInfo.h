@@ -40,6 +40,12 @@ public:
   int WaitChildProcId() const { return _waitChildProcId; }
   void WaitChildProcId(const int id) { _waitChildProcId = id; }
 
+  int WaitQueueId() const { return _waitQueueId; }
+  void WaitQueueId(int id) { _waitQueueId = id; }
+
+  int WaitQueueSpaceId() const { return _waitQueueSpaceId; }
+  void WaitQueueSpaceId(int space) { _waitQueueSpaceId = space; }
+
   RESOURCE_KEYS WaitResourceId() const { return _waitResourceId; }
   void WaitResourceId(const RESOURCE_KEYS id) { _waitResourceId = id; }
 
@@ -63,9 +69,11 @@ public:
   bool IsWaitOnLockCompleted();
 
 private:
-  unsigned       _sleepTime ;
+  unsigned       _sleepTime;
   const IRQ*     _irq;
-  int            _waitChildProcId ;
+  int            _waitChildProcId;
+  int            _waitQueueId;
+  int            _waitQueueSpaceId;
   RESOURCE_KEYS  _waitResourceId;
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete ;

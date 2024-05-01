@@ -44,6 +44,8 @@ class ProcessManager
 {
   private:
     ProcessManager();
+
+    typedef upan::list<int> WaitQueue;
   public:
     static ProcessManager& Instance()
     {
@@ -79,6 +81,9 @@ class ProcessManager
     bool IsDMMOn(int iProcessID);
     void WaitOnChild(int iChildProcessID);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
+    int GetWaitQueueSpaceId(Process& process, bool isKernelSpace);
+    void WaitOnQueue(int id, upan::mutex &waitMutex, bool isKernelSpace);
+    void WaitDequeue(int id, bool, bool isKernelSpace);
     void WaitOnResource(RESOURCE_KEYS uiResourceType);
     void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType);
     void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors);
@@ -113,6 +118,10 @@ class ProcessManager
     ProcessStateInfo& GetProcessStateInfo(int pid);
 
     bool _resourceList[MAX_RESOURCE];
+
+    typedef upan::map<int, WaitQueue> WaitQueueMap;
+    typedef upan::map<int, WaitQueueMap> ProcessWaitQueueMap;
+    ProcessWaitQueueMap _processWaitQueueMap;
 
     ProcessStateInfo _kernelModeStateInfo;
     typedef upan::map<int, SchedulableProcess*> ProcessMap;

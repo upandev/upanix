@@ -220,6 +220,17 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
     }
     break;
 
+    case WAIT_QUEUE:
+    {
+      auto& q = _processWaitQueueMap[stateInfo.WaitQueueSpaceId()][stateInfo.WaitQueueId()];
+      if (upan::find(q.begin(), q.end(), process.processID()) == q.end()) {
+        stateInfo.WaitQueueId(0);
+        stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
+        process.setStatus(RUN);
+      }
+    }
+    break;
+
 	  case WAIT_RESOURCE:
 		{
       if(stateInfo.WaitResourceId() == RESOURCE_NIL) {
@@ -398,6 +409,46 @@ void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVa
     p.setStatus(WAIT_LOCK);
   }
   p.yield();
+}
+
+int ProcessManager::GetWaitQueueSpaceId(Process& process, bool isKernelSpace) {
+  return isKernelSpace ? NO_PROCESS_ID : dynamic_cast<SchedulableProcess&>(process).mainThreadID();
+}
+
+void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, bool isKernelSpace) {
+  if(GetCurProcId() < 0)
+    return ;
+
+  //isKernelSpace = true => condition_variable used in kernel code that includes syscall code that is executed by user processes/threads
+  //In this space, the mutex and condition_variables are shared across processes/threads. Therefore, we need to use a global WaitQueueMap. The Space here is NO_PROCESS_ID => global
+  //For condition_variables used withing a user process/thread, the mutex and condition_variables are shared within the process and its threads.
+  //Therefore, the WaitQueue is local to that particular process. The space here is the PID of the main thread
+
+  auto& p = GetCurrentPAS();
+  {
+    ProcessSwitchLock lock;
+    const int spaceId = GetWaitQueueSpaceId(p, isKernelSpace);
+    _processWaitQueueMap[spaceId][id].push_back(p.processID());
+    p.stateInfo().WaitQueueId(id);
+    p.stateInfo().WaitQueueSpaceId(spaceId);
+    p.setStatus(WAIT_QUEUE);
+    waitMutex.unlock();
+  }
+  p.yield();
+}
+
+void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
+  if(GetCurProcId() < 0)
+    return ;
+
+  auto& p = GetCurrentPAS();
+  {
+    ProcessSwitchLock lock;
+    const int spaceId = GetWaitQueueSpaceId(p, isKernelSpace);
+    auto& wq = _processWaitQueueMap[spaceId][id];
+    if (all) { wq.clear(); }
+    else { wq.pop_front(); }
+  }
 }
 
 void ProcessManager::WaitOnResource(RESOURCE_KEYS resourceKey)

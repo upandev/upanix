@@ -28,6 +28,7 @@ ProcessStateInfo::ProcessStateInfo() :
         _sleepTime(0),
         _irq(&StdIRQ::Instance().NO_IRQ),
         _waitChildProcId(NO_PROCESS_ID),
+        _waitQueueId(0),
         _waitResourceId(RESOURCE_NIL),
         _eventCompleted(false),
         _kernelServiceComplete(false),
