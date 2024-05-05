@@ -31,6 +31,7 @@
 #include <DMM.h>
 #include <KernelUtil.h>
 #include <try.h>
+#include <DiskDriveManager.h>
 
 #define	SRA_STATUS_REGA				0x3F0
 #define	SRB_STATUS_REGB				0x3F1
@@ -463,7 +464,7 @@ void Floppy_Initialize()
     DiskDriveManager::Instance().Create("floppya", DEV_FLOPPY, FD_DRIVE1,
       0, 2880,
       18, 80, 2,
-      nullptr, DiskDriveManager::Instance().CreateRawDisk("floppy", FLOPPY_DISK, NULL), 2048);
+      nullptr, DiskDriveManager::Instance().CreateRawDisk("floppy", RawDiskDrive::FLOPPY_DISK, NULL), 2048);
 		
     for(auto i = 0; i < MAX_DRIVES; i++)
 		{

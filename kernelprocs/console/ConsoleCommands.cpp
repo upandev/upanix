@@ -68,6 +68,7 @@
 #include <PngEncoder.h>
 #include <metrics.h>
 #include <SysCall.h>
+#include <DiskDriveManager.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -839,7 +840,7 @@ void ConsoleCommands_ShowRawDiskList()
 				static const char szTypes[2][32] = { "ATA Hard Disk", "USB SCSI Disk" } ;
 
 				printf("\n%-15s %-18s %-10d %-15d %-10d", pParamDisk->Name().c_str(), 
-          szTypes[pParamDisk->Type() - ATA_HARD_DISK], 
+          szTypes[pParamDisk->Type() - RawDiskDrive::ATA_HARD_DISK],
 					pParamDisk->SectorSize(), 
           pParamDisk->SizeInSectors(), 
           pParamDisk->SectorSize() * pParamDisk->SizeInSectors() / (1024 * 1024));

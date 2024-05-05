@@ -23,6 +23,7 @@
 # include <SysCallDrive.h>
 # include <DeviceDrive.h>
 # include <try.h>
+# include <DiskDriveManager.h>
 
 byte SysCallDrive_IsPresent(uint64_t sysCallId)
 {

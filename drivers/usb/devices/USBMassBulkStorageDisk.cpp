@@ -32,6 +32,8 @@
 #include <USBController.h>
 #include <EHCIStructures.h>
 #include <USBDevice.h>
+#include <RawDiskDrive.h>
+#include <DiskDriveManager.h>
 
 static int USDDeviceId ;
 int USBDiskDriver::_deviceId = 0;

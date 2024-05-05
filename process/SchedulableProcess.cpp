@@ -28,6 +28,7 @@
 #include <DMM.h>
 #include <Cpu.h>
 #include <thread_context.h>
+#include <DiskDriveManager.h>
 
 int SchedulableProcess::_nextPid = 0;
 

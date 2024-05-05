@@ -22,6 +22,7 @@
 #include <PartitionManager.h>
 #include <ATADrive.h>
 #include <DMM.h>
+#include <RawDiskDrive.h>
 
 #define SI_EXT	5
 #define SI_EMTY	0x01

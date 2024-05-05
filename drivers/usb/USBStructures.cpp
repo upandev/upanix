@@ -28,6 +28,7 @@
 #include <USBStructures.h>
 #include <USBMassBulkStorageDisk.h>
 #include <USBDevice.h>
+#include <DiskDriveManager.h>
 
 /***********************************************************************************************/
 
@@ -222,7 +223,7 @@ void USBulkDisk::Initialize()
     }
 
     sprintf(szName, "usbdisk%d", USBDiskDriver::NextDeviceId());
-    pHostDevice->AddDeviceDrive(DiskDriveManager::Instance().CreateRawDisk(szName, USB_SCSI_DISK, pSCSIDevice));
+    pHostDevice->AddDeviceDrive(DiskDriveManager::Instance().CreateRawDisk(szName, RawDiskDrive::USB_SCSI_DISK, pSCSIDevice));
     bDeviceFound = true ;
   }
 

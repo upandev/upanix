@@ -30,7 +30,8 @@
 # include <DiskCache.h>
 # include <try.h>
 # include <DeviceDrive.h>
-#include <PS2Controller.h>
+# include <PS2Controller.h>
+# include <DiskDriveManager.h>
 
 void SystemUtil_Reboot()
 {

@@ -25,6 +25,7 @@
 #include <DMM.h>
 #include <FileOperations.h>
 #include <FileDescriptor.h>
+#include <DiskDriveManager.h>
 
 #define MAX_SECTORS_PER_RW 8
 

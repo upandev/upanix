@@ -31,6 +31,7 @@
 # include <stdio.h>
 # include <list.h>
 # include <try.h>
+# include <DiskDriveManager.h>
 
 /************************************************************************************************************/
 static upan::result<unsigned short> FileOperations_ValidateAndGetFileAttr(unsigned short usFileType, unsigned short usMode)

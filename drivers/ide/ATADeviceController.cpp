@@ -32,6 +32,7 @@
 # include <ATADrive.h>
 # include <PartitionManager.h>
 # include <FileSystem.h>
+# include <DiskDriveManager.h>
 # include <stdio.h>
 
 static unsigned ATADeviceController_uiHDDDeviceID ;
@@ -466,7 +467,7 @@ static void ATADeviceController_Add(ATAController* pController)
 		if(pController->pPort[i]->uiDevice == ATA_DEV_ATA)
 		{
 			szName[iCntIndex] += i ;
-			RawDiskDrive* pDisk = DiskDriveManager::Instance().CreateRawDisk(szName, ATA_HARD_DISK, pController->pPort[ i ]) ;
+			RawDiskDrive* pDisk = DiskDriveManager::Instance().CreateRawDisk(szName, RawDiskDrive::ATA_HARD_DISK, pController->pPort[ i ]) ;
       try
       {
   			ATADeviceController_AddATADrive(pDisk) ;

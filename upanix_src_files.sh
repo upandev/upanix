@@ -24,7 +24,7 @@ SRC_DIRS="
   drivers
   exeparser
   io
-  filesystem
+  storage
   kernel
   kernelprocs
   memory

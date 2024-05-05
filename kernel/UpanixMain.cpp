@@ -45,10 +45,11 @@
 # include <NetworkManager.h>
 # include <Mtrr.h>
 # include <Pat.h>
-#include <PS2Controller.h>
-#include <KernelRootProcess.h>
-#include <PS2MouseDriver.h>
-#include <metrics.h>
+# include <PS2Controller.h>
+# include <KernelRootProcess.h>
+# include <PS2MouseDriver.h>
+# include <metrics.h>
+# include <DiskDriveManager.h>
 
 /**** Global Variable declaration/definition *****/
 byte KERNEL_MODE ;
