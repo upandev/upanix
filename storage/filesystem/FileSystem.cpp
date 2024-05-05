@@ -19,9 +19,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-
-/* Upanix File System Support */
-
 #include <Global.h>
 #include <StringUtil.h>
 #include <FileSystem.h>
@@ -33,84 +30,16 @@
 #define BLOCK_ID(SectorID) (SectorID / ENTRIES_PER_TABLE_SECTOR)
 #define BLOCK_OFFSET(SectorID) (SectorID % ENTRIES_PER_TABLE_SECTOR)
 
-/**************************** static functions **************************************/
-
-static byte FSManager_BinarySearch(const upan::vector<SectorBlockEntry>& blocks, unsigned uiBlockID, int* iPos)
-{
-  int low, high, mid ;
-
-  *iPos = -1 ;
-
-  for(low = 0, high = blocks.size() - 1; low <= high;)
-  {
-    mid = (low + high) / 2 ;
-
-    if(uiBlockID == blocks[mid].BlockId())
-    {
-      *iPos = mid ;
-      return true ;
-    }
-
-    if(uiBlockID < blocks[mid].BlockId())
-    {
-      high = mid - 1 ;
-      *iPos = high + 1 ;
-    }
-    else
-    {
-      low = mid + 1 ;
-      *iPos = low ;
-    }
-  }
-
-  if(*iPos < 0)
-    *iPos = 0 ;
-  else if(*iPos >= blocks.size())
-    *iPos = blocks.size() ;
-
-  return false ;
-}
-
-/**************************************************************************************/
-
-unsigned FileSystem_GetSizeForTableCache(unsigned uiNoOfSectorsInTableCache)
-{
-	return ( sizeof(SectorBlockEntry) * uiNoOfSectorsInTableCache ) ;
-}
-
-/*
-void FileSystem_UpdateTime(time_t* pTime)
-{
-	RTCTime rtcTime ;
-	RTC_GetTime(&rtcTime) ;
-
-	pTime->bHour = rtcTime.bHour ;
-	pTime->bMinute = rtcTime.bMinute ;
-	pTime->bSecond = rtcTime.bSecond ;
-	
-	pTime->bDayOfWeek_Month = (rtcTime.bDayOfWeek & 0x0F) | ((rtcTime.bMonth & 0x0F) << 4) ;
-	pTime->bDayOfMonth = rtcTime.bMonth ;
-	pTime->bCentury = rtcTime.bCentury ;
-	pTime->bYear = rtcTime.bYear ;
-}
-*/
-
-void SectorBlockEntry::Load(StorageDrive& diskDrive, uint32_t sectortId)
-{
-  const auto tableSectorId = diskDrive._fileSystem.GetTableSectorId(BLOCK_ID(sectortId));
+SectorBlockEntry::SectorBlockEntry(StorageDrive& diskDrive, uint32_t tableSectorId, uint32_t blockId) : _blockId(blockId), _readCount(0), _writeCount(0) {
   diskDrive.Read(tableSectorId, 1, (byte*)_sectorBlock);
-  _blockId = BLOCK_ID(sectortId);
-  _readCount = _writeCount = 0;
 }
 
-uint32_t SectorBlockEntry::Read(uint32_t sectorId)
-{
+uint32_t SectorBlockEntry::Read(uint32_t sectorId) {
   ++_readCount;
   return _sectorBlock[BLOCK_OFFSET(sectorId)] & EOC ;
 }
 
-void SectorBlockEntry::Write(uint32_t sectorId, uint32_t value)
-{
+void SectorBlockEntry::Write(uint32_t sectorId, uint32_t value) {
   auto index = BLOCK_OFFSET(sectorId) ;
   _sectorBlock[index] = _sectorBlock[index] & 0xF0000000;
   _sectorBlock[index] = _sectorBlock[index] | (value & EOC);
@@ -277,18 +206,16 @@ void FileSystem::LoadFreeSectors() {
   bool bStop = false;
 
   // First do Cache Lookup
-  for(const auto& sectorBlockEntry : _fsTableCache)
-  {
-    if(bStop)
+  for(const auto& block : _fsTableCache) {
+    if(bStop) {
       break;
-    auto uiSectorBlock = sectorBlockEntry.SectorBlock();
-    for(int j = 0; j < ENTRIES_PER_TABLE_SECTOR; j++)
-    {
-      if(!(uiSectorBlock[j] & EOC))
-      {
-        unsigned uiSectorID = sectorBlockEntry.BlockId() * ENTRIES_PER_TABLE_SECTOR + j;
-        if(!_freePoolQueue->push_back(uiSectorID))
-        {
+    }
+
+    auto uiSectorBlock = block.second->SectorBlock();
+    for(int j = 0; j < ENTRIES_PER_TABLE_SECTOR; j++) {
+      if(!(uiSectorBlock[j] & EOC)) {
+        const uint32_t uiSectorID = block.second->BlockId() * ENTRIES_PER_TABLE_SECTOR + j;
+        if(!_freePoolQueue->push_back(uiSectorID)) {
           bStop = true;
           break;
         }
@@ -296,20 +223,19 @@ void FileSystem::LoadFreeSectors() {
     }
   }
 
-  if(bStop)
+  if(bStop) {
     return;
+  }
 
   byte bBuffer[ 4096 ];
 
-  for(unsigned i = 0; i < _fsBootBlock.BPB_FSTableSize; )
-  {
-    if(bStop)
+  for(unsigned i = 0; i < _fsBootBlock.BPB_FSTableSize; ) {
+    if(bStop) {
       break;
+    }
 
-    int iPos;
-    if(FSManager_BinarySearch(_fsTableCache, i, &iPos))
-    {
-      i++;
+    if (_fsTableCache.exists(i)) {
+      ++i;
       continue;
     }
 
@@ -319,15 +245,12 @@ void FileSystem::LoadFreeSectors() {
 
     _diskDrive.Read(i + _fsBootBlock.BPB_RsvdSecCnt + 1, uiBlockSize, (byte*)bBuffer);
 
-    unsigned* pTable = (unsigned*)bBuffer;
+    auto pTable = (unsigned*)bBuffer;
 
-    for(unsigned j = 0; j < ENTRIES_PER_TABLE_SECTOR * uiBlockSize; j++)
-    {
-      if(!(pTable[j] & EOC))
-      {
-        unsigned uiSectorID = i * ENTRIES_PER_TABLE_SECTOR + j;
-        if(!_freePoolQueue->push_back(uiSectorID))
-        {
+    for(unsigned j = 0; j < ENTRIES_PER_TABLE_SECTOR * uiBlockSize; j++) {
+      if(!(pTable[j] & EOC)) {
+        const uint32_t uiSectorID = i * ENTRIES_PER_TABLE_SECTOR + j;
+        if(!_freePoolQueue->push_back(uiSectorID)) {
           bStop = true;
           break;
         }
@@ -338,46 +261,42 @@ void FileSystem::LoadFreeSectors() {
   }
 }
 
-void FileSystem::FlushTableCache(int iFlushSize) {
-  if(iFlushSize > _fsTableCache.size())
-    iFlushSize = _fsTableCache.size();
-
-  for(int i = 0; i < iFlushSize; i++)
-  {
-    auto& block = _fsTableCache[i];
-
-    if(block.WriteCount() == 0)
-      continue;
-
-    _diskDrive.Write(block.BlockId() + _fsBootBlock.BPB_RsvdSecCnt + 1, 1, (byte*)(block.SectorBlock()));
+void FileSystem::FlushTableCache(int flushSize) {
+  if(flushSize > _fsTableCache.size()) {
+    flushSize = _fsTableCache.size();
   }
 
-  if(iFlushSize < _fsTableCache.size())
-    _fsTableCache.erase(0, iFlushSize);
+  for(auto i = _fsTableCache.begin(); i != _fsTableCache.end() && flushSize > 0; ++i) {
+    auto e = i->second;
+    if (e->WriteCount() != 0) {
+      _diskDrive.Write(e->BlockId() + _fsBootBlock.BPB_RsvdSecCnt + 1, 1, (byte*)(e->SectorBlock()));
+    }
+    _fsTableCache.erase(i++);
+    --flushSize;
+  }
 }
 
-void FileSystem::AddToTableCache(unsigned uiSectorEntry) {
-  if((unsigned)_fsTableCache.size() == MAX_SECTORS_IN_TABLE_CACHE)
+void FileSystem::AddToTableCache(uint32_t sectorId) {
+  if(_fsTableCache.size() == MAX_SECTORS_IN_TABLE_CACHE) {
     FlushTableCache(1);
+  }
 
-  int iPos ;
-  if(FSManager_BinarySearch(_fsTableCache, BLOCK_ID(uiSectorEntry), &iPos))
+  const auto blockId = BLOCK_ID(sectorId);
+  auto r = _fsTableCache.find(blockId);
+  if (r != _fsTableCache.end()) {
     return;
+  }
 
-  _fsTableCache.insert(iPos, SectorBlockEntry());
-  _fsTableCache[iPos].Load(_diskDrive, uiSectorEntry);
-
+  const auto tableSectorId = GetTableSectorId(blockId);
+  _fsTableCache.insert(TableCache::value_type(blockId, new SectorBlockEntry(_diskDrive, tableSectorId, blockId)));
 }
 
-SectorBlockEntry* FileSystem::GetSectorEntryFromCache(unsigned uiSectorEntry) {
-  if(_fsTableCache.empty())
+SectorBlockEntry* FileSystem::GetSectorEntryFromCache(uint32_t sectorId) {
+  if(_fsTableCache.empty()) {
     return nullptr;
-
-  int iPos;
-  if(!FSManager_BinarySearch(_fsTableCache, BLOCK_ID(uiSectorEntry), &iPos))
-    return nullptr;
-
-  return &_fsTableCache[iPos];
+  }
+  auto r = _fsTableCache.find(BLOCK_ID(sectorId));
+  return r == _fsTableCache.end() ? nullptr : r->second;
 }
 
 uint32_t FileSystem::AllocateSector() {
@@ -401,11 +320,10 @@ uint32_t FileSystem::DeallocateSector(uint32_t currentSectorId) {
   return uiNextSectorID;
 }
 
-void FileSystem::DisplayCache()
-{
+void FileSystem::DisplayCache() {
   printf("\nSTART\n");
   for(const auto& block : _fsTableCache)
-    printf(", %u", block.BlockId());
+    printf(", %u", block.second->BlockId());
   printf(" :: SIZE = %d", _fsTableCache.size());
 }
 

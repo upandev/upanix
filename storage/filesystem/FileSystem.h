@@ -25,6 +25,7 @@
 #include <queue.h>
 #include <vector.h>
 #include <fs.h>
+#include <map.h>
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -41,11 +42,14 @@ class StorageDrive;
 
 class SectorBlockEntry {
 public:
+  SectorBlockEntry() = delete;
+  SectorBlockEntry(StorageDrive &diskDrive, uint32_t tableSectorId, uint32_t blockId);
+
   uint32_t* SectorBlock() { return _sectorBlock; }
   const uint32_t* SectorBlock() const { return _sectorBlock; }
-  const uint32_t BlockId() const { return _blockId; }
-  const uint32_t ReadCount() const { return _readCount; }
-  const uint32_t WriteCount() const { return _writeCount; }
+  uint32_t BlockId() const { return _blockId; }
+  uint32_t ReadCount() const { return _readCount; }
+  uint32_t WriteCount() const { return _writeCount; }
 
   void Load(StorageDrive& diskDrive, uint32_t sectortId);
   uint32_t Read(uint32_t sectorId);
@@ -58,11 +62,11 @@ private:
   uint32_t _writeCount;
 } PACKED;
 
-class FileSystem
-{
+class FileSystem {
   public:
     FileSystem(StorageDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr) {
     }
+
     ~FileSystem() {
       delete _freePoolQueue;
     }
@@ -91,11 +95,11 @@ private:
   void WriteFSBootBlock();
 
   void LoadFreeSectors();
-  void AddToTableCache(unsigned uiSectorEntry);
-  void FlushTableCache(int iFlushSize);
+  void AddToTableCache(uint32_t sectorId);
+  void FlushTableCache(int flushSize);
   void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue->push_back(sectorId); }
 
-  SectorBlockEntry* GetSectorEntryFromCache(unsigned uiSectorEntry);
+  SectorBlockEntry* GetSectorEntryFromCache(uint32_t sectorId);
 
 public:
     class Node {
@@ -186,7 +190,9 @@ private:
     StorageDrive& _diskDrive;
     BootBlock _fsBootBlock;
     upan::queue<uint32_t>* _freePoolQueue;
-    upan::vector<SectorBlockEntry> _fsTableCache;
+
+    typedef upan::map<uint32_t, SectorBlockEntry*> TableCache;
+    TableCache _fsTableCache;
 };
 
 typedef struct {
@@ -205,7 +211,4 @@ typedef struct {
   struct timeval st_mtime;   /* time of last modification */
   struct timeval st_ctime;   /* time of last status change */
 } FileSystem_FileStat;
-
-uint32_t FileSystem_DeAllocateSector(StorageDrive* pDiskDrive, unsigned uiCurrentSectorID) ;
-unsigned FileSystem_GetSizeForTableCache(unsigned uiNoOfSectorsInTableCache) ;
 

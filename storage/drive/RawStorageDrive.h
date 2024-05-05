@@ -21,16 +21,16 @@
  */
 #pragma once
 
-#include "util/Global.h"
-#include "mutex.h"
-#include "storage/filesystem/FileSystem.h"
-#include "kernel/ResourceMutex.h"
-#include "DiskCache.h"
-#include "ustring.h"
-#include "drive.h"
-#include "result.h"
-#include "rwlock.h"
-#include "map.h"
+#include <Global.h>
+#include <mutex.h>
+#include <FileSystem.h>
+#include <ResourceMutex.h>
+#include <DiskCache.h>
+#include <ustring.h>
+#include <drive.h>
+#include <result.h>
+#include <rwlock.h>
+#include <map.h>
 
 class RawStorageDrive {
 public:

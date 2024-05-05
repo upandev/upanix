@@ -30,39 +30,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor disk-drive and file-system file org">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor RawDiskDriveTypes enum name">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MountManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/DiskCache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/DiskDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/DiskDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/PartitionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/PartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/PartitionManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/RawDiskDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/RawDiskDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/SystemUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/SystemUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,24 +84,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "Shell Script.run.executor": "Run",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/storage",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/storage&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/storage" />
@@ -144,9 +117,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -261,7 +234,8 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="43968000" />
+      <workItem from="1714523623525" duration="45625000" />
+      <workItem from="1714909637158" duration="3187000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -606,7 +580,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -639,8 +613,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated scope for project files" />
-    <MESSAGE value="code cleanup" />
     <MESSAGE value="destroy graphicsContext for kernel by having kernel process explicitly pass the gc param. this is so because while destroying the context which happens typically while terminating the process, the code in kernel will be running in kernel-mode, during which, the process-lookup-table should be accessed to obtain the graphicsContext because the process-lookup will return kernel-root-process in kernel-mode" />
     <MESSAGE value="some 64bit corrections" />
     <MESSAGE value="code cleanup to remove unwanted macros" />
@@ -664,7 +636,9 @@
     <MESSAGE value="move disk drive related files under drivers/storage" />
     <MESSAGE value="move disk-drive and file-system related files under storage" />
     <MESSAGE value="refactor disk-drive and file-system file org" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor disk-drive and file-system file org" />
+    <MESSAGE value="refactor to rename disk-drive related files as storage-drive" />
+    <MESSAGE value="refactor RawDiskDriveTypes enum name" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor RawDiskDriveTypes enum name" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
