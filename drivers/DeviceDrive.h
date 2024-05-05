@@ -30,16 +30,11 @@
 #include <ustring.h>
 #include <drive.h>
 #include <result.h>
+#include <rwlock.h>
+#include <map.h>
 
 #define DeviceDrive_SUCCESS						0
-#define DeviceDrive_ERR_UNKNOWN_DEVICE_TYPE		1
 #define DeviceDrive_ERR_INVALID_DRIVE_NAME		2
-#define	DeviceDrive_ERR_MOUNT					3
-#define	DeviceDrive_ERR_UNMOUNT					4
-#define	DeviceDrive_ERR_FORMAT					5
-#define	DeviceDrive_ERR_PARTITION_UPDATE		6
-#define	DeviceDrive_ERR_CURR_DRIVE_UMOUNT		7
-#define	DeviceDrive_ERR_DUPLICATE				8
 #define	DeviceDrive_ERR_NOTFOUND				9
 #define DeviceDrive_FAILURE						10
 
@@ -94,8 +89,6 @@ class DiskDrive
     void FSType(FS_TYPE t) { _fsType = t; }
 
     upan::rwlock& GetFileLock(const upan::string& nodeId);
-
-    static const int MAX_SECTORS_IN_TABLE_CACHE = 2048;
 
   private:
     void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);

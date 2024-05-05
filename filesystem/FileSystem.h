@@ -19,15 +19,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _FileSystem_H_
-#define _FileSystem_H_
+#pragma once
 
 #include <Global.h>
 #include <queue.h>
 #include <vector.h>
 #include <fs.h>
-#include "rwlock.h"
-#include "map.h"
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -40,12 +37,9 @@
 
 #define ENTRIES_PER_TABLE_SECTOR	(128)
 
-//#define ATTR_FILE_DEFAULT	0x03A4  //0000(Rsv) 001(File) 110(u:rw-) 100(g:r--) 100(o:r--)
-
 class DiskDrive;
 
-class SectorBlockEntry
-{
+class SectorBlockEntry {
 public:
   uint32_t* SectorBlock() { return _sectorBlock; }
   const uint32_t* SectorBlock() const { return _sectorBlock; }
@@ -76,19 +70,15 @@ class FileSystem
     }
 
     uint64_t TotalSize() const { return _fsBootBlock.BPB_FSTableSize * ENTRIES_PER_TABLE_SECTOR * 512; }
-    uint64_t UsedSize() const { return _fsBootBlock.uiUsedSectors * 512; }
+    uint64_t UsedSize() const { return _fsBootBlock._usedSectors * 512; }
 
     void Format();
-    void AllocateFreePoolQueue(uint32_t size);
-    void UnallocateFreePoolQueue();
-    void ReadFSBootBlock();
-    void WriteFSBootBlock();
-    void LoadFreeSectors();
-    void FlushTableCache(int iFlushSize);
+    void Mount(uint32_t freePoolSize);
+    void Unmount();
     void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue->push_back(sectorId); }
-    void AddToTableCache(unsigned uiSectorEntry);
-    SectorBlockEntry* GetSectorEntryFromCache(unsigned uiSectorEntry);
+
     uint32_t AllocateSector();
+    uint32_t DeallocateSector(uint32_t currentSectorId);
 
     uint32_t GetTableSectorId(uint32_t uiSectorID) const;
     uint32_t GetRealSectorNumber(uint32_t uiSectorID) const;
@@ -96,6 +86,19 @@ class FileSystem
     void SetSectorEntryValue(const unsigned uiSectorID, unsigned uiSectorEntryValue);
 
     void DisplayCache();
+
+private:
+  static const int MAX_SECTORS_IN_TABLE_CACHE = 2048;
+
+  void ReadFSBootBlock();
+  void WriteFSBootBlock();
+
+  void LoadFreeSectors();
+  void AddToTableCache(unsigned uiSectorEntry);
+  void FlushTableCache(int iFlushSize);
+
+  SectorBlockEntry* GetSectorEntryFromCache(unsigned uiSectorEntry);
+
 public:
     class Node
     {
@@ -151,66 +154,61 @@ public:
       byte bSectorEntryPosition ;
     } PACKED CWD ;
 
-    //Ouput
     PresentWorkingDirectory FSpwd;
 
 private:
-    struct BootBlock
-    {
-      byte			BPB_jmpBoot[3] ;
+    struct BootBlock {
+      uint8_t  BPB_jmpBoot[3];
 
-      byte			BPB_Media ;
-      unsigned short	BPB_SecPerTrk ;
-      unsigned short	BPB_NumHeads ;
+      uint8_t  BPB_Media;
+      uint16_t BPB_SecPerTrk;
+      uint16_t BPB_NumHeads;
 
-      unsigned short	BPB_BytesPerSec ;
-      unsigned		BPB_TotSec32 ;
-      unsigned		BPB_HiddSec ;
+      uint16_t BPB_BytesPerSec;
+      uint32_t BPB_TotSec32;
+      uint32_t BPB_HiddSec;
 
-      unsigned short	BPB_RsvdSecCnt ;
-      unsigned		BPB_FSTableSize ;
+      uint16_t BPB_RsvdSecCnt;
+      uint32_t BPB_FSTableSize;
 
-      unsigned short	BPB_ExtFlags ;
-      unsigned short	BPB_FSVer ;
-      unsigned short	BPB_FSInfo ;
+      uint16_t BPB_ExtFlags;
+      uint16_t BPB_FSVer;
+      uint16_t BPB_FSInfo;
 
-      byte			BPB_BootSig ;
-      unsigned		BPB_VolID ;
-      byte			BPB_VolLab[11 + 1] ;
+      uint8_t  BPB_BootSig;
+      uint32_t BPB_VolID;
+      uint8_t  BPB_VolLab[11 + 1];
 
-      unsigned		uiUsedSectors ;
+      uint32_t _usedSectors;
     } PACKED;
 
 private:
     void InitBootBlock(BootBlock&);
-    void UpdateUsedSectors(unsigned uiSectorEntryValue);
+    void UpdateUsedSectors(uint32_t uiSectorEntryValue);
 
     DiskDrive& _diskDrive;
     BootBlock _fsBootBlock;
-    upan::queue<unsigned>* _freePoolQueue;
+    upan::queue<uint32_t>* _freePoolQueue;
     upan::vector<SectorBlockEntry> _fsTableCache;
 };
 
-typedef struct
-{
+typedef struct {
   int 	    st_dev;     /* ID of device containing file */
   int     	st_ino;     /* inode number */
-  unsigned short    	st_mode;    /* protection */
+  uint16_t 	st_mode;    /* protection */
   int   		st_nlink;   /* number of hard links */
   int     	st_uid;     /* user ID of owner */
   int     	st_gid;     /* group ID of owner */
   int     	st_rdev;    /* device ID (if special file) */
-  unsigned    st_size;    /* total size, in bytes */
-  unsigned	st_blksize; /* blocksize for filesystem I/O */
-  unsigned  	st_blocks;  /* number of blocks allocated */
+  uint32_t  st_size;    /* total size, in bytes */
+  uint32_t  st_blksize; /* blocksize for filesystem I/O */
+  uint32_t  st_blocks;  /* number of blocks allocated */
 
-  struct timeval    	st_atime;   /* time of last access */
-  struct timeval    	st_mtime;   /* time of last modification */
-  struct timeval   	st_ctime;   /* time of last status change */
-} FileSystem_FileStat ;
+  struct timeval st_atime;   /* time of last access */
+  struct timeval st_mtime;   /* time of last modification */
+  struct timeval st_ctime;   /* time of last status change */
+} FileSystem_FileStat;
 
 uint32_t FileSystem_DeAllocateSector(DiskDrive* pDiskDrive, unsigned uiCurrentSectorID) ;
 unsigned FileSystem_GetSizeForTableCache(unsigned uiNoOfSectorsInTableCache) ;
-
-#endif
 

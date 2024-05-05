@@ -30,22 +30,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implement wait-queues for use by condition variables">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -228,7 +220,7 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="37507000" />
+      <workItem from="1714523623525" duration="40162000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -573,7 +565,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -606,7 +598,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="code cleanup to remove unused code" />
     <MESSAGE value="fix bug in page deallocator to use page-number instead of page-address" />
     <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
     <MESSAGE value="processSpaceSize is same as total image size of the process that includes dll resolver" />
@@ -631,7 +622,8 @@
     <MESSAGE value="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space" />
     <MESSAGE value="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions" />
     <MESSAGE value="implement wait-queues for use by condition variables" />
-    <option name="LAST_COMMIT_MESSAGE" value="implement wait-queues for use by condition variables" />
+    <MESSAGE value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
+    <option name="LAST_COMMIT_MESSAGE" value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

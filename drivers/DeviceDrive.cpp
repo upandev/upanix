@@ -100,35 +100,29 @@ DiskDrive::DiskDrive(int id,
   StartReleaseCacheTask();
 }
 
-void DiskDrive::Mount()
-{
-	if(Mounted())
+void DiskDrive::Mount() {
+	if(Mounted()) {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
+  }
 
-  _fileSystem.AllocateFreePoolQueue(MaxSectorsInFreePoolCache());
-
-  _fileSystem.ReadFSBootBlock();
-  _fileSystem.LoadFreeSectors();
+  _fileSystem.Mount(MaxSectorsInFreePoolCache());
   ReadRootDirectory();
 
   _mounted = true;
 }
 
-void DiskDrive::UnMount()
-{
-	if(!Mounted())
+void DiskDrive::UnMount() {
+	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
+  }
 
-  _fileSystem.WriteFSBootBlock();
-  _fileSystem.FlushTableCache(MAX_SECTORS_IN_TABLE_CACHE);
-	FlushDirtyCacheSectors();
-  _fileSystem.UnallocateFreePoolQueue();
+  _fileSystem.Unmount();
+  FlushDirtyCacheSectors();
 
   _mounted = false;
 }
 
-void DiskDrive::ReadRootDirectory()
-{
+void DiskDrive::ReadRootDirectory() {
 	byte bDataBuffer[512];
 
   xRead(bDataBuffer, 0, 1);

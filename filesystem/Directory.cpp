@@ -171,7 +171,7 @@ void Directory_Delete(Process* processAddressSpace, int iDriveID, byte* bParentD
 
 	while(uiCurrentSectorID != EOC)
 	{
-    uiNextSectorID = FileSystem_DeAllocateSector(pDiskDrive, uiCurrentSectorID);
+    uiNextSectorID = pDiskDrive->_fileSystem.DeallocateSector(uiCurrentSectorID);
 		uiCurrentSectorID = uiNextSectorID ;
 	}
 

@@ -124,6 +124,8 @@ void FileDescriptor::seek(int seekType, int offset) {
 }
 
 FileSystem_FileStat FileDescriptor::getStat() {
+  upan::rlock_gaurd rlockGaurd(_diskDrive.GetFileLock(_nodeId));
+
   FileSystem::CWD cwd;
   readCWD(cwd);
   return FileOperations_GetStat(_diskDrive, cwd, getFileName().c_str());

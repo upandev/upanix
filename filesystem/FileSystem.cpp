@@ -73,14 +73,6 @@ static byte FSManager_BinarySearch(const upan::vector<SectorBlockEntry>& blocks,
 
 /**************************************************************************************/
 
-uint32_t FileSystem_DeAllocateSector(DiskDrive* pDiskDrive, unsigned uiCurrentSectorID)
-{
-  auto uiNextSectorID = pDiskDrive->_fileSystem.GetSectorEntryValue(uiCurrentSectorID);
-  pDiskDrive->_fileSystem.SetSectorEntryValue(uiCurrentSectorID, 0);
-  pDiskDrive->_fileSystem.AddToFreePoolCache(uiCurrentSectorID);
-  return uiNextSectorID;
-}
-
 unsigned FileSystem_GetSizeForTableCache(unsigned uiNoOfSectorsInTableCache)
 {
 	return ( sizeof(SectorBlockEntry) * uiNoOfSectorsInTableCache ) ;
@@ -153,7 +145,7 @@ void FileSystem::InitBootBlock(BootBlock& fsBootBlock)
   fsBootBlock.BPB_VolID = 0x01 ;  //TODO: Required to be set to current Date/Time of system ---- Not Mandatory
   strcpy((char*)fsBootBlock.BPB_VolLab, "No Name   ") ;  //10 + 1(\0) characters only -- ARR
 
-  fsBootBlock.uiUsedSectors = 1 ;
+  fsBootBlock._usedSectors = 1 ;
 
   fsBootBlock.BPB_FSTableSize = (fsBootBlock.BPB_TotSec32 - fsBootBlock.BPB_RsvdSecCnt - 1) / (ENTRIES_PER_TABLE_SECTOR + 1) ;
 }
@@ -198,22 +190,22 @@ void FileSystem::Format()
   /*************************** Root Directory [END] ********************************/
 }
 
-void FileSystem::UnallocateFreePoolQueue()
-{
-  if(_freePoolQueue)
-  {
+void FileSystem::Mount(uint32_t freePoolSize) {
+  _freePoolQueue = new upan::queue<uint32_t>(freePoolSize);
+  ReadFSBootBlock();
+  LoadFreeSectors();
+}
+
+void FileSystem::Unmount() {
+  WriteFSBootBlock();
+  FlushTableCache(MAX_SECTORS_IN_TABLE_CACHE);
+  if(_freePoolQueue) {
     delete _freePoolQueue;
     _freePoolQueue = nullptr;
   }
 }
 
-void FileSystem::AllocateFreePoolQueue(uint32_t size)
-{
-  _freePoolQueue = new upan::queue<unsigned>(size);
-}
-
-void FileSystem::ReadFSBootBlock()
-{
+void FileSystem::ReadFSBootBlock() {
   byte bArrFSBootBlock[512];
 
   _diskDrive.Read(1, 1, bArrFSBootBlock);
@@ -278,8 +270,7 @@ void FileSystem::WriteFSBootBlock()
   _diskDrive.Write(1, 1, bSectorBuffer);
 }
 
-void FileSystem::LoadFreeSectors()
-{
+void FileSystem::LoadFreeSectors() {
   if(_freePoolQueue->full())
     return;
 
@@ -347,8 +338,7 @@ void FileSystem::LoadFreeSectors()
   }
 }
 
-void FileSystem::FlushTableCache(int iFlushSize)
-{
+void FileSystem::FlushTableCache(int iFlushSize) {
   if(iFlushSize > _fsTableCache.size())
     iFlushSize = _fsTableCache.size();
 
@@ -366,9 +356,8 @@ void FileSystem::FlushTableCache(int iFlushSize)
     _fsTableCache.erase(0, iFlushSize);
 }
 
-void FileSystem::AddToTableCache(unsigned uiSectorEntry)
-{
-  if((unsigned)_fsTableCache.size() == DiskDrive::MAX_SECTORS_IN_TABLE_CACHE)
+void FileSystem::AddToTableCache(unsigned uiSectorEntry) {
+  if((unsigned)_fsTableCache.size() == MAX_SECTORS_IN_TABLE_CACHE)
     FlushTableCache(1);
 
   int iPos ;
@@ -392,19 +381,25 @@ SectorBlockEntry* FileSystem::GetSectorEntryFromCache(unsigned uiSectorEntry)
   return &_fsTableCache[iPos] ;
 }
 
-uint32_t FileSystem::AllocateSector()
-{
-  if(_freePoolQueue->empty())
-  {
+uint32_t FileSystem::AllocateSector() {
+  if(_freePoolQueue->empty()) {
     LoadFreeSectors();
     if(_freePoolQueue->empty())
       throw upan::exception(XLOC, "No free sectors available on disk: %s", _diskDrive.DriveName().c_str());
   }
+
   auto uiFreeSectorID = _freePoolQueue->front();
   _freePoolQueue->pop_front();
 
   SetSectorEntryValue(uiFreeSectorID, EOC);
   return uiFreeSectorID;
+}
+
+uint32_t FileSystem::DeallocateSector(uint32_t currentSectorId) {
+  auto uiNextSectorID = GetSectorEntryValue(currentSectorId);
+  SetSectorEntryValue(currentSectorId, 0);
+  AddToFreePoolCache(currentSectorId);
+  return uiNextSectorID;
 }
 
 void FileSystem::DisplayCache()
@@ -427,12 +422,12 @@ uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const
           + _fsBootBlock.BPB_FSTableSize;
 }
 
-void FileSystem::UpdateUsedSectors(unsigned uiSectorEntryValue)
+void FileSystem::UpdateUsedSectors(uint32_t uiSectorEntryValue)
 {
   if(uiSectorEntryValue == EOC)
-    _fsBootBlock.uiUsedSectors++;
+    _fsBootBlock._usedSectors++;
   else if(uiSectorEntryValue == 0)
-    _fsBootBlock.uiUsedSectors--;
+    _fsBootBlock._usedSectors--;
 }
 
 uint32_t FileSystem::GetSectorEntryValue(const unsigned uiSectorID)
