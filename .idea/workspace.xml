@@ -30,23 +30,28 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor file-system and disk-drive for better thread synchronization">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="move disk drive related files under drivers/storage">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DeviceDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DiskCache.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DiskCache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/PartitionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/PartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/PartitionManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/DeviceDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/DeviceDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/DiskCache.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/PartitionManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/storage/PartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/PartitionManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/BufferedReader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/BufferedReader.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/BufferedReader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Directory.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/FileSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/MountManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
@@ -122,6 +127,7 @@
       <recent name="$PROJECT_DIR$/libints" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/filesystem" />
       <recent name="$PROJECT_DIR$/drivers/storage" />
     </key>
   </component>
@@ -243,7 +249,7 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="41187000" />
+      <workItem from="1714523623525" duration="41957000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -588,7 +594,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="70" />
+    <option name="localTasksCounter" value="71" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -621,7 +627,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
     <MESSAGE value="processSpaceSize is same as total image size of the process that includes dll resolver" />
     <MESSAGE value="Optimize memory allocation to keep freed chunks in sorted order and then coalesce consecutive free blocks.&#10;Refactored DMM to use common code for user and kernel allocators" />
     <MESSAGE value="updated scope for project files" />
@@ -646,7 +651,8 @@
     <MESSAGE value="implement wait-queues for use by condition variables" />
     <MESSAGE value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
     <MESSAGE value="refactor file-system and disk-drive for better thread synchronization" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor file-system and disk-drive for better thread synchronization" />
+    <MESSAGE value="move disk drive related files under drivers/storage" />
+    <option name="LAST_COMMIT_MESSAGE" value="move disk drive related files under drivers/storage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
