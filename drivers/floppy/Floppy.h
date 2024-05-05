@@ -23,7 +23,7 @@
 #define _FLOPPY_H_
 
 #include <Global.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 
 #define MAX_RESULT_PHASE_REPLIES 7
 
@@ -43,8 +43,8 @@ void Floppy_Initialize() ;
 bool Floppy_GetInitStatus() ;
 void Floppy_Handler() ;
 bool Floppy_IsEnhancedController() ;
-void Floppy_Read(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer) ;
-void Floppy_Write(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer) ;
-void Floppy_Format(const DiskDrive* pDiskDrive) ;
+void Floppy_Read(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer) ;
+void Floppy_Write(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer) ;
+void Floppy_Format(const StorageDrive* pDiskDrive) ;
 
 #endif

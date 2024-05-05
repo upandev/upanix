@@ -26,7 +26,7 @@
 # include <MountManager.h>
 # include <try.h>
 # include <drive.h>
-# include <DiskDriveManager.h>
+# include <StorageDriveManager.h>
 
 static char MountManager_szRootDriveName[33] = "" ;
 static int MountManager_iRootDriveID = CURRENT_DRIVE ;
@@ -83,7 +83,7 @@ static void MountManager_MountDrive(char* szDriveName)
   printf("\n Mounting Drive: %s ...", szDriveName);
 
 	// Find Drive
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
 	// Mount Drive
   pDiskDrive->Mount();
@@ -105,7 +105,7 @@ void MountManager_Initialize()
 	MountManager_GetBootMountDrive(MountManager_szRootDriveName) ;
 	printf("\n\tBoot Mount Drive: %s", MountManager_szRootDriveName);
 	
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
 	
 	if(pDiskDrive == NULL)
 	{
@@ -149,7 +149,7 @@ int MountManager_GetRootDriveID()
 {
 	if(MountManager_iRootDriveID == CURRENT_DRIVE)
 	{
-    DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
+    StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
 		
 		if(pDiskDrive == NULL)
 		{
@@ -165,7 +165,7 @@ int MountManager_GetRootDriveID()
 	return MountManager_iRootDriveID ;
 }
 
-void MountManager_SetRootDrive(DiskDrive* pDiskDrive)
+void MountManager_SetRootDrive(StorageDrive* pDiskDrive)
 {
 	strcpy(MountManager_szRootDriveName, pDiskDrive->DriveName().c_str());
 	MountManager_iRootDriveID = pDiskDrive->Id();

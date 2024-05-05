@@ -21,16 +21,16 @@
  */
 #include <Directory.h>
 #include <StringUtil.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <DMM.h>
 #include <FileOperations.h>
 #include <FileDescriptor.h>
-#include <DiskDriveManager.h>
+#include <StorageDriveManager.h>
 
 #define MAX_SECTORS_PER_RW 8
 
 /************************************* Static Functions ***********************************/
-static void Directory_BufferedWrite(DiskDrive& diskDrive, unsigned uiSectorID, byte* bSectorBuffer, byte* bBuffer,
+static void Directory_BufferedWrite(StorageDrive& diskDrive, unsigned uiSectorID, byte* bSectorBuffer, byte* bBuffer,
                                     unsigned& uiStartSectorID, unsigned& uiPrevSectorID, unsigned& iCount, bool bFlush)
 {
   bool bNewBuffering = false ;
@@ -96,7 +96,7 @@ void Directory_Create(Process* processAddressSpace, int iDriveID, byte* bParentD
 	byte bSectorPos ;
 	unsigned uiFreeSectorID ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
   FileSystem::PresentWorkingDirectory& pwd = processAddressSpace->processPWD() ;
 
@@ -145,7 +145,7 @@ void Directory_Delete(Process* processAddressSpace, int iDriveID, byte* bParentD
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
   FileSystem::PresentWorkingDirectory& pwd = processAddressSpace->processPWD() ;
 
@@ -198,7 +198,7 @@ void Directory_GetDirEntryForCreateDelete(const Process* processAddressSpace, in
 {
   FileSystem::CWD CWD ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
   FileSystem* pFSMountInfo = &pDiskDrive->_fileSystem ;
 
@@ -248,7 +248,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process* processAddre
 {
 	byte bDirectoryBuffer[512] ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
   FileSystem::CWD CWD ;
 	if(processAddressSpace->driveID() == iDriveID)
 	{
@@ -344,7 +344,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process* processAddre
 	}
 }
 
-bool Directory_FindDirectory(DiskDrive& diskDrive, const FileSystem::CWD& cwd, const char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDestSectorBuffer)
+bool Directory_FindDirectory(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDestSectorBuffer)
 {
   FileSystem::Node* pDirEntry = cwd.pDirEntry;
   if(!pDirEntry->IsDirectory())
@@ -462,7 +462,7 @@ bool Directory_FindDirectory(DiskDrive& diskDrive, const FileSystem::CWD& cwd, c
   return false;
 }
 
-void Directory_FileWrite(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize)
+void Directory_FileWrite(StorageDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize)
 {
 	if(uiDataSize == 0)
     return throw upan::exception(XLOC, "zero byte file write");
@@ -492,7 +492,7 @@ void Directory_FileWrite(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescr
 	}
 }
 
-void Directory_ActualFileWrite(DiskDrive* pDiskDrive, byte* bDataBuffer, FileDescriptor& fdEntry, unsigned uiDataSize, FileSystem::Node* dirFile)
+void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, FileDescriptor& fdEntry, unsigned uiDataSize, FileSystem::Node* dirFile)
 {
 	unsigned uiCurrentSectorID, uiNextSectorID, uiPrevSectorID = EOC ;
 	int iStartWriteSectorNo, iStartWriteSectorPos ;
@@ -636,7 +636,7 @@ void Directory_ActualFileWrite(DiskDrive* pDiskDrive, byte* bDataBuffer, FileDes
   throw upan::exception(XLOC, "fs table is corrupted for drive:%s", pDiskDrive->DriveName().c_str());
 }
 
-int Directory_FileRead(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize)
+int Directory_FileRead(StorageDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize)
 {
 	const char* szFileName = fdEntry.getFileName().c_str();
 	unsigned uiOffset = fdEntry.getOffset();
@@ -771,7 +771,7 @@ int Directory_FileRead(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescrip
   throw upan::exception(XLOC, "fs table is corrupted for drive:%s", pDiskDrive->DriveName().c_str());
 }
 
-void Directory_ReadDirEntryInfo(DiskDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer)
+void Directory_ReadDirEntryInfo(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer)
 {
   FileSystem::CWD CWD ;
   FileSystem::PresentWorkingDirectory& fsPwd = diskDrive._fileSystem.FSpwd;
@@ -825,7 +825,7 @@ void Directory_Change(const char* szFileName, int iDriveID, Process* processAddr
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
   FileSystem::CWD CWD ;
   FileSystem::PresentWorkingDirectory& pwd = processAddressSpace->processPWD();
@@ -916,7 +916,7 @@ const FileSystem::Node Directory_GetDirEntry(const char* szFileName, Process* pr
 {
 	byte bDirectoryBuffer[512] ;
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
   FileSystem::CWD CWD ;
 	if(processAddressSpace->driveID() == iDriveID)
@@ -949,7 +949,7 @@ const FileSystem::Node Directory_GetDirEntry(const char* szFileName, Process* pr
 
 void Directory_SyncPWD(Process* processAddressSpace)
 {
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(processAddressSpace->driveID(), true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(processAddressSpace->driveID(), true).goodValueOrThrow(XLOC);
 
 	unsigned uiSectorNo = processAddressSpace->processPWD().uiSectorNo ;
 	byte bSectorEntryPos = processAddressSpace->processPWD().bSectorEntryPosition ;

@@ -24,13 +24,13 @@
 #include <exception.h>
 #include <FileDescriptor.h>
 #include <ProcessManager.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <Directory.h>
 
 FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
                                const upan::string& nodeId,
                                const upan::string& fileName,
-                               DiskDrive& diskDrive,
+                               StorageDrive& diskDrive,
                                uint32_t startSectorID) :
         IODescriptor(pid, fd, mode),
         _fileName(fileName),

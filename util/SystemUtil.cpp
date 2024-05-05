@@ -29,13 +29,13 @@
 # include <ProcessManager.h>
 # include <DiskCache.h>
 # include <try.h>
-# include <DeviceDrive.h>
+# include <StorageDrive.h>
 # include <PS2Controller.h>
-# include <DiskDriveManager.h>
+# include <StorageDriveManager.h>
 
 void SystemUtil_Reboot()
 {
-  for(auto pDiskDrive : DiskDriveManager::Instance().DiskDriveList())
+  for(auto pDiskDrive : StorageDriveManager::Instance().DiskDriveList())
   {
 		if(pDiskDrive->Mounted())
 		{

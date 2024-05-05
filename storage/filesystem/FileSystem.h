@@ -37,7 +37,7 @@
 
 #define ENTRIES_PER_TABLE_SECTOR	(128)
 
-class DiskDrive;
+class StorageDrive;
 
 class SectorBlockEntry {
 public:
@@ -47,7 +47,7 @@ public:
   const uint32_t ReadCount() const { return _readCount; }
   const uint32_t WriteCount() const { return _writeCount; }
 
-  void Load(DiskDrive& diskDrive, uint32_t sectortId);
+  void Load(StorageDrive& diskDrive, uint32_t sectortId);
   uint32_t Read(uint32_t sectorId);
   void Write(uint32_t sectorId, uint32_t value);
 
@@ -61,7 +61,7 @@ private:
 class FileSystem
 {
   public:
-    FileSystem(DiskDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr) {
+    FileSystem(StorageDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr) {
     }
     ~FileSystem() {
       delete _freePoolQueue;
@@ -102,7 +102,7 @@ public:
     public:
       void Init(const char* szDirName, unsigned short usDirAttribute, int iUserID, unsigned uiParentSecNo, byte bParentSecPos);
       void InitAsRoot(uint32_t parentSectorId);
-      upan::string FullPath(DiskDrive& diskDrive);
+      upan::string FullPath(StorageDrive& diskDrive);
 
       bool IsDirectory() const { return (_fsnode._attribute & ATTR_TYPE_DIRECTORY) == ATTR_TYPE_DIRECTORY; }
       bool IsFile() const { return (_fsnode._attribute & ATTR_TYPE_FILE) == ATTR_TYPE_FILE; }
@@ -183,7 +183,7 @@ private:
     void InitBootBlock(BootBlock&);
     void UpdateUsedSectors(uint32_t uiSectorEntryValue);
 
-    DiskDrive& _diskDrive;
+    StorageDrive& _diskDrive;
     BootBlock _fsBootBlock;
     upan::queue<uint32_t>* _freePoolQueue;
     upan::vector<SectorBlockEntry> _fsTableCache;
@@ -206,6 +206,6 @@ typedef struct {
   struct timeval st_ctime;   /* time of last status change */
 } FileSystem_FileStat;
 
-uint32_t FileSystem_DeAllocateSector(DiskDrive* pDiskDrive, unsigned uiCurrentSectorID) ;
+uint32_t FileSystem_DeAllocateSector(StorageDrive* pDiskDrive, unsigned uiCurrentSectorID) ;
 unsigned FileSystem_GetSizeForTableCache(unsigned uiNoOfSectorsInTableCache) ;
 

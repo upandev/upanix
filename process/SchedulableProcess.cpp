@@ -28,7 +28,7 @@
 #include <DMM.h>
 #include <Cpu.h>
 #include <thread_context.h>
-#include <DiskDriveManager.h>
+#include <StorageDriveManager.h>
 
 int SchedulableProcess::_nextPid = 0;
 
@@ -44,7 +44,7 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
     _driveID = ROOT_DRIVE_ID ;
     if(_driveID != CURRENT_DRIVE)
     {
-      DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
+      StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
       if(pDiskDrive->Mounted())
         _processPWD = pDiskDrive->_fileSystem.FSpwd;
     }

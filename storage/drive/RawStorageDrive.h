@@ -32,7 +32,7 @@
 #include "rwlock.h"
 #include "map.h"
 
-class RawDiskDrive {
+class RawStorageDrive {
 public:
   enum RawDiskDriveTypes {
     ATA_HARD_DISK = 100,
@@ -41,7 +41,7 @@ public:
   };
 
 private:
-  RawDiskDrive(const upan::string& name, RawDiskDriveTypes type, void* device);
+  RawStorageDrive(const upan::string& name, RawDiskDriveTypes type, void* device);
 
 public:
   void Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer);
@@ -61,5 +61,5 @@ private:
   void* _device;
   upan::mutex _diskMutex;
 
-  friend class DiskDriveManager;
+  friend class StorageDriveManager;
 };

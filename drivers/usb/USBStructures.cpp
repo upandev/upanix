@@ -24,11 +24,11 @@
 #include <ustring.h>
 #include <algorithm.h>
 #include <exception.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <USBStructures.h>
 #include <USBMassBulkStorageDisk.h>
 #include <USBDevice.h>
-#include <DiskDriveManager.h>
+#include <StorageDriveManager.h>
 
 /***********************************************************************************************/
 
@@ -223,7 +223,7 @@ void USBulkDisk::Initialize()
     }
 
     sprintf(szName, "usbdisk%d", USBDiskDriver::NextDeviceId());
-    pHostDevice->AddDeviceDrive(DiskDriveManager::Instance().CreateRawDisk(szName, RawDiskDrive::USB_SCSI_DISK, pSCSIDevice));
+    pHostDevice->AddDeviceDrive(StorageDriveManager::Instance().CreateRawDisk(szName, RawStorageDrive::USB_SCSI_DISK, pSCSIDevice));
     bDeviceFound = true ;
   }
 

@@ -19,7 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include "DiskDriveManager.h"
+# include "StorageDriveManager.h"
 # include "drivers/floppy/Floppy.h"
 # include "drivers/ide/ATADrive.h"
 # include "drivers/ide/ATADeviceController.h"
@@ -36,39 +36,39 @@
 # include "try.h"
 # include "drive.h"
 
-DiskDriveManager::DiskDriveManager() : _idSequence(0) {
+StorageDriveManager::StorageDriveManager() : _idSequence(0) {
 }
 
-void DiskDriveManager::Create(const upan::string& driveName, 
-  DEVICE_TYPE deviceType, DRIVE_NO driveNumber,
-  unsigned uiLBAStartSector, unsigned uiSizeInSectors,
-  unsigned uiSectorsPerTrack, unsigned uiTracksPerHead, unsigned uiNoOfHeads,
-  void* device, RawDiskDrive* rawDisk,
-  unsigned uiMaxSectorsInFreePoolCache)
+void StorageDriveManager::Create(const upan::string& driveName,
+                                 DEVICE_TYPE deviceType, DRIVE_NO driveNumber,
+                                 unsigned uiLBAStartSector, unsigned uiSizeInSectors,
+                                 unsigned uiSectorsPerTrack, unsigned uiTracksPerHead, unsigned uiNoOfHeads,
+                                 void* device, RawStorageDrive* rawDisk,
+                                 unsigned uiMaxSectorsInFreePoolCache)
 {
   upan::mutex_guard g(_driveListMutex);
-  DiskDrive* pDiskDrive = new DiskDrive(_idSequence++, driveName,
-    deviceType, driveNumber,
-    uiLBAStartSector, uiSizeInSectors,
-    uiSectorsPerTrack, uiTracksPerHead, uiNoOfHeads,
-    device, rawDisk,
-    uiMaxSectorsInFreePoolCache);
+  StorageDrive* pDiskDrive = new StorageDrive(_idSequence++, driveName,
+                                              deviceType, driveNumber,
+                                              uiLBAStartSector, uiSizeInSectors,
+                                              uiSectorsPerTrack, uiTracksPerHead, uiNoOfHeads,
+                                              device, rawDisk,
+                                              uiMaxSectorsInFreePoolCache);
   _driveList.push_back(pDiskDrive);
 }
 
-RawDiskDrive* DiskDriveManager::CreateRawDisk(const upan::string& name, RawDiskDrive::RawDiskDriveTypes iType, void* pDevice)
+RawStorageDrive* StorageDriveManager::CreateRawDisk(const upan::string& name, RawStorageDrive::RawDiskDriveTypes iType, void* pDevice)
 {
   for(auto d : _rawDiskList)
   {
 		if(d->Name() == name)
       throw upan::exception(XLOC, "\n Raw Drive '%s' already in the list", name.c_str());
 	}
-  RawDiskDrive* pDisk = new RawDiskDrive(name, iType, pDevice);
+  RawStorageDrive* pDisk = new RawStorageDrive(name, iType, pDevice);
   _rawDiskList.push_back(pDisk);
 	return pDisk;
 }
 
-byte DiskDriveManager::RemoveRawDiskEntry(const upan::string& name)
+byte StorageDriveManager::RemoveRawDiskEntry(const upan::string& name)
 {
   for(auto it = _rawDiskList.begin(); it != _rawDiskList.end(); ++it)
   {
@@ -81,15 +81,15 @@ byte DiskDriveManager::RemoveRawDiskEntry(const upan::string& name)
 	return DeviceDrive_ERR_NOTFOUND;
 }
 
-RawDiskDrive* DiskDriveManager::GetRawDiskByName(const upan::string& name)
+RawStorageDrive* StorageDriveManager::GetRawDiskByName(const upan::string& name)
 {
-  auto it = upan::find_if(_rawDiskList.begin(), _rawDiskList.end(), [&name](const RawDiskDrive* d) { return d->Name() == name; });
+  auto it = upan::find_if(_rawDiskList.begin(), _rawDiskList.end(), [&name](const RawStorageDrive* d) { return d->Name() == name; });
   if(it == _rawDiskList.end())
     return nullptr;
   return *it;
 }
 
-void DiskDriveManager::RemoveEntryByCondition(const DriveRemoveClause& removeClause)
+void StorageDriveManager::RemoveEntryByCondition(const DriveRemoveClause& removeClause)
 {
   upan::mutex_guard g(_driveListMutex);
 
@@ -107,39 +107,39 @@ void DiskDriveManager::RemoveEntryByCondition(const DriveRemoveClause& removeCla
 	}
 }
 
-upan::result<DiskDrive*> DiskDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount)
+upan::result<StorageDrive*> StorageDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount)
 {
   upan::mutex_guard g(_driveListMutex);
-  auto it = upan::find_if(_driveList.begin(), _driveList.end(), [&driveName, bCheckMount](const DiskDrive* d)
+  auto it = upan::find_if(_driveList.begin(), _driveList.end(), [&driveName, bCheckMount](const StorageDrive* d)
     {
       if(d->DriveName() == driveName)
         return d->Mounted() || !bCheckMount;
       return false;
     });
   if(it == _driveList.end())
-    return upan::result<DiskDrive*>::bad("failed to find drive %s (mounted: %d)", driveName.c_str(), bCheckMount);
+    return upan::result<StorageDrive*>::bad("failed to find drive %s (mounted: %d)", driveName.c_str(), bCheckMount);
   return upan::good(*it);
 }
 
-upan::result<DiskDrive*> DiskDriveManager::GetByID(int iID, bool bCheckMount)
+upan::result<StorageDrive*> StorageDriveManager::GetByID(int iID, bool bCheckMount)
 {	
   upan::mutex_guard g(_driveListMutex);
 	if(iID == ROOT_DRIVE)
 		iID = ROOT_DRIVE_ID;
 	else if(iID == CURRENT_DRIVE)
 		iID = ProcessManager::Instance().GetCurrentPAS().driveID();
-  auto it = upan::find_if(_driveList.begin(), _driveList.end(), [iID, bCheckMount](const DiskDrive* d)
+  auto it = upan::find_if(_driveList.begin(), _driveList.end(), [iID, bCheckMount](const StorageDrive* d)
     {
       if(d->Id() == iID)
         return d->Mounted() || !bCheckMount;
       return false;
     });
   if(it == _driveList.end())
-    return upan::result<DiskDrive*>::bad("failed to find drive id %d (mounted: %d)", iID, bCheckMount);
+    return upan::result<StorageDrive*>::bad("failed to find drive id %d (mounted: %d)", iID, bCheckMount);
   return upan::good(*it);
 }
 
-void DiskDriveManager::DisplayList()
+void StorageDriveManager::DisplayList()
 {	
   for(auto d : _driveList)
   {
@@ -148,9 +148,9 @@ void DiskDriveManager::DisplayList()
 	}
 }
 
-byte DiskDriveManager::Change(const upan::string& szDriveName)
+byte StorageDriveManager::Change(const upan::string& szDriveName)
 {
-  DiskDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrElse(nullptr);
+  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrElse(nullptr);
 	if(pDiskDrive == NULL)
 		return DeviceDrive_ERR_INVALID_DRIVE_NAME ;
 
@@ -162,7 +162,7 @@ byte DiskDriveManager::Change(const upan::string& szDriveName)
 	return DeviceDrive_SUCCESS ;
 }
 
-byte DiskDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
+byte StorageDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 {	
   upan::mutex_guard g(_driveListMutex);
 
@@ -210,14 +210,14 @@ byte DiskDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 	return DeviceDrive_SUCCESS ;
 }
 
-void DiskDriveManager::MountDrive(const upan::string& szDriveName)
+void StorageDriveManager::MountDrive(const upan::string& szDriveName)
 {
   GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC)->Mount();
 }
 
-void DiskDriveManager::UnMountDrive(const upan::string& szDriveName)
+void StorageDriveManager::UnMountDrive(const upan::string& szDriveName)
 {
-  DiskDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
 	bool bKernel = IS_KERNEL() ? true : IS_KERNEL_PROCESS(ProcessManager::GetCurrentProcessID()) ;
 	if(!bKernel)
@@ -229,9 +229,9 @@ void DiskDriveManager::UnMountDrive(const upan::string& szDriveName)
   pDiskDrive->UnMount();
 }
 
-void DiskDriveManager::FormatDrive(const upan::string& szDriveName)
+void StorageDriveManager::FormatDrive(const upan::string& szDriveName)
 {
-  DiskDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
   pDiskDrive->Format();
 
@@ -244,9 +244,9 @@ void DiskDriveManager::FormatDrive(const upan::string& szDriveName)
 	}
 }
 
-void DiskDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
+void StorageDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
 {
-  DiskDrive* pDiskDrive = GetByID(ProcessManager::Instance().GetCurrentPAS().driveID(), true).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = GetByID(ProcessManager::Instance().GetCurrentPAS().driveID(), true).goodValueOrThrow(XLOC);
 
   strncpy(pDriveStat->driveName, pDiskDrive->DriveName().c_str(), 32);
   pDriveStat->bMounted = pDiskDrive->Mounted();
@@ -255,7 +255,7 @@ void DiskDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
   pDriveStat->ulUsedSize = 0;
 }
 
-RESOURCE_KEYS DiskDriveManager::GetResourceType(DEVICE_TYPE deviceType)
+RESOURCE_KEYS StorageDriveManager::GetResourceType(DEVICE_TYPE deviceType)
 {
 	switch(deviceType)
 	{
@@ -266,12 +266,12 @@ RESOURCE_KEYS DiskDriveManager::GetResourceType(DEVICE_TYPE deviceType)
 	}
 }
 
-RESOURCE_KEYS DiskDriveManager::GetResourceType(RawDiskDrive::RawDiskDriveTypes diskType)
+RESOURCE_KEYS StorageDriveManager::GetResourceType(RawStorageDrive::RawDiskDriveTypes diskType)
 {
 	switch(diskType)
 	{
-		case RawDiskDrive::ATA_HARD_DISK: return RESOURCE_HDD;
-		case RawDiskDrive::USB_SCSI_DISK: return RESOURCE_USD;
+		case RawStorageDrive::ATA_HARD_DISK: return RESOURCE_HDD;
+		case RawStorageDrive::USB_SCSI_DISK: return RESOURCE_USD;
 	//TODO: FLOPPY falls under this category which should be changed to particular disk type
     default: return RESOURCE_GENERIC_DISK;
 	}

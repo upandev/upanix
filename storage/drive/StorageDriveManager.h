@@ -31,33 +31,33 @@
 #include "result.h"
 #include "rwlock.h"
 #include "map.h"
-#include "RawDiskDrive.h"
+#include "RawStorageDrive.h"
 
 class DriveRemoveClause {
 public:
-  virtual bool operator()(const DiskDrive* pDiskDrive) const = 0 ;
+  virtual bool operator()(const StorageDrive* pDiskDrive) const = 0 ;
 };
 
-class DiskDriveManager {
+class StorageDriveManager {
 private:
-  DiskDriveManager();
+  StorageDriveManager();
 
 public:
-  static DiskDriveManager& Instance()
+  static StorageDriveManager& Instance()
   {
-    static DiskDriveManager instance;
+    static StorageDriveManager instance;
     return instance;
   }
 
   void Create(const upan::string& driveName,
-    DEVICE_TYPE deviceType, DRIVE_NO driveNumber,
-    unsigned uiLBAStartSector, unsigned uiSizeInSectors,
-    unsigned uiSectorsPerTrack, unsigned uiTracksPerHead, unsigned uiNoOfHeads,
-    void* device, RawDiskDrive* rawDisk,
-    unsigned uiMaxSectorsInFreePoolCache);
+              DEVICE_TYPE deviceType, DRIVE_NO driveNumber,
+              unsigned uiLBAStartSector, unsigned uiSizeInSectors,
+              unsigned uiSectorsPerTrack, unsigned uiTracksPerHead, unsigned uiNoOfHeads,
+              void* device, RawStorageDrive* rawDisk,
+              unsigned uiMaxSectorsInFreePoolCache);
   void RemoveEntryByCondition(const DriveRemoveClause& removeClause);
-  upan::result<DiskDrive*> GetByDriveName(const upan::string& szDriveName, bool bCheckMount);
-  upan::result<DiskDrive*> GetByID(int iID, bool bCheckMount);
+  upan::result<StorageDrive*> GetByDriveName(const upan::string& szDriveName, bool bCheckMount);
+  upan::result<StorageDrive*> GetByID(int iID, bool bCheckMount);
   void DisplayList();
   byte Change(const upan::string& szDriveName);
   byte GetList(DriveStat** pDriveList, int* iListSize);
@@ -66,18 +66,18 @@ public:
   void FormatDrive(const upan::string& szDriveName);
   void GetCurrentDriveStat(DriveStat* pDriveStat);
 
-  RawDiskDrive* CreateRawDisk(const upan::string& name, RawDiskDrive::RawDiskDriveTypes iType, void* pDevice);
+  RawStorageDrive* CreateRawDisk(const upan::string& name, RawStorageDrive::RawDiskDriveTypes iType, void* pDevice);
   byte RemoveRawDiskEntry(const upan::string& name);
-  RawDiskDrive* GetRawDiskByName(const upan::string& name);
+  RawStorageDrive* GetRawDiskByName(const upan::string& name);
 
   RESOURCE_KEYS GetResourceType(DEVICE_TYPE deviceType);
-  RESOURCE_KEYS GetResourceType(RawDiskDrive::RawDiskDriveTypes diskType);
+  RESOURCE_KEYS GetResourceType(RawStorageDrive::RawDiskDriveTypes diskType);
 
-  const upan::list<DiskDrive*>& DiskDriveList() const { return _driveList; }
-  const upan::list<RawDiskDrive*>& RawDiskDriveList() const { return _rawDiskList; }
+  const upan::list<StorageDrive*>& DiskDriveList() const { return _driveList; }
+  const upan::list<RawStorageDrive*>& RawDiskDriveList() const { return _rawDiskList; }
 private:
   upan::mutex _driveListMutex;
-  upan::list<DiskDrive*> _driveList;
-  upan::list<RawDiskDrive*> _rawDiskList;
+  upan::list<StorageDrive*> _driveList;
+  upan::list<RawStorageDrive*> _rawDiskList;
   int _idSequence;
 };

@@ -25,14 +25,14 @@
 #include <IODescriptor.h>
 #include <FileSystem.h>
 
-class DiskDrive;
+class StorageDrive;
 
 class FileDescriptor : public IODescriptor {
 public:
   FileDescriptor(int pid, int fd, byte mode,
                  const upan::string& nodeId,
                  const upan::string& fileName,
-                 DiskDrive& diskDrive, uint32_t startSectorID);
+                 StorageDrive& diskDrive, uint32_t startSectorID);
 
   int read(void* buffer, int len) override;
   bool canRead() override {
@@ -82,7 +82,7 @@ private:
 private:
   const upan::string _fileName;
   const upan::string _nodeId;
-  DiskDrive& _diskDrive;
+  StorageDrive& _diskDrive;
   uint32_t _offset;
   int _lastReadSectorIndex;
   uint32_t _lastReadSectorNo;

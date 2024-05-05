@@ -49,7 +49,7 @@
 # include <KernelRootProcess.h>
 # include <PS2MouseDriver.h>
 # include <metrics.h>
-# include <DiskDriveManager.h>
+# include <StorageDriveManager.h>
 
 /**** Global Variable declaration/definition *****/
 byte KERNEL_MODE ;
@@ -166,7 +166,7 @@ void Initialize() {
     IrqManager::Initialize();
     PIT::Instance().Initialize();
     __asm__ __volatile__("sti");
-    DiskDriveManager::Instance();
+    StorageDriveManager::Instance();
 
     PS2Controller::Instance();
 

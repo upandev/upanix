@@ -32,7 +32,37 @@
   <component name="ChangeListManager">
     <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor disk-drive and file-system file org">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATADeviceController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DiskDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DiskDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/PartitionManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/PartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/PartitionManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/RawDiskDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/RawDiskDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/SystemUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/SystemUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,6 +137,8 @@
       <recent name="$PROJECT_DIR$/libints" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/storage/filesystem" />
+      <recent name="$PROJECT_DIR$/storage/drive" />
       <recent name="$PROJECT_DIR$/filesystem" />
       <recent name="$PROJECT_DIR$/drivers/storage" />
     </key>
@@ -229,7 +261,7 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="43442000" />
+      <workItem from="1714523623525" duration="43968000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -574,7 +606,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="73" />
+    <option name="localTasksCounter" value="75" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

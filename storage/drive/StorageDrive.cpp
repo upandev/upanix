@@ -19,7 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include <DeviceDrive.h>
+# include <StorageDrive.h>
 # include <Floppy.h>
 # include <ATADrive.h>
 # include <ATADeviceController.h>
@@ -47,7 +47,7 @@ void DiskCache_ShowTotalDiskReads()
   printf("\n Total USB Disk Reads: %u", uiTotalUSBDiskReads) ;
 }
 
-static void DiskCache_TaskFlushCache(DiskDrive* pDiskDrive, unsigned uiParam2)
+static void DiskCache_TaskFlushCache(StorageDrive* pDiskDrive, unsigned uiParam2)
 {
 	do
 	{
@@ -58,7 +58,7 @@ static void DiskCache_TaskFlushCache(DiskDrive* pDiskDrive, unsigned uiParam2)
 	ProcessManager_Exit() ;
 }
 
-static void DiskCache_TaskReleaseCache(DiskDrive* pDiskDrive, unsigned uiParam2)
+static void DiskCache_TaskReleaseCache(StorageDrive* pDiskDrive, unsigned uiParam2)
 {
 	do
 	{
@@ -69,18 +69,18 @@ static void DiskCache_TaskReleaseCache(DiskDrive* pDiskDrive, unsigned uiParam2)
 	ProcessManager_Exit() ;
 }
 
-DiskDrive::DiskDrive(int id,
-  const upan::string& driveName, 
-  DEVICE_TYPE deviceType,
-  DRIVE_NO driveNumber,
-  unsigned uiLBAStartSector,
-  unsigned uiSizeInSectors,
-  unsigned uiSectorsPerTrack,
-  unsigned uiTracksPerHead,
-  unsigned uiNoOfHeads,
-  void* device,
-  RawDiskDrive* rawDisk,
-  unsigned uiMaxSectorsInFreePoolCache) : _id(id),
+StorageDrive::StorageDrive(int id,
+                           const upan::string& driveName,
+                           DEVICE_TYPE deviceType,
+                           DRIVE_NO driveNumber,
+                           unsigned uiLBAStartSector,
+                           unsigned uiSizeInSectors,
+                           unsigned uiSectorsPerTrack,
+                           unsigned uiTracksPerHead,
+                           unsigned uiNoOfHeads,
+                           void* device,
+                           RawStorageDrive* rawDisk,
+                           unsigned uiMaxSectorsInFreePoolCache) : _id(id),
     _driveName(driveName),
     _deviceType(deviceType),
     _driveNumber(driveNumber),
@@ -100,7 +100,7 @@ DiskDrive::DiskDrive(int id,
   StartReleaseCacheTask();
 }
 
-void DiskDrive::Mount() {
+void StorageDrive::Mount() {
 	if(Mounted()) {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
   }
@@ -111,7 +111,7 @@ void DiskDrive::Mount() {
   _mounted = true;
 }
 
-void DiskDrive::UnMount() {
+void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
@@ -122,7 +122,7 @@ void DiskDrive::UnMount() {
   _mounted = false;
 }
 
-void DiskDrive::ReadRootDirectory() {
+void StorageDrive::ReadRootDirectory() {
 	byte bDataBuffer[512];
 
   xRead(bDataBuffer, 0, 1);
@@ -132,7 +132,7 @@ void DiskDrive::ReadRootDirectory() {
   _fileSystem.FSpwd.bSectorEntryPosition = 0;
 }
 
-void DiskDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
+void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
 {
   upan::mutex_guard g(_driveMutex);
   uiStartSector += LBAStartSector();
@@ -216,12 +216,12 @@ void DiskDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bData
 	}
 }
 
-void DiskDrive::xRead(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
+void StorageDrive::xRead(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
   Read(_fileSystem.GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
-void DiskDrive::RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
+void StorageDrive::RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
 {
 	switch(DeviceType())
 	{
@@ -245,7 +245,7 @@ void DiskDrive::RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bD
 	}
 }
 
-void DiskDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
+void StorageDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
 {
   upan::mutex_guard g(_driveMutex);
 	uiStartSector += LBAStartSector();
@@ -338,12 +338,12 @@ void DiskDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDat
 	}
 }
 
-void DiskDrive::xWrite(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
+void StorageDrive::xWrite(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
   Write(_fileSystem.GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
-void DiskDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
+void StorageDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
 {
 	switch(DeviceType())
 	{
@@ -364,7 +364,7 @@ void DiskDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* b
 	}
 }
 
-void DiskDrive::Format()
+void StorageDrive::Format()
 {
   if(DeviceType() == DEV_FLOPPY)
   {
@@ -375,7 +375,7 @@ void DiskDrive::Format()
   FlushDirtyCacheSectors();
 }
 
-byte DiskDrive::FlushDirtyCacheSectors(int iCount)
+byte StorageDrive::FlushDirtyCacheSectors(int iCount)
 {
 	if(!_bEnableDiskCache)
 		return DiskCache_SUCCESS ;
@@ -397,14 +397,14 @@ byte DiskDrive::FlushDirtyCacheSectors(int iCount)
 	return DiskCache_SUCCESS ;
 }
 
-bool DiskDrive::FlushSector(unsigned uiSectorID, const byte* pBuffer)
+bool StorageDrive::FlushSector(unsigned uiSectorID, const byte* pBuffer)
 {
 	if(!pBuffer)
 		return false;
 	return upan::trycall([&]() { RawWrite(uiSectorID, 1, (byte*)pBuffer); }).isGood();
 }
 
-void DiskDrive::StartReleaseCacheTask()
+void StorageDrive::StartReleaseCacheTask()
 {
   StopReleaseCacheTask(false);
 
@@ -419,13 +419,13 @@ void DiskDrive::StartReleaseCacheTask()
                                                  ProcessManager::Instance().GetCurProcId(), false, params);
 }
 
-void DiskDrive::ReleaseCache()
+void StorageDrive::ReleaseCache()
 {
   if(Mounted())
     _mCache.LFUCacheCleanUp();
 }
 
-upan::rwlock& DiskDrive::GetFileLock(const upan::string &nodeId) {
+upan::rwlock& StorageDrive::GetFileLock(const upan::string &nodeId) {
   upan::mutex_guard g(_driveMutex);
   auto it = _fileLocks.find(nodeId);
   if (it != _fileLocks.end()) {

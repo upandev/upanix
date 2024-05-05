@@ -21,9 +21,9 @@
  */
 # include <SysCall.h>
 # include <SysCallDrive.h>
-# include <DeviceDrive.h>
+# include <StorageDrive.h>
 # include <try.h>
-# include <DiskDriveManager.h>
+# include <StorageDriveManager.h>
 
 byte SysCallDrive_IsPresent(uint64_t sysCallId)
 {
@@ -42,7 +42,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 				char* szDriveName = ( char*) p1;
 
 				*retVal = 0 ;
-				if(DiskDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
+				if(StorageDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
 					*retVal = -1 ;
 			}
 			break ;
@@ -55,7 +55,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 				int* iListSize = ( int*) p2;
 
 				*retVal = 0 ;
-				if(DiskDriveManager::Instance().GetList(pDriveList, iListSize) != DeviceDrive_SUCCESS)
+				if(StorageDriveManager::Instance().GetList(pDriveList, iListSize) != DeviceDrive_SUCCESS)
 					*retVal = -1 ;
 			}
 			break ;
@@ -67,7 +67,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
         *retVal = 0;
         try
         {
-          DiskDriveManager::Instance().MountDrive(szDriveName);
+          StorageDriveManager::Instance().MountDrive(szDriveName);
         }
         catch(...)
         {
@@ -83,7 +83,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
         *retVal = 0;
         try
         {
-          DiskDriveManager::Instance().UnMountDrive(szDriveName);
+          StorageDriveManager::Instance().UnMountDrive(szDriveName);
         }
         catch(...)
         {
@@ -99,7 +99,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
         *retVal = 0;
         try
         {
-          DiskDriveManager::Instance().FormatDrive(szDriveName);
+          StorageDriveManager::Instance().FormatDrive(szDriveName);
         }
         catch(...)
         {
@@ -115,7 +115,7 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
         try
         {
           DriveStat* pDriveStat = ( DriveStat*) p1;
-          DiskDriveManager::Instance().GetCurrentDriveStat(pDriveStat);
+          StorageDriveManager::Instance().GetCurrentDriveStat(pDriveStat);
         }
         catch(...)
         {

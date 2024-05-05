@@ -22,7 +22,7 @@
 #include <PartitionManager.h>
 #include <ATADrive.h>
 #include <DMM.h>
-#include <RawDiskDrive.h>
+#include <RawStorageDrive.h>
 
 #define SI_EXT	5
 #define SI_EMTY	0x01
@@ -76,7 +76,7 @@ MBRPartitionInfo::MBRPartitionInfo(unsigned lbaStart, unsigned size, MBRPartitio
 */
 }
 
-PartitionTable::PartitionTable(RawDiskDrive& disk) 
+PartitionTable::PartitionTable(RawStorageDrive& disk)
   : _bIsGPTPartition(false), _bIsMBRPartition(false), 
     _bIsExtPartitionPresent(false), _disk(disk)
 {

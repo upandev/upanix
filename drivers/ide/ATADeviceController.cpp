@@ -32,7 +32,7 @@
 # include <ATADrive.h>
 # include <PartitionManager.h>
 # include <FileSystem.h>
-# include <DiskDriveManager.h>
+# include <StorageDriveManager.h>
 # include <stdio.h>
 
 static unsigned ATADeviceController_uiHDDDeviceID ;
@@ -361,7 +361,7 @@ static void ATADeviceController_CheckControllerMode(const PCIEntry* pPCIEntry,
 		pInitFunc(pPCIEntry, *pController) ;
 }
 
-static void ATADeviceController_AddATADrive(RawDiskDrive* pDisk)
+static void ATADeviceController_AddATADrive(RawStorageDrive* pDisk)
 {
 	char driveCh = 'a' ;
 	char driveName[5] = { 'h', 'd', 'd', '\0', '\0' } ;
@@ -381,15 +381,15 @@ static void ATADeviceController_AddATADrive(RawDiskDrive* pDisk)
   for(const auto& pe : partitionTable.GetPartitions())
 	{
 		driveName[3] = driveCh + ATADeviceController_uiHDDDeviceID++ ;
-    DiskDriveManager::Instance().Create(driveName, DEV_ATA_IDE, HDD_DRIVE0,
-      pe.LBAStartSector(),
-      pe.LBASize(),
-      pPort->id.usSectors,
-      pPort->id.usCylinders,
-      pPort->id.usHead,
-      pPort,
-      pDisk,
-      uiSectorsInFreePool);
+    StorageDriveManager::Instance().Create(driveName, DEV_ATA_IDE, HDD_DRIVE0,
+                                           pe.LBAStartSector(),
+                                           pe.LBASize(),
+                                           pPort->id.usSectors,
+                                           pPort->id.usCylinders,
+                                           pPort->id.usHead,
+                                           pPort,
+                                           pDisk,
+                                           uiSectorsInFreePool);
 	}
 }
 
@@ -407,8 +407,8 @@ static void ATADeviceController_AddATAPIDrive(ATAPort* pPort)
 	else
 		uiSizeInSectors = pPort->id.uiLBASectors ;
 
-  DiskDriveManager::Instance().Create(driveName, DEV_ATAPI, CD_DRIVE0, 0, uiSizeInSectors,
-                                      pPort->id.usSectors, pPort->id.usCylinders, pPort->id.usHead, pPort, nullptr, uiSectorsInFreePool);
+  StorageDriveManager::Instance().Create(driveName, DEV_ATAPI, CD_DRIVE0, 0, uiSizeInSectors,
+                                         pPort->id.usSectors, pPort->id.usCylinders, pPort->id.usHead, pPort, nullptr, uiSectorsInFreePool);
 }
 
 static void ATADeviceController_Add(ATAController* pController)
@@ -467,7 +467,7 @@ static void ATADeviceController_Add(ATAController* pController)
 		if(pController->pPort[i]->uiDevice == ATA_DEV_ATA)
 		{
 			szName[iCntIndex] += i ;
-			RawDiskDrive* pDisk = DiskDriveManager::Instance().CreateRawDisk(szName, RawDiskDrive::ATA_HARD_DISK, pController->pPort[ i ]) ;
+			RawStorageDrive* pDisk = StorageDriveManager::Instance().CreateRawDisk(szName, RawStorageDrive::ATA_HARD_DISK, pController->pPort[ i ]) ;
       try
       {
   			ATADeviceController_AddATADrive(pDisk) ;

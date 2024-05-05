@@ -37,23 +37,22 @@
 #define	DeviceDrive_ERR_NOTFOUND				9
 #define DeviceDrive_FAILURE						10
 
-class RawDiskDrive;
+class RawStorageDrive;
 
-class DiskDrive
-{
+class StorageDrive {
   private:
-    DiskDrive(int id,
-      const upan::string& driveName, 
-      DEVICE_TYPE deviceType,
-      DRIVE_NO driveNumber,
-      unsigned uiLBAStartSector,
-      unsigned uiSizeInSectors,
-      unsigned uiSectorsPerTrack,
-      unsigned uiTracksPerHead,
-      unsigned uiNoOfHeads,
-      void* device, 
-      RawDiskDrive* rawDisk,
-      unsigned uiMaxSectorsInFreePoolCache);
+    StorageDrive(int id,
+                 const upan::string& driveName,
+                 DEVICE_TYPE deviceType,
+                 DRIVE_NO driveNumber,
+                 unsigned uiLBAStartSector,
+                 unsigned uiSizeInSectors,
+                 unsigned uiSectorsPerTrack,
+                 unsigned uiTracksPerHead,
+                 unsigned uiNoOfHeads,
+                 void* device,
+                 RawStorageDrive* rawDisk,
+                 unsigned uiMaxSectorsInFreePoolCache);
 
   public:
     void Mount();
@@ -80,7 +79,7 @@ class DiskDrive
 
     int Id() const { return _id; }
     bool Mounted() const { return _mounted; }
-    RawDiskDrive* RawDisk() const { return _rawDisk; }
+    RawStorageDrive* RawDisk() const { return _rawDisk; }
     void* Device() const { return _device; }
     DiskCache& Cache() { return _mCache; }
 
@@ -107,7 +106,7 @@ class DiskDrive
     unsigned     _uiNoOfHeads;
     bool		     _bEnableDiskCache;
 	  void*			    _device;
-    RawDiskDrive* _rawDisk;
+    RawStorageDrive* _rawDisk;
     unsigned      _uiMaxSectorsInFreePoolCache;
 
     FS_TYPE       _fsType;
@@ -119,7 +118,7 @@ class DiskDrive
     typedef upan::map<upan::string, upan::rwlock*> FileLocks;
     FileLocks _fileLocks;
 
-    friend class DiskDriveManager;
+    friend class StorageDriveManager;
 public:
   // FileSystem Mount Info
   FileSystem	_fileSystem ;

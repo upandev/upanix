@@ -26,12 +26,12 @@
 #include <DMA.h>
 #include <PortCom.h>
 #include <ProcessManager.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <StringUtil.h>
 #include <DMM.h>
 #include <KernelUtil.h>
 #include <try.h>
-#include <DiskDriveManager.h>
+#include <StorageDriveManager.h>
 
 #define	SRA_STATUS_REGA				0x3F0
 #define	SRB_STATUS_REGB				0x3F1
@@ -103,9 +103,9 @@ static void Floppy_SenseInterruptStatus() ;
 static void Floppy_WaitForInterrupt() ;
 static void Floppy_ReCaliberate(DRIVE_NO driveNo) ;
 static void Floppy_Seek(DRIVE_NO driveNo, Floppy_HEAD_NO headNo, unsigned uiSeekTrack) ;
-static void Floppy_FormatTrack(const DiskDrive* pDiskDrive, const Floppy_HEAD_NO headNo) ;
-static void Floppy_ReadWrite(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, Floppy_MODE mode) ;
-static void Floppy_FullFormat(const DiskDrive* pDiskDrive) ;
+static void Floppy_FormatTrack(const StorageDrive* pDiskDrive, const Floppy_HEAD_NO headNo) ;
+static void Floppy_ReadWrite(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, Floppy_MODE mode) ;
+static void Floppy_FullFormat(const StorageDrive* pDiskDrive) ;
 
 struct FloppyMotorController : public KernelUtil::TimerTask
 {
@@ -273,7 +273,7 @@ static void Floppy_Seek(DRIVE_NO driveNo, Floppy_HEAD_NO headNo, unsigned uiSeek
   throw upan::exception(XLOC, "Floppy: failed to seek");
 }
 
-static void Floppy_FormatTrack(const DiskDrive* pDiskDrive, const Floppy_HEAD_NO headNo)
+static void Floppy_FormatTrack(const StorageDrive* pDiskDrive, const Floppy_HEAD_NO headNo)
 {
   Floppy_SendControlCommand(FDD_FORMAT_TRACK_CMD);
   Floppy_SendControlCommand(((headNo << 2) & 4) | pDiskDrive->DriveNumber()); //Drive 1
@@ -291,7 +291,7 @@ static void Floppy_FormatTrack(const DiskDrive* pDiskDrive, const Floppy_HEAD_NO
   throw upan::exception(XLOC, "Floppy: failed to format");
 }
 
-static void Floppy_ReadWrite(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, Floppy_MODE mode)
+static void Floppy_ReadWrite(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, Floppy_MODE mode)
 {
 	if(uiStartSectorNo + 1 > pDiskDrive->SizeInSectors()
 			|| uiEndSectorNo + 1 > pDiskDrive->SizeInSectors()
@@ -365,7 +365,7 @@ static void Floppy_ReadWrite(const DiskDrive* pDiskDrive, unsigned uiStartSector
   throw upan::exception(XLOC, "Floppy read/write failed - last error: %s", lastErr.c_str());
 }
 
-static void Floppy_FullFormat(const DiskDrive* pDiskDrive)
+static void Floppy_FullFormat(const StorageDrive* pDiskDrive)
 {
 	DRIVE_NO driveNo = pDiskDrive->DriveNumber();
 	
@@ -461,10 +461,10 @@ void Floppy_Initialize()
       printf("\n\tFailed To Get Floppy Controller Version");
     }
 	
-    DiskDriveManager::Instance().Create("floppya", DEV_FLOPPY, FD_DRIVE1,
-      0, 2880,
-      18, 80, 2,
-      nullptr, DiskDriveManager::Instance().CreateRawDisk("floppy", RawDiskDrive::FLOPPY_DISK, NULL), 2048);
+    StorageDriveManager::Instance().Create("floppya", DEV_FLOPPY, FD_DRIVE1,
+                                           0, 2880,
+                                           18, 80, 2,
+                                           nullptr, StorageDriveManager::Instance().CreateRawDisk("floppy", RawStorageDrive::FLOPPY_DISK, NULL), 2048);
 		
     for(auto i = 0; i < MAX_DRIVES; i++)
 		{
@@ -493,7 +493,7 @@ bool Floppy_IsEnhancedController()
   return Floppy_ReplyBuffer[0] == FDD_VERSION_ENHANCED;
 }
 
-void Floppy_Read(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer)
+void Floppy_Read(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer)
 {
   auto result = upan::trycall([&]() { Floppy_ReadWrite(pDiskDrive, uiStartSectorNo, uiEndSectorNo, FD_READ); });
   Floppy_StopMotor(pDiskDrive->DriveNumber()) ;
@@ -505,7 +505,7 @@ void Floppy_Read(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned
   result.goodValueOrThrow(XLOC);
 }
 
-void Floppy_Write(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer)
+void Floppy_Write(const StorageDrive* pDiskDrive, unsigned uiStartSectorNo, unsigned uiEndSectorNo, byte* bSectorBuffer)
 {
   memcpy((void*)MEM_DMA_FLOPPY_START, bSectorBuffer, (uiEndSectorNo - uiStartSectorNo) * 512);
 
@@ -516,7 +516,7 @@ void Floppy_Write(const DiskDrive* pDiskDrive, unsigned uiStartSectorNo, unsigne
   result.goodValueOrThrow(XLOC);
 }
 
-void Floppy_Format(const DiskDrive* pDiskDrive)
+void Floppy_Format(const StorageDrive* pDiskDrive)
 {
   Floppy_FullFormat(pDiskDrive) ;
 	Floppy_StopMotor(pDiskDrive->DriveNumber()) ;

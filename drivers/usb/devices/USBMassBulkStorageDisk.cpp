@@ -32,13 +32,13 @@
 #include <USBController.h>
 #include <EHCIStructures.h>
 #include <USBDevice.h>
-#include <RawDiskDrive.h>
-#include <DiskDriveManager.h>
+#include <RawStorageDrive.h>
+#include <StorageDriveManager.h>
 
 static int USDDeviceId ;
 int USBDiskDriver::_deviceId = 0;
 
-void USBMassBulkStorageDisk::AddDeviceDrive(RawDiskDrive* pDisk)
+void USBMassBulkStorageDisk::AddDeviceDrive(RawStorageDrive* pDisk)
 {
 	char driveCh = 'a' ;
 	char driveName[5] = { 'u', 's', 'd', '\0', '\0' } ;
@@ -58,9 +58,9 @@ void USBMassBulkStorageDisk::AddDeviceDrive(RawDiskDrive* pDisk)
 	for(const auto& pe : partitionTable.GetPartitions())
 	{
 		driveName[3] = driveCh + USDDeviceId++;
-    DiskDriveManager::Instance().Create(driveName, DEV_SCSI_USB_DISK, USD_DRIVE0,
-                                        pe.LBAStartSector(), pe.LBASize(),
-                                        1, 1, 1, pDevice, pDisk, uiSectorsInFreePool);
+    StorageDriveManager::Instance().Create(driveName, DEV_SCSI_USB_DISK, USD_DRIVE0,
+                                           pe.LBAStartSector(), pe.LBASize(),
+                                           1, 1, 1, pDevice, pDisk, uiSectorsInFreePool);
 	}
 }
 
@@ -445,7 +445,7 @@ void USBDiskDriver::RemoveDevice(USBDevice* pUSBDevice)
 		public:
 			USBDriveRemoveClause(SCSIDevice** p, int iMaxLun) : m_pSCSIDeviceList(p), m_iMaxLun(iMaxLun) { }
 
-			bool operator()(const DiskDrive* pDiskDrive) const
+			bool operator()(const StorageDrive* pDiskDrive) const
 			{
 				int iLun ;
 				for(iLun = 0; iLun <= m_iMaxLun; iLun++)
@@ -466,7 +466,7 @@ void USBDiskDriver::RemoveDevice(USBDevice* pUSBDevice)
 	} ;
 
 	if(pSCSIDeviceList != NULL)
-		DiskDriveManager::Instance().RemoveEntryByCondition(USBDriveRemoveClause(pSCSIDeviceList, pDisk->MaxLun())) ;
+		StorageDriveManager::Instance().RemoveEntryByCondition(USBDriveRemoveClause(pSCSIDeviceList, pDisk->MaxLun())) ;
 
   delete pDisk;
 }

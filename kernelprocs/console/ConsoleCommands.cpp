@@ -34,7 +34,7 @@
 #include <UserManager.h>
 #include <GenericUtil.h>
 #include <SessionManager.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <RTC.h>
 #include <MultiBoot.h>
 #include <SystemUtil.h>
@@ -68,7 +68,7 @@
 #include <PngEncoder.h>
 #include <metrics.h>
 #include <SysCall.h>
-#include <DiskDriveManager.h>
+#include <StorageDriveManager.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -241,31 +241,31 @@ void ConsoleCommands_ExecuteInternalCommand(const char* szCommand)
 
 void ConsoleCommands_ChangeDrive()
 {
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
 	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
   memcpy(&ProcessManager::Instance().GetCurrentPAS().processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
 }
 
 void ConsoleCommands_ShowDrive()
 {
-	DiskDriveManager::Instance().DisplayList() ;
+	StorageDriveManager::Instance().DisplayList() ;
 }
 
 void ConsoleCommands_MountDrive()
 {
-  DiskDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->Mount();
+  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->Mount();
   printf("\nDrive Mounted");
 }
 
 void ConsoleCommands_UnMountDrive()
 {
-  DiskDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->UnMount();
+  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->UnMount();
   printf("\nDrive UnMounted");
 }
 
 void ConsoleCommands_FormatDrive()
 {
-  DiskDriveManager::Instance().FormatDrive(CommandLineParser::Instance().GetParameterAt(0));
+  StorageDriveManager::Instance().FormatDrive(CommandLineParser::Instance().GetParameterAt(0));
 }
 
 void ConsoleCommands_ClearScreen()
@@ -455,7 +455,7 @@ void ConsoleCommands_OpenSession() {
 	ProcessManager::Instance().WaitOnChild(pid) ;
 }
 
-RawDiskDrive* ConsoleCommands_CheckDiskParam()
+RawStorageDrive* ConsoleCommands_CheckDiskParam()
 {
   if(CommandLineParser::Instance().GetNoOfParameters() < 1)
 	{
@@ -463,7 +463,7 @@ RawDiskDrive* ConsoleCommands_CheckDiskParam()
 		return NULL ;
 	}
 
-  RawDiskDrive* pDisk = DiskDriveManager::Instance().GetRawDiskByName(CommandLineParser::Instance().GetParameterAt(0)) ;
+  RawStorageDrive* pDisk = StorageDriveManager::Instance().GetRawDiskByName(CommandLineParser::Instance().GetParameterAt(0)) ;
 
 	if(!pDisk)
 	{
@@ -476,7 +476,7 @@ RawDiskDrive* ConsoleCommands_CheckDiskParam()
 
 void ConsoleCommands_ShowPartitionTable()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -488,7 +488,7 @@ void ConsoleCommands_ShowPartitionTable()
 
 void ConsoleCommands_ClearPartitionTable()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 	if(!pDisk)
 		return;
 	PartitionTable partitionTable(*pDisk);
@@ -497,7 +497,7 @@ void ConsoleCommands_ClearPartitionTable()
 
 void ConsoleCommands_SetSysIdForPartition()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 	if(!pDisk)
 		return ;
   pDisk->UpdateSystemIndicator(63, 0x83) ;
@@ -505,7 +505,7 @@ void ConsoleCommands_SetSysIdForPartition()
 
 void ConsoleCommands_CreatePrimaryPartition()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -530,7 +530,7 @@ void ConsoleCommands_CreatePrimaryPartition()
 
 void ConsoleCommands_CreateExtendedPartitionEntry()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -559,7 +559,7 @@ void ConsoleCommands_CreateExtendedPartitionEntry()
 
 void ConsoleCommands_CreateExtendedPartition()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -588,7 +588,7 @@ void ConsoleCommands_CreateExtendedPartition()
 
 void ConsoleCommands_DeletePrimaryPartition()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -606,7 +606,7 @@ void ConsoleCommands_DeletePrimaryPartition()
 
 void ConsoleCommands_DeleteExtendedPartition()
 {
-	RawDiskDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
+	RawStorageDrive* pDisk = ConsoleCommands_CheckDiskParam() ;
 
 	if(!pDisk)
 		return ;
@@ -714,7 +714,7 @@ void ConsoleCommands_ListProcess()
 
 void ConsoleCommands_ChangeRootDrive()
 {
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
+  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
 	MountManager_SetRootDrive(pDiskDrive) ;
 }
 
@@ -827,7 +827,7 @@ void ConsoleCommands_SetXHCIEventMode()
 void ConsoleCommands_ShowRawDiskList()
 {
   unsigned uiCount = CommandLineParser::Instance().GetNoOfParameters() ;
-	RawDiskDrive* pDisk = NULL ;
+	RawStorageDrive* pDisk = NULL ;
 
 	printf("\n%-15s %-18s %-10s %-15s %-10s", "Name", "Type", "Sec-Size", "Tot-Sectors", "Size (MB)") ;
 	printf("\n-----------------------------------------------------------------------") ;
@@ -835,12 +835,12 @@ void ConsoleCommands_ShowRawDiskList()
 	class LamdaDisplay
 	{
 		public:
-			void operator()(const RawDiskDrive* pParamDisk)
+			void operator()(const RawStorageDrive* pParamDisk)
 			{
 				static const char szTypes[2][32] = { "ATA Hard Disk", "USB SCSI Disk" } ;
 
 				printf("\n%-15s %-18s %-10d %-15d %-10d", pParamDisk->Name().c_str(), 
-          szTypes[pParamDisk->Type() - RawDiskDrive::ATA_HARD_DISK],
+          szTypes[pParamDisk->Type() - RawStorageDrive::ATA_HARD_DISK],
 					pParamDisk->SectorSize(), 
           pParamDisk->SizeInSectors(), 
           pParamDisk->SectorSize() * pParamDisk->SizeInSectors() / (1024 * 1024));
@@ -853,13 +853,13 @@ void ConsoleCommands_ShowRawDiskList()
 		for(unsigned i = 0; i < uiCount; i++)
 		{
       const char* szName = CommandLineParser::Instance().GetParameterAt(i) ;
-			pDisk = DiskDriveManager::Instance().GetRawDiskByName(szName) ;
+			pDisk = StorageDriveManager::Instance().GetRawDiskByName(szName) ;
 			lamdaDisplay(pDisk) ;
 		}
 	}
 	else
 	{
-    for(auto pDisk : DiskDriveManager::Instance().RawDiskDriveList())
+    for(auto pDisk : StorageDriveManager::Instance().RawDiskDriveList())
 			lamdaDisplay(pDisk) ;
 	}
 }
@@ -1552,7 +1552,7 @@ extern void DiskCache_ShowTotalDiskReads() ;
 class DisplayCache : public BTree::InOrderVisitor
 {
 	public:
-		DisplayCache(DiskDrive* pDiskDrive) : m_pDiskDrive(pDiskDrive), m_iCount(0), m_bAbort(false) { }
+		DisplayCache(StorageDrive* pDiskDrive) : m_pDiskDrive(pDiskDrive), m_iCount(0), m_bAbort(false) { }
 
 		void operator()(const BTreeKey& rKey, BTreeValue* pValue) const
 		{
@@ -1570,7 +1570,7 @@ class DisplayCache : public BTree::InOrderVisitor
 		bool Abort() const { return m_bAbort ; }
 
 	private:
-		DiskDrive* m_pDiskDrive ;
+		StorageDrive* m_pDiskDrive ;
 		mutable int m_iCount ;
 		mutable bool m_bAbort ;
 } ;

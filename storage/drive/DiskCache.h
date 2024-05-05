@@ -32,7 +32,7 @@
 #define DiskCache_SUCCESS 0
 #define DiskCache_FAILURE 1
 
-class DiskDrive;
+class StorageDrive;
 
 class DiskCacheKey : public BTreeKey
 {
@@ -222,8 +222,8 @@ class DestroyDiskCacheKeyValue : public BTree::DestroyKeyValue
 		}
 } ;
 
-void DiskCache_Setup(DiskDrive& diskDrive) ;
-void DiskCache_StopReleaseCacheTask(DiskDrive* pDiskDrive) ;
-void DiskCache_StartReleaseCacheTask(DiskDrive& pDiskDrive) ;
+void DiskCache_Setup(StorageDrive& diskDrive) ;
+void DiskCache_StopReleaseCacheTask(StorageDrive* pDiskDrive) ;
+void DiskCache_StartReleaseCacheTask(StorageDrive& pDiskDrive) ;
 
 #endif 

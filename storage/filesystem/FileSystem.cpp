@@ -25,7 +25,7 @@
 #include <Global.h>
 #include <StringUtil.h>
 #include <FileSystem.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 #include <UserManager.h>
 #include <SystemUtil.h>
 #include <DMM.h>
@@ -95,7 +95,7 @@ void FileSystem_UpdateTime(time_t* pTime)
 }
 */
 
-void SectorBlockEntry::Load(DiskDrive& diskDrive, uint32_t sectortId)
+void SectorBlockEntry::Load(StorageDrive& diskDrive, uint32_t sectortId)
 {
   const auto tableSectorId = diskDrive._fileSystem.GetTableSectorId(BLOCK_ID(sectortId));
   diskDrive.Read(tableSectorId, 1, (byte*)_sectorBlock);
@@ -493,7 +493,7 @@ void FileSystem::Node::InitAsRoot(uint32_t parentSectorId)
   Init(FS_ROOT_DIR, ATTR_DIR_DEFAULT | ATTR_TYPE_DIRECTORY, ROOT_USER_ID, parentSectorId, 0);
 }
 
-upan::string FileSystem::Node::FullPath(DiskDrive& diskDrive)
+upan::string FileSystem::Node::FullPath(StorageDrive& diskDrive)
 {
   byte bSectorBuffer[512] ;
 

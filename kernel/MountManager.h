@@ -22,13 +22,13 @@
 #ifndef _MOUNT_MANAGER_H_
 #define _MOUNT_MANAGER_H_
 
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 
 void MountManager_Initialize() ;
 bool MountManager_GetInitStatus() ;
 void MountManager_MountDrives() ;
 const char* MountManager_GetRootDriveName() ;
 int MountManager_GetRootDriveID() ;
-void MountManager_SetRootDrive(DiskDrive* pDiskDrive) ;
+void MountManager_SetRootDrive(StorageDrive* pDiskDrive) ;
 
 #endif

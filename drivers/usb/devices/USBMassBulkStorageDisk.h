@@ -64,7 +64,7 @@
 #define US_BULK_MAX_TRANSFER_SIZE 32768 //32 KB
 
 class USBDevice;
-class RawDiskDrive;
+class RawStorageDrive;
 
 typedef enum
 {
@@ -117,7 +117,7 @@ class USBMassBulkStorageDisk : public SCSIHost
     upan::string GetName();
     bool QueueCommand(SCSICommand* pCommand);
     byte DoReset();
-    void AddDeviceDrive(RawDiskDrive* pDisk);
+    void AddDeviceDrive(RawStorageDrive* pDisk);
   private:
     byte SendCommand(SCSICommand* pCommand);
     byte ReadData(void* pDataBuf, unsigned uiLen);

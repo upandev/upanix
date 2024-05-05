@@ -24,7 +24,7 @@
 
 #include <Global.h>
 #include <ATADeviceController.h>
-#include <DeviceDrive.h>
+#include <StorageDrive.h>
 
 #define MAX_NO_OF_PRIMARY_PARTITIONS	4
 #define MAX_NO_OF_EXT_PARTITIONS		32
@@ -143,7 +143,7 @@ class ExtPartitionTable
 class PartitionTable
 {
   public:
-    PartitionTable(RawDiskDrive& disk);
+    PartitionTable(RawStorageDrive& disk);
     ~PartitionTable();
 
     void VerbosePrint() const;
@@ -163,7 +163,7 @@ class PartitionTable
     bool _bIsGPTPartition;
     bool _bIsMBRPartition;
     bool _bIsExtPartitionPresent;
-    RawDiskDrive& _disk;
+    RawStorageDrive& _disk;
     MBRPartitionInfo _extPartitionEntry;
     upan::list<MBRPartitionInfo*> _primaryPartitions;
     upan::list<ExtPartitionTable*> _extPartitions;

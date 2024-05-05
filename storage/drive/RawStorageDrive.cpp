@@ -20,8 +20,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-# include "RawDiskDrive.h"
-# include "DeviceDrive.h"
+# include "RawStorageDrive.h"
+# include "StorageDrive.h"
 # include "drivers/floppy/Floppy.h"
 # include "drivers/ide/ATADrive.h"
 # include "drivers/ide/ATADeviceController.h"
@@ -39,7 +39,7 @@
 # include "drive.h"
 
 
-RawDiskDrive::RawDiskDrive(const upan::string& name, RawDiskDrive::RawDiskDriveTypes type, void* device)
+RawStorageDrive::RawStorageDrive(const upan::string& name, RawStorageDrive::RawDiskDriveTypes type, void* device)
   : _name(name), _type(type), _device(device) {
   switch(_type)
   {
@@ -63,7 +63,7 @@ RawDiskDrive::RawDiskDrive(const upan::string& name, RawDiskDrive::RawDiskDriveT
   }
 }
 
-void RawDiskDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer)
+void RawStorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer)
 {
   upan::mutex_guard g(_diskMutex);
 	switch(_type)
@@ -79,7 +79,7 @@ void RawDiskDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pD
 	}
 }
 
-void RawDiskDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer)
+void RawStorageDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer)
 {
 	upan::mutex_guard g(_diskMutex);
 	switch(_type)
@@ -95,7 +95,7 @@ void RawDiskDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* p
 	}
 }
 
-void RawDiskDrive::UpdateSystemIndicator(unsigned uiLBAStartSector, unsigned uiSystemIndicator)
+void RawStorageDrive::UpdateSystemIndicator(unsigned uiLBAStartSector, unsigned uiSystemIndicator)
 {
 	byte bBootSectorBuffer[512] ;
 
