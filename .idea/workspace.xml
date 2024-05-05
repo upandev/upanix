@@ -30,14 +30,29 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor file-system and disk-drive for better thread synchronization">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DeviceDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DeviceDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DiskCache.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/PartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/PartitionManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/PartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/storage/PartitionManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/floppy/Floppy.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/floppy/Floppy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/SystemUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/SystemUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,8 +121,16 @@
       <recent name="$PROJECT_DIR$/syscall" />
       <recent name="$PROJECT_DIR$/libints" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/drivers/storage" />
+    </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -220,7 +243,7 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="40162000" />
+      <workItem from="1714523623525" duration="41187000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -565,7 +588,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="69" />
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -598,7 +621,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix bug in page deallocator to use page-number instead of page-address" />
     <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
     <MESSAGE value="processSpaceSize is same as total image size of the process that includes dll resolver" />
     <MESSAGE value="Optimize memory allocation to keep freed chunks in sorted order and then coalesce consecutive free blocks.&#10;Refactored DMM to use common code for user and kernel allocators" />
@@ -623,7 +645,8 @@
     <MESSAGE value="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions" />
     <MESSAGE value="implement wait-queues for use by condition variables" />
     <MESSAGE value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
-    <option name="LAST_COMMIT_MESSAGE" value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
+    <MESSAGE value="refactor file-system and disk-drive for better thread synchronization" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor file-system and disk-drive for better thread synchronization" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

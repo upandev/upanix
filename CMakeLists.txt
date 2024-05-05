@@ -74,6 +74,7 @@ include_directories(${PROJECT_SOURCE_DIR}/drivers/net/protocol/packets/send)
 include_directories(${PROJECT_SOURCE_DIR}/drivers/net/e1000)
 include_directories(${PROJECT_SOURCE_DIR}/drivers/net/mac80211)
 include_directories(${PROJECT_SOURCE_DIR}/drivers/net/ath9k)
+include_directories(${PROJECT_SOURCE_DIR}/drivers/storage)
 include_directories(${PROJECT_SOURCE_DIR}/drivers/)
 
 include_directories(${PROJECT_SOURCE_DIR}/util)

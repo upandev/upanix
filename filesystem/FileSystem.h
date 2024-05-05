@@ -61,11 +61,9 @@ private:
 class FileSystem
 {
   public:
-    FileSystem(DiskDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr)
-    {
+    FileSystem(DiskDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr) {
     }
-    ~FileSystem()
-    {
+    ~FileSystem() {
       delete _freePoolQueue;
     }
 
@@ -75,15 +73,14 @@ class FileSystem
     void Format();
     void Mount(uint32_t freePoolSize);
     void Unmount();
-    void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue->push_back(sectorId); }
 
     uint32_t AllocateSector();
     uint32_t DeallocateSector(uint32_t currentSectorId);
 
     uint32_t GetTableSectorId(uint32_t uiSectorID) const;
     uint32_t GetRealSectorNumber(uint32_t uiSectorID) const;
-    uint32_t GetSectorEntryValue(const unsigned uiSectorID);
-    void SetSectorEntryValue(const unsigned uiSectorID, unsigned uiSectorEntryValue);
+    uint32_t GetSectorEntryValue(uint32_t uiSectorID);
+    void SetSectorEntryValue(uint32_t uiSectorID, uint32_t uiSectorEntryValue);
 
     void DisplayCache();
 
@@ -96,12 +93,12 @@ private:
   void LoadFreeSectors();
   void AddToTableCache(unsigned uiSectorEntry);
   void FlushTableCache(int iFlushSize);
+  void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue->push_back(sectorId); }
 
   SectorBlockEntry* GetSectorEntryFromCache(unsigned uiSectorEntry);
 
 public:
-    class Node
-    {
+    class Node {
     public:
       void Init(const char* szDirName, unsigned short usDirAttribute, int iUserID, unsigned uiParentSecNo, byte bParentSecPos);
       void InitAsRoot(uint32_t parentSectorId);

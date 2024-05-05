@@ -369,16 +369,15 @@ void FileSystem::AddToTableCache(unsigned uiSectorEntry) {
 
 }
 
-SectorBlockEntry* FileSystem::GetSectorEntryFromCache(unsigned uiSectorEntry)
-{
+SectorBlockEntry* FileSystem::GetSectorEntryFromCache(unsigned uiSectorEntry) {
   if(_fsTableCache.empty())
-    return NULL ;
+    return nullptr;
 
-  int iPos ;
+  int iPos;
   if(!FSManager_BinarySearch(_fsTableCache, BLOCK_ID(uiSectorEntry), &iPos))
-    return NULL ;
+    return nullptr;
 
-  return &_fsTableCache[iPos] ;
+  return &_fsTableCache[iPos];
 }
 
 uint32_t FileSystem::AllocateSector() {
@@ -430,31 +429,31 @@ void FileSystem::UpdateUsedSectors(uint32_t uiSectorEntryValue)
     _fsBootBlock._usedSectors--;
 }
 
-uint32_t FileSystem::GetSectorEntryValue(const unsigned uiSectorID)
-{
-  if(uiSectorID > (_fsBootBlock.BPB_FSTableSize * _fsBootBlock.BPB_BytesPerSec / 4))
+uint32_t FileSystem::GetSectorEntryValue(const uint32_t uiSectorID) {
+  if(uiSectorID > (_fsBootBlock.BPB_FSTableSize * _fsBootBlock.BPB_BytesPerSec / 4)) {
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
+  }
 
   SectorBlockEntry* pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
 
-  if(pSectorBlockEntry == NULL)
-  {
+  if(pSectorBlockEntry == nullptr) {
     AddToTableCache(uiSectorID);
     pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
   }
 
-  if(pSectorBlockEntry == NULL)
+  if(pSectorBlockEntry == nullptr) {
     throw upan::exception(XLOC, "sectory entry value not found in cache for sector:%u", uiSectorID);
+  }
 
   return pSectorBlockEntry->Read(uiSectorID);
 }
 
-void FileSystem::SetSectorEntryValue(const unsigned uiSectorID, unsigned uiSectorEntryValue)
+void FileSystem::SetSectorEntryValue(const uint32_t uiSectorID, uint32_t uiSectorEntryValue)
 {
   if(uiSectorID > (_fsBootBlock.BPB_FSTableSize * _fsBootBlock.BPB_BytesPerSec / 4))
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
 
-  UpdateUsedSectors((uiSectorEntryValue));
+  UpdateUsedSectors(uiSectorEntryValue);
 
   SectorBlockEntry* pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
 
