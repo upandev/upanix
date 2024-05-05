@@ -34,14 +34,14 @@
 
 class RawStorageDrive {
 public:
-  enum RawDiskDriveTypes {
+  enum Types {
     ATA_HARD_DISK = 100,
     USB_SCSI_DISK,
     FLOPPY_DISK,
   };
 
 private:
-  RawStorageDrive(const upan::string& name, RawDiskDriveTypes type, void* device);
+  RawStorageDrive(const upan::string& name, Types type, void* device);
 
 public:
   void Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* pDataBuffer);
@@ -49,13 +49,13 @@ public:
   void UpdateSystemIndicator(unsigned uiLBAStartSector, unsigned uiSystemIndicator);
 
   const upan::string& Name() const { return _name; }
-  RawDiskDriveTypes Type() const { return _type; }
+  Types Type() const { return _type; }
   unsigned SectorSize() const { return _sectorSize; }
   unsigned SizeInSectors() const { return _sizeInSectors; }
   void* Device() { return _device; }
 private:
   upan::string _name;
-  RawDiskDriveTypes _type;
+  Types _type;
   unsigned _sectorSize;
   unsigned _sizeInSectors;
   void* _device;

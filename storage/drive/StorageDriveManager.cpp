@@ -56,7 +56,7 @@ void StorageDriveManager::Create(const upan::string& driveName,
   _driveList.push_back(pDiskDrive);
 }
 
-RawStorageDrive* StorageDriveManager::CreateRawDisk(const upan::string& name, RawStorageDrive::RawDiskDriveTypes iType, void* pDevice)
+RawStorageDrive* StorageDriveManager::CreateRawDisk(const upan::string& name, RawStorageDrive::Types iType, void* pDevice)
 {
   for(auto d : _rawDiskList)
   {
@@ -266,7 +266,7 @@ RESOURCE_KEYS StorageDriveManager::GetResourceType(DEVICE_TYPE deviceType)
 	}
 }
 
-RESOURCE_KEYS StorageDriveManager::GetResourceType(RawStorageDrive::RawDiskDriveTypes diskType)
+RESOURCE_KEYS StorageDriveManager::GetResourceType(RawStorageDrive::Types diskType)
 {
 	switch(diskType)
 	{

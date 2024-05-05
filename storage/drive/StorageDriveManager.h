@@ -66,12 +66,12 @@ public:
   void FormatDrive(const upan::string& szDriveName);
   void GetCurrentDriveStat(DriveStat* pDriveStat);
 
-  RawStorageDrive* CreateRawDisk(const upan::string& name, RawStorageDrive::RawDiskDriveTypes iType, void* pDevice);
+  RawStorageDrive* CreateRawDisk(const upan::string& name, RawStorageDrive::Types iType, void* pDevice);
   byte RemoveRawDiskEntry(const upan::string& name);
   RawStorageDrive* GetRawDiskByName(const upan::string& name);
 
   RESOURCE_KEYS GetResourceType(DEVICE_TYPE deviceType);
-  RESOURCE_KEYS GetResourceType(RawStorageDrive::RawDiskDriveTypes diskType);
+  RESOURCE_KEYS GetResourceType(RawStorageDrive::Types diskType);
 
   const upan::list<StorageDrive*>& DiskDriveList() const { return _driveList; }
   const upan::list<RawStorageDrive*>& RawDiskDriveList() const { return _rawDiskList; }

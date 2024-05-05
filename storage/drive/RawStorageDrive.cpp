@@ -39,7 +39,7 @@
 # include "drive.h"
 
 
-RawStorageDrive::RawStorageDrive(const upan::string& name, RawStorageDrive::RawDiskDriveTypes type, void* device)
+RawStorageDrive::RawStorageDrive(const upan::string& name, RawStorageDrive::Types type, void* device)
   : _name(name), _type(type), _device(device) {
   switch(_type)
   {
