@@ -47,8 +47,4 @@ public:
   uint32_t getOffset() const override {
     return 0;
   }
-
-  uint32_t getSize() const override {
-    return 0;
-  }
 };

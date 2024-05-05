@@ -26,6 +26,8 @@
 #include <queue.h>
 #include <vector.h>
 #include <fs.h>
+#include "rwlock.h"
+#include "map.h"
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -94,7 +96,6 @@ class FileSystem
     void SetSectorEntryValue(const unsigned uiSectorID, unsigned uiSectorEntryValue);
 
     void DisplayCache();
-
 public:
     class Node
     {

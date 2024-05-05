@@ -93,6 +93,8 @@ class DiskDrive
     void StopReleaseCacheTask(bool value) { _bStopReleaseCacheTask = value; }
     void FSType(FS_TYPE t) { _fsType = t; }
 
+    upan::rwlock& GetFileLock(const upan::string& nodeId);
+
     static const int MAX_SECTORS_IN_TABLE_CACHE = 2048;
 
   private:
@@ -118,9 +120,12 @@ class DiskDrive
 
     FS_TYPE       _fsType;
     bool          _mounted;
-    upan::mutex			    _driveMutex;
+    upan::mutex   _driveMutex;
     DiskCache		  _mCache;
 		bool          _bStopReleaseCacheTask;
+
+    typedef upan::map<upan::string, upan::rwlock*> FileLocks;
+    FileLocks _fileLocks;
 
     friend class DiskDriveManager;
 public:

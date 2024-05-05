@@ -44,10 +44,6 @@ public:
     return 0;
   }
 
-  uint32_t getSize() const override {
-    return _queue.size();
-  }
-
 private:
   upan::queue<uint8_t> _queue;
   upan::mutex _ioSync;

@@ -431,6 +431,15 @@ void DiskDrive::ReleaseCache()
     _mCache.LFUCacheCleanUp();
 }
 
+upan::rwlock& DiskDrive::GetFileLock(const upan::string &nodeId) {
+  upan::mutex_guard g(_driveMutex);
+  auto it = _fileLocks.find(nodeId);
+  if (it != _fileLocks.end()) {
+    return *it->second;
+  }
+  return *_fileLocks.insert(FileLocks ::value_type(nodeId, new upan::rwlock())).first->second;
+}
+
 RawDiskDrive::RawDiskDrive(const upan::string& name, RAW_DISK_TYPES type, void* device)
   : _name(name), _type(type), _device(device)
 {

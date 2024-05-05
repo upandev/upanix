@@ -367,7 +367,7 @@ void ConsoleCommands_CopyFile()
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
 	int i = 0 ;
-  const FileSystem_FileStat& fStat = FileOperations_GetStatFD(file.id());
+  const FileSystem_FileStat& fStat = file.getStat();
 	unsigned fsize = fStat.st_size ;
 	if(fsize == 0)
 	{

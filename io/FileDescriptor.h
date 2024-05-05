@@ -23,31 +23,30 @@
 #pragma once
 
 #include <IODescriptor.h>
+#include <FileSystem.h>
+
+class DiskDrive;
 
 class FileDescriptor : public IODescriptor {
 public:
-  FileDescriptor(int pid, int fd, byte mode, const upan::string& fileName, int driveID, uint32_t fileSize, uint32_t startSectorID) :
-      IODescriptor(pid, fd, mode),
-      _fileName(fileName),
-      _offset(mode & O_APPEND ? fileSize : 0),
-      _driveID(driveID), _fileSize(fileSize),
-      _lastReadSectorIndex(0),
-      _lastReadSectorNo(startSectorID) {
-  }
+  FileDescriptor(int pid, int fd, byte mode,
+                 const upan::string& nodeId,
+                 const upan::string& fileName,
+                 DiskDrive& diskDrive, uint32_t startSectorID);
 
   int read(void* buffer, int len) override;
   bool canRead() override {
     return true;
   }
+
   int write(const void* buffer, int len) override;
   bool canWrite() override {
     return true;
   }
+
   void seek(int seekType, int offset) override;
 
-  uint32_t getSize() const override {
-    return _fileSize;
-  }
+  FileSystem_FileStat getStat();
 
   const upan::string& getFileName() const {
     return _fileName;
@@ -55,10 +54,6 @@ public:
 
   uint32_t getOffset() const override {
     return _offset;
-  }
-
-  int getDriveId() const {
-    return _driveID;
   }
 
   int getLastReadSectorIndex() const {
@@ -77,11 +72,18 @@ public:
     _lastReadSectorNo = v;
   }
 
+  void setOffset(uint32_t offset) {
+    _offset = offset;
+  }
+
 private:
-  upan::string _fileName;
+  void readCWD(FileSystem::CWD&);
+
+private:
+  const upan::string _fileName;
+  const upan::string _nodeId;
+  DiskDrive& _diskDrive;
   uint32_t _offset;
-  int _driveID;
-  uint32_t _fileSize;
   int _lastReadSectorIndex;
   uint32_t _lastReadSectorNo;
 };

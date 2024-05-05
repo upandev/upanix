@@ -23,6 +23,7 @@
 # include <SysCallFile.h>
 # include <DeviceDrive.h>
 # include <try.h>
+# include <FileDescriptor.h>
 
 byte SysCallFile_IsPresent(uint64_t sysCallId)
 {
@@ -321,11 +322,11 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => FileStat
 			{
 				*retVal = 0 ;
-				int iFD = p1 ;
         try
         {
-          FileSystem_FileStat* pFileStat = ( FileSystem_FileStat*) p2;
-          *pFileStat = FileOperations_GetStatFD(iFD);
+          auto& file = dynamic_cast<FileDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1));
+          auto pFileStat = (FileSystem_FileStat*)p2;
+          *pFileStat = file.getStat();
         }
         catch(const upan::exception& ex)
 				{

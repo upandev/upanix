@@ -30,14 +30,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implement wait-queues for use by condition variables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/DeviceDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/DeviceDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,22 +91,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/process&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "Shell Script.run.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/process",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/process" />
@@ -219,7 +228,7 @@
       <workItem from="1714177618421" duration="31292000" />
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
-      <workItem from="1714523623525" duration="13717000" />
+      <workItem from="1714523623525" duration="37507000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -564,7 +573,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -597,7 +606,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="change direct call to yield() to sleep() to ensure the process status is set to SLEEP (!= RUN) and avoid getting not preempted for running less than 10ms" />
     <MESSAGE value="code cleanup to remove unused code" />
     <MESSAGE value="fix bug in page deallocator to use page-number instead of page-address" />
     <MESSAGE value="Context switch code should run in kernel-mode. This will ensure that print statements are written to kernel stdout/terminal" />
@@ -622,7 +630,8 @@
     <MESSAGE value="mouse event will also have keyboard shift and control key status" />
     <MESSAGE value="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space" />
     <MESSAGE value="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions" />
+    <MESSAGE value="implement wait-queues for use by condition variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement wait-queues for use by condition variables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

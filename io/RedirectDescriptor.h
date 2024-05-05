@@ -58,9 +58,6 @@ public:
     return const_cast<RedirectDescriptor&>(*this).getParentDescriptor().value().getOffset();
   }
 
-  uint32_t getSize() const override {
-    return const_cast<RedirectDescriptor&>(*this).getParentDescriptor().value().getSize();
-  }
 private:
   const int _parentPid;
   const int _parentDescId;

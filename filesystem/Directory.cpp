@@ -470,7 +470,6 @@ void Directory_FileWrite(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescr
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
 	const char* szFileName = fdEntry.getFileName().c_str();
-	unsigned uiOffset = fdEntry.getOffset();
 
   Directory_ReadDirEntryInfo(*pDiskDrive, *pCWD, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
 
@@ -479,11 +478,15 @@ void Directory_FileWrite(DiskDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescr
   if(dirFile->IsDirectory())
     throw upan::exception(XLOC, "%s is a directory - can't do file-write", szFileName);
 
+  unsigned uiOffset = fdEntry.getMode() & O_APPEND ? dirFile->Size() : fdEntry.getOffset();
+
   Directory_ActualFileWrite(pDiskDrive, bDataBuffer, fdEntry, uiDataSize, dirFile);
 
-  if(dirFile->Size() < (uiOffset + uiDataSize))
+  fdEntry.setOffset(uiOffset + uiDataSize);
+
+  if(dirFile->Size() < fdEntry.getOffset())
 	{
-    dirFile->Size(uiOffset + uiDataSize) ;
+    dirFile->Size(fdEntry.getOffset()) ;
     pDiskDrive->xWrite(bDirectoryBuffer, uiSectorNo, 1);
 	}
 }
@@ -495,7 +498,7 @@ void Directory_ActualFileWrite(DiskDrive* pDiskDrive, byte* bDataBuffer, FileDes
 	int iSectorIndex ;
 	unsigned uiWriteRemainingCount, uiWrittenCount ;
 	unsigned uiCurrentFileSize ;
-	unsigned uiOffset = fdEntry.getOffset();
+	unsigned uiOffset = fdEntry.getMode() & O_APPEND ? dirFile->Size() : fdEntry.getOffset();
 
 	byte bStartAllocation ;
 	byte bSectorBuffer[512] ;

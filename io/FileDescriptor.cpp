@@ -27,66 +27,65 @@
 #include <DeviceDrive.h>
 #include <Directory.h>
 
+FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
+                               const upan::string& nodeId,
+                               const upan::string& fileName,
+                               DiskDrive& diskDrive,
+                               uint32_t startSectorID) :
+        IODescriptor(pid, fd, mode),
+        _fileName(fileName),
+        _nodeId(nodeId),
+        _diskDrive(diskDrive),
+        _offset(0),
+        _lastReadSectorIndex(0),
+        _lastReadSectorNo(startSectorID) {
+}
+
+void FileDescriptor::readCWD(FileSystem::CWD& cwd) {
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
+
+  if(pas.driveID() == _diskDrive.Id()) {
+    cwd.pDirEntry = &(pas.processPWD().DirEntry);
+    cwd.uiSectorNo = pas.processPWD().uiSectorNo;
+    cwd.bSectorEntryPosition = pas.processPWD().bSectorEntryPosition;
+  } else {
+    cwd.pDirEntry = &(_diskDrive._fileSystem.FSpwd.DirEntry);
+    cwd.uiSectorNo = _diskDrive._fileSystem.FSpwd.uiSectorNo;
+    cwd.bSectorEntryPosition = _diskDrive._fileSystem.FSpwd.bSectorEntryPosition;
+  }
+}
+
 int FileDescriptor::read(void* buffer, int len) {
-  Process* pPAS = &ProcessManager::Instance().GetCurrentPAS();
+  upan::rlock_gaurd rlockGaurd(_diskDrive.GetFileLock(_nodeId));
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(_driveID, true).goodValueOrThrow(XLOC);
-  FileSystem::CWD CWD ;
-  if(pPAS->driveID() == _driveID)
-  {
-    CWD.pDirEntry = &(pPAS->processPWD().DirEntry) ;
-    CWD.uiSectorNo = pPAS->processPWD().uiSectorNo ;
-    CWD.bSectorEntryPosition = pPAS->processPWD().bSectorEntryPosition ;
-  }
-  else
-  {
-    CWD.pDirEntry = &(pDiskDrive->_fileSystem.FSpwd.DirEntry) ;
-    CWD.uiSectorNo = pDiskDrive->_fileSystem.FSpwd.uiSectorNo ;
-    CWD.bSectorEntryPosition = pDiskDrive->_fileSystem.FSpwd.bSectorEntryPosition ;
-  }
+  FileSystem::CWD cwd;
+  readCWD(cwd);
 
-  int readLen = Directory_FileRead(pDiskDrive, &CWD, *this, (byte*)buffer, len);
-
-  FileOperations_UpdateTime(getFileName().c_str(), _driveID, DIR_ACCESS_TIME);
-
+  int readLen = Directory_FileRead(&_diskDrive, &cwd, *this, (byte*)buffer, len);
+  FileOperations_UpdateTime(_diskDrive, cwd, getFileName().c_str(), DIR_ACCESS_TIME);
   _offset += readLen;
 
   return readLen;
 }
 
 int FileDescriptor::write(const void* buffer, int len) {
-  Process* pPAS = &ProcessManager::Instance().GetCurrentPAS();
+  upan::wlock_gaurd wlockGaurd(_diskDrive.GetFileLock(_nodeId));
+
+  printf("\n writing started by thread: %d", getPid());
 
   if( !(getMode() & O_WRONLY || getMode() & O_RDWR || getMode() & O_APPEND) )
     throw upan::exception(XLOC, "insufficient permission to write file fd: %d", id());
 
-  DiskDrive* pDiskDrive = DiskDriveManager::Instance().GetByID(_driveID, true).goodValueOrThrow(XLOC);
-
-  FileSystem::CWD CWD ;
-  if(pPAS->driveID() == _driveID)
-  {
-    CWD.pDirEntry = &(pPAS->processPWD().DirEntry) ;
-    CWD.uiSectorNo = pPAS->processPWD().uiSectorNo ;
-    CWD.bSectorEntryPosition = pPAS->processPWD().bSectorEntryPosition ;
-  }
-  else
-  {
-    CWD.pDirEntry = &(pDiskDrive->_fileSystem.FSpwd.DirEntry) ;
-    CWD.uiSectorNo = pDiskDrive->_fileSystem.FSpwd.uiSectorNo ;
-    CWD.bSectorEntryPosition = pDiskDrive->_fileSystem.FSpwd.bSectorEntryPosition ;
-  }
+  FileSystem::CWD cwd;
+  readCWD(cwd);
 
   unsigned uiIncLen = len ;
-  unsigned uiLimit = 1 MB ;
-  unsigned n = 0;
+  const unsigned uiLimit = 1 MB ;
 
-  while(true)
-  {
-    n = (uiIncLen > uiLimit) ? uiLimit : uiIncLen ;
+  while(true) {
+    auto n = (uiIncLen > uiLimit) ? uiLimit : uiIncLen ;
 
-    Directory_FileWrite(pDiskDrive, &CWD, *this, (byte*)buffer, n);
-
-    _offset += n;
+    Directory_FileWrite(&_diskDrive, &cwd, *this, (byte*)buffer, n);
 
     uiIncLen -= n ;
 
@@ -94,8 +93,9 @@ int FileDescriptor::write(const void* buffer, int len) {
       break ;
   }
 
-  FileOperations_UpdateTime(getFileName().c_str(), _driveID, DIR_ACCESS_TIME | DIR_MODIFIED_TIME);
+  FileOperations_UpdateTime(_diskDrive, cwd, getFileName().c_str(), DIR_ACCESS_TIME | DIR_MODIFIED_TIME);
 
+  printf("\n writing completed by thread: %d", getPid());
   return len;
 }
 
@@ -110,8 +110,8 @@ void FileDescriptor::seek(int seekType, int offset) {
       break ;
 
     case SEEK_END:
-      offset += _fileSize;
-      break ;
+      offset += getStat().st_size;
+      break;
 
     default:
       throw upan::exception(XLOC, "invalid file seek type: %d", seekType);
@@ -121,4 +121,10 @@ void FileDescriptor::seek(int seekType, int offset) {
     throw upan::exception(XLOC, "invalid file offset %d", offset);
 
   _offset = offset;
+}
+
+FileSystem_FileStat FileDescriptor::getStat() {
+  FileSystem::CWD cwd;
+  readCWD(cwd);
+  return FileOperations_GetStat(_diskDrive, cwd, getFileName().c_str());
 }

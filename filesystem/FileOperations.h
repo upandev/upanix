@@ -27,6 +27,7 @@
 
 # include <Global.h>
 # include <FileSystem.h>
+#include <FileDescriptor.h>
 
 #define ATTR_READ	0x4
 #define ATTR_WRITE	0x2
@@ -71,18 +72,18 @@ typedef enum
 
 class IODescriptor;
 
-IODescriptor& FileOperations_Open(const char* szFileName, const byte mode) ;
+FileDescriptor& FileOperations_Open(const char* szFileName, const byte mode) ;
 byte FileOperations_Close(int fd) ;
 bool FileOperations_ReadLine(int fd, upan::string& line);
 void FileOperations_Create(const char* szFilePath, unsigned short usFileType, unsigned short usMode) ;
 void FileOperations_Delete(const char* szFilePath) ;
-bool FileOperations_Exists(const char* szFileName, unsigned short usFileType) ;
-void FileOperations_UpdateTime(const char* szFileName, int iDriveID, byte bTimeType) ;
+bool FileOperations_Exists(const char* szFileName, unsigned short usFileType);
+void FileOperations_UpdateTime(DiskDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName, byte bTimeType);
 uint32_t FileOperations_GetOffset(int fd) ;
 const FileSystem::Node FileOperations_GetDirEntry(const char* szFileName);
-const FileSystem_FileStat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
+FileSystem_FileStat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
+FileSystem_FileStat FileOperations_GetStat(DiskDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName);
 byte FileOperations_GetFileOpenMode(int fd) ;
-const FileSystem_FileStat FileOperations_GetStatFD(int iFD) ;
 void FileOperations_SyncPWD() ;
 void FileOperations_ChangeDir(const char* szFileName) ;
 void FileOperations_GetDirectoryContent(const char* szPathAddress, FileSystem::Node** pDirList, int* iListSize) ;
