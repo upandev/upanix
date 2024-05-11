@@ -83,15 +83,15 @@ static void MountManager_MountDrive(char* szDriveName)
   printf("\n Mounting Drive: %s ...", szDriveName);
 
 	// Find Drive
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  StorageDrive& storageDrive = StorageDriveManager::Instance().GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
 	// Mount Drive
-  pDiskDrive->Mount();
+  storageDrive.Mount();
 
 	// Set Process Drive
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
-  pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->fileSystem().pwd();
+  pas.setDriveID(storageDrive.Id());
+  pas.processPWD() = storageDrive.fileSystem().pwd();
 
 	// Change To Root Directory
   FileOperations_ChangeDir(FS_ROOT_DIR);
@@ -105,13 +105,10 @@ void MountManager_Initialize()
 	MountManager_GetBootMountDrive(MountManager_szRootDriveName) ;
 	printf("\n\tBoot Mount Drive: %s", MountManager_szRootDriveName);
 	
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
-	
-	if(pDiskDrive == NULL)
-	{
-		MountManager_bInitStatus = false ;
-		MountManager_iRootDriveID = CURRENT_DRIVE ;
-	}
+  StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).onBad([&](upan::error&) {
+    MountManager_bInitStatus = false ;
+    MountManager_iRootDriveID = CURRENT_DRIVE ;
+  });
 
   KC::MConsole().LoadMessage("Mount Manager Initialization", MountManager_bInitStatus ? Success : Failure);
 }
@@ -145,21 +142,17 @@ const char* MountManager_GetRootDriveName()
 	return MountManager_szRootDriveName ;
 }
 
-int MountManager_GetRootDriveID()
-{
-	if(MountManager_iRootDriveID == CURRENT_DRIVE)
-	{
-    StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).goodValueOrElse(nullptr);
+int MountManager_GetRootDriveID() {
+	if(MountManager_iRootDriveID == CURRENT_DRIVE) {
+    auto r = StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false);
 		
-		if(pDiskDrive == NULL)
-		{
+		if(r.isBad()) {
 			if(ProcessManager::GetCurrentProcessID() != NO_PROCESS_ID)
 				return ProcessManager::Instance().GetCurrentPAS().driveID() ;
-
 			return CURRENT_DRIVE ;
 		}
 
-		MountManager_iRootDriveID = pDiskDrive->Id();
+		MountManager_iRootDriveID = r.goodValue().Id();
 	}
 	
 	return MountManager_iRootDriveID ;

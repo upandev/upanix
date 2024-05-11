@@ -241,10 +241,10 @@ void ConsoleCommands_ExecuteInternalCommand(const char* szCommand)
 
 void ConsoleCommands_ChangeDrive()
 {
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
+  auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
-  pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->fileSystem().pwd();
+  pas.setDriveID(storageDrive.Id());
+  pas.processPWD() = storageDrive.fileSystem().pwd();
 }
 
 void ConsoleCommands_ShowDrive()
@@ -254,13 +254,13 @@ void ConsoleCommands_ShowDrive()
 
 void ConsoleCommands_MountDrive()
 {
-  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->Mount();
+  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC).Mount();
   printf("\nDrive Mounted");
 }
 
 void ConsoleCommands_UnMountDrive()
 {
-  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC)->UnMount();
+  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC).UnMount();
   printf("\nDrive UnMounted");
 }
 
@@ -712,8 +712,8 @@ void ConsoleCommands_ListProcess()
 
 void ConsoleCommands_ChangeRootDrive()
 {
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
-	MountManager_SetRootDrive(pDiskDrive) ;
+  auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
+	MountManager_SetRootDrive(&storageDrive) ;
 }
 
 void ConsoleCommands_Echo()

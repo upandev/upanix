@@ -107,8 +107,7 @@ void StorageDriveManager::RemoveEntryByCondition(const DriveRemoveClause& remove
 	}
 }
 
-upan::result<StorageDrive*> StorageDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount)
-{
+upan::result<StorageDrive&> StorageDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount) {
   upan::mutex_guard g(_driveListMutex);
   auto it = upan::find_if(_driveList.begin(), _driveList.end(), [&driveName, bCheckMount](const StorageDrive* d)
     {
@@ -117,8 +116,8 @@ upan::result<StorageDrive*> StorageDriveManager::GetByDriveName(const upan::stri
       return false;
     });
   if(it == _driveList.end())
-    return upan::result<StorageDrive*>::bad("failed to find drive %s (mounted: %d)", driveName.c_str(), bCheckMount);
-  return upan::good(*it);
+    return upan::result<StorageDrive&>::bad("failed to find drive %s (mounted: %d)", driveName.c_str(), bCheckMount);
+  return upan::result<StorageDrive&>(**it);
 }
 
 upan::result<StorageDrive*> StorageDriveManager::GetByID(int iID, bool bCheckMount)
@@ -148,16 +147,16 @@ void StorageDriveManager::DisplayList()
 	}
 }
 
-byte StorageDriveManager::Change(const upan::string& szDriveName)
-{
-  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrElse(nullptr);
-	if(pDiskDrive == NULL)
-		return DeviceDrive_ERR_INVALID_DRIVE_NAME ;
+byte StorageDriveManager::Change(const upan::string& szDriveName) {
+  auto r = GetByDriveName(szDriveName, false);
+	if(r.isBad()) {
+    return DeviceDrive_ERR_INVALID_DRIVE_NAME;
+  }
 
 	auto& pas = ProcessManager::Instance().GetCurrentPAS();
-	pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->fileSystem().pwd();
-  pas.setEnv("PWD", (const char*)pDiskDrive->fileSystem().pwd().getNode().Name()) ;
+	pas.setDriveID(r.goodValue().Id());
+  pas.processPWD() = r.goodValue().fileSystem().pwd();
+  pas.setEnv("PWD", (const char*)r.goodValue().fileSystem().pwd().getNode().Name()) ;
 
 	return DeviceDrive_SUCCESS ;
 }
@@ -212,34 +211,33 @@ byte StorageDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 
 void StorageDriveManager::MountDrive(const upan::string& szDriveName)
 {
-  GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC)->Mount();
+  GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC).Mount();
 }
 
-void StorageDriveManager::UnMountDrive(const upan::string& szDriveName)
-{
-  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+void StorageDriveManager::UnMountDrive(const upan::string& szDriveName) {
+  StorageDrive& storageDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
 	bool bKernel = IS_KERNEL() ? true : IS_KERNEL_PROCESS(ProcessManager::GetCurrentProcessID()) ;
-	if(!bKernel)
-	{
-		if(pDiskDrive->Id() == ProcessManager::Instance().GetCurrentPAS().driveID())
+	if(!bKernel) {
+		if(storageDrive.Id() == ProcessManager::Instance().GetCurrentPAS().driveID()) {
       throw upan::exception(XLOC, "can't unmount current drive: %s", szDriveName.c_str());
+    }
 	}
 
-  pDiskDrive->UnMount();
+  storageDrive.UnMount();
 }
 
 void StorageDriveManager::FormatDrive(const upan::string& szDriveName)
 {
-  StorageDrive* pDiskDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  auto& storageDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
-  pDiskDrive->Format();
+  storageDrive.Format();
 
-	switch((int)pDiskDrive->DeviceType())
+	switch((int)storageDrive.DeviceType())
 	{
 		case DEV_ATA_IDE:
 		case DEV_SCSI_USB_DISK:
-			pDiskDrive->RawDisk()->UpdateSystemIndicator(pDiskDrive->LBAStartSector(), 0x93);
+      storageDrive.RawDisk()->UpdateSystemIndicator(storageDrive.LBAStartSector(), 0x93);
 			break ;
 	}
 }

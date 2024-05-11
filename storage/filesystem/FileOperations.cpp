@@ -74,11 +74,8 @@ static void FileOperations_ParseFilePathWithDrive(const char* szFileNameWithDriv
 	}
 	else
 	{
-    StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(szDriveName, false).goodValueOrElse(nullptr);
-		if(pDiskDrive == NULL)
-			*pDriveID = ROOT_DRIVE_ID ;
-		else
-			*pDriveID = pDiskDrive->Id();
+    auto r = StorageDriveManager::Instance().GetByDriveName(szDriveName, false);
+    *pDriveID = r.isGood() ? r.goodValue().Id() : ROOT_DRIVE_ID;
 	}
 }
 

@@ -32,27 +32,11 @@
   <component name="ChangeListManager">
     <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactoring of file system">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -254,7 +238,7 @@
       <workItem from="1714515361023" duration="1203000" />
       <workItem from="1714523623525" duration="45625000" />
       <workItem from="1714909637158" duration="36012000" />
-      <workItem from="1715435965063" duration="3189000" />
+      <workItem from="1715435965063" duration="5848000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -599,7 +583,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
