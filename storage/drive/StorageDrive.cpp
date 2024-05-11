@@ -124,12 +124,8 @@ void StorageDrive::UnMount() {
 
 void StorageDrive::ReadRootDirectory() {
 	byte bDataBuffer[512];
-
   xRead(bDataBuffer, 0, 1);
-	
-  _fileSystem.FSpwd.DirEntry = *reinterpret_cast<FileSystem::Node*>(bDataBuffer);
-  _fileSystem.FSpwd.uiSectorNo = 0;
-  _fileSystem.FSpwd.bSectorEntryPosition = 0;
+  _fileSystem.pwd().Init(*reinterpret_cast<FileSystem::Node*>(bDataBuffer), 0, 0);
 }
 
 void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)

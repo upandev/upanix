@@ -28,6 +28,7 @@
 # include <Global.h>
 # include <FileSystem.h>
 #include <FileDescriptor.h>
+#include "mutex.h"
 
 #define ATTR_READ	0x4
 #define ATTR_WRITE	0x2
@@ -71,18 +72,37 @@ typedef enum
 } FILE_USER_TYPE ;
 
 class IODescriptor;
+class Process;
 
-FileDescriptor& FileOperations_Open(const char* szFileName, const byte mode) ;
-byte FileOperations_Close(int fd) ;
+class FileOperations {
+public:
+  static FileOperations& Instance() {
+    static FileOperations instance;
+    return instance;
+  }
+
+  void create(const char* szFilePath, unsigned short usFileType, unsigned short usMode);
+  FileDescriptor& open(const char* szFileName, const byte mode);
+  bool close(int fd);
+  void remove(const char* szFilePath) ;
+  bool exists(const char* szFileName, unsigned short usFileType);
+
+private:
+  void _create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId);
+  bool _exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId);
+
+private:
+  upan::mutex _fileOpMutex;
+};
+
 bool FileOperations_ReadLine(int fd, upan::string& line);
-void FileOperations_Create(const char* szFilePath, unsigned short usFileType, unsigned short usMode) ;
-void FileOperations_Delete(const char* szFilePath) ;
-bool FileOperations_Exists(const char* szFileName, unsigned short usFileType);
-void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName, byte bTimeType);
-uint32_t FileOperations_GetOffset(int fd) ;
-const FileSystem::Node FileOperations_GetDirEntry(const char* szFileName);
+
+
+
+void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType);
+FileSystem::Node FileOperations_GetDirEntry(const char* szFileName);
 FileSystem_FileStat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
-FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName);
+FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName);
 byte FileOperations_GetFileOpenMode(int fd) ;
 void FileOperations_SyncPWD() ;
 void FileOperations_ChangeDir(const char* szFileName) ;

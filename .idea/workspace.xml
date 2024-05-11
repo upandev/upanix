@@ -30,12 +30,30 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor RawDiskDriveTypes enum name">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use upan::map for fsTableCache">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/UserManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/users/UserManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/GenericUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/GenericUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -235,7 +253,7 @@
       <workItem from="1714385931785" duration="2433000" />
       <workItem from="1714515361023" duration="1203000" />
       <workItem from="1714523623525" duration="45625000" />
-      <workItem from="1714909637158" duration="3187000" />
+      <workItem from="1714909637158" duration="33054000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -580,7 +598,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -613,7 +631,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="destroy graphicsContext for kernel by having kernel process explicitly pass the gc param. this is so because while destroying the context which happens typically while terminating the process, the code in kernel will be running in kernel-mode, during which, the process-lookup-table should be accessed to obtain the graphicsContext because the process-lookup will return kernel-root-process in kernel-mode" />
     <MESSAGE value="some 64bit corrections" />
     <MESSAGE value="code cleanup to remove unwanted macros" />
     <MESSAGE value="comment code of old algorithm for free()" />
@@ -638,7 +655,8 @@
     <MESSAGE value="refactor disk-drive and file-system file org" />
     <MESSAGE value="refactor to rename disk-drive related files as storage-drive" />
     <MESSAGE value="refactor RawDiskDriveTypes enum name" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor RawDiskDriveTypes enum name" />
+    <MESSAGE value="use upan::map for fsTableCache" />
+    <option name="LAST_COMMIT_MESSAGE" value="use upan::map for fsTableCache" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

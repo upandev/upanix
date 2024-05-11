@@ -49,20 +49,20 @@
 
 class FileDescriptor;
 
-void Directory_Create(Process* processAddressSpace, int iDriveID, byte* bParentDirectoryBuffer, const FileSystem::CWD* pCWD,
+void Directory_Create(Process* processAddressSpace, StorageDrive &diskDrive, byte* bParentDirectoryBuffer, FileSystem::WorkingDirectory &cwd,
                       char* szDirName, unsigned short usDirAttribute) ;
-void Directory_Delete(Process* processAddressSpace, int iDriveID, byte* bParentDirectoryBuffer, const FileSystem::CWD* pCWD,
+void Directory_Delete(Process &pas, StorageDrive &diskDrive, byte* bParentDirectoryBuffer, FileSystem::WorkingDirectory &cwd,
                       const char* szDirName) ;
-void Directory_GetDirEntryForCreateDelete(const Process*, int iDriveID, const char* szDirPath, char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer) ;
-bool Directory_FindDirectory(StorageDrive&, const FileSystem::CWD& cwd, const char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDestSectorBuffer);
-void Directory_GetDirectoryContent(const char* szFileName, Process* processAddressSpace, int iDriveID, FileSystem::Node** pDirList, int* iListSize) ;
-void Directory_FileWrite(StorageDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize) ;
+void Directory_GetDirEntryForCreateDelete(Process &pas, StorageDrive &diskDrive, const char* szDirPath, char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer) ;
+bool Directory_FindDirectory(StorageDrive&, const FileSystem::WorkingDirectory& cwd, const char* szDirName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDestSectorBuffer);
+void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDriveID, FileSystem::Node** pDirList, int* iListSize) ;
+void Directory_FileWrite(StorageDrive* pDiskDrive, const FileSystem::WorkingDirectory &cwd, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize) ;
 void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, FileDescriptor& fdEntry, unsigned uiDataSize, FileSystem::Node* dirFile) ;
-int Directory_FileRead(StorageDrive* pDiskDrive, FileSystem::CWD* pCWD, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize);
-void Directory_ReadDirEntryInfo(StorageDrive&, const FileSystem::CWD&, const char* szFileName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer) ;
-void Directory_Change(const char* szFileName, int iDriveID, Process* processAddressSpace) ;
+int Directory_FileRead(StorageDrive* pDiskDrive, const FileSystem::WorkingDirectory &cwd, FileDescriptor& fdEntry, byte* bDataBuffer, unsigned uiDataSize);
+void Directory_ReadDirEntryInfo(StorageDrive&, const FileSystem::WorkingDirectory&, const char* szFileName, unsigned& uiSectorNo, byte& bSectorPos, byte* bDirectoryBuffer) ;
+void Directory_Change(const char* szFileName, int iDriveID, Process &pas) ;
 void Directory_PresentWorkingDirectory(Process* processAddressSpace, char** uiReturnDirPathAddress) ;
-const FileSystem::Node Directory_GetDirEntry(const char* szFileName, Process* processAddressSpace, int iDriveID) ;
-void Directory_SyncPWD(Process* processAddressSpace) ;
+FileSystem::Node Directory_GetDirEntry(const char* szFileName, Process &pas, int iDriveID) ;
+void Directory_SyncPWD(Process &pas) ;
 
 #endif

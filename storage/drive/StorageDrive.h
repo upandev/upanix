@@ -121,5 +121,5 @@ class StorageDrive {
     friend class StorageDriveManager;
 public:
   // FileSystem Mount Info
-  FileSystem	_fileSystem ;
+  FileSystem	_fileSystem;
 };

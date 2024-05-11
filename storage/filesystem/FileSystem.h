@@ -141,21 +141,56 @@ public:
       FS_Node _fsnode;
     } PACKED;
 
-    typedef struct
-    {
-      Node DirEntry ;
-      unsigned uiSectorNo ;
-      byte bSectorEntryPosition ;
-    } PACKED PresentWorkingDirectory ;
+    class PresentWorkingDirectory {
+    public:
+      void Init(const Node& node, uint32_t sectorId, uint16_t sectorEntryPos) {
+        _node = node;
+        _sectorId = sectorId;
+        _sectorEntryPos = sectorEntryPos;
+      }
 
-    typedef struct
-    {
-      Node* pDirEntry ;
-      unsigned uiSectorNo ;
-      byte bSectorEntryPosition ;
-    } PACKED CWD ;
+      Node& getNode() { return _node; }
+      const Node& getNode() const { return _node; }
 
-    PresentWorkingDirectory FSpwd;
+      void setNode(const Node& node) { _node = node; }
+
+      uint32_t getSectorId() const { return _sectorId; }
+      uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
+
+    private:
+      Node _node;
+      uint32_t _sectorId;
+      uint8_t  _sectorEntryPos;
+    };
+
+    class WorkingDirectory {
+    public:
+      WorkingDirectory() : _node(nullptr), _sectorId(0), _sectorEntryPos(0) {}
+
+      WorkingDirectory(Node* node, uint32_t sectorId, uint8_t sectorEntryPos) : _node(node), _sectorId(sectorId), _sectorEntryPos(sectorEntryPos) {
+      }
+
+      WorkingDirectory(PresentWorkingDirectory& pwd) {
+        *this = pwd;
+      }
+
+      WorkingDirectory& operator=(PresentWorkingDirectory& pwd) {
+        _node = &pwd.getNode();
+        _sectorId = pwd.getSectorId();
+        _sectorEntryPos = pwd.getSectorEntryPos();
+        return *this;
+      }
+
+      Node* getNode() { return _node; }
+      const Node* getNode() const { return _node; }
+      uint32_t getSectorId() const { return _sectorId; }
+      uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
+
+    private:
+      Node*    _node;
+      uint32_t _sectorId;
+      uint8_t  _sectorEntryPos;
+    };
 
 private:
     struct BootBlock {
@@ -183,6 +218,9 @@ private:
       uint32_t _usedSectors;
     } PACKED;
 
+public:
+  PresentWorkingDirectory& pwd() { return _pwd; }
+
 private:
     void InitBootBlock(BootBlock&);
     void UpdateUsedSectors(uint32_t uiSectorEntryValue);
@@ -193,6 +231,8 @@ private:
 
     typedef upan::map<uint32_t, SectorBlockEntry*> TableCache;
     TableCache _fsTableCache;
+
+    PresentWorkingDirectory _pwd;
 };
 
 typedef struct {

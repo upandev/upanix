@@ -242,8 +242,9 @@ void ConsoleCommands_ExecuteInternalCommand(const char* szCommand)
 void ConsoleCommands_ChangeDrive()
 {
   StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
-	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
-  memcpy(&ProcessManager::Instance().GetCurrentPAS().processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
+  pas.setDriveID(pDiskDrive->Id());
+  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
 }
 
 void ConsoleCommands_ShowDrive()
@@ -275,13 +276,13 @@ void ConsoleCommands_ClearScreen()
 
 void ConsoleCommands_CreateDirectory()
 {
-  FileOperations_Create((char*)(CommandLineParser::Instance().GetParameterAt(0)), ATTR_TYPE_DIRECTORY, ATTR_DIR_DEFAULT);
+  FileOperations::Instance().create((char*)(CommandLineParser::Instance().GetParameterAt(0)), ATTR_TYPE_DIRECTORY, ATTR_DIR_DEFAULT);
   printf("\n DIR Created\n");
 }
 
 void ConsoleCommands_RemoveFile()
 {
-  FileOperations_Delete((char*)(CommandLineParser::Instance().GetParameterAt(0)));
+  FileOperations::Instance().remove((char*)(CommandLineParser::Instance().GetParameterAt(0)));
   printf("\n DIR Deleted\n");
 }
 
@@ -313,7 +314,7 @@ void ConsoleCommands_ReadFileContent()
 	
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  auto& file = FileOperations_Open(szFileName, O_RDONLY);
+  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY);
 
   printf("\n");
 	while(true)
@@ -331,8 +332,7 @@ void ConsoleCommands_ReadFileContent()
     printf("%s", bDataBuffer);
 	}
 
-	if(FileOperations_Close(file.id()) != FileOperations_SUCCESS)
-	{
+	if(!FileOperations::Instance().close(file.id())) {
     printf("\n File Close Failed");
 		return ;
 	}
@@ -357,13 +357,13 @@ void ConsoleCommands_CopyFile()
 	char bDataBuffer[iBufSize] ;
 
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
-  auto& file = FileOperations_Open(szFileName, O_RDONLY);
+  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY);
 
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
-  FileOperations_Create(szDestFile, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT);
+  FileOperations::Instance().create(szDestFile, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT);
 
-  auto& file1 = FileOperations_Open(szDestFile, O_RDWR);
+  auto& file1 = FileOperations::Instance().open(szDestFile, O_RDWR);
 
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
@@ -395,14 +395,12 @@ void ConsoleCommands_CopyFile()
     KC::MConsole().ShowProgress("", cr, (i * iBufSize * 100) / fsize) ;
 	}
 
-	if(FileOperations_Close(file.id()) != FileOperations_SUCCESS)
-	{
+	if(!FileOperations::Instance().close(file.id())) {
     printf("\n File Close Failed");
 		return ;
 	}
 
-	if(FileOperations_Close(file1.id()) != FileOperations_SUCCESS)
-	{
+	if(!FileOperations::Instance().close(file1.id())) {
 	  printf("\n File1 Close Failed");
 		return ;
 	}
@@ -943,14 +941,14 @@ void graphics_photos(int x, int y) {
   for(int i = 0; i < iListSize; i++) {
     if (pDirList[i].IsFile()) {
       auto fileSize = pDirList[i].Size();
-      auto& file = FileOperations_Open(pDirList[i].Name(), O_RDONLY);
+      auto& file = FileOperations::Instance().open(pDirList[i].Name(), O_RDONLY);
       file.seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file.read(buffer.get(), fileSize);
       upanui::BmpEncoder decoder;
       upanui::Image& image = decoder.decode(buffer.get(), upan::option<uint32_t>::empty());
       images.push_back(&image);
-      FileOperations_Close(file.id());
+      FileOperations::Instance().close(file.id());
     }
   }
 

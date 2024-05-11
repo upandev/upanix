@@ -78,7 +78,7 @@ void KernelService::ProcessExec::Execute()
 
   auto& curProc = ProcessManager::Instance().GetCurrentPAS();
   curProc.setDriveID(iOldDDriveID);
-	memcpy((void*)&curProc.processPWD(), (void*)&mOldPWD, sizeof(FileSystem::PresentWorkingDirectory));
+  curProc.processPWD() = mOldPWD;
 }
 
 void KernelService::ThreadExec::Execute() {

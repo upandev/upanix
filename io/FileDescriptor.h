@@ -72,12 +72,15 @@ public:
     _lastReadSectorNo = v;
   }
 
+  void getLastReadSectorDetails(FileSystem::Node&, int& sectorIndex, uint32_t& sectorId);
+  void setLastReadSectorDetails(int sectorIndex, uint32_t sectorId);
+
   void setOffset(uint32_t offset) {
     _offset = offset;
   }
 
 private:
-  void readCWD(FileSystem::CWD&);
+  FileSystem::PresentWorkingDirectory& getWorkingDirectory();
 
 private:
   const upan::string _fileName;

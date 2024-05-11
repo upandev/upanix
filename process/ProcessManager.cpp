@@ -679,11 +679,11 @@ bool ProcessManager::CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem:
   SchedulableProcess* pSrcPAS = &GetSchedulableProcess(iProcessID).value();
   Process* pDestPAS = &GetCurrentPAS();
 
-	iOldDriveId = pDestPAS->driveID() ;
-  memcpy(&mOldPWD, &(pDestPAS->processPWD()), sizeof(FileSystem::PresentWorkingDirectory));
+	iOldDriveId = pDestPAS->driveID();
+  mOldPWD = pDestPAS->processPWD();
 
   pDestPAS->setDriveID(pSrcPAS->driveID());
-  memcpy(&(pDestPAS->processPWD()), &(pSrcPAS->processPWD()), sizeof(FileSystem::PresentWorkingDirectory));
+  pDestPAS->processPWD() = pSrcPAS->processPWD();
 
 	return true;
 }

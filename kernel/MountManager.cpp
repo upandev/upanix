@@ -63,7 +63,7 @@ static void MountManager_GetBootMountDrive(char* szBootDriveName)
 static bool MountManager_GetHomeMountDrive(char* szHomeDriveName, unsigned uiSize)
 {
   auto result = upan::tryreturn([&]() {
-    auto& fd = FileOperations_Open("ROOT@/.mount.lst", O_RDONLY);
+    auto& fd = FileOperations::Instance().open("ROOT@/.mount.lst", O_RDONLY);
     return fd.read(szHomeDriveName, uiSize);
   });
 
@@ -89,9 +89,9 @@ static void MountManager_MountDrive(char* szDriveName)
   pDiskDrive->Mount();
 
 	// Set Process Drive
-	ProcessManager::Instance().GetCurrentPAS().setDriveID(pDiskDrive->Id());
-
-  memcpy(&ProcessManager::Instance().GetCurrentPAS().processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
+  pas.setDriveID(pDiskDrive->Id());
+  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
 
 	// Change To Root Directory
   FileOperations_ChangeDir(FS_ROOT_DIR);

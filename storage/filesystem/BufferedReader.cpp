@@ -32,7 +32,7 @@ to ensure some non zero byte request is there within file size limit*/
 #define OVERFLOW_ADJUST 2
 
 BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet, unsigned uiBufferSize) : m_uiOffSet(uiOffSet), m_szBuffer(nullptr) {
-  _file = &FileOperations_Open(szFileName.c_str(), O_RDONLY);
+  _file = &FileOperations::Instance().open(szFileName.c_str(), O_RDONLY);
 
   try
   {
@@ -43,7 +43,7 @@ BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet
   }
   catch(...)
 	{
-    FileOperations_Close(_file->id());
+    FileOperations::Instance().close(_file->id());
     throw;
 	}
 }
@@ -51,7 +51,7 @@ BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet
 BufferedReader::~BufferedReader()
 {
   delete[] m_szBuffer;
-	FileOperations_Close(_file->id()) ;
+	FileOperations::Instance().close(_file->id()) ;
 }
 
 void BufferedReader::Seek(unsigned uiOffSet) {
@@ -65,7 +65,7 @@ int BufferedReader::Read(char* szBuffer, int iLen)
 
 int BufferedReader::DoRead(char* szBuffer, int iLen)
 {
-  unsigned uiCurrentOffset = FileOperations_GetOffset(_file->id());
+  unsigned uiCurrentOffset = _file->getOffset();
 
 	if(uiCurrentOffset >= m_uiOffSet && (uiCurrentOffset + iLen) <= (m_uiOffSet + m_uiBufferSize))
 	{

@@ -190,6 +190,7 @@ void Initialize() {
 
     KeyboardHandler::Instance().Getch();
 
+    FileOperations::Instance();
     SessionManager_Initialize() ;
 
     Console::Instance();

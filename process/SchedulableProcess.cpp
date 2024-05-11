@@ -46,7 +46,7 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
     {
       StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
       if(pDiskDrive->Mounted())
-        _processPWD = pDiskDrive->_fileSystem.FSpwd;
+        _processPWD = pDiskDrive->_fileSystem.pwd();
     }
     _processGroup = new ProcessGroup(isFGProcess);
   } else {

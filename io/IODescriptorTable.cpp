@@ -94,10 +94,12 @@ IODescriptorTable::IODMap::iterator IODescriptorTable::getItr(int fd) {
 }
 
 IODescriptor& IODescriptorTable::get(int fd) {
+  upan::mutex_guard g(_fdMutex);
   return *(getItr(fd)->second);
 }
 
 IODescriptor& IODescriptorTable::getRealNonDupped(int fd) {
+  upan::mutex_guard g(_fdMutex);
   return get(fd).getRealDescriptor();
 }
 
@@ -117,6 +119,7 @@ void IODescriptorTable::free(int fd) {
 }
 
 void IODescriptorTable::dup2(int oldFD, int newFD) {
+  upan::mutex_guard g(_fdMutex);
   auto& oldF = get(oldFD);
   auto& newF = get(newFD);
   free(newFD);

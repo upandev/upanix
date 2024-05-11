@@ -102,7 +102,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try
         {
           FileOperations_SyncPWD();
-          FileOperations_Create(szPathAddress, usType, (unsigned short)(p2));
+          FileOperations::Instance().create(szPathAddress, usType, (unsigned short)(p2));
         }
         catch(const upan::exception& ex)
 				{
@@ -120,7 +120,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try
         {
           FileOperations_SyncPWD();
-          FileOperations_Delete(szPathAddress);
+          FileOperations::Instance().remove(szPathAddress);
         }
         catch(const upan::exception& ex)
         {
@@ -165,7 +165,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try
         {
           FileOperations_SyncPWD();
-          *retVal = FileOperations_Open(szFileNameAddr, mode).id();
+          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).id();
         }
         catch(const upan::exception& ex)
         {
@@ -178,9 +178,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_FILE_CLOSE:
 			// P1 => File Desc
 			{
-				*retVal = 0 ;
-				if(FileOperations_Close((int)p1) != FileOperations_SUCCESS)
-					*retVal = -1 ;
+				*retVal = FileOperations::Instance().close((int)p1) ? 0 : -1;
 			}
 			break ;
 
@@ -272,7 +270,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
         try
         {
-          *retVal = FileOperations_GetOffset((int)p1);
+          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1).getOffset();
         }
         catch(const upan::exception& ex)
         {

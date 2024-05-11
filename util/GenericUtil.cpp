@@ -49,7 +49,7 @@ class StrPathTokenizer : public StringTokenizer
 			
 			strcat((char*)szTemp, m_szFileName) ;
 
-      if(FileOperations_Exists((const char*)szTemp, ATTR_TYPE_FILE))
+      if(FileOperations::Instance().exists((const char*)szTemp, ATTR_TYPE_FILE))
 			{
 				m_bFound = true ;
 

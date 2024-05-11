@@ -45,8 +45,7 @@ static upan::result<unsigned short> FileOperations_ValidateAndGetFileAttr(unsign
   return upan::good((unsigned short)(usFileType | usMode));
 }
 
-static void FileOperations_ParseFilePathWithDrive(const char* szFileNameWithDrive, char* szFileName, unsigned* pDriveID)
-{
+static void FileOperations_ParseFilePathWithDrive(const char* szFileNameWithDrive, char* szFileName, unsigned* pDriveID) {
 	int i = String_Chr(szFileNameWithDrive, '@') ;
 	
 	if(i == -1)
@@ -83,59 +82,57 @@ static void FileOperations_ParseFilePathWithDrive(const char* szFileNameWithDriv
 	}
 }
 
-static void __FileOperations_Create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId);
-static bool __FileOperations_Exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId);
-
-
 /************************************************************************************************************/
-FileDescriptor& FileOperations_Open(const char* szFileName, const byte mode) {
+FileDescriptor& FileOperations::open(const char* szFileName, const byte mode) {
+  upan::mutex_guard g(_fileOpMutex);
+
 	int iDriveID ;
 	char szFile[100] ;
 	FileOperations_ParseFilePathWithDrive(szFileName, szFile, (unsigned*)&iDriveID) ;
 
-	Process* pPAS = &ProcessManager::Instance().GetCurrentPAS() ;
+	auto& pas = ProcessManager::Instance().GetCurrentPAS() ;
 
   if ( (mode & O_APPEND) || (mode & O_CREAT) ) {
-    if(!__FileOperations_Exists(szFileName, ATTR_TYPE_FILE, *pPAS, iDriveID)) {
-      __FileOperations_Create(szFileName, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT, *pPAS, iDriveID);
+    if(!_exists(szFileName, ATTR_TYPE_FILE, pas, iDriveID)) {
+      _create(szFileName, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT, pas, iDriveID);
     }
   }
 
   StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
-  FileSystem::Node dirEntry = Directory_GetDirEntry(szFile, pPAS, iDriveID);
+  FileSystem::Node dirEntry = Directory_GetDirEntry(szFile, pas, iDriveID);
 
   if(!dirEntry.IsFile())
     throw upan::exception(XLOC, "%s file doesn't exist", szFileName);
 
-  if(!pPAS->hasFilePermission(dirEntry, mode))
+  if(!pas.hasFilePermission(dirEntry, mode))
     throw upan::exception(XLOC, "insufficient permission to open file %s", szFileName);
 
 	if( (mode & O_TRUNC) ) {
-    FileOperations_Delete(szFileName);
-    FileOperations_Create(szFileName, FILE_TYPE(dirEntry.Attribute()), FILE_PERM(dirEntry.Attribute()));
-    dirEntry = Directory_GetDirEntry(szFile, pPAS, iDriveID);
+    FileOperations::Instance().remove(szFileName);
+    FileOperations::Instance().create(szFileName, FILE_TYPE(dirEntry.Attribute()), FILE_PERM(dirEntry.Attribute()));
+    dirEntry = Directory_GetDirEntry(szFile, pas, iDriveID);
 	}
 
   char nodeIdBuf[64];
   sprintf(nodeIdBuf, "%d:%d:%d", pDiskDrive->Id(), dirEntry.ParentSectorID(), dirEntry.ParentSectorPos());
   const upan::string nodeId(nodeIdBuf);
 
-  return dynamic_cast<FileDescriptor&>(pPAS->iodTable().allocate([&](int fd) {
-    return new FileDescriptor(pPAS->processID(), fd, mode,
+  return dynamic_cast<FileDescriptor&>(pas.iodTable().allocate([&](int fd) {
+    return new FileDescriptor(pas.processID(), fd, mode,
                               nodeId, dirEntry.FullPath(*pDiskDrive),
                               *pDiskDrive, dirEntry.StartSectorID());
   }));
 }
 
-byte FileOperations_Close(int fd) {
+bool FileOperations::close(int fd) {
   try {
     ProcessManager::Instance().GetCurrentPAS().iodTable().free(fd);
   } catch(upan::exception& e) {
     e.Print();
-    return FileOperations_FAILURE;
+    return false;
   }
-	return FileOperations_SUCCESS ;
+	return true;
 }
 
 bool FileOperations_ReadLine(int fd, upan::string& line)
@@ -176,75 +173,77 @@ bool FileOperations_ReadLine(int fd, upan::string& line)
   return true;
 }
 
-void FileOperations_Create(const char* szFilePath, unsigned short usFileType, unsigned short usMode) {
+void FileOperations::create(const char* szFilePath, unsigned short usFileType, unsigned short usMode) {
+  upan::mutex_guard g(_fileOpMutex);
   int iDriveID;
   char szFile[100];
   FileOperations_ParseFilePathWithDrive(szFilePath, szFile, (unsigned *) &iDriveID);
-  __FileOperations_Create(szFile, usFileType, usMode, ProcessManager::Instance().GetCurrentPAS(), iDriveID);
+  _create(szFile, usFileType, usMode, ProcessManager::Instance().GetCurrentPAS(), iDriveID);
 }
 
-void __FileOperations_Create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId) {
+void FileOperations::_create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId) {
   const unsigned short usFileAttr = FileOperations_ValidateAndGetFileAttr(usFileType, usMode).goodValueOrThrow(XLOC);
 
 	byte bParentDirectoryBuffer[512] ;
 	char szDirName[33] ;
-  FileSystem::CWD CWD ;
 	unsigned uiParentSectorNo ;
 	byte bParentSectorPos ;
 
-  Directory_GetDirEntryForCreateDelete(&pas, driveId, szFile, szDirName, uiParentSectorNo, bParentSectorPos, bParentDirectoryBuffer);
+  StorageDrive* diskDrive = StorageDriveManager::Instance().GetByID(driveId, true).goodValueOrThrow(XLOC);
+  Directory_GetDirEntryForCreateDelete(pas, *diskDrive, szFile, szDirName, uiParentSectorNo, bParentSectorPos, bParentDirectoryBuffer);
 
-  CWD.pDirEntry = ((FileSystem::Node*)bParentDirectoryBuffer) + bParentSectorPos ;
-	CWD.uiSectorNo = uiParentSectorNo ;
-	CWD.bSectorEntryPosition = bParentSectorPos ;
+  FileSystem::WorkingDirectory cwd(((FileSystem::Node*)bParentDirectoryBuffer) + bParentSectorPos, uiParentSectorNo, bParentSectorPos);
 
-  if(!pas.hasFilePermission(*CWD.pDirEntry, O_RDWR))
+  if(!pas.hasFilePermission(*cwd.getNode(), O_RDWR)) {
     throw upan::exception(XLOC, "insufficient permission to create file: %s", szFile);
+  }
 
-  Directory_Create(&pas, driveId, bParentDirectoryBuffer, &CWD, szDirName, usFileAttr);
+  Directory_Create(&pas, *diskDrive, bParentDirectoryBuffer, cwd, szDirName, usFileAttr);
 }
 
-void FileOperations_Delete(const char* szFilePath)
-{
+void FileOperations::remove(const char* szFilePath) {
+  upan::mutex_guard g(_fileOpMutex);
+
 	int iDriveID ;
 	char szFile[100] ;
+
 	FileOperations_ParseFilePathWithDrive(szFilePath, szFile, (unsigned*)&iDriveID) ;
 
-	Process* pPAS = &ProcessManager::Instance().GetCurrentPAS() ;
+	auto& pas = ProcessManager::Instance().GetCurrentPAS() ;
 
 	byte bParentDirectoryBuffer[512] ;
 	char szDirName[33] ;
-  FileSystem::CWD CWD ;
 	unsigned uiParentSectorNo ;
 	byte bParentSectorPos ;
 
-  Directory_GetDirEntryForCreateDelete(pPAS, iDriveID, szFile, szDirName, uiParentSectorNo, bParentSectorPos, bParentDirectoryBuffer);
+  StorageDrive* diskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  Directory_GetDirEntryForCreateDelete(pas, *diskDrive, szFile, szDirName, uiParentSectorNo, bParentSectorPos, bParentDirectoryBuffer);
 
-  CWD.pDirEntry = ((FileSystem::Node*)bParentDirectoryBuffer) + bParentSectorPos ;
-	CWD.uiSectorNo = uiParentSectorNo ;
-	CWD.bSectorEntryPosition = bParentSectorPos ;
+  FileSystem::WorkingDirectory cwd(((FileSystem::Node*)bParentDirectoryBuffer) + bParentSectorPos, uiParentSectorNo, bParentSectorPos);
 
-  if(!pPAS->hasFilePermission(*CWD.pDirEntry, O_RDWR))
+  if(!pas.hasFilePermission(*cwd.getNode(), O_RDWR))
     throw upan::exception(XLOC, "insufficient permission to delete file: %s", szFilePath);
 
   const FileSystem::Node& fileDirEntry = FileOperations_GetDirEntry(szFilePath);
 
-  if(pPAS->fileUserType(fileDirEntry) != USER_OWNER)
+  if(pas.fileUserType(fileDirEntry) != USER_OWNER)
     throw upan::exception(XLOC, "insufficient permission to delete file: %s", szFilePath);
 
-  Directory_Delete(pPAS, iDriveID, bParentDirectoryBuffer, &CWD, szDirName);
+  Directory_Delete(pas, *diskDrive, bParentDirectoryBuffer, cwd, szDirName);
 }
 
-bool FileOperations_Exists(const char* szFileName, unsigned short usFileType) {
+bool FileOperations::exists(const char* szFileName, unsigned short usFileType) {
+  upan::mutex_guard g(_fileOpMutex);
+
   int iDriveID;
   char szFile[100];
   FileOperations_ParseFilePathWithDrive(szFileName, szFile, (unsigned *) &iDriveID);
-  return __FileOperations_Exists(szFile, usFileType, ProcessManager::Instance().GetCurrentPAS(), iDriveID);
+  return _exists(szFile, usFileType, ProcessManager::Instance().GetCurrentPAS(), iDriveID);
 }
 
-bool __FileOperations_Exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId) {
+bool FileOperations::_exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId) {
   try {
-    const FileSystem::Node dirEntry = Directory_GetDirEntry(szFile, &pas, driveId);
+    const FileSystem::Node dirEntry = Directory_GetDirEntry(szFile, pas, driveId);
     if((dirEntry.Attribute() & usFileType) != usFileType)
       return false;
   } catch(const upan::exception& ex) {
@@ -254,17 +253,13 @@ bool __FileOperations_Exists(const char* szFile, unsigned short usFileType, Proc
   return true;
 }
 
-uint32_t FileOperations_GetOffset(int fd) {
-  return ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd).getOffset();
-}
-
 void FileOperations_GetCWD(char* szPathBuf, int iBufSize) {
   FileSystem::PresentWorkingDirectory& pwd = ProcessManager::Instance().GetCurrentPAS().processPWD();
 	int iDriveID = ProcessManager::Instance().GetCurrentPAS().driveID() ;
 
   StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
-  const upan::string& fullPath = pwd.DirEntry.FullPath(*pDiskDrive);
+  const upan::string& fullPath = pwd.getNode().FullPath(*pDiskDrive);
 
   if(fullPath.length() > iBufSize)
     throw upan::exception(XLOC, "%d buf-size is smaller than path size %d", iBufSize, fullPath.length());
@@ -272,34 +267,21 @@ void FileOperations_GetCWD(char* szPathBuf, int iBufSize) {
   strcpy(szPathBuf, fullPath.c_str());
 }
 
-const FileSystem::Node FileOperations_GetDirEntry(const char* szFileName)
-{
+FileSystem::Node FileOperations_GetDirEntry(const char* szFileName) {
 	int iDriveID ;
 	char szFile[100] ;
 	FileOperations_ParseFilePathWithDrive(szFileName, szFile, (unsigned*)&iDriveID) ;
 
   StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
 
-  FileSystem::CWD CWD ;
-	if(iDriveID == ProcessManager::Instance().GetCurrentPAS().driveID())
-	{
-    FileSystem::PresentWorkingDirectory& pwd = ProcessManager::Instance().GetCurrentPAS().processPWD();
-		CWD.pDirEntry = &pwd.DirEntry ;
-		CWD.uiSectorNo = pwd.uiSectorNo ;
-		CWD.bSectorEntryPosition = pwd.bSectorEntryPosition ;
-	}
-	else
-	{
-		CWD.pDirEntry = &(pDiskDrive->_fileSystem.FSpwd.DirEntry) ;
-		CWD.uiSectorNo = pDiskDrive->_fileSystem.FSpwd.uiSectorNo ;
-		CWD.bSectorEntryPosition = pDiskDrive->_fileSystem.FSpwd.bSectorEntryPosition ;
-	}
+  FileSystem::WorkingDirectory cwd = (iDriveID == pas.driveID()) ? pas.processPWD() : pDiskDrive->_fileSystem.pwd();
 
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
 	
-  Directory_ReadDirEntryInfo(*pDiskDrive, CWD, szFile, uiSectorNo, bSectorPos, bDirectoryBuffer);
+  Directory_ReadDirEntryInfo(*pDiskDrive, cwd, szFile, uiSectorNo, bSectorPos, bDirectoryBuffer);
 
   return ((FileSystem::Node*)bDirectoryBuffer)[bSectorPos] ;
 }
@@ -313,23 +295,13 @@ FileSystem_FileStat FileOperations_GetStat(const char* szFileName, int iDriveID)
   }
 
   StorageDrive *pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
 
-  FileSystem::CWD CWD;
-
-  if (iDriveID == ProcessManager::Instance().GetCurrentPAS().driveID()) {
-    FileSystem::PresentWorkingDirectory &pwd = ProcessManager::Instance().GetCurrentPAS().processPWD();
-    CWD.pDirEntry = &pwd.DirEntry;
-    CWD.uiSectorNo = pwd.uiSectorNo;
-    CWD.bSectorEntryPosition = pwd.bSectorEntryPosition;
-  } else {
-    CWD.pDirEntry = &(pDiskDrive->_fileSystem.FSpwd.DirEntry);
-    CWD.uiSectorNo = pDiskDrive->_fileSystem.FSpwd.uiSectorNo;
-    CWD.bSectorEntryPosition = pDiskDrive->_fileSystem.FSpwd.bSectorEntryPosition;
-  }
-  return FileOperations_GetStat(*pDiskDrive, CWD, szFile);
+  FileSystem::WorkingDirectory cwd = iDriveID == pas.driveID() ? pas.processPWD() : pDiskDrive->_fileSystem.pwd();
+  return FileOperations_GetStat(*pDiskDrive, cwd, szFile);
 }
 
-FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName) {
+FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName) {
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
@@ -359,7 +331,7 @@ FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSy
   return fileStat;
 }
 
-void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::CWD& cwd, const char* szFileName, byte bTimeType) {
+void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType) {
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
@@ -382,7 +354,7 @@ byte FileOperations_GetFileOpenMode(int fd) {
 
 void FileOperations_SyncPWD()
 {
-  Directory_SyncPWD(&ProcessManager::Instance().GetCurrentPAS());
+  Directory_SyncPWD(ProcessManager::Instance().GetCurrentPAS());
 }
 
 void FileOperations_ChangeDir(const char* szFileName)
@@ -390,10 +362,7 @@ void FileOperations_ChangeDir(const char* szFileName)
 	int iDriveID ;
 	char szFile[100] ;
 	FileOperations_ParseFilePathWithDrive(szFileName, szFile, (unsigned*)&iDriveID) ;
-
-	Process* pPAS = &ProcessManager::Instance().GetCurrentPAS() ;
-	
-  Directory_Change(szFile, iDriveID, pPAS);
+  Directory_Change(szFile, iDriveID, ProcessManager::Instance().GetCurrentPAS());
 }
 
 void FileOperations_GetDirectoryContent(const char* szPathAddress, FileSystem::Node** pDirList, int* iListSize)
@@ -401,38 +370,29 @@ void FileOperations_GetDirectoryContent(const char* szPathAddress, FileSystem::N
 	int iDriveID ;
 	char szPath[100] ;
 	FileOperations_ParseFilePathWithDrive(szPathAddress, szPath, (unsigned*)&iDriveID) ;
-
-	Process* pPAS = &ProcessManager::Instance().GetCurrentPAS() ;
-
-  Directory_GetDirectoryContent(szPath, pPAS, iDriveID, pDirList, iListSize);
+  Directory_GetDirectoryContent(szPath, ProcessManager::Instance().GetCurrentPAS(), iDriveID, pDirList, iListSize);
 }
 
-bool FileOperations_FileAccess(const char* szFileName, int iDriveID, int mode)
-{
-  try
-  {
+bool FileOperations_FileAccess(const char* szFileName, int iDriveID, int mode) {
+  try {
     char szFile[100] ;
-    if(iDriveID == FROM_FILE)
-    {
+    if(iDriveID == FROM_FILE) {
       FileOperations_ParseFilePathWithDrive(szFileName, szFile, (unsigned*)&iDriveID) ;
-    }
-    else
-    {
+    } else {
       strcpy(szFile, szFileName) ;
     }
 
-    Process* pPAS = &ProcessManager::Instance().GetCurrentPAS() ;
+    auto& pas = ProcessManager::Instance().GetCurrentPAS() ;
+    const FileSystem::Node& dirEntry = Directory_GetDirEntry(szFile, pas, iDriveID);
 
-    const FileSystem::Node& dirEntry = Directory_GetDirEntry(szFile, pPAS, iDriveID);
-
-    if(!dirEntry.IsFile())
+    if(!dirEntry.IsFile()) {
       return false;
+    }
 
-    if(!pPAS->hasFilePermission(dirEntry, mode))
+    if(!pas.hasFilePermission(dirEntry, mode)) {
       return false;
-  }
-  catch(const upan::exception& ex)
-  {
+    }
+  } catch(const upan::exception& ex) {
     ex.Print();
     return false;
   }

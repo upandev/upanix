@@ -156,8 +156,8 @@ byte StorageDriveManager::Change(const upan::string& szDriveName)
 
 	auto& pas = ProcessManager::Instance().GetCurrentPAS();
 	pas.setDriveID(pDiskDrive->Id());
-  memcpy(&pas.processPWD(), &(pDiskDrive->_fileSystem.FSpwd), sizeof(FileSystem::PresentWorkingDirectory));
-  pas.setEnv("PWD", (const char*)pDiskDrive->_fileSystem.FSpwd.DirEntry.Name()) ;
+  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
+  pas.setEnv("PWD", (const char*)pDiskDrive->_fileSystem.pwd().getNode().Name()) ;
 
 	return DeviceDrive_SUCCESS ;
 }

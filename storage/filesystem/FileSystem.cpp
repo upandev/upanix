@@ -27,8 +27,8 @@
 #include <SystemUtil.h>
 #include <DMM.h>
 
-#define BLOCK_ID(SectorID) (SectorID / ENTRIES_PER_TABLE_SECTOR)
-#define BLOCK_OFFSET(SectorID) (SectorID % ENTRIES_PER_TABLE_SECTOR)
+#define BLOCK_ID(SectorID) ((SectorID) / ENTRIES_PER_TABLE_SECTOR)
+#define BLOCK_OFFSET(SectorID) ((SectorID) % ENTRIES_PER_TABLE_SECTOR)
 
 SectorBlockEntry::SectorBlockEntry(StorageDrive& diskDrive, uint32_t tableSectorId, uint32_t blockId) : _blockId(blockId), _readCount(0), _writeCount(0) {
   diskDrive.Read(tableSectorId, 1, (byte*)_sectorBlock);
@@ -266,11 +266,12 @@ void FileSystem::FlushTableCache(int flushSize) {
     flushSize = _fsTableCache.size();
   }
 
-  for(auto i = _fsTableCache.begin(); i != _fsTableCache.end() && flushSize > 0; ++i) {
+  for(auto i = _fsTableCache.begin(); i != _fsTableCache.end() && flushSize > 0;) {
     auto e = i->second;
     if (e->WriteCount() != 0) {
       _diskDrive.Write(e->BlockId() + _fsBootBlock.BPB_RsvdSecCnt + 1, 1, (byte*)(e->SectorBlock()));
     }
+    delete e;
     _fsTableCache.erase(i++);
     --flushSize;
   }
@@ -296,7 +297,7 @@ SectorBlockEntry* FileSystem::GetSectorEntryFromCache(uint32_t sectorId) {
     return nullptr;
   }
   auto r = _fsTableCache.find(BLOCK_ID(sectorId));
-  return r == _fsTableCache.end() ? nullptr : r->second;
+  return (r != _fsTableCache.end()) ? r->second : nullptr;
 }
 
 uint32_t FileSystem::AllocateSector() {
@@ -360,7 +361,7 @@ uint32_t FileSystem::GetSectorEntryValue(const uint32_t uiSectorID) {
   }
 
   if(pSectorBlockEntry == nullptr) {
-    throw upan::exception(XLOC, "sectory entry value not found in cache for sector:%u", uiSectorID);
+    throw upan::exception(XLOC, "sector entry value not found in cache for sector:%u", uiSectorID);
   }
 
   return pSectorBlockEntry->Read(uiSectorID);
@@ -452,3 +453,4 @@ upan::string FileSystem::Node::FullPath(StorageDrive& diskDrive)
 
   throw upan::exception(XLOC, "failed to find full path for directory/file %s", _fsnode._name);
 }
+

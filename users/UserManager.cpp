@@ -28,7 +28,7 @@
 
 UserManager::UserManager() : _userListFileName(upan::string(OSIN_PATH) + ".user.lst")
 {
-	if(FileOperations_Exists(_userListFileName.c_str(), ATTR_TYPE_FILE) != FileOperations_SUCCESS)
+	if(FileOperations::Instance().exists(_userListFileName.c_str(), ATTR_TYPE_FILE) != FileOperations_SUCCESS)
 	{
     CreateNewUserList();
 	}
@@ -46,7 +46,7 @@ void UserManager::CreateNewUserList()
 {
 	unsigned short usPerm = S_OWNER((ATTR_READ | ATTR_WRITE)) | S_GROUP(ATTR_READ) | S_OTHERS(ATTR_READ);
 
-  FileOperations_Create(_userListFileName.c_str(), ATTR_TYPE_FILE, usPerm);
+  FileOperations::Instance().create(_userListFileName.c_str(), ATTR_TYPE_FILE, usPerm);
 
 	InitializeDefaultUserList();
 	WriteUserList();
@@ -59,7 +59,7 @@ void UserManager::InitializeDefaultUserList()
 
 void UserManager::WriteUserList()
 {
-  auto& file = FileOperations_Open(_userListFileName.c_str(), O_RDWR | O_TRUNC);
+  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDWR | O_TRUNC);
 
   for(auto u : _users)
   {
@@ -75,18 +75,19 @@ void UserManager::WriteUserList()
     }
     catch(const upan::exception&)
     {
-      FileOperations_Close(file.id());
+      FileOperations::Instance().close(file.id());
       throw;
     }
   }
 
-	if(FileOperations_Close(file.id()) != FileOperations_SUCCESS)
+	if(!FileOperations::Instance().close(file.id())) {
     throw upan::exception(XLOC, "erroring closing fd for user file list");
+  }
 }
 
 bool UserManager::LoadUserList()
 {
-  auto& file = FileOperations_Open(_userListFileName.c_str(), O_RDONLY);
+  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY);
 
   upan::string name;
   while(FileOperations_ReadLine(file.id(), name))
@@ -107,9 +108,7 @@ bool UserManager::LoadUserList()
     _users.insert(UserMap::value_type(name, new User(name, password, homeDirPath, type)));
   }
 
-	RETURN_X_IF_NOT(FileOperations_Close(file.id()), FileOperations_SUCCESS, false);
-
-  return true;
+  return FileOperations::Instance().close(file.id());
 }
 
 bool UserManager::Create(const upan::string& name, const upan::string& password, const upan::string& homeDirPath, USER_TYPES type)
@@ -126,7 +125,7 @@ bool UserManager::Create(const upan::string& name, const upan::string& password,
     return false;
   }
 
-  if(FileOperations_Exists(homeDirPath.c_str(), ATTR_TYPE_DIRECTORY) != FileOperations_SUCCESS)
+  if(FileOperations::Instance().exists(homeDirPath.c_str(), ATTR_TYPE_DIRECTORY) != FileOperations_SUCCESS)
   {
     printf("\n invalid home dir path %s", homeDirPath.c_str());
     return false;
