@@ -156,8 +156,8 @@ byte StorageDriveManager::Change(const upan::string& szDriveName)
 
 	auto& pas = ProcessManager::Instance().GetCurrentPAS();
 	pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
-  pas.setEnv("PWD", (const char*)pDiskDrive->_fileSystem.pwd().getNode().Name()) ;
+  pas.processPWD() = pDiskDrive->fileSystem().pwd();
+  pas.setEnv("PWD", (const char*)pDiskDrive->fileSystem().pwd().getNode().Name()) ;
 
 	return DeviceDrive_SUCCESS ;
 }
@@ -200,8 +200,8 @@ byte StorageDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 
 		if(d->Mounted())
     {
-      pAddress[i].ulTotalSize = d->_fileSystem.TotalSize();
-      pAddress[i].ulUsedSize = d->_fileSystem.UsedSize();
+      pAddress[i].ulTotalSize = d->fileSystem().TotalSize();
+      pAddress[i].ulUsedSize = d->fileSystem().UsedSize();
     }
 		
 		++i;

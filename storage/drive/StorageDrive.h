@@ -88,6 +88,8 @@ class StorageDrive {
 
     upan::rwlock& GetFileLock(const upan::string& nodeId);
 
+    FileSystem& fileSystem() { return fileSystem(); }
+
   private:
     void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
     void RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
@@ -117,9 +119,7 @@ class StorageDrive {
 
     typedef upan::map<upan::string, upan::rwlock*> FileLocks;
     FileLocks _fileLocks;
+    FileSystem	_fileSystem;
 
     friend class StorageDriveManager;
-public:
-  // FileSystem Mount Info
-  FileSystem	_fileSystem;
 };

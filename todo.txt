@@ -94,7 +94,7 @@ Date: 24 Oct 2010
 --> Has to use disable/enable task switch because it can be called by kernel itself!
 --> Done
 
-4. BTree Node deletion logic
+4. BTree FileNode deletion logic
 --> Done
 
 5. Bring Pause/continue into BTree InOrderTraverse. OR better come up with a different approach for Flush and Release Cache
@@ -138,7 +138,7 @@ this bin/cc task then it enters into a deadlock
 Solution thought is to use mutex on every shared resources and make KernelService as a Master Kernel Process which works as a server
 listening to request queue
 
-4. Yet to implement Node Delete in BTree and use it in DiskCache Cleanup procedure
+4. Yet to implement FileNode Delete in BTree and use it in DiskCache Cleanup procedure
 
 **********************************************************************************************************************************
 

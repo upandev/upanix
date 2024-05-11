@@ -53,8 +53,8 @@ public:
   virtual int processID() const = 0;
   virtual int parentProcessID() const = 0;
 
-  virtual FILE_USER_TYPE fileUserType(const FileSystem::Node&) const = 0;
-  virtual bool hasFilePermission(const FileSystem::Node&, byte mode) const = 0;
+  virtual FILE_USER_TYPE fileUserType(const FileNode&) const = 0;
+  virtual bool hasFilePermission(const FileNode&, byte mode) const = 0;
   virtual uint64_t* pml4Table() const = 0;
 
   virtual void setDriveID(int driveID) = 0;

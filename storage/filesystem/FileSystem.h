@@ -26,6 +26,7 @@
 #include <vector.h>
 #include <fs.h>
 #include <map.h>
+#include <FileNode.h>
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -102,63 +103,24 @@ private:
   SectorBlockEntry* GetSectorEntryFromCache(uint32_t sectorId);
 
 public:
-    class Node {
-    public:
-      void Init(const char* szDirName, unsigned short usDirAttribute, int iUserID, unsigned uiParentSecNo, byte bParentSecPos);
-      void InitAsRoot(uint32_t parentSectorId);
-      upan::string FullPath(StorageDrive& diskDrive);
-
-      bool IsDirectory() const { return (_fsnode._attribute & ATTR_TYPE_DIRECTORY) == ATTR_TYPE_DIRECTORY; }
-      bool IsFile() const { return (_fsnode._attribute & ATTR_TYPE_FILE) == ATTR_TYPE_FILE; }
-
-      const char* Name() const { return (const char*)_fsnode._name; }
-      const struct timeval& CreatedTime() const { return _fsnode._createdTime; }
-
-      const struct timeval& AccessedTime() const { return _fsnode._accessedTime; }
-      void AccessedTime(const uint32_t tSec) { _fsnode._accessedTime.tSec = tSec; }
-
-      const struct timeval& ModifiedTime() const { return _fsnode._modifiedTime; }
-      void ModifiedTime(const uint32_t tSec) { _fsnode._modifiedTime.tSec = tSec; }
-
-      uint16_t ParentSectorPos() const { return _fsnode._parentSectorPos; }
-
-      uint16_t Attribute() const { return _fsnode._attribute; }
-      bool IsDeleted() const { return (_fsnode._attribute & ATTR_DELETED_DIR) != 0; }
-      void MarkAsDeleted() { _fsnode._attribute |= ATTR_DELETED_DIR ; }
-
-      uint32_t Size() const { return _fsnode._size; }
-      void Size(uint32_t s) { _fsnode._size = s; }
-      void AddNode() { ++_fsnode._size; }
-      void RemoveNode() { --_fsnode._size; }
-
-      uint32_t StartSectorID() const { return _fsnode._startSectorID; }
-      void StartSectorID(const uint32_t sectorId) { _fsnode._startSectorID = sectorId; }
-
-      uint32_t ParentSectorID() const { return _fsnode._parentSectorID; }
-      int UserID() const { return _fsnode._userID; }
-
-    private:
-      FS_Node _fsnode;
-    } PACKED;
-
     class PresentWorkingDirectory {
     public:
-      void Init(const Node& node, uint32_t sectorId, uint16_t sectorEntryPos) {
+      void Init(const FileNode& node, uint32_t sectorId, uint16_t sectorEntryPos) {
         _node = node;
         _sectorId = sectorId;
         _sectorEntryPos = sectorEntryPos;
       }
 
-      Node& getNode() { return _node; }
-      const Node& getNode() const { return _node; }
+      FileNode& getNode() { return _node; }
+      const FileNode& getNode() const { return _node; }
 
-      void setNode(const Node& node) { _node = node; }
+      void setNode(const FileNode& node) { _node = node; }
 
       uint32_t getSectorId() const { return _sectorId; }
       uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
 
     private:
-      Node _node;
+      FileNode _node;
       uint32_t _sectorId;
       uint8_t  _sectorEntryPos;
     };
@@ -167,7 +129,7 @@ public:
     public:
       WorkingDirectory() : _node(nullptr), _sectorId(0), _sectorEntryPos(0) {}
 
-      WorkingDirectory(Node* node, uint32_t sectorId, uint8_t sectorEntryPos) : _node(node), _sectorId(sectorId), _sectorEntryPos(sectorEntryPos) {
+      WorkingDirectory(FileNode* node, uint32_t sectorId, uint8_t sectorEntryPos) : _node(node), _sectorId(sectorId), _sectorEntryPos(sectorEntryPos) {
       }
 
       WorkingDirectory(PresentWorkingDirectory& pwd) {
@@ -181,13 +143,13 @@ public:
         return *this;
       }
 
-      Node* getNode() { return _node; }
-      const Node* getNode() const { return _node; }
+      FileNode* getNode() { return _node; }
+      const FileNode* getNode() const { return _node; }
       uint32_t getSectorId() const { return _sectorId; }
       uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
 
     private:
-      Node*    _node;
+      FileNode*    _node;
       uint32_t _sectorId;
       uint8_t  _sectorEntryPos;
     };

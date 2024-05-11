@@ -69,8 +69,8 @@ public:
   void switchPageTable() const;
   bool handlePageFault(uint64_t faultyAddress);
 
-  FILE_USER_TYPE fileUserType(const FileSystem::Node&) const override;
-  bool hasFilePermission(const FileSystem::Node&, byte mode) const override;
+  FILE_USER_TYPE fileUserType(const FileNode&) const override;
+  bool hasFilePermission(const FileNode&, byte mode) const override;
 
   uint64_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }

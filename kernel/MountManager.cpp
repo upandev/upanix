@@ -91,7 +91,7 @@ static void MountManager_MountDrive(char* szDriveName)
 	// Set Process Drive
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
   pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
+  pas.processPWD() = pDiskDrive->fileSystem().pwd();
 
 	// Change To Root Directory
   FileOperations_ChangeDir(FS_ROOT_DIR);

@@ -77,11 +77,11 @@ public:
     return _iodTable;
   }
 
-  FILE_USER_TYPE fileUserType(const FileSystem::Node&) const override {
+  FILE_USER_TYPE fileUserType(const FileNode&) const override {
     return USER_OWNER;
   }
 
-  bool hasFilePermission(const FileSystem::Node&, byte mode) const override {
+  bool hasFilePermission(const FileNode&, byte mode) const override {
     return true;
   }
 

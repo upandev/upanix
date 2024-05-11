@@ -113,7 +113,7 @@ void FileSystem::Format()
 
   unsigned uiSec = GetRealSectorNumber(0);
 
-  ((FileSystem::Node*)bSectorBuffer)->InitAsRoot(uiSec);
+  ((FileNode*)bSectorBuffer)->InitAsRoot(uiSec);
 
   _diskDrive.Write(uiSec, 1, bSectorBuffer);
   /*************************** Root Directory [END] ********************************/
@@ -387,70 +387,3 @@ void FileSystem::SetSectorEntryValue(const uint32_t uiSectorID, uint32_t uiSecto
 
   pSectorBlockEntry->Write(uiSectorID, uiSectorEntryValue);
 }
-
-void FileSystem::Node::Init(const char* szDirName, unsigned short usDirAttribute, int iUserID, unsigned uiParentSecNo, byte bParentSecPos)
-{
-  strcpy((char*)_fsnode._name, szDirName) ;
-
-  _fsnode._attribute = usDirAttribute ;
-
-  _fsnode._createdTime.tSec = SystemUtil_GetTimeOfDay();
-  _fsnode._accessedTime.tSec = _fsnode._createdTime.tSec;
-  _fsnode._modifiedTime.tSec = _fsnode._createdTime.tSec;
-
-  _fsnode._startSectorID = EOC ;
-  _fsnode._size = 0 ;
-
-  _fsnode._parentSectorID = uiParentSecNo ;
-  _fsnode._parentSectorPos = bParentSecPos ;
-
-  _fsnode._userID = iUserID ;
-}
-
-void FileSystem::Node::InitAsRoot(uint32_t parentSectorId)
-{
-  Init(FS_ROOT_DIR, ATTR_DIR_DEFAULT | ATTR_TYPE_DIRECTORY, ROOT_USER_ID, parentSectorId, 0);
-}
-
-upan::string FileSystem::Node::FullPath(StorageDrive& diskDrive)
-{
-  byte bSectorBuffer[512] ;
-
-  const FileSystem::Node* pParseDirEntry = this;
-
-  upan::string fullPath = "";
-  upan::string temp = "";
-
-  bool bFirst = true ;
-
-  while(true)
-  {
-    if(strcmp(pParseDirEntry->Name(), FS_ROOT_DIR) == 0)
-    {
-      return upan::string(FS_ROOT_DIR) + fullPath;
-    }
-    else
-    {
-      upan::string curDir = pParseDirEntry->Name();
-      if(!bFirst)
-      {
-        fullPath = curDir + FS_ROOT_DIR + fullPath;
-      }
-      else
-      {
-        fullPath = curDir;
-        bFirst = false ;
-      }
-    }
-
-    unsigned uiParSectorNo = pParseDirEntry->ParentSectorID() ;
-    byte bParSectorPos = pParseDirEntry->ParentSectorPos() ;
-
-    diskDrive.xRead(bSectorBuffer, uiParSectorNo, 1);
-
-    pParseDirEntry = &((const FileSystem::Node*)bSectorBuffer)[bParSectorPos] ;
-  }
-
-  throw upan::exception(XLOC, "failed to find full path for directory/file %s", _fsnode._name);
-}
-

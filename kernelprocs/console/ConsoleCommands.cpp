@@ -244,7 +244,7 @@ void ConsoleCommands_ChangeDrive()
   StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
   pas.setDriveID(pDiskDrive->Id());
-  pas.processPWD() = pDiskDrive->_fileSystem.pwd();
+  pas.processPWD() = pDiskDrive->fileSystem().pwd();
 }
 
 void ConsoleCommands_ShowDrive()
@@ -288,7 +288,7 @@ void ConsoleCommands_RemoveFile()
 
 void ConsoleCommands_ListDirContent()
 {
-	FileSystem::Node* pDirList ;
+	FileNode* pDirList ;
 
 	int iListSize = 0 ;
 	const char* szListDirName = "." ;
@@ -929,7 +929,7 @@ private:
 };
 
 void graphics_photos(int x, int y) {
-  FileSystem::Node* pDirList ;
+  FileNode* pDirList ;
 
   int iListSize = 0 ;
   const char* szListDirName = "usdb@/pictures/family/" ;

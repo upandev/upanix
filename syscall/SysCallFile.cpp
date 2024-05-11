@@ -136,7 +136,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P3 => Ret Dir Content List Size Address
 			{
 				char* szPathAddress = ( char*) p1;
-				FileSystem::Node** pRetDirContentList = ( FileSystem::Node**) p2;
+				FileNode** pRetDirContentList = ( FileNode**) p2;
 				int* pRetDirContentListSize = ( int*) p3;
 				*retVal = 0 ;
 

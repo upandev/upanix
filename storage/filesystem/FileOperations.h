@@ -100,13 +100,13 @@ bool FileOperations_ReadLine(int fd, upan::string& line);
 
 
 void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType);
-FileSystem::Node FileOperations_GetDirEntry(const char* szFileName);
+FileNode FileOperations_GetDirEntry(const char* szFileName);
 FileSystem_FileStat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
 FileSystem_FileStat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName);
 byte FileOperations_GetFileOpenMode(int fd) ;
 void FileOperations_SyncPWD() ;
 void FileOperations_ChangeDir(const char* szFileName) ;
-void FileOperations_GetDirectoryContent(const char* szPathAddress, FileSystem::Node** pDirList, int* iListSize) ;
+void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pDirList, int* iListSize) ;
 bool FileOperations_FileAccess(const char* szFileName, int iDriveID, int mode) ;
 void FileOperations_Dup2(int oldFD, int newFD) ;
 void FileOperations_GetCWD(char* szPathBuf, int iBufSize) ;

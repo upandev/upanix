@@ -60,7 +60,7 @@ uintptr_t DMM::_allocate(uint32_t sizeInBytes, uint32_t alignment) {
   validateAlignParam(alignment);
   _dmmFlag = true;
 
-  //Dedicated Head Node. This will avoid Back Loop at Head
+  //Dedicated Head FileNode. This will avoid Back Loop at Head
   //lazy initialize because accessing heap address could cause page fault - so, access address after calling process is fully initialized
   if (_rootAut == nullptr) {
     _rootAut = (AllocationUnitTracker *) _heapStartAddress;

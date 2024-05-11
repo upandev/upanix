@@ -43,7 +43,7 @@ FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
 
 FileSystem::PresentWorkingDirectory& FileDescriptor::getWorkingDirectory() {
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
-  return (pas.driveID() == _diskDrive.Id()) ? pas.processPWD() : _diskDrive._fileSystem.pwd();
+  return (pas.driveID() == _diskDrive.Id()) ? pas.processPWD() : _diskDrive.fileSystem().pwd();
 }
 
 int FileDescriptor::read(void* buffer, int len) {
@@ -116,7 +116,7 @@ void FileDescriptor::setLastReadSectorDetails(int sectorIndex, uint32_t sectorId
   _lastReadSectorNo = sectorId;
 }
 
-void FileDescriptor::getLastReadSectorDetails(FileSystem::Node& node, int &sectorIndex, uint32_t &sectorId) {
+void FileDescriptor::getLastReadSectorDetails(FileNode& node, int &sectorIndex, uint32_t &sectorId) {
   if (_lastReadSectorNo == EOC) {
     if (node.Size() > 0) {
       _lastReadSectorIndex = 0;

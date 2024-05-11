@@ -46,7 +46,7 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
     {
       StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
       if(pDiskDrive->Mounted())
-        _processPWD = pDiskDrive->_fileSystem.pwd();
+        _processPWD = pDiskDrive->fileSystem().pwd();
     }
     _processGroup = new ProcessGroup(isFGProcess);
   } else {
@@ -156,7 +156,7 @@ void SchedulableProcess::Store(const TaskContext& taskContext) {
   _taskContext = taskContext;
 }
 
-FILE_USER_TYPE SchedulableProcess::fileUserType(const FileSystem::Node &node) const
+FILE_USER_TYPE SchedulableProcess::fileUserType(const FileNode &node) const
 {
   if(isKernelProcess() || _userID == ROOT_USER_ID || node.UserID() == _userID)
     return USER_OWNER ;
@@ -164,7 +164,7 @@ FILE_USER_TYPE SchedulableProcess::fileUserType(const FileSystem::Node &node) co
   return USER_OTHERS ;
 }
 
-bool SchedulableProcess::hasFilePermission(const FileSystem::Node& node, byte mode) const
+bool SchedulableProcess::hasFilePermission(const FileNode& node, byte mode) const
 {
   unsigned short usMode = FILE_PERM(node.Attribute());
 

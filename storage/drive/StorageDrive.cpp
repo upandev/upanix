@@ -105,7 +105,7 @@ void StorageDrive::Mount() {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
   }
 
-  _fileSystem.Mount(MaxSectorsInFreePoolCache());
+  fileSystem().Mount(MaxSectorsInFreePoolCache());
   ReadRootDirectory();
 
   _mounted = true;
@@ -116,7 +116,7 @@ void StorageDrive::UnMount() {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
 
-  _fileSystem.Unmount();
+  fileSystem().Unmount();
   FlushDirtyCacheSectors();
 
   _mounted = false;
@@ -125,7 +125,7 @@ void StorageDrive::UnMount() {
 void StorageDrive::ReadRootDirectory() {
 	byte bDataBuffer[512];
   xRead(bDataBuffer, 0, 1);
-  _fileSystem.pwd().Init(*reinterpret_cast<FileSystem::Node*>(bDataBuffer), 0, 0);
+  fileSystem().pwd().Init(*reinterpret_cast<FileNode*>(bDataBuffer), 0, 0);
 }
 
 void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
@@ -214,7 +214,7 @@ void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bD
 
 void StorageDrive::xRead(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
-  Read(_fileSystem.GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
+  Read(fileSystem().GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
 void StorageDrive::RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
@@ -336,7 +336,7 @@ void StorageDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* b
 
 void StorageDrive::xWrite(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
-  Write(_fileSystem.GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
+  Write(fileSystem().GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
 void StorageDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
@@ -366,7 +366,7 @@ void StorageDrive::Format()
   {
 ;//		RETURN_IF_NOT(bStatus, Floppy_Format(pDiskDrive->driveNo), Floppy_SUCCESS) ;
   }
-  _fileSystem.Format();
+  fileSystem().Format();
   _mounted = false;
   FlushDirtyCacheSectors();
 }
