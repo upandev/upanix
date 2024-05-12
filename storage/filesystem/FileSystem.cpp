@@ -23,30 +23,11 @@
 #include <StringUtil.h>
 #include <FileSystem.h>
 #include <StorageDrive.h>
-#include <UserManager.h>
-#include <SystemUtil.h>
-#include <DMM.h>
 
-#define BLOCK_ID(SectorID) ((SectorID) / ENTRIES_PER_TABLE_SECTOR)
-#define BLOCK_OFFSET(SectorID) ((SectorID) % ENTRIES_PER_TABLE_SECTOR)
-
-SectorBlockEntry::SectorBlockEntry(StorageDrive& diskDrive, uint32_t tableSectorId, uint32_t blockId) : _blockId(blockId), _readCount(0), _writeCount(0) {
-  diskDrive.Read(tableSectorId, 1, (byte*)_sectorBlock);
-}
-
-uint32_t SectorBlockEntry::Read(uint32_t sectorId) {
-  ++_readCount;
-  return _sectorBlock[BLOCK_OFFSET(sectorId)] & EOC ;
-}
-
-void SectorBlockEntry::Write(uint32_t sectorId, uint32_t value) {
-  auto index = BLOCK_OFFSET(sectorId) ;
-  _sectorBlock[index] = _sectorBlock[index] & 0xF0000000;
-  _sectorBlock[index] = _sectorBlock[index] | (value & EOC);
-  ++_writeCount;
-}
-
-FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) : _diskDrive(diskDrive), _freePoolQueue(freePoolSize) {
+FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
+  _diskDrive(diskDrive),
+  _freePoolQueue(freePoolSize),
+  _fsTableCache(diskDrive, _bootBlock) {
 }
 
 void FileSystem::Format() {
@@ -97,7 +78,7 @@ void FileSystem::Mount() {
 
 void FileSystem::Unmount() {
   _bootBlock.store(_diskDrive);
-  FlushTableCache(MAX_SECTORS_IN_TABLE_CACHE);
+  _fsTableCache.flush();
   _freePoolQueue.clear();
   _diskDrive.FlushAllDirtyCacheSectors();
 }
@@ -109,40 +90,15 @@ void FileSystem::ReadRootDirectory() {
 }
 
 void FileSystem::LoadFreeSectors() {
-  if(_freePoolQueue.full())
-    return;
-
-  bool bStop = false;
+  if(_freePoolQueue.full()) return;
 
   // First do Cache Lookup
-  for(const auto& block : _fsTableCache) {
-    if(bStop) {
-      break;
-    }
-
-    auto uiSectorBlock = block.second->SectorBlock();
-    for(int j = 0; j < ENTRIES_PER_TABLE_SECTOR; j++) {
-      if(!(uiSectorBlock[j] & EOC)) {
-        const uint32_t uiSectorID = block.second->BlockId() * ENTRIES_PER_TABLE_SECTOR + j;
-        if(!_freePoolQueue.push_back(uiSectorID)) {
-          bStop = true;
-          break;
-        }
-      }
-    }
-  }
-
-  if(bStop) {
-    return;
-  }
+  _fsTableCache.loadFreeSectors(_freePoolQueue);
+  if(_freePoolQueue.full()) return;
 
   byte bBuffer[ 4096 ];
 
   for(unsigned i = 0; i < _bootBlock.getTableSize(); ) {
-    if(bStop) {
-      break;
-    }
-
     if (_fsTableCache.exists(i)) {
       ++i;
       continue;
@@ -160,53 +116,13 @@ void FileSystem::LoadFreeSectors() {
       if(!(pTable[j] & EOC)) {
         const uint32_t uiSectorID = i * ENTRIES_PER_TABLE_SECTOR + j;
         if(!_freePoolQueue.push_back(uiSectorID)) {
-          bStop = true;
-          break;
+          return;
         }
       }
     }
 
     i += uiBlockSize;
   }
-}
-
-void FileSystem::FlushTableCache(int flushSize) {
-  if(flushSize > _fsTableCache.size()) {
-    flushSize = _fsTableCache.size();
-  }
-
-  for(auto i = _fsTableCache.begin(); i != _fsTableCache.end() && flushSize > 0;) {
-    auto e = i->second;
-    if (e->WriteCount() != 0) {
-      _diskDrive.Write(e->BlockId() + _bootBlock.getReservedSectorCount() + 1, 1, (byte*)(e->SectorBlock()));
-    }
-    delete e;
-    _fsTableCache.erase(i++);
-    --flushSize;
-  }
-}
-
-void FileSystem::AddToTableCache(uint32_t sectorId) {
-  if(_fsTableCache.size() == MAX_SECTORS_IN_TABLE_CACHE) {
-    FlushTableCache(1);
-  }
-
-  const auto blockId = BLOCK_ID(sectorId);
-  auto r = _fsTableCache.find(blockId);
-  if (r != _fsTableCache.end()) {
-    return;
-  }
-
-  const auto tableSectorId = GetTableSectorId(blockId);
-  _fsTableCache.insert(TableCache::value_type(blockId, new SectorBlockEntry(_diskDrive, tableSectorId, blockId)));
-}
-
-SectorBlockEntry* FileSystem::GetSectorEntryFromCache(uint32_t sectorId) {
-  if(_fsTableCache.empty()) {
-    return nullptr;
-  }
-  auto r = _fsTableCache.find(BLOCK_ID(sectorId));
-  return (r != _fsTableCache.end()) ? r->second : nullptr;
 }
 
 uint32_t FileSystem::AllocateSector() {
@@ -226,73 +142,12 @@ uint32_t FileSystem::AllocateSector() {
 uint32_t FileSystem::DeallocateSector(uint32_t currentSectorId) {
   auto uiNextSectorID = GetSectorEntryValue(currentSectorId);
   SetSectorEntryValue(currentSectorId, 0);
-  AddToFreePoolCache(currentSectorId);
+  _freePoolQueue.push_back(currentSectorId);
   return uiNextSectorID;
 }
 
-void FileSystem::DisplayCache() {
-  printf("\nSTART\n");
-  for(const auto& block : _fsTableCache)
-    printf(", %u", block.second->BlockId());
-  printf(" :: SIZE = %d", _fsTableCache.size());
-}
-
-uint32_t FileSystem::GetTableSectorId(uint32_t uiSectorID) const
-{
-  return uiSectorID + 1/*BPB*/ + _bootBlock.getReservedSectorCount();
-}
-
-uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const
-{
+uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const {
   return uiSectorID + 1/*BPB*/
-          + _bootBlock.getReservedSectorCount()
+         + _bootBlock.getReservedSectorCount()
          + _bootBlock.getTableSize();
-}
-
-void FileSystem::UpdateUsedSectors(uint32_t uiSectorEntryValue)
-{
-  if(uiSectorEntryValue == EOC)
-    _bootBlock.incUserSectors();
-  else if(uiSectorEntryValue == 0)
-    _bootBlock.decUserSectors();
-}
-
-uint32_t FileSystem::GetSectorEntryValue(const uint32_t uiSectorID) {
-  if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4)) {
-    throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
-  }
-
-  SectorBlockEntry* pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
-
-  if(pSectorBlockEntry == nullptr) {
-    AddToTableCache(uiSectorID);
-    pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
-  }
-
-  if(pSectorBlockEntry == nullptr) {
-    throw upan::exception(XLOC, "sector entry value not found in cache for sector:%u", uiSectorID);
-  }
-
-  return pSectorBlockEntry->Read(uiSectorID);
-}
-
-void FileSystem::SetSectorEntryValue(const uint32_t uiSectorID, uint32_t uiSectorEntryValue)
-{
-  if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4))
-    throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
-
-  UpdateUsedSectors(uiSectorEntryValue);
-
-  SectorBlockEntry* pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
-
-  if(pSectorBlockEntry == NULL)
-  {
-    AddToTableCache(uiSectorID);
-    pSectorBlockEntry = GetSectorEntryFromCache(uiSectorID) ;
-  }
-
-  if(pSectorBlockEntry == NULL)
-    throw upan::exception(XLOC, "Sector block for sector id %d is not in cache", uiSectorID);
-
-  pSectorBlockEntry->Write(uiSectorID, uiSectorEntryValue);
 }

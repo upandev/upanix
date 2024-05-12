@@ -28,6 +28,7 @@
 #include <map.h>
 #include <FileNode.h>
 #include <BootBlock.h>
+#include <FSTableCache.h>
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -38,36 +39,12 @@
 
 #define FS_ROOT_DIR "/"
 
-#define ENTRIES_PER_TABLE_SECTOR	(128)
-
 class StorageDrive;
-
-class SectorBlockEntry {
-public:
-  SectorBlockEntry() = delete;
-  SectorBlockEntry(StorageDrive &diskDrive, uint32_t tableSectorId, uint32_t blockId);
-
-  uint32_t* SectorBlock() { return _sectorBlock; }
-  const uint32_t* SectorBlock() const { return _sectorBlock; }
-  uint32_t BlockId() const { return _blockId; }
-  uint32_t ReadCount() const { return _readCount; }
-  uint32_t WriteCount() const { return _writeCount; }
-
-  void Load(StorageDrive& diskDrive, uint32_t sectortId);
-  uint32_t Read(uint32_t sectorId);
-  void Write(uint32_t sectorId, uint32_t value);
-
-private:
-  uint32_t _sectorBlock[ENTRIES_PER_TABLE_SECTOR];
-  uint32_t _blockId;
-  uint32_t _readCount;
-  uint32_t _writeCount;
-} PACKED;
 
 class FileSystem {
   public:
     FileSystem(StorageDrive& diskDrive, uint32_t freePoolSize);
-    ~FileSystem() {}
+    ~FileSystem() = default;
 
     uint64_t TotalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
     uint64_t UsedSize() const { return _bootBlock.getUsedSectors() * 512; }
@@ -75,24 +52,17 @@ class FileSystem {
     uint32_t AllocateSector();
     uint32_t DeallocateSector(uint32_t currentSectorId);
 
-    uint32_t GetTableSectorId(uint32_t uiSectorID) const;
     uint32_t GetRealSectorNumber(uint32_t uiSectorID) const;
-    uint32_t GetSectorEntryValue(uint32_t uiSectorID);
-    void SetSectorEntryValue(uint32_t uiSectorID, uint32_t uiSectorEntryValue);
-
-    void DisplayCache();
+    uint32_t GetSectorEntryValue(uint32_t uiSectorID) {
+      return _fsTableCache.get(uiSectorID);
+    }
+    void SetSectorEntryValue(uint32_t uiSectorID, uint32_t uiSectorEntryValue) {
+      _fsTableCache.set(uiSectorID, uiSectorEntryValue);
+    }
 
 private:
-  static const int MAX_SECTORS_IN_TABLE_CACHE = 2048;
-
   void ReadRootDirectory();
-
   void LoadFreeSectors();
-  void AddToTableCache(uint32_t sectorId);
-  void FlushTableCache(int flushSize);
-  void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue.push_back(sectorId); }
-
-  SectorBlockEntry* GetSectorEntryFromCache(uint32_t sectorId);
 
 public:
     class PresentWorkingDirectory {
@@ -141,7 +111,7 @@ public:
       uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
 
     private:
-      FileNode*    _node;
+      FileNode* _node;
       uint32_t _sectorId;
       uint8_t  _sectorEntryPos;
     };
@@ -155,14 +125,10 @@ public:
   PresentWorkingDirectory& pwd() { return _pwd; }
 
 private:
-    void UpdateUsedSectors(uint32_t uiSectorEntryValue);
-
     StorageDrive& _diskDrive;
     BootBlock _bootBlock;
     upan::queue<uint32_t> _freePoolQueue;
-
-    typedef upan::map<uint32_t, SectorBlockEntry*> TableCache;
-    TableCache _fsTableCache;
+    FSTableCache _fsTableCache;
 
     PresentWorkingDirectory _pwd;
 
