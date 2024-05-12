@@ -40,83 +40,91 @@
 class RawStorageDrive;
 
 class StorageDrive {
-  private:
-    StorageDrive(int id,
-                 const upan::string& driveName,
-                 DEVICE_TYPE deviceType,
-                 DRIVE_NO driveNumber,
-                 unsigned uiLBAStartSector,
-                 unsigned uiSizeInSectors,
-                 unsigned uiSectorsPerTrack,
-                 unsigned uiTracksPerHead,
-                 unsigned uiNoOfHeads,
-                 void* device,
-                 RawStorageDrive* rawDisk,
-                 uint32_t uiMaxSectorsInFreePoolCache);
+private:
+  StorageDrive(int id,
+               const upan::string &driveName,
+               DEVICE_TYPE deviceType,
+               DRIVE_NO driveNumber,
+               unsigned uiLBAStartSector,
+               unsigned uiSizeInSectors,
+               unsigned uiSectorsPerTrack,
+               unsigned uiTracksPerHead,
+               unsigned uiNoOfHeads,
+               void *device,
+               RawStorageDrive *rawDisk,
+               uint32_t uiMaxSectorsInFreePoolCache);
 
-  public:
-    void Mount();
-    void UnMount();
-    void Format();
-    void Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
-    void xRead(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors);
-    void Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
-    void xWrite(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors);
-    byte FlushDirtyCacheSectors(int iCount = -1);
-    void ReleaseCache();
+public:
+  void Format();
+  void Mount();
+  void UnMount();
 
-    const upan::string& DriveName() const { return _driveName; }
-    DEVICE_TYPE DeviceType() const { return _deviceType; }
-    FS_TYPE FSType() const { return _fsType; }
-    DRIVE_NO DriveNumber() const { return _driveNumber; }
-    unsigned LBAStartSector() const { return _uiLBAStartSector; }
-    unsigned SizeInSectors() const { return _uiSizeInSectors; }
-    unsigned SectorsPerTrack() const { return _uiSectorsPerTrack; }
-    unsigned TracksPerHead() const { return _uiTracksPerHead; }
-    unsigned NoOfHeads() const { return _uiNoOfHeads; }
-    bool StopReleaseCacheTask() const { return _bStopReleaseCacheTask; }
+  void Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
+  void xRead(byte *bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors);
+  void Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
+  void xWrite(byte *bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors);
 
-    int Id() const { return _id; }
-    bool Mounted() const { return _mounted; }
-    RawStorageDrive* RawDisk() const { return _rawDisk; }
-    void* Device() const { return _device; }
-    DiskCache& Cache() { return _mCache; }
+  bool FlushDirtyCacheSectors(int count);
+  bool FlushAllDirtyCacheSectors() {
+    return FlushDirtyCacheSectors(-1);
+  }
 
-    void StopReleaseCacheTask(bool value) { _bStopReleaseCacheTask = value; }
-    void FSType(FS_TYPE t) { _fsType = t; }
+  void ReleaseCache();
 
-    upan::rwlock& GetFileLock(const upan::string& nodeId);
+  const upan::string &DriveName() const { return _driveName; }
+  DEVICE_TYPE DeviceType() const { return _deviceType; }
+  FS_TYPE FSType() const { return _fsType; }
+  DRIVE_NO DriveNumber() const { return _driveNumber; }
 
-    FileSystem& fileSystem() { return fileSystem(); }
+  unsigned LBAStartSector() const { return _uiLBAStartSector; }
+  unsigned SizeInSectors() const { return _uiSizeInSectors; }
+  unsigned SectorsPerTrack() const { return _uiSectorsPerTrack; }
+  unsigned TracksPerHead() const { return _uiTracksPerHead; }
+  unsigned NoOfHeads() const { return _uiNoOfHeads; }
 
-  private:
-    void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
-    void RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
-    bool FlushSector(unsigned uiSectorID, const byte* pBuffer);
-    void StartReleaseCacheTask();
+  bool StopReleaseCacheTask() const { return _bStopReleaseCacheTask; }
 
-    int          _id;
-    upan::string _driveName;
-    DEVICE_TYPE  _deviceType;
-    DRIVE_NO     _driveNumber;
-    unsigned     _uiLBAStartSector;
-    unsigned     _uiSizeInSectors;
-    unsigned     _uiSectorsPerTrack;
-    unsigned     _uiTracksPerHead;
-    unsigned     _uiNoOfHeads;
-    bool		     _bEnableDiskCache;
-	  void*			    _device;
-    RawStorageDrive* _rawDisk;
+  int Id() const { return _id; }
+  bool Mounted() const { return _mounted; }
+  RawStorageDrive *RawDisk() const { return _rawDisk; }
+  void *Device() const { return _device; }
+  DiskCache &Cache() { return _mCache; }
 
-    FS_TYPE       _fsType;
-    bool          _mounted;
-    upan::mutex   _driveMutex;
-    DiskCache		  _mCache;
-		bool          _bStopReleaseCacheTask;
+  void StopReleaseCacheTask(bool value) { _bStopReleaseCacheTask = value; }
+  void FSType(FS_TYPE t) { _fsType = t; }
 
-    typedef upan::map<upan::string, upan::rwlock*> FileLocks;
-    FileLocks _fileLocks;
-    FileSystem	_fileSystem;
+  upan::rwlock &GetFileLock(const upan::string &nodeId);
+  FileSystem &fileSystem() { return _fileSystem; }
 
-    friend class StorageDriveManager;
+private:
+  void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
+  void RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
+  bool FlushSector(unsigned uiSectorID, const byte *pBuffer);
+  void StartReleaseCacheTask();
+
+private:
+  int _id;
+  upan::string _driveName;
+  DEVICE_TYPE _deviceType;
+  DRIVE_NO _driveNumber;
+  unsigned _uiLBAStartSector;
+  unsigned _uiSizeInSectors;
+  unsigned _uiSectorsPerTrack;
+  unsigned _uiTracksPerHead;
+  unsigned _uiNoOfHeads;
+  bool _bEnableDiskCache;
+  void *_device;
+  RawStorageDrive *_rawDisk;
+
+  FS_TYPE _fsType;
+  bool _mounted;
+  upan::mutex _driveMutex;
+  DiskCache _mCache;
+  bool _bStopReleaseCacheTask;
+
+  typedef upan::map<upan::string, upan::rwlock *> FileLocks;
+  FileLocks _fileLocks;
+  FileSystem _fileSystem;
+
+  friend class StorageDriveManager;
 };

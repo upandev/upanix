@@ -72,10 +72,6 @@ class FileSystem {
     uint64_t TotalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
     uint64_t UsedSize() const { return _bootBlock.getUsedSectors() * 512; }
 
-    void Format();
-    void Mount();
-    void Unmount();
-
     uint32_t AllocateSector();
     uint32_t DeallocateSector(uint32_t currentSectorId);
 
@@ -151,6 +147,9 @@ public:
     };
 
 private:
+  void Format();
+  void Mount();
+  void Unmount();
 
 public:
   PresentWorkingDirectory& pwd() { return _pwd; }
@@ -166,6 +165,8 @@ private:
     TableCache _fsTableCache;
 
     PresentWorkingDirectory _pwd;
+
+    friend class StorageDrive;
 };
 
 typedef struct {

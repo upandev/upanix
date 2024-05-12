@@ -222,8 +222,4 @@ class DestroyDiskCacheKeyValue : public BTree::DestroyKeyValue
 		}
 } ;
 
-void DiskCache_Setup(StorageDrive& diskDrive) ;
-void DiskCache_StopReleaseCacheTask(StorageDrive* pDiskDrive) ;
-void DiskCache_StartReleaseCacheTask(StorageDrive& pDiskDrive) ;
-
-#endif 
+#endif

@@ -42,7 +42,7 @@ void SystemUtil_Reboot()
 			printf("\n UnMounting Drive: %-20s", pDiskDrive->DriveName().c_str());
       const auto& result = upan::trycall([&]() { pDiskDrive->UnMount(); });
 			pDiskDrive->StopReleaseCacheTask(true);
-      pDiskDrive->FlushDirtyCacheSectors();
+      pDiskDrive->FlushAllDirtyCacheSectors();
       if(result.isBad())
 				printf("\n Failed to UnMount Drive\n") ;
       else

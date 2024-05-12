@@ -85,6 +85,8 @@ void FileSystem::Format() {
   ((FileNode*)bSectorBuffer)->InitAsRoot(uiSec);
   _diskDrive.Write(uiSec, 1, bSectorBuffer);
   /*************************** Root Directory [END] ********************************/
+
+  _diskDrive.FlushAllDirtyCacheSectors();
 }
 
 void FileSystem::Mount() {
@@ -97,6 +99,7 @@ void FileSystem::Unmount() {
   _bootBlock.store(_diskDrive);
   FlushTableCache(MAX_SECTORS_IN_TABLE_CACHE);
   _freePoolQueue.clear();
+  _diskDrive.FlushAllDirtyCacheSectors();
 }
 
 void FileSystem::ReadRootDirectory() {

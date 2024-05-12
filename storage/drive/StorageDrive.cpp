@@ -99,6 +99,15 @@ StorageDrive::StorageDrive(int id,
   StartReleaseCacheTask();
 }
 
+void StorageDrive::Format() {
+  if(DeviceType() == DEV_FLOPPY)
+  {
+    ;//		RETURN_IF_NOT(bStatus, Floppy_Format(pDiskDrive->driveNo), Floppy_SUCCESS) ;
+  }
+  fileSystem().Format();
+  _mounted = false;
+}
+
 void StorageDrive::Mount() {
 	if(Mounted()) {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
@@ -111,10 +120,7 @@ void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
-
   fileSystem().Unmount();
-  FlushDirtyCacheSectors();
-
   _mounted = false;
 }
 
@@ -350,41 +356,27 @@ void StorageDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte
 	}
 }
 
-void StorageDrive::Format()
-{
-  if(DeviceType() == DEV_FLOPPY)
-  {
-;//		RETURN_IF_NOT(bStatus, Floppy_Format(pDiskDrive->driveNo), Floppy_SUCCESS) ;
+bool StorageDrive::FlushDirtyCacheSectors(int count) {
+	if(!_bEnableDiskCache) {
+    return true;
   }
-  fileSystem().Format();
-  _mounted = false;
-  FlushDirtyCacheSectors();
-}
-
-byte StorageDrive::FlushDirtyCacheSectors(int iCount)
-{
-	if(!_bEnableDiskCache)
-		return DiskCache_SUCCESS ;
 
 	upan::mutex_guard g(_driveMutex);
 
-  while(iCount != 0)
-  {
+  while(count != 0) {
 	  DiskCache::SecKeyCacheValue v;
     if(!_mCache.Get(v))
       break;
-    if(!FlushSector(v.m_uiSectorID, v.m_pSectorBuffer))
-    {
+    if(!FlushSector(v.m_uiSectorID, v.m_pSectorBuffer)) {
       printf("\n Flushing Sector %u to Drive %s failed !!", v.m_uiSectorID, DriveName().c_str()) ;
-      return DiskCache_FAILURE ;
+      return false;
     }
-    --iCount ;
+    --count ;
 	}
-	return DiskCache_SUCCESS ;
+	return true;
 }
 
-bool StorageDrive::FlushSector(unsigned uiSectorID, const byte* pBuffer)
-{
+bool StorageDrive::FlushSector(unsigned uiSectorID, const byte* pBuffer) {
 	if(!pBuffer)
 		return false;
 	return upan::trycall([&]() { RawWrite(uiSectorID, 1, (byte*)pBuffer); }).isGood();
