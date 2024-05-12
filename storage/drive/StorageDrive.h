@@ -52,7 +52,7 @@ class StorageDrive {
                  unsigned uiNoOfHeads,
                  void* device,
                  RawStorageDrive* rawDisk,
-                 unsigned uiMaxSectorsInFreePoolCache);
+                 uint32_t uiMaxSectorsInFreePoolCache);
 
   public:
     void Mount();
@@ -74,7 +74,6 @@ class StorageDrive {
     unsigned SectorsPerTrack() const { return _uiSectorsPerTrack; }
     unsigned TracksPerHead() const { return _uiTracksPerHead; }
     unsigned NoOfHeads() const { return _uiNoOfHeads; }
-    unsigned MaxSectorsInFreePoolCache() const { return _uiMaxSectorsInFreePoolCache; }
     bool StopReleaseCacheTask() const { return _bStopReleaseCacheTask; }
 
     int Id() const { return _id; }
@@ -95,7 +94,6 @@ class StorageDrive {
     void RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer);
     bool FlushSector(unsigned uiSectorID, const byte* pBuffer);
     void StartReleaseCacheTask();
-    void ReadRootDirectory();
 
     int          _id;
     upan::string _driveName;
@@ -109,7 +107,6 @@ class StorageDrive {
     bool		     _bEnableDiskCache;
 	  void*			    _device;
     RawStorageDrive* _rawDisk;
-    unsigned      _uiMaxSectorsInFreePoolCache;
 
     FS_TYPE       _fsType;
     bool          _mounted;

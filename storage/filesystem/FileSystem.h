@@ -27,6 +27,7 @@
 #include <fs.h>
 #include <map.h>
 #include <FileNode.h>
+#include <BootBlock.h>
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
@@ -65,18 +66,14 @@ private:
 
 class FileSystem {
   public:
-    FileSystem(StorageDrive& diskDrive) : _diskDrive(diskDrive), _freePoolQueue(nullptr) {
-    }
+    FileSystem(StorageDrive& diskDrive, uint32_t freePoolSize);
+    ~FileSystem() {}
 
-    ~FileSystem() {
-      delete _freePoolQueue;
-    }
-
-    uint64_t TotalSize() const { return _fsBootBlock.BPB_FSTableSize * ENTRIES_PER_TABLE_SECTOR * 512; }
-    uint64_t UsedSize() const { return _fsBootBlock._usedSectors * 512; }
+    uint64_t TotalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
+    uint64_t UsedSize() const { return _bootBlock.getUsedSectors() * 512; }
 
     void Format();
-    void Mount(uint32_t freePoolSize);
+    void Mount();
     void Unmount();
 
     uint32_t AllocateSector();
@@ -92,13 +89,12 @@ class FileSystem {
 private:
   static const int MAX_SECTORS_IN_TABLE_CACHE = 2048;
 
-  void ReadFSBootBlock();
-  void WriteFSBootBlock();
+  void ReadRootDirectory();
 
   void LoadFreeSectors();
   void AddToTableCache(uint32_t sectorId);
   void FlushTableCache(int flushSize);
-  void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue->push_back(sectorId); }
+  void AddToFreePoolCache(uint32_t sectorId) { _freePoolQueue.push_back(sectorId); }
 
   SectorBlockEntry* GetSectorEntryFromCache(uint32_t sectorId);
 
@@ -155,41 +151,16 @@ public:
     };
 
 private:
-    struct BootBlock {
-      uint8_t  BPB_jmpBoot[3];
-
-      uint8_t  BPB_Media;
-      uint16_t BPB_SecPerTrk;
-      uint16_t BPB_NumHeads;
-
-      uint16_t BPB_BytesPerSec;
-      uint32_t BPB_TotSec32;
-      uint32_t BPB_HiddSec;
-
-      uint16_t BPB_RsvdSecCnt;
-      uint32_t BPB_FSTableSize;
-
-      uint16_t BPB_ExtFlags;
-      uint16_t BPB_FSVer;
-      uint16_t BPB_FSInfo;
-
-      uint8_t  BPB_BootSig;
-      uint32_t BPB_VolID;
-      uint8_t  BPB_VolLab[11 + 1];
-
-      uint32_t _usedSectors;
-    } PACKED;
 
 public:
   PresentWorkingDirectory& pwd() { return _pwd; }
 
 private:
-    void InitBootBlock(BootBlock&);
     void UpdateUsedSectors(uint32_t uiSectorEntryValue);
 
     StorageDrive& _diskDrive;
-    BootBlock _fsBootBlock;
-    upan::queue<uint32_t>* _freePoolQueue;
+    BootBlock _bootBlock;
+    upan::queue<uint32_t> _freePoolQueue;
 
     typedef upan::map<uint32_t, SectorBlockEntry*> TableCache;
     TableCache _fsTableCache;

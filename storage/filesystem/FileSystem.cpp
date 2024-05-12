@@ -46,45 +46,14 @@ void SectorBlockEntry::Write(uint32_t sectorId, uint32_t value) {
   ++_writeCount;
 }
 
-void FileSystem::InitBootBlock(BootBlock& fsBootBlock)
-{
-  fsBootBlock.BPB_jmpBoot[0] = 0xEB ; /****************/
-  fsBootBlock.BPB_jmpBoot[1] = 0xFE ; /* JMP $ -- ARR */
-  fsBootBlock.BPB_jmpBoot[2] = 0x90 ; /****************/
-
-  fsBootBlock.BPB_BytesPerSec = 0x200; // 512 ;
-  fsBootBlock.BPB_RsvdSecCnt = 2 ;
-
-  if(_diskDrive.DeviceType() == DEV_FLOPPY)
-    fsBootBlock.BPB_Media  = MEDIA_REMOVABLE ;
-  else
-    fsBootBlock.BPB_Media  = MEDIA_FIXED ;
-
-  fsBootBlock.BPB_SecPerTrk = _diskDrive.SectorsPerTrack();
-  fsBootBlock.BPB_NumHeads = _diskDrive.NoOfHeads();
-  fsBootBlock.BPB_HiddSec  = 0 ;
-  fsBootBlock.BPB_TotSec32 = _diskDrive.SizeInSectors();
-
-/*	pFSBootBlock->BPB_FSTableSize ; ---> Calculated */
-  fsBootBlock.BPB_ExtFlags  = 0x0080 ;
-  fsBootBlock.BPB_FSVer = 0x0100 ;  //version 1.0
-  fsBootBlock.BPB_FSInfo  = 1 ;  //Typical Value for FSInfo Sector
-
-  fsBootBlock.BPB_BootSig = 0x29 ;
-  fsBootBlock.BPB_VolID = 0x01 ;  //TODO: Required to be set to current Date/Time of system ---- Not Mandatory
-  strcpy((char*)fsBootBlock.BPB_VolLab, "No Name   ") ;  //10 + 1(\0) characters only -- ARR
-
-  fsBootBlock._usedSectors = 1 ;
-
-  fsBootBlock.BPB_FSTableSize = (fsBootBlock.BPB_TotSec32 - fsBootBlock.BPB_RsvdSecCnt - 1) / (ENTRIES_PER_TABLE_SECTOR + 1) ;
+FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) : _diskDrive(diskDrive), _freePoolQueue(freePoolSize) {
 }
 
-void FileSystem::Format()
-{
+void FileSystem::Format() {
   /************************ FAT Boot Block [START] *******************************/
   byte bFSBootBlockBuffer[512] ;
-  BootBlock* pFSBootBlock = (BootBlock*)(bFSBootBlockBuffer) ;
-  InitBootBlock(*pFSBootBlock);
+  auto bootBlock = (BootBlock*)(bFSBootBlockBuffer) ;
+  bootBlock->initialize(_diskDrive);
 
   bFSBootBlockBuffer[510] = 0x55 ; /* BootSector Signature */
   bFSBootBlockBuffer[511] = 0xAA ;
@@ -96,111 +65,48 @@ void FileSystem::Format()
   byte bSectorBuffer[512] ;
   memset(bSectorBuffer, 0, 512);
 
-  for(uint32_t i = 0; i < pFSBootBlock->BPB_FSTableSize; i++)
-  {
-    if(i == 0)
-      ((unsigned*)&bSectorBuffer)[0] = EOC ;
+  for(uint32_t i = 0; i < bootBlock->getTableSize(); ++i) {
+    if(i == 0) {
+      ((unsigned *) &bSectorBuffer)[0] = EOC;
+    }
 
-    _diskDrive.Write(i + pFSBootBlock->BPB_RsvdSecCnt + 1, 1, bSectorBuffer);
+    _diskDrive.Write(i + bootBlock->getReservedSectorCount() + 1, 1, bSectorBuffer);
 
-    if(i == 0)
-      ((unsigned*)&bSectorBuffer)[0] = 0 ;
+    if(i == 0) {
+      ((unsigned *) &bSectorBuffer)[0] = 0;
+    }
   }
   /*************************** FAT Table [END] **************************************/
 
   /*************************** Root Directory [START] *******************************/
-  memcpy(&_fsBootBlock, pFSBootBlock, sizeof(BootBlock));
+  _bootBlock = *bootBlock;
 
-  unsigned uiSec = GetRealSectorNumber(0);
-
+  auto uiSec = GetRealSectorNumber(0);
   ((FileNode*)bSectorBuffer)->InitAsRoot(uiSec);
-
   _diskDrive.Write(uiSec, 1, bSectorBuffer);
   /*************************** Root Directory [END] ********************************/
 }
 
-void FileSystem::Mount(uint32_t freePoolSize) {
-  _freePoolQueue = new upan::queue<uint32_t>(freePoolSize);
-  ReadFSBootBlock();
+void FileSystem::Mount() {
+  _bootBlock.load(_diskDrive);
   LoadFreeSectors();
+  ReadRootDirectory();
 }
 
 void FileSystem::Unmount() {
-  WriteFSBootBlock();
+  _bootBlock.store(_diskDrive);
   FlushTableCache(MAX_SECTORS_IN_TABLE_CACHE);
-  if(_freePoolQueue) {
-    delete _freePoolQueue;
-    _freePoolQueue = nullptr;
-  }
+  _freePoolQueue.clear();
 }
 
-void FileSystem::ReadFSBootBlock() {
-  byte bArrFSBootBlock[512];
-
-  _diskDrive.Read(1, 1, bArrFSBootBlock);
-
-  if(bArrFSBootBlock[510] != 0x55 || bArrFSBootBlock[511] != 0xAA)
-    throw upan::exception(XLOC, "invalid BPB signature - %x, %x", bArrFSBootBlock[510], bArrFSBootBlock[511]);
-
-  memcpy(&_fsBootBlock, bArrFSBootBlock, sizeof(BootBlock));
-
-  if(_fsBootBlock.BPB_BootSig != 0x29)
-    throw upan::exception(XLOC, "invalid BOOT signature: %x", _fsBootBlock.BPB_BootSig);
-
-  // TODO: A write to HD image file from mos fs util is changing the CHS value !!
-  // Needs to be fixed. So, this check is skipped for the time being
-
-  /*
-  if(fsBootBlock.BPB_SecPerTrk != pDiskDrive->uiSectorsPerTrack)
-    return FileSystem_ERR_INVALID_SECTORS_PER_TRACK;
-
-  if(fsBootBlock.BPB_NumHeads != pDiskDrive->uiNoOfHeads)
-    return FileSystem_ERR_INVALID_NO_OF_HEADS;
-  */
-
-  if(_fsBootBlock.BPB_TotSec32 != _diskDrive.SizeInSectors())
-    throw upan::exception(XLOC, "invalid BPB_TotSec32: %d", _fsBootBlock.BPB_TotSec32);
-
-  if(_fsBootBlock.BPB_FSTableSize == 0)
-    throw upan::exception(XLOC, "invalid BPB_FSTableSize: %d", _fsBootBlock.BPB_FSTableSize);
-
-  if(_fsBootBlock.BPB_BytesPerSec != 0x200)
-    throw upan::exception(XLOC, "invalid BPB_BytesPerSec: %d", _fsBootBlock.BPB_BytesPerSec);
-
-  if(_fsBootBlock.BPB_jmpBoot[0] != 0xEB || _fsBootBlock.BPB_jmpBoot[1] != 0xFE || _fsBootBlock.BPB_jmpBoot[2] != 0x90)
-    throw upan::exception(XLOC, "invalid BPB_jmpBoot");
-
-  if(_diskDrive.DeviceType() == DEV_FLOPPY)
-    if(_fsBootBlock.BPB_Media != 0xF0)
-      throw upan::exception(XLOC, "invalid BPB_Media: %x", _fsBootBlock.BPB_Media);
-
-  if(_fsBootBlock.BPB_ExtFlags != 0x0080)
-    throw upan::exception(XLOC, "invalid BPB_ExtFlags: %x", _fsBootBlock.BPB_ExtFlags);
-
-  if(_fsBootBlock.BPB_FSVer != 0x0100)
-    throw upan::exception(XLOC, "invalid BPB_FSVer: %x", _fsBootBlock.BPB_FSVer);
-
-  if(_fsBootBlock.BPB_FSInfo != 1)
-    throw upan::exception(XLOC, "invalid BPB_FSInfo: %d", _fsBootBlock.BPB_FSInfo);
-
-  if(_fsBootBlock.BPB_VolID != 0x01)
-    throw upan::exception(XLOC, "invalid BPB_VolID: %x", _fsBootBlock.BPB_VolID);
-}
-
-void FileSystem::WriteFSBootBlock()
-{
-  byte bSectorBuffer[512];
-
-  bSectorBuffer[510] = 0x55; /* BootSector Signature */
-  bSectorBuffer[511] = 0xAA;
-
-  memcpy(bSectorBuffer, &_fsBootBlock, sizeof(BootBlock));
-
-  _diskDrive.Write(1, 1, bSectorBuffer);
+void FileSystem::ReadRootDirectory() {
+  byte bDataBuffer[512];
+  _diskDrive.xRead(bDataBuffer, 0, 1);
+  _pwd.Init(*reinterpret_cast<FileNode*>(bDataBuffer), 0, 0);
 }
 
 void FileSystem::LoadFreeSectors() {
-  if(_freePoolQueue->full())
+  if(_freePoolQueue.full())
     return;
 
   bool bStop = false;
@@ -215,7 +121,7 @@ void FileSystem::LoadFreeSectors() {
     for(int j = 0; j < ENTRIES_PER_TABLE_SECTOR; j++) {
       if(!(uiSectorBlock[j] & EOC)) {
         const uint32_t uiSectorID = block.second->BlockId() * ENTRIES_PER_TABLE_SECTOR + j;
-        if(!_freePoolQueue->push_back(uiSectorID)) {
+        if(!_freePoolQueue.push_back(uiSectorID)) {
           bStop = true;
           break;
         }
@@ -229,7 +135,7 @@ void FileSystem::LoadFreeSectors() {
 
   byte bBuffer[ 4096 ];
 
-  for(unsigned i = 0; i < _fsBootBlock.BPB_FSTableSize; ) {
+  for(unsigned i = 0; i < _bootBlock.getTableSize(); ) {
     if(bStop) {
       break;
     }
@@ -239,18 +145,18 @@ void FileSystem::LoadFreeSectors() {
       continue;
     }
 
-    unsigned uiBlockSize = (_fsBootBlock.BPB_FSTableSize - i);
+    unsigned uiBlockSize = (_bootBlock.getTableSize() - i);
     if(uiBlockSize > 8)
       uiBlockSize = 8;
 
-    _diskDrive.Read(i + _fsBootBlock.BPB_RsvdSecCnt + 1, uiBlockSize, (byte*)bBuffer);
+    _diskDrive.Read(i + _bootBlock.getReservedSectorCount() + 1, uiBlockSize, (byte*)bBuffer);
 
     auto pTable = (unsigned*)bBuffer;
 
     for(unsigned j = 0; j < ENTRIES_PER_TABLE_SECTOR * uiBlockSize; j++) {
       if(!(pTable[j] & EOC)) {
         const uint32_t uiSectorID = i * ENTRIES_PER_TABLE_SECTOR + j;
-        if(!_freePoolQueue->push_back(uiSectorID)) {
+        if(!_freePoolQueue.push_back(uiSectorID)) {
           bStop = true;
           break;
         }
@@ -269,7 +175,7 @@ void FileSystem::FlushTableCache(int flushSize) {
   for(auto i = _fsTableCache.begin(); i != _fsTableCache.end() && flushSize > 0;) {
     auto e = i->second;
     if (e->WriteCount() != 0) {
-      _diskDrive.Write(e->BlockId() + _fsBootBlock.BPB_RsvdSecCnt + 1, 1, (byte*)(e->SectorBlock()));
+      _diskDrive.Write(e->BlockId() + _bootBlock.getReservedSectorCount() + 1, 1, (byte*)(e->SectorBlock()));
     }
     delete e;
     _fsTableCache.erase(i++);
@@ -301,14 +207,14 @@ SectorBlockEntry* FileSystem::GetSectorEntryFromCache(uint32_t sectorId) {
 }
 
 uint32_t FileSystem::AllocateSector() {
-  if(_freePoolQueue->empty()) {
+  if(_freePoolQueue.empty()) {
     LoadFreeSectors();
-    if(_freePoolQueue->empty())
+    if(_freePoolQueue.empty())
       throw upan::exception(XLOC, "No free sectors available on disk: %s", _diskDrive.DriveName().c_str());
   }
 
-  auto uiFreeSectorID = _freePoolQueue->front();
-  _freePoolQueue->pop_front();
+  auto uiFreeSectorID = _freePoolQueue.front();
+  _freePoolQueue.pop_front();
 
   SetSectorEntryValue(uiFreeSectorID, EOC);
   return uiFreeSectorID;
@@ -330,26 +236,26 @@ void FileSystem::DisplayCache() {
 
 uint32_t FileSystem::GetTableSectorId(uint32_t uiSectorID) const
 {
-  return uiSectorID + 1/*BPB*/ + _fsBootBlock.BPB_RsvdSecCnt;
+  return uiSectorID + 1/*BPB*/ + _bootBlock.getReservedSectorCount();
 }
 
 uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const
 {
   return uiSectorID + 1/*BPB*/
-          + _fsBootBlock.BPB_RsvdSecCnt
-          + _fsBootBlock.BPB_FSTableSize;
+          + _bootBlock.getReservedSectorCount()
+         + _bootBlock.getTableSize();
 }
 
 void FileSystem::UpdateUsedSectors(uint32_t uiSectorEntryValue)
 {
   if(uiSectorEntryValue == EOC)
-    _fsBootBlock._usedSectors++;
+    _bootBlock.incUserSectors();
   else if(uiSectorEntryValue == 0)
-    _fsBootBlock._usedSectors--;
+    _bootBlock.decUserSectors();
 }
 
 uint32_t FileSystem::GetSectorEntryValue(const uint32_t uiSectorID) {
-  if(uiSectorID > (_fsBootBlock.BPB_FSTableSize * _fsBootBlock.BPB_BytesPerSec / 4)) {
+  if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4)) {
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
   }
 
@@ -369,7 +275,7 @@ uint32_t FileSystem::GetSectorEntryValue(const uint32_t uiSectorID) {
 
 void FileSystem::SetSectorEntryValue(const uint32_t uiSectorID, uint32_t uiSectorEntryValue)
 {
-  if(uiSectorID > (_fsBootBlock.BPB_FSTableSize * _fsBootBlock.BPB_BytesPerSec / 4))
+  if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4))
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
 
   UpdateUsedSectors(uiSectorEntryValue);

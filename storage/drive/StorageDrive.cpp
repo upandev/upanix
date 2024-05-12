@@ -80,7 +80,7 @@ StorageDrive::StorageDrive(int id,
                            unsigned uiNoOfHeads,
                            void* device,
                            RawStorageDrive* rawDisk,
-                           unsigned uiMaxSectorsInFreePoolCache) : _id(id),
+                           uint32_t uiMaxSectorsInFreePoolCache) : _id(id),
     _driveName(driveName),
     _deviceType(deviceType),
     _driveNumber(driveNumber),
@@ -92,10 +92,9 @@ StorageDrive::StorageDrive(int id,
     _bEnableDiskCache(true),
     _device(device),
     _rawDisk(rawDisk),
-    _uiMaxSectorsInFreePoolCache(uiMaxSectorsInFreePoolCache),
     _fsType(FS_UNKNOWN),
     _mounted(false),
-    _fileSystem(*this)
+    _fileSystem(*this, uiMaxSectorsInFreePoolCache)
 {
   StartReleaseCacheTask();
 }
@@ -104,10 +103,7 @@ void StorageDrive::Mount() {
 	if(Mounted()) {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
   }
-
-  fileSystem().Mount(MaxSectorsInFreePoolCache());
-  ReadRootDirectory();
-
+  fileSystem().Mount();
   _mounted = true;
 }
 
@@ -120,12 +116,6 @@ void StorageDrive::UnMount() {
   FlushDirtyCacheSectors();
 
   _mounted = false;
-}
-
-void StorageDrive::ReadRootDirectory() {
-	byte bDataBuffer[512];
-  xRead(bDataBuffer, 0, 1);
-  fileSystem().pwd().Init(*reinterpret_cast<FileNode*>(bDataBuffer), 0, 0);
 }
 
 void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
