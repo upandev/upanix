@@ -62,9 +62,9 @@ void FileSystem::Format() {
   /*************************** Root Directory [START] *******************************/
   _bootBlock = *bootBlock;
 
-  auto uiSec = GetRealSectorNumber(0);
-  ((FileNode*)bSectorBuffer)->InitAsRoot(uiSec);
-  _diskDrive.Write(uiSec, 1, bSectorBuffer);
+  //auto uiSec = GetRealSectorNumber(0);
+  ((FileNode*)bSectorBuffer)->InitAsRoot(0/*uiSec*/);
+  _diskDrive.xWrite(bSectorBuffer, 0, 1);
   /*************************** Root Directory [END] ********************************/
 
   _diskDrive.FlushAllDirtyCacheSectors();
@@ -74,6 +74,7 @@ void FileSystem::Mount() {
   _bootBlock.load(_diskDrive);
   LoadFreeSectors();
   ReadRootDirectory();
+  _fileTree.Initialize(_diskDrive);
 }
 
 void FileSystem::Unmount() {
@@ -81,6 +82,7 @@ void FileSystem::Unmount() {
   _fsTableCache.flush();
   _freePoolQueue.clear();
   _diskDrive.FlushAllDirtyCacheSectors();
+  _fileTree.Uninitialize();
 }
 
 void FileSystem::ReadRootDirectory() {

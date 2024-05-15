@@ -29,13 +29,13 @@
 #include <FileNode.h>
 #include <BootBlock.h>
 #include <FSTableCache.h>
+#include <FileTree.h>
 
 #define MEDIA_REMOVABLE	0xF0
 #define MEDIA_FIXED		0xF8
 
 #define EOC		0x0FFFFFFF
 #define EOC_B	0xFF
-#define DIR_ENTRIES_PER_SECTOR 7
 
 #define FS_ROOT_DIR "/"
 
@@ -43,6 +43,9 @@ class StorageDrive;
 
 class FileSystem {
   public:
+    static const int SECTOR_SIZE = 512;
+    static const int DIR_ENTRIES_PER_SECTOR = SECTOR_SIZE / sizeof(FileNode);
+
     FileSystem(StorageDrive& diskDrive, uint32_t freePoolSize);
     ~FileSystem() = default;
 
@@ -129,6 +132,7 @@ private:
     BootBlock _bootBlock;
     upan::queue<uint32_t> _freePoolQueue;
     FSTableCache _fsTableCache;
+    FileTree _fileTree;
 
     PresentWorkingDirectory _pwd;
 

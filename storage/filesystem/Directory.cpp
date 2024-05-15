@@ -272,7 +272,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDr
 	while(uiCurrentSectorID != EOC) {
     pDiskDrive->xRead(bDirectoryBuffer, uiCurrentSectorID, 1);
 
-		for(bSectorPosIndex = 0; bSectorPosIndex < DIR_ENTRIES_PER_SECTOR; bSectorPosIndex++) {
+		for(bSectorPosIndex = 0; bSectorPosIndex < FileSystem::DIR_ENTRIES_PER_SECTOR; bSectorPosIndex++) {
       curDir = ((FileNode*)bDirectoryBuffer) + bSectorPosIndex ;
 
       if(!curDir->IsDeleted()) {
@@ -334,7 +334,7 @@ bool Directory_FindDirectory(StorageDrive& diskDrive, const FileSystem::WorkingD
 	while(uiCurrentSectorID != EOC) {
     diskDrive.xRead(bSectorBuffer, uiCurrentSectorID, 1);
 
-		for(bSectorPosIndex = 0; bSectorPosIndex < DIR_ENTRIES_PER_SECTOR; bSectorPosIndex++) {
+		for(bSectorPosIndex = 0; bSectorPosIndex < FileSystem::DIR_ENTRIES_PER_SECTOR; bSectorPosIndex++) {
       curDir = ((FileNode*)bSectorBuffer) + bSectorPosIndex ;
 
       if(strcmp(szDirName, (const char*)curDir->Name()) == 0 && !curDir->IsDeleted())	{
@@ -364,14 +364,14 @@ bool Directory_FindDirectory(StorageDrive& diskDrive, const FileSystem::WorkingD
 			if(bDeletedEntryFound == true)
         return false;
 
-			if(bSectorPosIndex < DIR_ENTRIES_PER_SECTOR - 1) {
+			if(bSectorPosIndex < FileSystem::DIR_ENTRIES_PER_SECTOR - 1) {
         memcpy(bDestSectorBuffer, bSectorBuffer, 512);
         uiSectorNo = uiCurrentSectorID ;
         bSectorPos = bSectorPosIndex + 1 ;
         return false;
 			}
 
-			if(bSectorPosIndex == DIR_ENTRIES_PER_SECTOR - 1) {
+			if(bSectorPosIndex == FileSystem::DIR_ENTRIES_PER_SECTOR - 1) {
 				if(uiNextSectorID != EOC) {
           uiSectorNo = uiNextSectorID ;
           bSectorPos = 0 ;
