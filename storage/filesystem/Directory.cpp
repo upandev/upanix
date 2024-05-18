@@ -88,7 +88,7 @@ void Directory_Create(Process* processAddressSpace, StorageDrive &diskDrive, byt
   FileSystem::PresentWorkingDirectory& pwd = processAddressSpace->processPWD() ;
 
   if(cwd.getNode()->StartSectorID() == EOC) {
-    uiFreeSectorID = diskDrive.fileSystem().AllocateSector();
+    uiFreeSectorID = diskDrive.fileSystem().allocateSector();
 		uiSectorNo = uiFreeSectorID ;
 		bSectorPos = 0 ;
     cwd.getNode()->StartSectorID(uiFreeSectorID);
@@ -97,8 +97,8 @@ void Directory_Create(Process* processAddressSpace, StorageDrive &diskDrive, byt
       throw upan::exception(XLOC, "directory %s already exists", szDirName);
 
 		if(bSectorPos == EOC_B) {
-      uiFreeSectorID = diskDrive.fileSystem().AllocateSector();
-      diskDrive.fileSystem().SetSectorEntryValue(uiSectorNo, uiFreeSectorID);
+      uiFreeSectorID = diskDrive.fileSystem().allocateSector();
+      diskDrive.fileSystem().setSectorEntryValue(uiSectorNo, uiFreeSectorID);
 			uiSectorNo = uiFreeSectorID ;
 			bSectorPos = 0 ;
 		}
@@ -148,7 +148,7 @@ void Directory_Delete(Process &pas, StorageDrive &diskDrive, byte* bParentDirect
 
 	while(uiCurrentSectorID != EOC)
 	{
-    uiNextSectorID = diskDrive.fileSystem().DeallocateSector(uiCurrentSectorID);
+    uiNextSectorID = diskDrive.fileSystem().deallocateSector(uiCurrentSectorID);
 		uiCurrentSectorID = uiNextSectorID ;
 	}
 
@@ -283,7 +283,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDr
 			}
 		}
 
-    uiCurrentSectorID = diskDrive.fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiCurrentSectorID = diskDrive.fileSystem().getSectorEntryValue(uiCurrentSectorID);
 	}
 }
 
@@ -358,7 +358,7 @@ bool Directory_FindDirectory(StorageDrive& diskDrive, const FileSystem::WorkingD
 			}
 		}
 
-    uiNextSectorID = diskDrive.fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiNextSectorID = diskDrive.fileSystem().getSectorEntryValue(uiCurrentSectorID);
 
     if(uiScanDirCount >= dirNode->Size()) {
 			if(bDeletedEntryFound == true)
@@ -446,7 +446,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 	
 	while(iSectorIndex < iStartWriteSectorNo && uiCurrentSectorID != EOC)
 	{
-    uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 
 		iSectorIndex++ ;
 		uiPrevSectorID = uiCurrentSectorID ;
@@ -459,7 +459,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 
 		do
 		{
-      uiCurrentSectorID = pDiskDrive->fileSystem().AllocateSector();
+      uiCurrentSectorID = pDiskDrive->fileSystem().allocateSector();
 
       if(dirFile->StartSectorID() == EOC)
 			{
@@ -467,7 +467,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 			}
 			else
 			{
-        pDiskDrive->fileSystem().SetSectorEntryValue(uiPrevSectorID, uiCurrentSectorID);
+        pDiskDrive->fileSystem().setSectorEntryValue(uiPrevSectorID, uiCurrentSectorID);
 			}
 			
 			uiPrevSectorID = uiCurrentSectorID ;
@@ -503,7 +503,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 		if(uiWrittenCount == uiDataSize)
       return;
 
-    uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 
     uiPrevSectorID = uiCurrentSectorID ;
     uiCurrentSectorID = uiNextSectorID ;
@@ -522,8 +522,8 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 		if(uiCurrentSectorID == EOC || bStartAllocation == true)
 		{
 			bStartAllocation = true ;
-      uiCurrentSectorID = pDiskDrive->fileSystem().AllocateSector();
-      pDiskDrive->fileSystem().SetSectorEntryValue(uiPrevSectorID, uiCurrentSectorID);
+      uiCurrentSectorID = pDiskDrive->fileSystem().allocateSector();
+      pDiskDrive->fileSystem().setSectorEntryValue(uiPrevSectorID, uiCurrentSectorID);
 		}
 		
 		if(uiWriteRemainingCount < 512)
@@ -555,7 +555,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
       return;
 		}
 
-    uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 		uiPrevSectorID = uiCurrentSectorID ;
 		uiCurrentSectorID = uiNextSectorID ;
 	}
@@ -609,7 +609,7 @@ int Directory_FileRead(StorageDrive* pDiskDrive, const FileSystem::WorkingDirect
 	}
 
 	while(iSectorIndex != iStartReadSectorNo)	{
-    uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 		iSectorIndex++ ;
 		uiCurrentSectorID = uiNextSectorID ;
 	}
@@ -637,7 +637,7 @@ int Directory_FileRead(StorageDrive* pDiskDrive, const FileSystem::WorkingDirect
 		iSectorCount = 1 ;
 
 		for(;;) {
-      uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+      uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 
 			if(uiCurrentSectorID + 1 == uiNextSectorID) {
 				uiCurrentSectorID = uiNextSectorID ;
@@ -654,7 +654,7 @@ int Directory_FileRead(StorageDrive* pDiskDrive, const FileSystem::WorkingDirect
 				}
 
 				if(iSectorCount == MAX_SECTORS_PER_RW) {
-          uiNextSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+          uiNextSectorID = pDiskDrive->fileSystem().getSectorEntryValue(uiCurrentSectorID);
 					uiCurrentSectorID = uiNextSectorID ;
 					break ;	
 				}

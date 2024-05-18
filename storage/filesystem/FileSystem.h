@@ -49,23 +49,23 @@ class FileSystem {
     FileSystem(StorageDrive& diskDrive, uint32_t freePoolSize);
     ~FileSystem() = default;
 
-    uint64_t TotalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
-    uint64_t UsedSize() const { return _bootBlock.getUsedSectors() * 512; }
+    uint64_t totalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
+    uint64_t usedSize() const { return _bootBlock.getUsedSectors() * 512; }
 
-    uint32_t AllocateSector();
-    uint32_t DeallocateSector(uint32_t currentSectorId);
+    uint32_t allocateSector();
+    uint32_t deallocateSector(uint32_t currentSectorId);
 
-    uint32_t GetRealSectorNumber(uint32_t uiSectorID) const;
-    uint32_t GetSectorEntryValue(uint32_t uiSectorID) {
+    uint32_t getRealSectorNumber(uint32_t uiSectorID) const;
+    uint32_t getSectorEntryValue(uint32_t uiSectorID) {
       return _fsTableCache.get(uiSectorID);
     }
-    void SetSectorEntryValue(uint32_t uiSectorID, uint32_t uiSectorEntryValue) {
+    void setSectorEntryValue(uint32_t uiSectorID, uint32_t uiSectorEntryValue) {
       _fsTableCache.set(uiSectorID, uiSectorEntryValue);
     }
 
 private:
-  void ReadRootDirectory();
-  void LoadFreeSectors();
+  void readRootDirectory();
+  void loadFreeSectors();
 
 public:
     class PresentWorkingDirectory {
@@ -120,10 +120,10 @@ public:
     };
 
 private:
-  void Format();
-  void Mount();
-  void Unmount();
-  void CheckIfMounted();
+  void format();
+  void mount();
+  void unmount();
+  void checkIfMounted();
 
 public:
   class DirectoryRef {

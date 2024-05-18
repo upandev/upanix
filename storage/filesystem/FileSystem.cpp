@@ -30,7 +30,7 @@ FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
   _fsTableCache(diskDrive, _bootBlock) {
 }
 
-void FileSystem::Format() {
+void FileSystem::format() {
   /************************ FAT Boot Block [START] *******************************/
   byte bFSBootBlockBuffer[512] ;
   auto bootBlock = (BootBlock*)(bFSBootBlockBuffer) ;
@@ -70,15 +70,15 @@ void FileSystem::Format() {
   _root.clear();
 }
 
-void FileSystem::Mount() {
+void FileSystem::mount() {
   _bootBlock.load(_diskDrive);
-  LoadFreeSectors();
-  ReadRootDirectory();
+  loadFreeSectors();
+  readRootDirectory();
   _fileTree.Initialize(_diskDrive);
   _root = _fileTree._root;
 }
 
-void FileSystem::Unmount() {
+void FileSystem::unmount() {
   _bootBlock.store(_diskDrive);
   _fsTableCache.flush();
   _freePoolQueue.clear();
@@ -87,13 +87,13 @@ void FileSystem::Unmount() {
   _root.clear();
 }
 
-void FileSystem::ReadRootDirectory() {
+void FileSystem::readRootDirectory() {
   byte bDataBuffer[512];
   _diskDrive.xRead(bDataBuffer, 0, 1);
   _pwd.Init(*reinterpret_cast<FileNode*>(bDataBuffer), 0, 0);
 }
 
-void FileSystem::LoadFreeSectors() {
+void FileSystem::loadFreeSectors() {
   if(_freePoolQueue.full()) return;
 
   // First do Cache Lookup
@@ -129,9 +129,9 @@ void FileSystem::LoadFreeSectors() {
   }
 }
 
-uint32_t FileSystem::AllocateSector() {
+uint32_t FileSystem::allocateSector() {
   if(_freePoolQueue.empty()) {
-    LoadFreeSectors();
+    loadFreeSectors();
     if(_freePoolQueue.empty())
       throw upan::exception(XLOC, "No free sectors available on disk: %s", _diskDrive.DriveName().c_str());
   }
@@ -139,24 +139,24 @@ uint32_t FileSystem::AllocateSector() {
   auto uiFreeSectorID = _freePoolQueue.front();
   _freePoolQueue.pop_front();
 
-  SetSectorEntryValue(uiFreeSectorID, EOC);
+  setSectorEntryValue(uiFreeSectorID, EOC);
   return uiFreeSectorID;
 }
 
-uint32_t FileSystem::DeallocateSector(uint32_t currentSectorId) {
-  auto uiNextSectorID = GetSectorEntryValue(currentSectorId);
-  SetSectorEntryValue(currentSectorId, 0);
+uint32_t FileSystem::deallocateSector(uint32_t currentSectorId) {
+  auto uiNextSectorID = getSectorEntryValue(currentSectorId);
+  setSectorEntryValue(currentSectorId, 0);
   _freePoolQueue.push_back(currentSectorId);
   return uiNextSectorID;
 }
 
-uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const {
+uint32_t FileSystem::getRealSectorNumber(uint32_t uiSectorID) const {
   return uiSectorID + 1/*BPB*/
          + _bootBlock.getReservedSectorCount()
          + _bootBlock.getTableSize();
 }
 
-void FileSystem::CheckIfMounted() {
+void FileSystem::checkIfMounted() {
   if (!_diskDrive.Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _diskDrive.DriveName().c_str());
   }

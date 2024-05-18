@@ -104,14 +104,14 @@ void MountManager_Initialize()
 	MountManager_bInitStatus = false ;
 
 	MountManager_GetBootMountDrive(MountManager_szRootDriveName) ;
-	printf("\n\tBoot Mount Drive: %s", MountManager_szRootDriveName);
+	printf("\n\tBoot mount Drive: %s", MountManager_szRootDriveName);
 	
   StorageDriveManager::Instance().GetByDriveName(MountManager_szRootDriveName, false).onBad([&](upan::error&) {
     MountManager_bInitStatus = false ;
     MountManager_iRootDriveID = CURRENT_DRIVE ;
   });
 
-  KC::MConsole().LoadMessage("Mount Manager Initialization", MountManager_bInitStatus ? Success : Failure);
+  KC::MConsole().LoadMessage("mount Manager Initialization", MountManager_bInitStatus ? Success : Failure);
 }
 
 bool MountManager_GetInitStatus()
@@ -123,7 +123,7 @@ void MountManager_MountDrives()
 {
 	if(MountManager_bInitStatus == false)
 	{
-    KC::MConsole().Message("\n\tMount Manager Init Failed. Not mounting any drive", '@') ;
+    KC::MConsole().Message("\n\tmount Manager Init Failed. Not mounting any drive", '@') ;
 		return ;
 	}
 	

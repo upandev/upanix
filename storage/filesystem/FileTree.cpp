@@ -70,7 +70,7 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
       }
     }
 
-    currentSectorId = storageDrive.fileSystem().GetSectorEntryValue(currentSectorId);
+    currentSectorId = storageDrive.fileSystem().getSectorEntryValue(currentSectorId);
   }
 }
 

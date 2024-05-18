@@ -104,7 +104,7 @@ void StorageDrive::Format() {
   {
     ;//		RETURN_IF_NOT(bStatus, Floppy_Format(pDiskDrive->driveNo), Floppy_SUCCESS) ;
   }
-  fileSystem().Format();
+  fileSystem().format();
   _mounted = false;
 }
 
@@ -112,7 +112,7 @@ void StorageDrive::Mount() {
 	if(Mounted()) {
     throw upan::exception(XLOC, "Drive %s is already mounted", _driveName.c_str());
   }
-  fileSystem().Mount();
+  fileSystem().mount();
   _mounted = true;
 }
 
@@ -120,7 +120,7 @@ void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
-  fileSystem().Unmount();
+  fileSystem().unmount();
   _mounted = false;
 }
 
@@ -210,7 +210,7 @@ void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bD
 
 void StorageDrive::xRead(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
-  Read(fileSystem().GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
+  Read(fileSystem().getRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
 void StorageDrive::RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
@@ -332,7 +332,7 @@ void StorageDrive::Write(unsigned uiStartSector, unsigned uiNoOfSectors, byte* b
 
 void StorageDrive::xWrite(byte* bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors)
 {
-  Write(fileSystem().GetRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
+  Write(fileSystem().getRealSectorNumber(uiSector), uiNoOfSectors, bDataBuffer);
 }
 
 void StorageDrive::RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)

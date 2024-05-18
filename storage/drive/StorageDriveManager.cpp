@@ -204,8 +204,8 @@ byte StorageDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 
 		if(d->Mounted())
     {
-      pAddress[i].ulTotalSize = d->fileSystem().TotalSize();
-      pAddress[i].ulUsedSize = d->fileSystem().UsedSize();
+      pAddress[i].ulTotalSize = d->fileSystem().totalSize();
+      pAddress[i].ulUsedSize = d->fileSystem().usedSize();
     }
 		
 		++i;
