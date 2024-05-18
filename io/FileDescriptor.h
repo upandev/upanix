@@ -46,7 +46,7 @@ public:
 
   void seek(int seekType, int offset) override;
 
-  FileSystem_FileStat getStat();
+  struct stat getStat();
 
   const upan::string& getFileName() const {
     return _fileName;

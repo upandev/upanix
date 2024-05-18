@@ -56,8 +56,8 @@ public:
               void* device, RawStorageDrive* rawDisk,
               unsigned uiMaxSectorsInFreePoolCache);
   void RemoveEntryByCondition(const DriveRemoveClause& removeClause);
-  upan::result<StorageDrive &> GetByDriveName(const upan::string& driveName, bool bCheckMount);
-  upan::result<StorageDrive*> GetByID(int iID, bool bCheckMount);
+  upan::result<StorageDrive&> GetByDriveName(const upan::string& driveName, bool bCheckMount);
+  upan::result<StorageDrive&> GetByID(int iID, bool bCheckMount);
   void DisplayList();
   byte Change(const upan::string& szDriveName);
   byte GetList(DriveStat** pDriveList, int* iListSize);

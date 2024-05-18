@@ -123,8 +123,54 @@ private:
   void Format();
   void Mount();
   void Unmount();
+  void CheckIfMounted();
 
 public:
+  class DirectoryRef {
+  public:
+    DirectoryRef() : _node(nullptr) {}
+
+    DirectoryRef(const DirectoryRef& directoryRef) : _node(nullptr) {
+      set(directoryRef._node);
+    }
+
+    DirectoryRef(FileTree::Node* node) : _node(nullptr) {
+      set(node);
+    }
+
+    ~DirectoryRef() {
+      clear();
+    }
+
+    DirectoryRef& operator=(const DirectoryRef& directoryRef) {
+      if (this == &directoryRef) {
+        return *this;
+      }
+      set(directoryRef._node);
+      return *this;
+    }
+
+    void set(FileTree::Node* node) {
+      if (node) node->incRefCount();
+      if (_node) _node->decRecCount();
+      _node = node;
+    }
+
+    void clear() {
+      if (_node) _node->decRecCount();
+      _node = nullptr;
+    }
+
+  private:
+    FileTree::Node* node() {
+      return _node;
+    }
+  private:
+    FileTree::Node* _node;
+    friend class FileSystem;
+  };
+
+  DirectoryRef root() { return _root; }
   PresentWorkingDirectory& pwd() { return _pwd; }
 
 private:
@@ -134,25 +180,9 @@ private:
     FSTableCache _fsTableCache;
     FileTree _fileTree;
 
+    DirectoryRef _root;
     PresentWorkingDirectory _pwd;
 
     friend class StorageDrive;
 };
-
-typedef struct {
-  int 	    st_dev;     /* ID of device containing file */
-  int     	st_ino;     /* inode number */
-  uint16_t 	st_mode;    /* protection */
-  int   		st_nlink;   /* number of hard links */
-  int     	st_uid;     /* user ID of owner */
-  int     	st_gid;     /* group ID of owner */
-  int     	st_rdev;    /* device ID (if special file) */
-  uint32_t  st_size;    /* total size, in bytes */
-  uint32_t  st_blksize; /* blocksize for filesystem I/O */
-  uint32_t  st_blocks;  /* number of blocks allocated */
-
-  struct timeval st_atime;   /* time of last access */
-  struct timeval st_mtime;   /* time of last modification */
-  struct timeval st_ctime;   /* time of last status change */
-} FileSystem_FileStat;
 

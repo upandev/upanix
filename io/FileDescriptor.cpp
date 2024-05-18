@@ -103,7 +103,7 @@ void FileDescriptor::seek(int seekType, int offset) {
   _offset = offset;
 }
 
-FileSystem_FileStat FileDescriptor::getStat() {
+struct stat FileDescriptor::getStat() {
   upan::rlock_gaurd rlockGaurd(_diskDrive.GetFileLock(_nodeId));
 
   FileSystem::WorkingDirectory cwd;

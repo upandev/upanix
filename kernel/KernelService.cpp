@@ -68,16 +68,25 @@ KernelService::ProcessExec::~ProcessExec()
 	delete[] m_szArgs ;
 }
 
-void KernelService::ProcessExec::Execute()
-{
+void KernelService::ProcessExec::Execute() {
 	int iOldDDriveID ;
 	FileSystem::PresentWorkingDirectory mOldPWD ;
 	ProcessManager::Instance().CopyDiskDrive(GetRequestProcessID(), iOldDDriveID, mOldPWD) ;
 
+  auto& srcPAS = ProcessManager::Instance().GetSchedulableProcess(GetRequestProcessID()).value();
+  auto& curProc = ProcessManager::Instance().GetCurrentPAS();
+
+  const int curDriveId = curProc.driveID();
+  const FileSystem::DirectoryRef curPwd = curProc.pwd();
+
+  curProc.setDriveID(srcPAS.driveID());
+  curProc.pwd(srcPAS.pwd());
+
   m_iNewProcId = ProcessManager::Instance().Create(_szFile.c_str(), GetRequestProcessID(), true, DERIVE_FROM_PARENT, m_iNoOfArgs, m_szArgs) ;
 
-  auto& curProc = ProcessManager::Instance().GetCurrentPAS();
-  curProc.setDriveID(iOldDDriveID);
+  curProc.setDriveID(curDriveId);
+  curProc.pwd(curPwd);
+
   curProc.processPWD() = mOldPWD;
 }
 

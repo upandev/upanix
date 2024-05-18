@@ -28,7 +28,7 @@ FileTree::FileTree() : _root(nullptr) {
 }
 
 FileTree::~FileTree() {
-  delete _root;
+  Uninitialize();
 }
 
 void FileTree::Initialize(StorageDrive& storageDrive) {
@@ -75,14 +75,14 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
 }
 
 FileTree::Node::Node(const Node* parent, const FileNode& fileNode) :
-  _parent(parent),
-  _name(fileNode.Name()),
-  _startSectorId(fileNode.StartSectorID()),
-  _sectorOffset(fileNode.ParentSectorPos()),
-  _isFile(fileNode.IsFile()),
-  _isDeleted(fileNode.IsDeleted()),
-  _size(fileNode.Size()),
-  _openCount(0) {
+        _parent(parent),
+        _name(fileNode.Name()),
+        _startSectorId(fileNode.StartSectorID()),
+        _sectorOffset(fileNode.ParentSectorPos()),
+        _isFile(fileNode.IsFile()),
+        _isDeleted(fileNode.IsDeleted()),
+        _size(fileNode.Size()),
+        _refCount(0) {
   printf("\n Loading file node: %s", fileNode.Name());
 }
 

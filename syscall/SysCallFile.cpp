@@ -304,7 +304,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				const char* szPathAddress = ( const char*) p1;
         try
         {
-          FileSystem_FileStat* pFileStat = ( FileSystem_FileStat*) p2;
+          auto pFileStat = (struct stat*) p2;
           *pFileStat = FileOperations_GetStat(szPathAddress, FROM_FILE);
         }
         catch(const upan::exception& ex)
@@ -323,7 +323,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try
         {
           auto& file = dynamic_cast<FileDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1));
-          auto pFileStat = (FileSystem_FileStat*)p2;
+          auto pFileStat = (struct stat*)p2;
           *pFileStat = file.getStat();
         }
         catch(const upan::exception& ex)

@@ -62,12 +62,12 @@ void FileSystem::Format() {
   /*************************** Root Directory [START] *******************************/
   _bootBlock = *bootBlock;
 
-  //auto uiSec = GetRealSectorNumber(0);
   ((FileNode*)bSectorBuffer)->InitAsRoot(0/*uiSec*/);
   _diskDrive.xWrite(bSectorBuffer, 0, 1);
   /*************************** Root Directory [END] ********************************/
 
   _diskDrive.FlushAllDirtyCacheSectors();
+  _root.clear();
 }
 
 void FileSystem::Mount() {
@@ -75,6 +75,7 @@ void FileSystem::Mount() {
   LoadFreeSectors();
   ReadRootDirectory();
   _fileTree.Initialize(_diskDrive);
+  _root = _fileTree._root;
 }
 
 void FileSystem::Unmount() {
@@ -83,6 +84,7 @@ void FileSystem::Unmount() {
   _freePoolQueue.clear();
   _diskDrive.FlushAllDirtyCacheSectors();
   _fileTree.Uninitialize();
+  _root.clear();
 }
 
 void FileSystem::ReadRootDirectory() {
@@ -152,4 +154,10 @@ uint32_t FileSystem::GetRealSectorNumber(uint32_t uiSectorID) const {
   return uiSectorID + 1/*BPB*/
          + _bootBlock.getReservedSectorCount()
          + _bootBlock.getTableSize();
+}
+
+void FileSystem::CheckIfMounted() {
+  if (!_diskDrive.Mounted()) {
+    throw upan::exception(XLOC, "drive %s is not mounted", _diskDrive.DriveName().c_str());
+  }
 }

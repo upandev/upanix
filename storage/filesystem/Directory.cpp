@@ -216,8 +216,8 @@ void Directory_GetDirEntryForCreateDelete(Process &pas, StorageDrive &diskDrive,
 void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDriveID, FileNode** pDirList, int* iListSize) {
 	byte bDirectoryBuffer[512] ;
 
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
-  FileSystem::WorkingDirectory cwd = (pas.driveID() == iDriveID) ? pas.processPWD() : pDiskDrive->fileSystem().pwd();
+  StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  FileSystem::WorkingDirectory cwd = (pas.driveID() == iDriveID) ? pas.processPWD() : diskDrive.fileSystem().pwd();
 
   FileNode* dirFile ;
   FileNode* pAddress ;
@@ -228,7 +228,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDr
 		unsigned uiSectorNo ;
 		byte bSectorPos ;
 
-    Directory_ReadDirEntryInfo(*pDiskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
+    Directory_ReadDirEntryInfo(diskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
 
     dirFile = ((FileNode*)bDirectoryBuffer) + bSectorPos ;
 
@@ -270,7 +270,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDr
 	}
 
 	while(uiCurrentSectorID != EOC) {
-    pDiskDrive->xRead(bDirectoryBuffer, uiCurrentSectorID, 1);
+    diskDrive.xRead(bDirectoryBuffer, uiCurrentSectorID, 1);
 
 		for(bSectorPosIndex = 0; bSectorPosIndex < FileSystem::DIR_ENTRIES_PER_SECTOR; bSectorPosIndex++) {
       curDir = ((FileNode*)bDirectoryBuffer) + bSectorPosIndex ;
@@ -283,7 +283,7 @@ void Directory_GetDirectoryContent(const char* szFileName, Process &pas, int iDr
 			}
 		}
 
-    uiCurrentSectorID = pDiskDrive->fileSystem().GetSectorEntryValue(uiCurrentSectorID);
+    uiCurrentSectorID = diskDrive.fileSystem().GetSectorEntryValue(uiCurrentSectorID);
 	}
 }
 
@@ -725,17 +725,16 @@ void Directory_ReadDirEntryInfo(StorageDrive& diskDrive, const FileSystem::Worki
 	}
 }
 
-void Directory_Change(const char* szFileName, int iDriveID, Process &pas)
-{
+void Directory_Change(const char* szFileName, int iDriveID, Process &pas) {
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 	byte bDirectoryBuffer[512] ;
 
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
-  FileSystem::WorkingDirectory cwd = iDriveID == pas.driveID() ? pas.processPWD() : pDiskDrive->fileSystem().pwd();
+  FileSystem::WorkingDirectory cwd = iDriveID == pas.driveID() ? pas.processPWD() : diskDrive.fileSystem().pwd();
 
-  Directory_ReadDirEntryInfo(*pDiskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
+  Directory_ReadDirEntryInfo(diskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
 
   FileNode* dirFile = ((FileNode*)bDirectoryBuffer) + bSectorPos ;
 
@@ -763,7 +762,7 @@ void Directory_Change(const char* szFileName, int iDriveID, Process &pas)
       uiSecNo = dirFile->ParentSectorID();
       bSecPos = dirFile->ParentSectorPos();
 
-      pDiskDrive->xRead(bDirectoryBuffer, uiSecNo, 1);
+      diskDrive.xRead(bDirectoryBuffer, uiSecNo, 1);
 
       dirFile = ((FileNode *) bDirectoryBuffer) + bSecPos;
 
@@ -775,7 +774,7 @@ void Directory_Change(const char* szFileName, int iDriveID, Process &pas)
   }
 
 	strcpy(szTempPwd, szPWD) ;
-	strcpy(szPWD, pDiskDrive->DriveName().c_str());
+	strcpy(szPWD, diskDrive.DriveName().c_str());
 	strcat(szPWD, "@") ;
 	strcat(szPWD, szTempPwd) ;
 
@@ -805,16 +804,16 @@ FileNode Directory_GetDirEntry(const char* szFileName, Process &pas, int iDriveI
 {
 	byte bDirectoryBuffer[512] ;
 
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
+  StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(iDriveID, true).goodValueOrThrow(XLOC);
 
-  FileSystem::WorkingDirectory cwd = pas.driveID() == iDriveID ? pas.processPWD() : pDiskDrive->fileSystem().pwd();
+  FileSystem::WorkingDirectory cwd = pas.driveID() == iDriveID ? pas.processPWD() : diskDrive.fileSystem().pwd();
 
   FileNode* dirFile ;
 
 	unsigned uiSectorNo ;
 	byte bSectorPos ;
 
-  Directory_ReadDirEntryInfo(*pDiskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
+  Directory_ReadDirEntryInfo(diskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
 
   dirFile = ((FileNode*)bDirectoryBuffer) + bSectorPos ;
 
@@ -826,13 +825,13 @@ FileNode Directory_GetDirEntry(const char* szFileName, Process &pas, int iDriveI
 }
 
 void Directory_SyncPWD(Process &pas) {
-  StorageDrive* pDiskDrive = StorageDriveManager::Instance().GetByID(pas.driveID(), true).goodValueOrThrow(XLOC);
+  StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(pas.driveID(), true).goodValueOrThrow(XLOC);
 
 	uint32_t uiSectorNo = pas.processPWD().getSectorId();
 	uint8_t bSectorEntryPos = pas.processPWD().getSectorEntryPos();
 
 	byte bSectorBuffer[512] ;
-  pDiskDrive->xRead(bSectorBuffer, uiSectorNo, 1);
+  diskDrive.xRead(bSectorBuffer, uiSectorNo, 1);
 
   pas.processPWD().setNode((((FileNode*)bSectorBuffer)[bSectorEntryPos]));
 }

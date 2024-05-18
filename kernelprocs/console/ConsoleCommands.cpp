@@ -239,12 +239,12 @@ void ConsoleCommands_ExecuteInternalCommand(const char* szCommand)
 	}
 }
 
-void ConsoleCommands_ChangeDrive()
-{
+void ConsoleCommands_ChangeDrive() {
   auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
   pas.setDriveID(storageDrive.Id());
   pas.processPWD() = storageDrive.fileSystem().pwd();
+  pas.pwd(storageDrive.fileSystem().root());
 }
 
 void ConsoleCommands_ShowDrive()
@@ -368,7 +368,7 @@ void ConsoleCommands_CopyFile()
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
 	int i = 0 ;
-  const FileSystem_FileStat& fStat = file.getStat();
+  const struct stat& fStat = file.getStat();
 	unsigned fsize = fStat.st_size ;
 	if(fsize == 0)
 	{

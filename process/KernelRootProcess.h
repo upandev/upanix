@@ -97,6 +97,14 @@ public:
     throw upan::exception(XLOC, "setDriveID() unsupported");
   }
 
+  FileSystem::DirectoryRef pwd() override {
+    throw upan::exception(XLOC, "pwd() unsupported");
+  }
+
+  void pwd(const FileSystem::DirectoryRef&) override {
+    throw upan::exception(XLOC, "pwd(FileSystem::DirectoryRef&) unsupported");
+  }
+
   FileSystem::PresentWorkingDirectory& processPWD() override {
     throw upan::exception(XLOC, "processPWD() unsupported");
   }

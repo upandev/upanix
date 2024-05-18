@@ -109,6 +109,9 @@ void StorageDriveManager::RemoveEntryByCondition(const DriveRemoveClause& remove
 
 upan::result<StorageDrive&> StorageDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount) {
   upan::mutex_guard g(_driveListMutex);
+  if (driveName == ROOT_DRIVE_SYN) {
+    return GetByID(ROOT_DRIVE_ID, bCheckMount);
+  }
   auto it = upan::find_if(_driveList.begin(), _driveList.end(), [&driveName, bCheckMount](const StorageDrive* d)
     {
       if(d->DriveName() == driveName)
@@ -120,7 +123,7 @@ upan::result<StorageDrive&> StorageDriveManager::GetByDriveName(const upan::stri
   return upan::result<StorageDrive&>(**it);
 }
 
-upan::result<StorageDrive*> StorageDriveManager::GetByID(int iID, bool bCheckMount)
+upan::result<StorageDrive&> StorageDriveManager::GetByID(int iID, bool bCheckMount)
 {	
   upan::mutex_guard g(_driveListMutex);
 	if(iID == ROOT_DRIVE)
@@ -134,8 +137,8 @@ upan::result<StorageDrive*> StorageDriveManager::GetByID(int iID, bool bCheckMou
       return false;
     });
   if(it == _driveList.end())
-    return upan::result<StorageDrive*>::bad("failed to find drive id %d (mounted: %d)", iID, bCheckMount);
-  return upan::good(*it);
+    return upan::result<StorageDrive&>::bad("failed to find drive id %d (mounted: %d)", iID, bCheckMount);
+  return upan::result<StorageDrive&>(**it);
 }
 
 void StorageDriveManager::DisplayList()
@@ -156,6 +159,8 @@ byte StorageDriveManager::Change(const upan::string& szDriveName) {
 	auto& pas = ProcessManager::Instance().GetCurrentPAS();
 	pas.setDriveID(r.goodValue().Id());
   pas.processPWD() = r.goodValue().fileSystem().pwd();
+  pas.pwd(r.goodValue().fileSystem().root());
+
   pas.setEnv("PWD", (const char*)r.goodValue().fileSystem().pwd().getNode().Name()) ;
 
 	return DeviceDrive_SUCCESS ;
@@ -244,11 +249,11 @@ void StorageDriveManager::FormatDrive(const upan::string& szDriveName)
 
 void StorageDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
 {
-  StorageDrive* pDiskDrive = GetByID(ProcessManager::Instance().GetCurrentPAS().driveID(), true).goodValueOrThrow(XLOC);
+  StorageDrive& diskDrive = GetByID(ProcessManager::Instance().GetCurrentPAS().driveID(), true).goodValueOrThrow(XLOC);
 
-  strncpy(pDriveStat->driveName, pDiskDrive->DriveName().c_str(), 32);
-  pDriveStat->bMounted = pDiskDrive->Mounted();
-  pDriveStat->uiSizeInSectors = pDiskDrive->SizeInSectors();
+  strncpy(pDriveStat->driveName, diskDrive.DriveName().c_str(), 32);
+  pDriveStat->bMounted = diskDrive.Mounted();
+  pDriveStat->uiSizeInSectors = diskDrive.SizeInSectors();
   pDriveStat->ulTotalSize = 0;
   pDriveStat->ulUsedSize = 0;
 }

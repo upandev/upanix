@@ -54,6 +54,10 @@ public:
 
     void markAsDeleted() { _isDeleted = true; }
 
+    void incRefCount() { _refCount.inc(); }
+    void decRecCount() { _refCount.dec(); }
+    bool isReferenced() { return _refCount.get() > 0; }
+
   private:
     void Load(StorageDrive& storageDrive);
 
@@ -65,7 +69,7 @@ public:
     uint8_t _isFile:1;
     uint8_t _isDeleted:1;
     uint32_t _size;
-    int _openCount;
+    upan::atomic::integral<int> _refCount;
     upan::rwlock _rwlock;
 
     typedef upan::map<upan::string, Node*> SubNodes;
@@ -73,6 +77,8 @@ public:
 
     friend class FileTree;
   };
+
+  Node* root() { return _root; }
 
 private:
   void Initialize(StorageDrive& storageDrive);
