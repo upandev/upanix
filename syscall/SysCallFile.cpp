@@ -42,12 +42,9 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				char* szPathAddress = ( char*) p1;
 
 				*retVal = 0 ;
-        try
-        {
-          FileOperations_ChangeDir(szPathAddress);
-        }
-        catch(const upan::exception& ex)
-        {
+        try {
+          FileOperations::Instance().changeDir(szPathAddress);
+        } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;
         }
@@ -78,9 +75,12 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				char* szPathAddress = ( char*) p1;
 				*retVal = 0;
 
-        try
-        {
-          FileOperations_GetCWD(szPathAddress, p2);
+        try {
+          const upan::string& fullPath = FileOperations::Instance().getcwd();
+          if ((int)p2 < fullPath.length()) {
+            throw upan::exception(XLOC, "insufficient path buffer size");
+          }
+          strcpy(szPathAddress, fullPath.c_str());
         }
         catch(upan::exception& ex)
         {
@@ -101,8 +101,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
         try
         {
-          FileOperations_SyncPWD();
-          FileOperations::Instance().create(szPathAddress, usType, (unsigned short)(p2));
+          FileOperations::Instance().create(szPathAddress, usType, (uint16_t)(p2));
         }
         catch(const upan::exception& ex)
 				{
@@ -119,7 +118,6 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
         try
         {
-          FileOperations_SyncPWD();
           FileOperations::Instance().remove(szPathAddress);
         }
         catch(const upan::exception& ex)
@@ -301,14 +299,11 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => FileStat
 			{
 				*retVal = 0 ;
-				const char* szPathAddress = ( const char*) p1;
-        try
-        {
-          auto pFileStat = (struct stat*) p2;
-          *pFileStat = FileOperations_GetStat(szPathAddress, FROM_FILE);
-        }
-        catch(const upan::exception& ex)
-				{
+        try {
+          const char* filePath = (const char*) p1;
+          auto fileStat = (struct stat*) p2;
+          *fileStat = FileOperations::Instance().stats(filePath);
+        } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;
 				}
@@ -338,12 +333,13 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P1 => File Name
 			// P2 => Mode
 			{
-				*retVal = 0 ;
-				const char* szPathAddress = ( const char*) p1;
-        if(!FileOperations_FileAccess(szPathAddress, FROM_FILE, (int)p2))
-				{
-					*retVal = -1 ;
-				}
+        const char* szPathAddress = ( const char*) p1;
+        try {
+          *retVal = FileOperations::Instance().fileAccess(szPathAddress, (uint8_t)p2) ? 0 : -1;
+        } catch(const upan::exception& ex) {
+          ex.Print();
+          *retVal = -1;
+        }
 			}
 			break ;
 
@@ -353,7 +349,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
 				*retVal = 0 ;
 				try {
-          FileOperations_Dup2(p1, p2);
+          FileOperations::Instance().dup2(p1, p2);
 				} catch(upan::exception& e) {
 				  e.Print();
           *retVal = -1 ;

@@ -63,8 +63,8 @@ void FileSystem::format() {
   /*************************** Root Directory [START] *******************************/
   _bootBlock = *bootBlock;
 
-  ((FileNode*)bSectorBuffer)->InitAsRoot(0/*uiSec*/);
-  _diskDrive.xWrite(bSectorBuffer, 0, 1);
+  ((FileNode*)bSectorBuffer)->InitAsRoot();
+  _diskDrive.xWrite(bSectorBuffer, ((FileNode*)bSectorBuffer)->ParentSectorID(), 1);
   /*************************** Root Directory [END] ********************************/
 
   _diskDrive.FlushAllDirtyCacheSectors();
@@ -76,7 +76,7 @@ void FileSystem::mount() {
   loadFreeSectors();
   readRootDirectory();
   _fileTree.initialize(_diskDrive);
-  _root = _fileTree._root;
+  _root.set(_fileTree._root);
 }
 
 void FileSystem::unmount() {
@@ -173,27 +173,24 @@ uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
   return (uint16_t)(fileType | mode);
 }
 
-void FileSystem::create(const FileTree::NodeTokens &fileTokens, const upan::string &newFileName,
+void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName,
                         uint16_t fileType, uint16_t mode,
-                        const FileNodeRef &cwd, Process &process) {
-
+                        const FileNodeRef& cwd, Process& process) {
   if (newFileName == DIR_SPECIAL_CURRENT || newFileName == DIR_SPECIAL_PARENT || newFileName.empty()) {
     throw upan::exception(XLOC, "invalid file name %s", newFileName.c_str());
   }
 
-  auto parentDir = _fileTree.getFileNodeRef(fileTokens, cwd);
-
-  if (parentDir.isEmpty()) {
+  auto parentNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (parentNodeRef.empty()) {
     throw upan::exception(XLOC, "invalid path for file %s", newFileName.c_str());
   }
 
-  auto& fileNodeRef = parentDir.value();
-  auto& parentNode = fileNodeRef.node().value();
+  auto& parentNode = parentNodeRef.nodev();
   if (parentNode.isFile()) {
     throw upan::exception(XLOC, "%s is not a directory", parentNode.name().c_str());
   }
 
-  FileNodeRef::WriteGuard g(fileNodeRef);
+  FileNodeRef::WriteGuard g(parentNodeRef);
 
   if (!parentNode.find(newFileName).isEmpty()) {
     throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (FILE_TYPE(fileType) == ATTR_TYPE_FILE ? "file" : "directory"));
@@ -231,5 +228,176 @@ void FileSystem::create(const FileTree::NodeTokens &fileTokens, const upan::stri
   _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
   _diskDrive.xWrite(newSectorBuffer, newSectorId, 1);
 
-  parentNode.addSubNode(newFileNode);
+  _fileTree.addNode(parentNode, newFileNode);
+}
+
+void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd, Process& process) {
+  if (deleteFileName == DIR_SPECIAL_CURRENT || deleteFileName == DIR_SPECIAL_PARENT || deleteFileName.empty()) {
+    throw upan::exception(XLOC, "invalid file name %s", deleteFileName.c_str());
+  }
+  auto parentNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (parentNodeRef.empty()) {
+    throw upan::exception(XLOC, "invalid path for file %s", deleteFileName.c_str());
+  }
+
+  auto& parentNode = parentNodeRef.nodev();
+  if (parentNode.isFile()) {
+    throw upan::exception(XLOC, "%s is not a directory", parentNode.name().c_str());
+  }
+
+  FileNodeRef::WriteGuard g(parentNodeRef);
+
+  uint8_t parentDirBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
+  auto& parentFileNode = reinterpret_cast<FileNode*>(parentDirBuffer)[parentNode.sectorOffset()];
+
+  if(!process.hasFilePermission(parentFileNode, O_RDWR)) {
+    throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
+  }
+
+  if(process.fileUserType(parentFileNode) != USER_OWNER) {
+    throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
+  }
+
+  uint32_t prevSectorId;
+  bool deallocateSectorBlock;
+  auto deleteNode =  _fileTree.removeNode(parentNode, deleteFileName, prevSectorId, deallocateSectorBlock);
+
+  if (deleteNode->isFile()) {
+    auto curSectorId = deleteNode->startSectorId();
+    while(curSectorId != EOC) {
+      curSectorId = deallocateSector(curSectorId);
+    }
+  }
+
+  if (deallocateSectorBlock) {
+    auto nextSectorId = deallocateSector(deleteNode->sectorId());
+    if (deleteNode->sectorId() == parentFileNode.StartSectorID()) {
+      parentFileNode.StartSectorID(nextSectorId);
+    } else {
+      setSectorEntryValue(prevSectorId, nextSectorId);
+    }
+  } else {
+    uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+    _diskDrive.xRead(sectorBuffer, deleteNode->sectorId(), 1);
+    auto& deleteFileNode = reinterpret_cast<FileNode*>(sectorBuffer)[deleteNode->sectorOffset()];
+    deleteFileNode.MarkAsDeleted();
+    _diskDrive.xWrite(sectorBuffer, deleteNode->sectorId(), 1);
+  }
+
+  delete deleteNode;
+  parentFileNode.RemoveNode();
+
+  _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
+}
+
+FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  bool newFileCreated = false;
+
+  if (fileNodeRef.empty()) {
+    if ( (mode & O_APPEND) || (mode & O_CREAT) ) {
+      FileTree::NodeTokens dirTokens(fileTokens);
+      dirTokens.pop_back();
+      const upan::string& fileName = fileTokens.back();
+      create(dirTokens, fileName, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT, cwd, process);
+      fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+      newFileCreated = true;
+    }
+  }
+
+  FileNodeRef::WriteGuard g1(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  if (node.isDirectory()) {
+    throw upan::exception(XLOC, "%s is a directory", node.name().c_str());
+  }
+
+  FileNodeRef parentNodeRef(node.parent());
+  FileNodeRef::WriteGuard g2(parentNodeRef);
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  if(!process.hasFilePermission(fileNode, mode)) {
+    throw upan::exception(XLOC, "insufficient permission to open file %s", node.name().c_str());
+  }
+
+  if( (mode & O_TRUNC) && !newFileCreated) {
+    auto curSectorId = node.startSectorId();
+    while(curSectorId != EOC) {
+      curSectorId = deallocateSector(curSectorId);
+    }
+    fileNode.StartSectorID(EOC);
+    fileNode.Size(0);
+    _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
+    node.startSectorId(EOC);
+  }
+  return fileNodeRef;
+}
+
+FileNodeRef FileSystem::exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd) {
+  return _fileTree.getFileNodeRef(fileTokens, cwd);
+}
+
+struct stat FileSystem::stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd) {
+  FileNodeRef fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
+  }
+  return stats(fileNodeRef);
+}
+
+struct stat FileSystem::stats(FileNodeRef fileNodeRef) {
+  FileNodeRef::ReadGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+  
+  struct stat fileStat{};
+
+  fileStat.st_dev = _diskDrive.DriveNumber();
+  fileStat.st_mode = fileNode.Attribute() ;
+  fileStat.st_uid = fileNode.UserID() ;
+  fileStat.st_size = fileNode.Size() ;
+  fileStat.st_atime = fileNode.AccessedTime() ;
+  fileStat.st_mtime = fileNode.ModifiedTime() ;
+  fileStat.st_ctime = fileNode.CreatedTime() ;
+
+  fileStat.st_blksize = 512 ;
+  fileStat.st_blocks = (fileNode.Size() / 512) + ((fileNode.Size() % 512) ? 1 : 0 ) ;
+
+  fileStat.st_rdev = 0 ;
+  fileStat.st_gid = 1 ;
+  fileStat.st_nlink = 1 ;
+  fileStat.st_ino = 0 ;
+
+  return fileStat;
+}
+
+upan::string FileSystem::fullPath(FileNodeRef fileNodeRef) {
+  return _fileTree.getFullPath(fileNodeRef.nodev());
+}
+
+bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
+  }
+
+  FileNodeRef::ReadGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  if (node.isDirectory()) {
+    return false;
+  }
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  return process.hasFilePermission(fileNode, mode);
 }

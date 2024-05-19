@@ -338,9 +338,8 @@ void ConsoleCommands_ReadFileContent()
 	}
 }
 
-void ConsoleCommands_ChangeDirectory()
-{
-  FileOperations_ChangeDir(CommandLineParser::Instance().GetParameterAt(0));
+void ConsoleCommands_ChangeDirectory() {
+  FileOperations::Instance().changeDir(CommandLineParser::Instance().GetParameterAt(0));
 }
 
 void ConsoleCommands_PresentWorkingDir()
@@ -935,7 +934,7 @@ void graphics_photos(int x, int y) {
   const char* szListDirName = "usdb@/pictures/family/" ;
 
   FileOperations_GetDirectoryContent(szListDirName, &pDirList, &iListSize);
-  FileOperations_ChangeDir("usdb@/pictures/family/");
+  FileOperations::Instance().changeDir("usdb@/pictures/family/");
 
   upan::vector<upanui::Image*> images;
   for(int i = 0; i < iListSize; i++) {

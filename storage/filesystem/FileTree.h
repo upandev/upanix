@@ -40,7 +40,7 @@ public:
   ~FileTree();
 
   typedef upan::list<upan::string> NodeTokens;
-  upan::option<FileNodeRef> getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef &cwd);
+  FileNodeRef getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef &cwd);
 
   class Node {
   public:
@@ -51,12 +51,14 @@ public:
     const upan::string& name() const { return _name; }
     uint32_t startSectorId() const { return _startSectorId; }
     uint8_t sectorOffset() const { return _sectorOffset; }
-    uint32_t sectorId() const { return isRoot() ? 0 : _parent->startSectorId(); }
+    uint32_t sectorId() const { return _sectorId; }
     bool isFile() const { return _isFile; };
     bool isDirectory() const { return !isFile(); }
     uint32_t size() const { return _size; }
+    Node* parent() { return _parent; }
 
     void name(const upan::string& name) { _name = name; }
+    void startSectorId(uint32_t startSectorId) { _startSectorId = startSectorId; }
     void size(const uint32_t size) { _size = size; }
 
     void incRefCount() { _refCount.inc(); }
@@ -67,13 +69,15 @@ public:
     bool getFreeSlot(uint32_t& sectorId, uint8_t& sectorOffset);
     uint32_t getDirLastSectorId();
     void addSubNode(const FileNode& fileNode);
+    FileTree::Node* removeSubNode(const upan::string& fileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
 
     upan::rwlock& rwlock() { return _rwlock; }
 
   private:
-    const Node* _parent;
+    Node* _parent;
     upan::string _name;
     uint32_t _startSectorId;
+    uint32_t _sectorId;
     const uint8_t _sectorOffset:6;
     uint8_t _isFile:1;
     uint32_t _size;
@@ -98,6 +102,9 @@ public:
 private:
   void initialize(StorageDrive& storageDrive);
   void uninitialize();
+  void addNode(Node& parent, const FileNode& newFileNode);
+  FileTree::Node* removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
+  upan::string getFullPath(Node& node);
 
 private:
   Node* _root;

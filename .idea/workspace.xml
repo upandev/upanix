@@ -30,24 +30,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor fileSystem method names">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor fileSystem with in memory file-tree">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATACommandManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATACommandManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/Directory.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/Directory.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNode.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNode.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/UserManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/users/UserManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/GenericUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/GenericUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +111,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.sourceCode.C/C++",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -249,7 +251,7 @@
       <workItem from="1714515361023" duration="1203000" />
       <workItem from="1714523623525" duration="45625000" />
       <workItem from="1714909637158" duration="36012000" />
-      <workItem from="1715435965063" duration="74234000" />
+      <workItem from="1715435965063" duration="97708000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -594,7 +596,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -627,7 +629,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix issue with deallocator by setting the table entry to 0 to ensure reallocation of same page area is done properly" />
     <MESSAGE value="reduce sleep time for kernel-service to ensure requests are served quickly - particularly page-faults" />
     <MESSAGE value="added code to debug and track syscalls" />
     <MESSAGE value="introduce thread local storage. it contains process/thread id to begin with" />
@@ -652,7 +653,8 @@
     <MESSAGE value="started implementing file-tree" />
     <MESSAGE value="filesystem refactoring - introducing directory reference, that reference counts the FileTree::Node resource" />
     <MESSAGE value="refactor fileSystem method names" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor fileSystem method names" />
+    <MESSAGE value="refactor fileSystem with in memory file-tree" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor fileSystem with in memory file-tree" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

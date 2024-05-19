@@ -28,17 +28,15 @@
 #include <Directory.h>
 
 FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
-                               const upan::string& nodeId,
-                               const upan::string& fileName,
+                               const FileNodeRef& fileNodeRef,
                                StorageDrive& diskDrive,
-                               uint32_t startSectorID) :
+                               uint32_t startSectorId) :
         IODescriptor(pid, fd, mode),
-        _fileName(fileName),
-        _nodeId(nodeId),
+        _fileNodeRef(fileNodeRef),
         _diskDrive(diskDrive),
         _offset(0),
         _lastReadSectorIndex(0),
-        _lastReadSectorNo(startSectorID) {
+        _lastReadSectorNo(startSectorId) {
 }
 
 FileSystem::PresentWorkingDirectory& FileDescriptor::getWorkingDirectory() {
@@ -47,8 +45,6 @@ FileSystem::PresentWorkingDirectory& FileDescriptor::getWorkingDirectory() {
 }
 
 int FileDescriptor::read(void* buffer, int len) {
-  upan::rlock_gaurd rlockGaurd(_diskDrive.GetFileLock(_nodeId));
-
   FileSystem::WorkingDirectory cwd = getWorkingDirectory();
 
   int readLen = Directory_FileRead(&_diskDrive, cwd, *this, (byte*)buffer, len);
@@ -59,8 +55,6 @@ int FileDescriptor::read(void* buffer, int len) {
 }
 
 int FileDescriptor::write(const void* buffer, int len) {
-  upan::wlock_gaurd wlockGaurd(_diskDrive.GetFileLock(_nodeId));
-
   if( !(getMode() & O_WRONLY || getMode() & O_RDWR || getMode() & O_APPEND) ) {
     throw upan::exception(XLOC, "insufficient permission to write file fd: %d", id());
   }
@@ -104,11 +98,7 @@ void FileDescriptor::seek(int seekType, int offset) {
 }
 
 struct stat FileDescriptor::getStat() {
-  upan::rlock_gaurd rlockGaurd(_diskDrive.GetFileLock(_nodeId));
-
-  FileSystem::WorkingDirectory cwd;
-  getWorkingDirectory();
-  return FileOperations_GetStat(_diskDrive, cwd, getFileName().c_str());
+  return _diskDrive.fileSystem().stats(_fileNodeRef);
 }
 
 void FileDescriptor::setLastReadSectorDetails(int sectorIndex, uint32_t sectorId) {

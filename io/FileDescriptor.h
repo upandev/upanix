@@ -30,9 +30,8 @@ class StorageDrive;
 class FileDescriptor : public IODescriptor {
 public:
   FileDescriptor(int pid, int fd, byte mode,
-                 const upan::string& nodeId,
-                 const upan::string& fileName,
-                 StorageDrive& diskDrive, uint32_t startSectorID);
+                 const FileNodeRef& fileNodeRef, StorageDrive& diskDrive,
+                 uint32_t startSectorId);
 
   int read(void* buffer, int len) override;
   bool canRead() override {
@@ -45,29 +44,22 @@ public:
   }
 
   void seek(int seekType, int offset) override;
-
   struct stat getStat();
-
   const upan::string& getFileName() const {
     return _fileName;
   }
-
   uint32_t getOffset() const override {
     return _offset;
   }
-
   int getLastReadSectorIndex() const {
     return _lastReadSectorIndex;
   }
-
   void setLastReadSectorIndex(int v) {
     _lastReadSectorIndex = v;
   }
-
   uint32_t getLastReadSectorNo() const {
     return _lastReadSectorNo;
   }
-
   void setLastReadSectorNo(uint32_t v) {
     _lastReadSectorNo = v;
   }
@@ -84,7 +76,7 @@ private:
 
 private:
   const upan::string _fileName;
-  const upan::string _nodeId;
+  FileNodeRef _fileNodeRef;
   StorageDrive& _diskDrive;
   uint32_t _offset;
   int _lastReadSectorIndex;

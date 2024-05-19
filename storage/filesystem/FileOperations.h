@@ -82,16 +82,21 @@ public:
   }
 
   void create(const upan::string& filePath, uint16_t fileType, uint16_t mode);
-  FileDescriptor& open(const char* szFileName, const byte mode);
+  FileDescriptor& open(const upan::string& filePath, const uint8_t mode);
   bool close(int fd);
-  void remove(const char* szFilePath) ;
-  bool exists(const char* szFileName, unsigned short usFileType);
+  void remove(const upan::string& filePath) ;
+  bool fileExists(const upan::string& filePath);
+  bool directoryExists(const upan::string& filePath);
+  struct stat stats(const upan::string& filePath);
+  upan::string getcwd();
+  void changeDir(const upan::string& dirPath);
+  bool fileAccess(const upan::string& filePath, uint8_t mode);
+  void dup2(int oldFD, int newFD);
 
 private:
   StorageDrive& parseFilePath(const upan::string& fullFilePath, const Process& process,
                               FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
-  void _create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId);
-  bool _exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId);
+  FileNodeRef exists(const upan::string& filePath);
 
 private:
   upan::mutex _fileOpMutex;
@@ -99,13 +104,6 @@ private:
 
 bool FileOperations_ReadLine(int fd, upan::string& line);
 void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType);
-FileNode FileOperations_GetDirEntry(const char* szFileName);
-struct stat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
-struct stat FileOperations_GetStat(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName);
 byte FileOperations_GetFileOpenMode(int fd) ;
 void FileOperations_SyncPWD() ;
-void FileOperations_ChangeDir(const char* szFileName) ;
 void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pDirList, int* iListSize) ;
-bool FileOperations_FileAccess(const char* szFileName, int iDriveID, int mode) ;
-void FileOperations_Dup2(int oldFD, int newFD) ;
-void FileOperations_GetCWD(char* szPathBuf, int iBufSize) ;

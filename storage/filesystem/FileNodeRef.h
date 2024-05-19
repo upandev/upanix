@@ -28,14 +28,23 @@ class FileNodeRef {
 public:
   FileNodeRef();
   FileNodeRef(const FileNodeRef& fileNodeRef);
-  FileNodeRef(FileTree::Node* node);
+  explicit FileNodeRef(FileTree::Node* node);
   ~FileNodeRef();
 
   FileNodeRef& operator=(const FileNodeRef& fileNodeRef);
   void set(FileTree::Node* node);
   void clear();
+  bool empty() { return _node == nullptr; }
+
+  uint32_t startSectorId() { return nodev().startSectorId(); }
+  bool isFile() { return nodev().isFile(); }
+  bool isDirectory() { return nodev().isDirectory(); }
 
 private:
+  FileTree::Node& nodev() {
+    return node().value();
+  }
+
   upan::option<FileTree::Node&> node() {
     return upan::option<FileTree::Node&>(_node);
   }

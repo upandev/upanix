@@ -43,8 +43,8 @@ void FileNode::Init(const char* szDirName, unsigned short usDirAttribute, int iU
   _userID = iUserID ;
 }
 
-void FileNode::InitAsRoot(uint32_t parentSectorId) {
-  Init(FS_ROOT_DIR, ATTR_DIR_DEFAULT | ATTR_TYPE_DIRECTORY, ROOT_USER_ID, parentSectorId, 0);
+void FileNode::InitAsRoot() {
+  Init(FS_ROOT_DIR, ATTR_DIR_DEFAULT | ATTR_TYPE_DIRECTORY, ROOT_USER_ID, 0, 0);
 }
 
 upan::string FileNode::FullPath(StorageDrive& diskDrive) {

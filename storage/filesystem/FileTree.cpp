@@ -46,13 +46,25 @@ void FileTree::uninitialize() {
   _root = nullptr;
 }
 
-upan::option<FileNodeRef> FileTree::getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef& cwd) {
+FileNodeRef FileTree::getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef& cwd) {
   upan::mutex_guard g(_treeMutex);
 
   FileNodeRef cur = cwd;
 
   for(const auto& token : nodeTokens) {
-    auto& node = cur.node().value();
+    if (token == DIR_SPECIAL_CURRENT) {
+      continue;
+    }
+
+    if (token == DIR_SPECIAL_PARENT) {
+      if (cur.nodev().isRoot()) {
+        continue;
+      }
+      cur.set(cur.nodev().parent());
+      continue;
+    }
+
+    auto& node = cur.nodev();
     if (node.isFile()) {
       throw upan::exception(XLOC, "file %s can't be in the directory search path", node.name().c_str());
     }
@@ -60,13 +72,38 @@ upan::option<FileNodeRef> FileTree::getFileNodeRef(const FileTree::NodeTokens &n
 
     auto i = subNodes.find(token);
     if (i == subNodes.end()) {
-      return upan::option<FileNodeRef>::empty();
+      return {};
     }
 
-    cur = i->second;
+    cur.set(i->second);
   }
 
-  return upan::option<FileNodeRef>(cur);
+  return { cur };
+}
+
+void FileTree::addNode(FileTree::Node& parent, const FileNode& newFileNode) {
+  upan::mutex_guard g(_treeMutex);
+  parent.addSubNode(newFileNode);
+}
+
+FileTree::Node* FileTree::removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock) {
+  upan::mutex_guard g(_treeMutex);
+  parent.removeSubNode(deleteFileName, prevSectorId, deallocateSectorBlock);
+}
+
+upan::string FileTree::getFullPath(FileTree::Node& node) {
+  upan::mutex_guard g(_treeMutex);
+  upan::string fullPath;
+  Node* cur = &node;
+  while(cur != nullptr) {
+    if (fullPath.empty()) {
+      fullPath = cur->name();
+    } else {
+      fullPath = cur->name() + "/" + fullPath;
+    }
+    cur = cur->parent();
+  }
+  return fullPath;
 }
 
 class DirSectorBlock {
@@ -76,9 +113,18 @@ public:
       node = nullptr;
     }
   }
+
   uint32_t sectorId() const { return _sectorId; }
   void sectorId(uint32_t sectorId) { _sectorId = sectorId; }
   FileTree::Node** nodes() { return _nodes; }
+  bool empty() const {
+    for (auto node : _nodes) {
+      if (node != nullptr) {
+        return false;
+      }
+    }
+    return true;
+  }
 
 private:
   uint32_t _sectorId;
@@ -124,6 +170,7 @@ FileTree::Node::Node(const Node* parent, const FileNode& fileNode) :
         _parent(parent),
         _name(fileNode.Name()),
         _startSectorId(fileNode.StartSectorID()),
+        _sectorId(fileNode.ParentSectorID()),
         _sectorOffset(fileNode.ParentSectorPos()),
         _isFile(fileNode.IsFile()),
         _size(fileNode.Size()),
@@ -196,4 +243,45 @@ void FileTree::Node::addSubNode(const FileNode& fileNode) {
   }
   _subNodes.insert(SubNodes::value_type(subNode->name(), subNode));
   ++_size;
+}
+
+FileTree::Node* FileTree::Node::removeSubNode(const upan::string& fileName, uint32_t& prevSectorId, bool& deallocateSectorBlock) {
+  auto sit = _subNodes.find(fileName);
+  if (sit == _subNodes.end()) {
+    throw upan::exception(XLOC, "%s does not exists", fileName.c_str());
+  }
+
+  auto subNode = sit->second;
+
+  if (subNode->isReferenced()) {
+    throw upan::exception(XLOC, "%s file/directory is in use", fileName.c_str());
+  }
+
+  if (subNode->isDirectory() && subNode->size() > 0) {
+    throw upan::exception(XLOC, "%s directory is not empty", fileName.c_str());
+  }
+
+  prevSectorId = EOC;
+  deallocateSectorBlock = false;
+
+  for (auto it = _dirSectorBlocks.begin(); it != _dirSectorBlocks.end(); ++it) {
+    auto& dirSectorBlock = **it;
+    if (dirSectorBlock.sectorId() == subNode->sectorId()) {
+      dirSectorBlock.nodes()[subNode->sectorOffset()] = nullptr;
+      if (dirSectorBlock.empty()) {
+        deallocateSectorBlock = true;
+        _dirSectorBlocks.erase(it++);
+        if (dirSectorBlock.sectorId() == _startSectorId) {
+          _startSectorId = (it == _dirSectorBlocks.end()) ? EOC : it->sectorId();
+        }
+        delete &dirSectorBlock;
+      }
+      break;
+    }
+    prevSectorId = dirSectorBlock.sectorId();
+  }
+
+  _subNodes.erase(sit);
+  --_size;
+  return subNode;
 }

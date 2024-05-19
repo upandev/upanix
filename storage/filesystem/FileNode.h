@@ -31,7 +31,7 @@ class FileNode {
 public:
   void Init(const char *szDirName, uint16_t usDirAttribute, int iUserID, uint32_t uiParentSecNo, uint8_t bParentSecPos);
 
-  void InitAsRoot(uint32_t parentSectorId);
+  void InitAsRoot();
 
   upan::string FullPath(StorageDrive &diskDrive);
 

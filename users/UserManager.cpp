@@ -28,53 +28,42 @@
 
 UserManager::UserManager() : _userListFileName(upan::string(OSIN_PATH) + ".user.lst")
 {
-	if(FileOperations::Instance().exists(_userListFileName.c_str(), ATTR_TYPE_FILE) != FileOperations_SUCCESS)
-	{
+	if(!FileOperations::Instance().fileExists(_userListFileName)) {
     CreateNewUserList();
-	}
-  else
-  {
-    if(!LoadUserList())
-    {
+	} else {
+    if(!LoadUserList()) {
       printf("\n User List File Corrupted/Not Found. Using Default root User\n");
       InitializeDefaultUserList();
     }
   }
 }
 
-void UserManager::CreateNewUserList()
-{
+void UserManager::CreateNewUserList() {
 	unsigned short usPerm = S_OWNER((ATTR_READ | ATTR_WRITE)) | S_GROUP(ATTR_READ) | S_OTHERS(ATTR_READ);
 
-  FileOperations::Instance().create(_userListFileName.c_str(), ATTR_TYPE_FILE, usPerm);
+  FileOperations::Instance().create(_userListFileName, ATTR_TYPE_FILE, usPerm);
 
 	InitializeDefaultUserList();
 	WriteUserList();
 }
 
-void UserManager::InitializeDefaultUserList()
-{
+void UserManager::InitializeDefaultUserList() {
   _users.insert(UserMap::value_type("root", new User("root", "root123", FS_ROOT_DIR, SUPER_USER)));
 }
 
-void UserManager::WriteUserList()
-{
-  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDWR | O_TRUNC);
+void UserManager::WriteUserList() {
+  auto& file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC);
 
-  for(auto u : _users)
-  {
+  for(auto u : _users) {
     const User& user = *u.second;
 
     int buf_size = user.Name().length() + user.Password().length() + user.HomeDirPath().length() + 1 /*type*/ + 4 /* 4 new lines */;
     upan::uniq_ptr<char[]> buffer(new char[buf_size + 1]);
     sprintf(buffer.get(), "%s\n%s\n%s\n%d\n", user.Name().c_str(), user.Password().c_str(), user.HomeDirPath().c_str(), user.Type());
 
-    try
-    {
+    try {
       file.write((const char*)buffer.get(), buf_size);
-    }
-    catch(const upan::exception&)
-    {
+    } catch(const upan::exception&) {
       FileOperations::Instance().close(file.id());
       throw;
     }
@@ -125,8 +114,7 @@ bool UserManager::Create(const upan::string& name, const upan::string& password,
     return false;
   }
 
-  if(FileOperations::Instance().exists(homeDirPath.c_str(), ATTR_TYPE_DIRECTORY) != FileOperations_SUCCESS)
-  {
+  if(!FileOperations::Instance().directoryExists(homeDirPath)) {
     printf("\n invalid home dir path %s", homeDirPath.c_str());
     return false;
   }
@@ -138,8 +126,7 @@ bool UserManager::Create(const upan::string& name, const upan::string& password,
   return true;
 }
 
-bool UserManager::Delete(const upan::string& name)
-{
+bool UserManager::Delete(const upan::string& name) {
   auto it = _users.find(name);
   if(it == _users.end())
   {
@@ -152,36 +139,30 @@ bool UserManager::Delete(const upan::string& name)
   return true;
 }
 
-const User* UserManager::GetUserEntryByName(const upan::string& name) const
-{
+const User* UserManager::GetUserEntryByName(const upan::string& name) const {
   auto i = _users.find(name);
   if(i == _users.end())
     return nullptr;
   return i->second;
 }
 
-bool UserManager::ValidateName(const upan::string& name)
-{
-  if(GetUserEntryByName(name) != nullptr)
-  {
+bool UserManager::ValidateName(const upan::string& name) {
+  if(GetUserEntryByName(name) != nullptr) {
     printf("\n User %s already exists", name.c_str());
     return false;
   }
 
-	if(name.length() > MAX_USER_LENGTH)
-  {
+	if(name.length() > MAX_USER_LENGTH) {
     printf("\n User name length (%d) is too long (MAX: %d)", name.length(), MAX_USER_LENGTH);
 		return false;
   }
 
-	if(name.length() < MIN_USER_LENGTH)
-  {
+	if(name.length() < MIN_USER_LENGTH) {
     printf("\n User name length (%d) is too short (MIN: %d)", name.length(), MIN_USER_LENGTH);
 		return false;
   }
 
-  for(int i = 0; i < name.length(); ++i)
-	{
+  for(int i = 0; i < name.length(); ++i) {
 		if(!isalnum(name[i]))
     {
       printf("\n only alpha numeric characters allowed in user name (invalid char -> %c)", name[i]);

@@ -50,7 +50,7 @@ public:
   static const int SECTOR_SIZE = 512;
   static const int DIR_ENTRIES_PER_SECTOR = SECTOR_SIZE / sizeof(FileNode);
 
-  FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize);
+  FileSystem(StorageDrive& diskDrive, uint32_t freePoolSize);
 
   ~FileSystem() = default;
 
@@ -71,9 +71,17 @@ public:
 
   FileNodeRef root() { return _root; }
 
-  void create(const FileTree::NodeTokens &fileTokens, const upan::string &newFileName,
+  void create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName,
               uint16_t fileType, uint16_t mode,
-              const FileNodeRef &cwd, Process &process);
+              const FileNodeRef& cwd, Process& process);
+  void remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd,
+              Process& process);
+  FileNodeRef open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process);
+  FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
+  struct stat stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
+  struct stat stats(FileNodeRef fileNodeRef);
+  upan::string fullPath(FileNodeRef fileNodeRef);
+  bool hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process);
 
 private:
   uint16_t getFileAttr(uint16_t fileType, uint16_t mode);
@@ -83,15 +91,15 @@ private:
 public:
   class PresentWorkingDirectory {
   public:
-    void Init(const FileNode &node, uint32_t sectorId, uint16_t sectorEntryPos) {
+    void Init(const FileNode& node, uint32_t sectorId, uint16_t sectorEntryPos) {
       _node = node;
       _sectorId = sectorId;
       _sectorEntryPos = sectorEntryPos;
     }
 
-    FileNode &getNode() { return _node; }
-    const FileNode &getNode() const { return _node; }
-    void setNode(const FileNode &node) { _node = node; }
+    FileNode& getNode() { return _node; }
+    const FileNode& getNode() const { return _node; }
+    void setNode(const FileNode& node) { _node = node; }
     uint32_t getSectorId() const { return _sectorId; }
     uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
 
@@ -105,28 +113,28 @@ public:
   public:
     WorkingDirectory() : _node(nullptr), _sectorId(0), _sectorEntryPos(0) {}
 
-    WorkingDirectory(FileNode *node, uint32_t sectorId, uint8_t sectorEntryPos) : _node(node), _sectorId(sectorId),
+    WorkingDirectory(FileNode* node, uint32_t sectorId, uint8_t sectorEntryPos) : _node(node), _sectorId(sectorId),
                                                                                   _sectorEntryPos(sectorEntryPos) {
     }
 
-    WorkingDirectory(PresentWorkingDirectory &pwd) {
+    WorkingDirectory(PresentWorkingDirectory& pwd) {
       *this = pwd;
     }
 
-    WorkingDirectory &operator=(PresentWorkingDirectory &pwd) {
+    WorkingDirectory& operator=(PresentWorkingDirectory& pwd) {
       _node = &pwd.getNode();
       _sectorId = pwd.getSectorId();
       _sectorEntryPos = pwd.getSectorEntryPos();
       return *this;
     }
 
-    FileNode *getNode() { return _node; }
-    const FileNode *getNode() const { return _node; }
+    FileNode* getNode() { return _node; }
+    const FileNode* getNode() const { return _node; }
     uint32_t getSectorId() const { return _sectorId; }
     uint16_t getSectorEntryPos() const { return _sectorEntryPos; }
 
   private:
-    FileNode *_node;
+    FileNode* _node;
     uint32_t _sectorId;
     uint8_t _sectorEntryPos;
   };
@@ -138,10 +146,10 @@ private:
   void checkIfMounted();
 
 public:
-  PresentWorkingDirectory &pwd() { return _pwd; }
+  PresentWorkingDirectory& pwd() { return _pwd; }
 
 private:
-  StorageDrive &_diskDrive;
+  StorageDrive& _diskDrive;
   BootBlock _bootBlock;
   upan::queue<uint32_t> _freePoolQueue;
   FSTableCache _fsTableCache;

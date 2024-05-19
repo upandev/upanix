@@ -60,12 +60,6 @@ void Console::Start()
 {
   KC::MConsole().RefreshScreen() ;
 	
-//	byte bStatus ;
-//	if((bStatus = FileOperations_ChangeDir(FS_ROOT_DIR)) != FileOperations_SUCCESS)
-//	{
-//		KC::MDisplay().Address("\n Directory Change Failed: ", bStatus) ;	
-//	}
-
   DisplayCommandLine() ;
 
 	//Default init code
