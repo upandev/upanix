@@ -96,8 +96,8 @@ public:
 
   ProcessStateInfo& stateInfo() override { return _stateInfo; }
 
-  FileSystem::DirectoryRef pwd() override { return _pwd; }
-  void pwd(const FileSystem::DirectoryRef& pwd) { _pwd = pwd; }
+  FileNodeRef pwd() const override { return _pwd; }
+  void pwd(const FileNodeRef& pwd) { _pwd = pwd; }
 
   FileSystem::PresentWorkingDirectory& processPWD() override { return _processPWD; }
   const FileSystem::PresentWorkingDirectory& processPWD() const override { return _processPWD; }
@@ -141,7 +141,7 @@ protected:
   uint32_t _runTick;
   ProcessStateInfo& _stateInfo;
   TaskContext _taskContext;
-  FileSystem::DirectoryRef _pwd;
+  FileNodeRef _pwd;
   FileSystem::PresentWorkingDirectory _processPWD;
   //this is managed like a shared_ptr
   ProcessGroup* _processGroup;

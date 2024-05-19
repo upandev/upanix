@@ -237,7 +237,7 @@ bool MemManager::BuildPageTable() {
     MEM_PML4_TABLE[i] = 0x0;
   }
 
-  /***** Initialize Kernel Processes Stack Pages Table Entries *****/
+  /***** initialize Kernel Processes Stack Pages Table Entries *****/
 	for (bool& a : _allocMapForKernelProcessStackBlock) {
     a = false;
   }

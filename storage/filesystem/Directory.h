@@ -44,9 +44,6 @@
 #define Directory_ERR_INVALID_DRIVE			15
 #define Directory_FAILURE					16
 
-#define DIR_SPECIAL_CURRENT		"."
-#define DIR_SPECIAL_PARENT		".."
-
 class FileDescriptor;
 
 void Directory_Create(Process* processAddressSpace, StorageDrive &diskDrive, byte* bParentDirectoryBuffer, FileSystem::WorkingDirectory &cwd,

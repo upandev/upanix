@@ -77,7 +77,7 @@ void KernelService::ProcessExec::Execute() {
   auto& curProc = ProcessManager::Instance().GetCurrentPAS();
 
   const int curDriveId = curProc.driveID();
-  const FileSystem::DirectoryRef curPwd = curProc.pwd();
+  const FileNodeRef curPwd = curProc.pwd();
 
   curProc.setDriveID(srcPAS.driveID());
   curProc.pwd(srcPAS.pwd());

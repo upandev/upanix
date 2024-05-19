@@ -28,10 +28,10 @@ FileTree::FileTree() : _root(nullptr) {
 }
 
 FileTree::~FileTree() {
-  Uninitialize();
+  uninitialize();
 }
 
-void FileTree::Initialize(StorageDrive& storageDrive) {
+void FileTree::initialize(StorageDrive& storageDrive) {
   uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
 
   storageDrive.xRead(sectorBuffer, 0, 1);
@@ -41,10 +41,49 @@ void FileTree::Initialize(StorageDrive& storageDrive) {
   _root->Load(storageDrive);
 }
 
-void FileTree::Uninitialize() {
+void FileTree::uninitialize() {
   delete _root;
   _root = nullptr;
 }
+
+upan::option<FileNodeRef> FileTree::getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef& cwd) {
+  upan::mutex_guard g(_treeMutex);
+
+  FileNodeRef cur = cwd;
+
+  for(const auto& token : nodeTokens) {
+    auto& node = cur.node().value();
+    if (node.isFile()) {
+      throw upan::exception(XLOC, "file %s can't be in the directory search path", node.name().c_str());
+    }
+    auto& subNodes = node.subNodes();
+
+    auto i = subNodes.find(token);
+    if (i == subNodes.end()) {
+      return upan::option<FileNodeRef>::empty();
+    }
+
+    cur = i->second;
+  }
+
+  return upan::option<FileNodeRef>(cur);
+}
+
+class DirSectorBlock {
+public:
+  DirSectorBlock() : _sectorId(EOC) {
+    for (auto& node : _nodes) {
+      node = nullptr;
+    }
+  }
+  uint32_t sectorId() const { return _sectorId; }
+  void sectorId(uint32_t sectorId) { _sectorId = sectorId; }
+  FileTree::Node** nodes() { return _nodes; }
+
+private:
+  uint32_t _sectorId;
+  FileTree::Node* _nodes[FileSystem::DIR_ENTRIES_PER_SECTOR];
+};
 
 void FileTree::Node::Load(StorageDrive& storageDrive) {
   uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
@@ -55,20 +94,27 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
   while(currentSectorId != EOC && fileCount < _size) {
     storageDrive.xRead(sectorBuffer, currentSectorId, 1);
 
+    auto dirSectorBlock = new DirSectorBlock();
+    dirSectorBlock->sectorId(currentSectorId);
+
     auto fileNodes = reinterpret_cast<FileNode*>(sectorBuffer);
     for(auto sectorOffset = 0; sectorOffset < FileSystem::DIR_ENTRIES_PER_SECTOR && fileCount < _size; ++sectorOffset) {
       const auto& fileNode = fileNodes[sectorOffset];
+      if (fileNode.IsDeleted()) {
+        continue;
+      }
 
       auto node = new FileTree::Node(this, fileNode);
       _subNodes.insert(SubNodes::value_type(node->name(), node));
 
-      if (!fileNode.IsDeleted()) {
-        if (fileNode.IsDirectory()) {
-          node->Load(storageDrive);
-        }
-        ++fileCount;
+      if (fileNode.IsDirectory()) {
+        dirSectorBlock->nodes()[sectorOffset] = node;
+        node->Load(storageDrive);
       }
+      ++fileCount;
     }
+
+    _dirSectorBlocks.push_back(dirSectorBlock);
 
     currentSectorId = storageDrive.fileSystem().getSectorEntryValue(currentSectorId);
   }
@@ -80,10 +126,8 @@ FileTree::Node::Node(const Node* parent, const FileNode& fileNode) :
         _startSectorId(fileNode.StartSectorID()),
         _sectorOffset(fileNode.ParentSectorPos()),
         _isFile(fileNode.IsFile()),
-        _isDeleted(fileNode.IsDeleted()),
         _size(fileNode.Size()),
         _refCount(0) {
-  printf("\n Loading file node: %s", fileNode.Name());
 }
 
 FileTree::Node::~Node() {
@@ -91,4 +135,65 @@ FileTree::Node::~Node() {
     delete node.second;
   }
   _subNodes.clear();
+
+  for(auto d : _dirSectorBlocks) {
+    delete d;
+  }
+  _dirSectorBlocks.clear();
+}
+
+upan::option<FileTree::Node*> FileTree::Node::find(const upan::string &name) {
+  auto i = _subNodes.find(name);
+  if (i == _subNodes.end()) {
+    return upan::option<FileTree::Node*>::empty();
+  }
+  return upan::option<FileTree::Node*>(i->second);
+}
+
+bool FileTree::Node::getFreeSlot(uint32_t& sectorId, uint8_t& sectorOffset) {
+  for(auto& dirSectorBlock : _dirSectorBlocks) {
+    for(int i = 0; i < FileSystem::DIR_ENTRIES_PER_SECTOR; ++i) {
+      if (dirSectorBlock->nodes()[i] == nullptr) {
+        sectorId = dirSectorBlock->sectorId();
+        sectorOffset = i;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+uint32_t FileTree::Node::getDirLastSectorId() {
+  if (_dirSectorBlocks.empty()) {
+    return EOC;
+  }
+  return _dirSectorBlocks.back()->sectorId();
+}
+
+void FileTree::Node::addSubNode(const FileNode& fileNode) {
+  auto subNode = new Node(this, fileNode);
+  if (_startSectorId == EOC) {
+    _startSectorId = subNode->sectorId();
+    auto dirSectorBlock = new DirSectorBlock();
+    dirSectorBlock->sectorId(_startSectorId);
+    dirSectorBlock->nodes()[0] = subNode;
+    _dirSectorBlocks.push_back(dirSectorBlock);
+  } else {
+    bool addedToFreeSlot = false;
+    for(auto& dirSectorBlock : _dirSectorBlocks) {
+      if (dirSectorBlock->sectorId() == subNode->sectorId()) {
+        dirSectorBlock->nodes()[subNode->sectorOffset()] = subNode;
+        addedToFreeSlot = true;
+        break;
+      }
+    }
+    if (!addedToFreeSlot) {
+      auto dirSectorBlock = new DirSectorBlock();
+      dirSectorBlock->sectorId(subNode->sectorId());
+      dirSectorBlock->nodes()[subNode->sectorOffset()] = subNode;
+      _dirSectorBlocks.push_back(dirSectorBlock);
+    }
+  }
+  _subNodes.insert(SubNodes::value_type(subNode->name(), subNode));
+  ++_size;
 }

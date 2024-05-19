@@ -23,6 +23,7 @@
 #include <StringUtil.h>
 #include <FileSystem.h>
 #include <StorageDrive.h>
+#include <Process.h>
 
 FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
   _diskDrive(diskDrive),
@@ -74,7 +75,7 @@ void FileSystem::mount() {
   _bootBlock.load(_diskDrive);
   loadFreeSectors();
   readRootDirectory();
-  _fileTree.Initialize(_diskDrive);
+  _fileTree.initialize(_diskDrive);
   _root = _fileTree._root;
 }
 
@@ -83,7 +84,7 @@ void FileSystem::unmount() {
   _fsTableCache.flush();
   _freePoolQueue.clear();
   _diskDrive.FlushAllDirtyCacheSectors();
-  _fileTree.Uninitialize();
+  _fileTree.uninitialize();
   _root.clear();
 }
 
@@ -160,4 +161,75 @@ void FileSystem::checkIfMounted() {
   if (!_diskDrive.Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _diskDrive.DriveName().c_str());
   }
+}
+
+uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
+  mode = FILE_PERM(mode) ;
+  fileType = FILE_TYPE(fileType) ;
+
+  if(!(fileType == ATTR_TYPE_FILE || fileType == ATTR_TYPE_DIRECTORY)) {
+    throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
+  }
+  return (uint16_t)(fileType | mode);
+}
+
+void FileSystem::create(const FileTree::NodeTokens &fileTokens, const upan::string &newFileName,
+                        uint16_t fileType, uint16_t mode,
+                        const FileNodeRef &cwd, Process &process) {
+
+  if (newFileName == DIR_SPECIAL_CURRENT || newFileName == DIR_SPECIAL_PARENT || newFileName.empty()) {
+    throw upan::exception(XLOC, "invalid file name %s", newFileName.c_str());
+  }
+
+  auto parentDir = _fileTree.getFileNodeRef(fileTokens, cwd);
+
+  if (parentDir.isEmpty()) {
+    throw upan::exception(XLOC, "invalid path for file %s", newFileName.c_str());
+  }
+
+  auto& fileNodeRef = parentDir.value();
+  auto& parentNode = fileNodeRef.node().value();
+  if (parentNode.isFile()) {
+    throw upan::exception(XLOC, "%s is not a directory", parentNode.name().c_str());
+  }
+
+  FileNodeRef::WriteGuard g(fileNodeRef);
+
+  if (!parentNode.find(newFileName).isEmpty()) {
+    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (FILE_TYPE(fileType) == ATTR_TYPE_FILE ? "file" : "directory"));
+  }
+
+  uint8_t parentDirBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
+  auto& parentFileNode = reinterpret_cast<FileNode*>(parentDirBuffer)[parentNode.sectorOffset()];
+
+  if(!process.hasFilePermission(parentFileNode, O_RDWR)) {
+    throw upan::exception(XLOC, "insufficient permission to create file: %s", newFileName.c_str());
+  }
+
+  uint32_t newSectorId;
+  uint8_t newSectorOffset;
+
+  if (!parentNode.getFreeSlot(newSectorId, newSectorOffset)) {
+    newSectorId = allocateSector();
+    newSectorOffset = 0;
+    auto lastSectorId = parentNode.getDirLastSectorId();
+    if (lastSectorId == EOC) {
+      parentFileNode.StartSectorID(newSectorId);
+    } else {
+      setSectorEntryValue(lastSectorId, newSectorId);
+    }
+  }
+
+  uint8_t newSectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(newSectorBuffer, newSectorId, 1);
+  auto& newFileNode = reinterpret_cast<FileNode*>(newSectorBuffer)[newSectorOffset];
+  newFileNode.Init(newFileName.c_str(), getFileAttr(fileType, mode), process.userID(), newSectorId, newSectorOffset);
+
+  parentFileNode.AddNode();
+
+  _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
+  _diskDrive.xWrite(newSectorBuffer, newSectorId, 1);
+
+  parentNode.addSubNode(newFileNode);
 }

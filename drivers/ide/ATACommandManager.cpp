@@ -116,7 +116,7 @@ void ATACommandManager_ExecuteATACommand(ATACommand* pCommand)
 
 		if(bDMA)
 		{
-			// Initialize DMA Transfer
+			// initialize DMA Transfer
 	
 			for(iRetry = 0; iRetry < 3; iRetry++)
 			{

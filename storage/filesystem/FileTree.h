@@ -27,13 +27,20 @@
 #include <rwlock.h>
 #include <FileNode.h>
 #include <mutex.h>
+#include <option.h>
+#include <list.h>
 
 class FileSystem;
+class FileNodeRef;
+class DirSectorBlock;
 
 class FileTree {
 public:
   FileTree();
   ~FileTree();
+
+  typedef upan::list<upan::string> NodeTokens;
+  upan::option<FileNodeRef> getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef &cwd);
 
   class Node {
   public:
@@ -44,36 +51,44 @@ public:
     const upan::string& name() const { return _name; }
     uint32_t startSectorId() const { return _startSectorId; }
     uint8_t sectorOffset() const { return _sectorOffset; }
+    uint32_t sectorId() const { return isRoot() ? 0 : _parent->startSectorId(); }
     bool isFile() const { return _isFile; };
     bool isDirectory() const { return !isFile(); }
-    bool isDeleted() const { return _isDeleted; }
     uint32_t size() const { return _size; }
 
     void name(const upan::string& name) { _name = name; }
     void size(const uint32_t size) { _size = size; }
 
-    void markAsDeleted() { _isDeleted = true; }
-
     void incRefCount() { _refCount.inc(); }
     void decRecCount() { _refCount.dec(); }
     bool isReferenced() { return _refCount.get() > 0; }
 
-  private:
-    void Load(StorageDrive& storageDrive);
+    upan::option<Node*> find(const upan::string& name);
+    bool getFreeSlot(uint32_t& sectorId, uint8_t& sectorOffset);
+    uint32_t getDirLastSectorId();
+    void addSubNode(const FileNode& fileNode);
+
+    upan::rwlock& rwlock() { return _rwlock; }
 
   private:
     const Node* _parent;
     upan::string _name;
-    const uint32_t _startSectorId;
+    uint32_t _startSectorId;
     const uint8_t _sectorOffset:6;
     uint8_t _isFile:1;
-    uint8_t _isDeleted:1;
     uint32_t _size;
     upan::atomic::integral<int> _refCount;
     upan::rwlock _rwlock;
 
+    typedef upan::list<DirSectorBlock*> DirSectorBlocks;
+    DirSectorBlocks _dirSectorBlocks;
+
     typedef upan::map<upan::string, Node*> SubNodes;
     SubNodes _subNodes;
+
+  private:
+    void Load(StorageDrive& storageDrive);
+    SubNodes& subNodes() { return _subNodes; }
 
     friend class FileTree;
   };
@@ -81,8 +96,8 @@ public:
   Node* root() { return _root; }
 
 private:
-  void Initialize(StorageDrive& storageDrive);
-  void Uninitialize();
+  void initialize(StorageDrive& storageDrive);
+  void uninitialize();
 
 private:
   Node* _root;

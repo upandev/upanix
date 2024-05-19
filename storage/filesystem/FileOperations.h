@@ -19,16 +19,16 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _FILE_OPERATIONS_H_
-#define _FILE_OPERATIONS_H_
+#pragma once
 
 #define FileOperations_SUCCESS					0
 #define FileOperations_FAILURE					5
 
-# include <Global.h>
-# include <FileSystem.h>
+#include <Global.h>
+#include <FileSystem.h>
 #include <FileDescriptor.h>
-#include "mutex.h"
+#include <mutex.h>
+#include <FileNodeRef.h>
 
 #define ATTR_READ	0x4
 #define ATTR_WRITE	0x2
@@ -88,7 +88,8 @@ public:
   bool exists(const char* szFileName, unsigned short usFileType);
 
 private:
-  StorageDrive& parseFilePath(const upan::string& fullFilePath, FileSystem::DirectoryRef&, upan::string& filePath);
+  StorageDrive& parseFilePath(const upan::string& fullFilePath, const Process& process,
+                              FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
   void _create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId);
   bool _exists(const char* szFile, unsigned short usFileType, Process& pas, int driveId);
 
@@ -97,9 +98,6 @@ private:
 };
 
 bool FileOperations_ReadLine(int fd, upan::string& line);
-
-
-
 void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType);
 FileNode FileOperations_GetDirEntry(const char* szFileName);
 struct stat FileOperations_GetStat(const char* szFileName, int iDriveID) ;
@@ -111,5 +109,3 @@ void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pD
 bool FileOperations_FileAccess(const char* szFileName, int iDriveID, int mode) ;
 void FileOperations_Dup2(int oldFD, int newFD) ;
 void FileOperations_GetCWD(char* szPathBuf, int iBufSize) ;
-
-#endif

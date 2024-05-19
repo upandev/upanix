@@ -28,7 +28,7 @@
 
 NetworkManager::NetworkManager()
 {
-  //Initialize();
+  //initialize();
 }
 
 void NetworkManager::Initialize()

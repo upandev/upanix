@@ -190,7 +190,7 @@ void ATH9KDevice::Initialize()//u16 devid, struct ath_softc *sc, const struct at
 //	common = ath9k_hw_common(ah);
 //	ath9k_set_hw_capab(sc, hw);
 //
-//	/* Initialize regulatory */
+//	/* initialize regulatory */
 //	error = ath_regd_init(&common->regulatory, sc->hw->wiphy,
 //			      ath9k_reg_notifier);
 //	if (error)

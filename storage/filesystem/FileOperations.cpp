@@ -28,7 +28,6 @@
 # include <SystemUtil.h>
 # include <DMM.h>
 # include <StringUtil.h>
-# include <stdio.h>
 # include <list.h>
 # include <try.h>
 # include <StorageDriveManager.h>
@@ -170,36 +169,55 @@ bool FileOperations_ReadLine(int fd, upan::string& line)
   return true;
 }
 
-StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, FileSystem::DirectoryRef& cwd, upan::string &filePath) {
-  auto& process = ProcessManager::Instance().GetCurrentPAS();
-  const upan::string driveMark("@/");
+StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, const Process& process,
+                                            FileNodeRef& cwd, FileTree::NodeTokens& fileTokens) {
+  fullFilePath.tokenize("/", false, fileTokens);
 
-  const int drivePos = fullFilePath.find(driveMark);
-  if (drivePos >= 0) {
-    const upan::string& driveName = fullFilePath.substr(0, drivePos);
-    if (driveName.find('/') < 0) {
-      filePath = fullFilePath.substr(drivePos + driveMark.length());
-      auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(driveName, true).goodValueOrThrow(XLOC);
-      cwd = storageDrive.fileSystem().root();
-      return storageDrive;
+  if (fileTokens.empty()) {
+    throw upan::exception(XLOC, "%s file path tokenization failed", fullFilePath.c_str());
+  }
+
+  auto& lastToken = *fileTokens.rbegin();
+  if (lastToken.length() == 0) {
+    lastToken = DIR_SPECIAL_CURRENT;
+  }
+
+  auto drivePrefix = *fileTokens.begin();
+  const bool hasDrivePrefix = drivePrefix.length() > 0 && drivePrefix[drivePrefix.length() - 1] == '@';
+  const bool isAbsolutePath = drivePrefix.length() == 0 || hasDrivePrefix;
+
+  if (hasDrivePrefix) {
+    fileTokens.pop_front();
+    drivePrefix = drivePrefix.substr(0, drivePrefix.length() - 1);
+  }
+
+  for(auto i = fileTokens.begin(); i != fileTokens.end();) {
+    if ((*i).length() == 0) {
+      fileTokens.erase(i++);
+    } else {
+      ++i;
     }
   }
 
-  auto& storageDrive = StorageDriveManager::Instance().GetByID(process.driveID(), true).goodValueOrThrow(XLOC);
-  if (fullFilePath[0] == '/') {
-    cwd = storageDrive.fileSystem().root();
-  } else {
-    cwd = process.pwd();
-  }
-  filePath = fullFilePath;
+  auto& storageDrive = hasDrivePrefix ?
+          StorageDriveManager::Instance().GetByDriveName(drivePrefix, true).goodValueOrThrow(XLOC)
+          : StorageDriveManager::Instance().GetByID(process.driveID(), true).goodValueOrThrow(XLOC);
+
+  cwd = isAbsolutePath ? storageDrive.fileSystem().root() : process.pwd();
+
   return storageDrive;
 }
 
 void FileOperations::create(const upan::string& filePath, uint16_t fileType, uint16_t mode) {
-  FileSystem::DirectoryRef cwd;
-  upan::string parsedFilePath;
-  auto& storageDrive = parseFilePath(filePath, cwd, parsedFilePath);
-  //storageDrive.fileSystem().create(parsedFilePath, fileType, mode);
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  FileNodeRef cwd;
+  FileTree::NodeTokens fileTokens;
+
+  auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
+  const upan::string newFileName = fileTokens.back();
+  fileTokens.pop_back();
+  storageDrive.fileSystem().create(fileTokens, newFileName, fileType, mode, cwd, process);
 }
 
 void FileOperations::_create(const char* szFile, unsigned short usFileType, unsigned short usMode, Process& pas, int driveId) {

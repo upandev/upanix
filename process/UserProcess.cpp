@@ -98,7 +98,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     uiGOT[2] = minMemAddr + processImageSize;
   });
 
-  // Initialize BSS segment to 0
+  // initialize BSS segment to 0
   mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_NOBITS, BSS_SEC_NAME).onGood([&] (Elf64_Shdr* bssSectionHeader) {
     void* bss = (void*) (bProcessImage.get() + bssSectionHeader->sh_addr - minMemAddr);
     memset(bss, 0, bssSectionHeader->sh_size);
