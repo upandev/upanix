@@ -45,13 +45,11 @@ FileSystem::PresentWorkingDirectory& FileDescriptor::getWorkingDirectory() {
 }
 
 int FileDescriptor::read(void* buffer, int len) {
-  FileSystem::WorkingDirectory cwd = getWorkingDirectory();
+  const int n = _diskDrive.fileSystem().read(_fileNodeRef, *this, (uint8_t*)buffer, len);
+  _diskDrive.fileSystem().updateTime(_fileNodeRef, DIR_ACCESS_TIME);
+  _offset += n;
 
-  int readLen = Directory_FileRead(&_diskDrive, cwd, *this, (byte*)buffer, len);
-  FileOperations_UpdateTime(_diskDrive, cwd, getFileName().c_str(), DIR_ACCESS_TIME);
-  _offset += readLen;
-
-  return readLen;
+  return n;
 }
 
 int FileDescriptor::write(const void* buffer, int len) {
@@ -106,13 +104,13 @@ void FileDescriptor::setLastReadSectorDetails(int sectorIndex, uint32_t sectorId
   _lastReadSectorNo = sectorId;
 }
 
-void FileDescriptor::getLastReadSectorDetails(FileNode& node, int &sectorIndex, uint32_t &sectorId) {
-  if (_lastReadSectorNo == EOC) {
-    if (node.Size() > 0) {
-      _lastReadSectorIndex = 0;
-      _lastReadSectorNo = node.StartSectorID();
-    }
-  }
+void FileDescriptor::getLastReadSectorDetails(int& sectorIndex, uint32_t& sectorId) {
+//  if (_lastReadSectorNo == EOC) {
+//    if (node.Size() > 0) {
+//      _lastReadSectorIndex = 0;
+//      _lastReadSectorNo = node.StartSectorID();
+//    }
+//  }
 
   sectorIndex = _lastReadSectorIndex;
   sectorId = _lastReadSectorNo;

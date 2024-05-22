@@ -23,8 +23,9 @@
 
 int SysMemory_AlignedAlloc(void** addr, uint32_t alignment, uint32_t uiSizeInBytes) {
   uintptr_t ret = KernelDMM::Instance().allocate(uiSizeInBytes, alignment);
-  if (ret == NULL || ret < 0)
+  if (ret == NULL) {
     return -1;
+  }
   *addr = (void*)ret;
   return 0;
 }

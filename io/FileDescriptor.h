@@ -64,7 +64,7 @@ public:
     _lastReadSectorNo = v;
   }
 
-  void getLastReadSectorDetails(FileNode&, int& sectorIndex, uint32_t& sectorId);
+  void getLastReadSectorDetails(int& sectorIndex, uint32_t& sectorId);
   void setLastReadSectorDetails(int sectorIndex, uint32_t sectorId);
 
   void setOffset(uint32_t offset) {

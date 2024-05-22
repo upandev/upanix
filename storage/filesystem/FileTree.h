@@ -44,7 +44,7 @@ public:
 
   class Node {
   public:
-    Node(const Node* parent, const FileNode& fileNode);
+    Node(Node* parent, const FileNode& fileNode);
     ~Node();
 
     bool isRoot() const { return _parent == nullptr; }

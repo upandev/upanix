@@ -23,7 +23,6 @@
 #include <StringUtil.h>
 #include <StorageDrive.h>
 #include <DMM.h>
-#include <FileOperations.h>
 #include <FileDescriptor.h>
 #include <StorageDriveManager.h>
 
@@ -436,7 +435,7 @@ void Directory_ActualFileWrite(StorageDrive* pDiskDrive, byte* bDataBuffer, File
 
   uiCurrentFileSize = dirFile->Size();
 
-  fdEntry.getLastReadSectorDetails(*dirFile, iSectorIndex, uiCurrentSectorID);
+  fdEntry.getLastReadSectorDetails(iSectorIndex, uiCurrentSectorID);
 
 	if(iSectorIndex < 0 || iSectorIndex > iStartWriteSectorNo)
 	{
@@ -601,7 +600,7 @@ int Directory_FileRead(StorageDrive* pDiskDrive, const FileSystem::WorkingDirect
 
   uiCurrentFileSize = pDirFile->Size() ;
 
-  fdEntry.getLastReadSectorDetails(*pDirFile, iSectorIndex, uiCurrentSectorID);
+  fdEntry.getLastReadSectorDetails(iSectorIndex, uiCurrentSectorID);
 
 	if(iSectorIndex < 0 || iSectorIndex > iStartReadSectorNo)	{
 		iSectorIndex = 0 ;

@@ -19,30 +19,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _DIRECTORY_H_
-#define _DIRECTORY_H_
+#pragma once
 
 #include <ProcessManager.h>
 #include <FileSystem.h>
 #include <IODescriptorTable.h>
 #include <StorageDrive.h>
-
-#define Directory_SUCCESS					0
-#define Directory_ERR_UNKNOWN_DEVICE		1
-#define Directory_ERR_FS_TABLE_CORRUPTED	2
-#define Directory_ERR_EXISTS				3
-#define Directory_ERR_NOT_EXISTS			4
-#define Directory_ERR_ZERO_WRITE_SIZE		5
-#define Directory_ERR_NOT_EMPTY				6
-#define Directory_ERR_INVALID_OFFSET		7
-#define Directory_ERR_IS_DIRECTORY			8
-#define Directory_ERR_EOF					9
-#define Directory_ERR_IS_NOT_DIRECTORY		10
-#define Directory_ERR_NOT_DIR				11
-#define Directory_ERR_SPECIAL_ENTRIES		12
-#define Directory_ERR_INVALID_NAME			14
-#define Directory_ERR_INVALID_DRIVE			15
-#define Directory_FAILURE					16
 
 class FileDescriptor;
 
@@ -61,5 +43,3 @@ void Directory_Change(const char* szFileName, int iDriveID, Process &pas) ;
 void Directory_PresentWorkingDirectory(Process* processAddressSpace, char** uiReturnDirPathAddress) ;
 FileNode Directory_GetDirEntry(const char* szFileName, Process &pas, int iDriveID) ;
 void Directory_SyncPWD(Process &pas) ;
-
-#endif

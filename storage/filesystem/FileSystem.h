@@ -31,19 +31,11 @@
 #include <FSTableCache.h>
 #include <FileTree.h>
 #include <FileNodeRef.h>
-
-#define MEDIA_REMOVABLE	0xF0
-#define MEDIA_FIXED		0xF8
-
-#define EOC		0x0FFFFFFF
-#define EOC_B	0xFF
-
-#define FS_ROOT_DIR "/"
-#define DIR_SPECIAL_CURRENT		"."
-#define DIR_SPECIAL_PARENT		".."
+#include <FSConstants.h>
 
 class StorageDrive;
 class Process;
+class FileDescriptor;
 
 class FileSystem {
 public:
@@ -80,8 +72,12 @@ public:
   FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   struct stat stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   struct stat stats(FileNodeRef fileNodeRef);
+  struct stat stats(const FileNode& node);
   upan::string fullPath(FileNodeRef fileNodeRef);
   bool hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process);
+  void listDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, FileStats& fileStats);
+  int read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* dataBuffer, int size);
+  void updateTime(FileNodeRef fileNodeRef, TIME_TYPE timeType);
 
 private:
   uint16_t getFileAttr(uint16_t fileType, uint16_t mode);

@@ -275,9 +275,19 @@ void FileOperations::changeDir(const upan::string& dirPath) {
     throw upan::exception(XLOC, "not a directory");
   }
 
-  process.setDriveID(storageDrive.DriveNumber());
+  process.setDriveID(storageDrive.Id());
   process.pwd(dirNodeRef);
   process.setEnv("PWD", storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(dirNodeRef));
+}
+
+void FileOperations::listDir(const upan::string& filePath, FileStats& fileStats) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  FileNodeRef cwd;
+  FileTree::NodeTokens fileTokens;
+
+  auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
+  storageDrive.fileSystem().listDir(fileTokens, cwd, process, fileStats);
 }
 
 void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pDirList, int* iListSize)

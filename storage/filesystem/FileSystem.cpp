@@ -24,6 +24,9 @@
 #include <FileSystem.h>
 #include <StorageDrive.h>
 #include <Process.h>
+#include <SystemUtil.h>
+
+#define MAX_SECTORS_PER_RW 8
 
 FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
   _diskDrive(diskDrive),
@@ -356,7 +359,11 @@ struct stat FileSystem::stats(FileNodeRef fileNodeRef) {
   uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
   _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
-  
+
+  return stats(fileNode);
+}
+
+struct stat FileSystem::stats(const FileNode& fileNode) {
   struct stat fileStat{};
 
   fileStat.st_dev = _diskDrive.DriveNumber();
@@ -400,4 +407,176 @@ bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
 
   return process.hasFilePermission(fileNode, mode);
+}
+
+void FileSystem::listDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, FileStats& fileStats) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
+  }
+
+  FileNodeRef::ReadGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& mainFileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  if (!process.hasFilePermission(mainFileNode, O_RDONLY)) {
+    throw upan::exception(XLOC, "insufficient permission to read %s", node.name().c_str());
+  }
+
+  struct stat_ex var_stat;
+  if (mainFileNode.IsFile()) {
+    strcpy(var_stat._name, mainFileNode.Name());
+    var_stat._stat = stats(mainFileNode);
+    fileStats.push_back(var_stat);
+  } else {
+    const auto dirSize = node.size();
+    uint32_t dirCount = 0;
+    uint32_t currentSectorId = node.startSectorId();
+
+    while (currentSectorId != EOC) {
+      _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
+
+      for (uint8_t sectorOffset = 0; sectorOffset < FileSystem::DIR_ENTRIES_PER_SECTOR; ++sectorOffset) {
+        auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[sectorOffset];
+        if (!fileNode.IsDeleted()) {
+          ++dirCount;
+          if (dirCount > dirSize) {
+            break;
+          }
+
+          strcpy(var_stat._name, fileNode.Name());
+          var_stat._stat = stats(fileNode);
+          fileStats.push_back(var_stat);
+        }
+      }
+      currentSectorId = _diskDrive.fileSystem().getSectorEntryValue(currentSectorId);
+    }
+  }
+}
+
+int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* dataBuffer, int size) {
+  FileNodeRef::ReadGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  const auto offset = fdEntry.getOffset();
+  if (offset >= node.size()) {
+    return 0;
+  }
+
+  if (node.size() == 0) {
+    dataBuffer[0] = '\0';
+    return 0;
+  }
+
+  int sectorIndex;
+  uint32_t currentSectorId;
+  fdEntry.getLastReadSectorDetails(sectorIndex, currentSectorId);
+
+  int startReadSectorCount = offset / FileSystem::SECTOR_SIZE;
+  if(currentSectorId == EOC || sectorIndex < 0 || sectorIndex > startReadSectorCount)	{
+    sectorIndex = 0;
+    currentSectorId = node.startSectorId();
+  }
+
+  while(sectorIndex != startReadSectorCount)	{
+    currentSectorId = getSectorEntryValue(currentSectorId);
+    sectorIndex++ ;
+  }
+
+  fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId);
+
+  uint32_t lastReadSectorId = currentSectorId;
+  int lastReadSectorIndex = sectorIndex;
+
+  const uint32_t currentFileSize = node.size();
+  int readCount = 0 ;
+  int readRemainingCount = (size < (currentFileSize - offset) && size > 0) ? size : (currentFileSize  - offset) ;
+
+  uint8_t sectorBuffer[MAX_SECTORS_PER_RW * FileSystem::SECTOR_SIZE];
+  int startReadSectorOffset = offset % FileSystem::SECTOR_SIZE;
+  int sectorCount = 0;
+
+  while(true)	{
+    if(currentSectorId == EOC) {
+      fdEntry.setLastReadSectorDetails(lastReadSectorIndex, lastReadSectorId) ;
+      return readCount;
+    }
+
+    auto startSectorId = currentSectorId;
+
+    lastReadSectorIndex += sectorCount;
+    lastReadSectorId = currentSectorId;
+
+    sectorCount = 1;
+    int currentReadSize = 0;
+
+    for(;;) {
+      const auto nextSectorId = getSectorEntryValue(currentSectorId);
+
+      if(currentSectorId + 1 == nextSectorId) {
+        currentSectorId = nextSectorId ;
+
+        ++sectorCount;
+        currentReadSize = sectorCount * FileSystem::SECTOR_SIZE - startReadSectorOffset;
+
+        if(readRemainingCount <= currentReadSize) {
+          if((startSectorId + readRemainingCount) <= FileSystem::SECTOR_SIZE) {
+            --sectorCount;
+          }
+          currentReadSize = readRemainingCount;
+          break;
+        }
+
+        if(sectorCount == MAX_SECTORS_PER_RW) {
+          currentSectorId = getSectorEntryValue(currentSectorId);
+          break;
+        }
+      } else {
+        currentReadSize = sectorCount * FileSystem::SECTOR_SIZE - startReadSectorOffset;
+
+        if(readRemainingCount <= currentReadSize) {
+          currentReadSize = readRemainingCount;
+        }
+
+        currentSectorId = nextSectorId;
+        break;
+      }
+    }
+
+    _diskDrive.xRead(sectorBuffer, startSectorId, sectorCount);
+
+    memcpy(dataBuffer + readCount, sectorBuffer + startReadSectorOffset, currentReadSize);
+
+    readCount += currentReadSize;
+    readRemainingCount -= currentReadSize;
+
+    startReadSectorOffset = 0 ;
+
+    if(readRemainingCount <= 0) {
+      fdEntry.setLastReadSectorDetails(lastReadSectorIndex, lastReadSectorId);
+      return readCount;
+    }
+  }
+
+  throw upan::exception(XLOC, "fs table is corrupted for drive:%s", _diskDrive.DriveName().c_str());
+}
+
+void FileSystem::updateTime(FileNodeRef fileNodeRef, TIME_TYPE timeType) {
+  FileNodeRef::WriteGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  if(timeType & DIR_ACCESS_TIME)
+    fileNode.AccessedTime(SystemUtil_GetTimeOfDay());
+
+  if(timeType & DIR_MODIFIED_TIME)
+    fileNode.ModifiedTime(SystemUtil_GetTimeOfDay());
+
+  _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
 }

@@ -286,26 +286,23 @@ void ConsoleCommands_RemoveFile()
   printf("\n DIR Deleted\n");
 }
 
-void ConsoleCommands_ListDirContent()
-{
-	FileNode* pDirList ;
-
-	int iListSize = 0 ;
+void ConsoleCommands_ListDirContent() {
 	const char* szListDirName = "." ;
 
   if(CommandLineParser::Instance().GetNoOfParameters())
     szListDirName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  FileOperations_GetDirectoryContent(szListDirName, &pDirList, &iListSize);
-  int i ;
-	for(i = 0; i < iListSize; i++)
-	{
-		if(!(i % 3))
-      printf("\n");
-    printf("%-20s", pDirList[i].Name()) ;
-	}
+  FileStats fileStats;
+  FileOperations::Instance().listDir(szListDirName, fileStats);
 
-	KernelDMM::Instance().free((uintptr_t)pDirList) ;
+  int i = 0;
+	for (auto& s : fileStats) {
+		if(!(i % 3)) {
+      printf("\n");
+    }
+    printf("%-20s", s._name) ;
+    ++i;
+	}
 }
 
 void ConsoleCommands_ReadFileContent()

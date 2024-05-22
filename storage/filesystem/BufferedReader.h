@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _BUFFERED_READER_H_
-#define _BUFFERED_READER_H_
+#pragma once
 
 #include <Global.h>
 #include <ustring.h>
@@ -43,6 +42,4 @@ class BufferedReader
   private:
     IODescriptor* _file;
     int DoRead(char* szBuffer, int iLen);
-} ;
-
-#endif
+};

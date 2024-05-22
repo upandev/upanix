@@ -166,7 +166,7 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
   }
 }
 
-FileTree::Node::Node(const Node* parent, const FileNode& fileNode) :
+FileTree::Node::Node(Node* parent, const FileNode& fileNode) :
         _parent(parent),
         _name(fileNode.Name()),
         _startSectorId(fileNode.StartSectorID()),

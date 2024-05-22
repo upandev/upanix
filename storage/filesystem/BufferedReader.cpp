@@ -23,7 +23,6 @@
 # include <DMM.h>
 # include <FileOperations.h>
 # include <IODescriptorTable.h>
-# include <uniq_ptr.h>
 
 /* This is used in case UnBuffered Data comes after Buffered Data. If the unbuffered data offset is beyond file size
 file op will return error which causes buffered reader to return error... which shouldn't happen because the request

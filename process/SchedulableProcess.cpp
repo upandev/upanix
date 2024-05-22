@@ -45,13 +45,16 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
     if(_driveID != CURRENT_DRIVE)
     {
       StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
-      if(diskDrive.Mounted())
+      if(diskDrive.Mounted()) {
         _processPWD = diskDrive.fileSystem().pwd();
+        _pwd = diskDrive.fileSystem().root();
+      }
     }
     _processGroup = new ProcessGroup(isFGProcess);
   } else {
     _driveID = parentProcess.value()._driveID ;
     _processPWD = parentProcess.value()._processPWD;
+    _pwd = parentProcess.value().pwd();
     _processGroup = parentProcess.value()._processGroup;
   }
 
