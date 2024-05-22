@@ -26,17 +26,14 @@
 # include <SysCall.h>
 # include <MemManager.h>
 # include <PCIBusHandler.h>
-# include <DMM.h>
 # include <SessionManager.h>
 # include <RTC.h>
 # include <MultiBoot.h>
-# include <MountManager.h>
 # include <USBController.h>
 # include <EHCIManager.h>
 # include <XHCIManager.h>
 # include <USBMassBulkStorageDisk.h>
 # include <USBKeyboard.h>
-# include <exception.h>
 # include <GraphicsVideo.h>
 # include <KeyboardHandler.h>
 # include <Acpi.h>

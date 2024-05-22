@@ -60,8 +60,6 @@ public:
   virtual void setDriveID(int driveID) = 0;
   virtual FileNodeRef pwd() const = 0;
   virtual void pwd(const FileNodeRef&) = 0;
-  virtual FileSystem::PresentWorkingDirectory& processPWD() = 0;
-  virtual const FileSystem::PresentWorkingDirectory& processPWD() const = 0;
   virtual ProcessStateInfo& stateInfo() = 0;
   virtual PROCESS_STATUS status() const = 0;
   virtual PROCESS_STATUS setStatus(PROCESS_STATUS status) = 0;

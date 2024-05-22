@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <map.h>
 #include <queue.h>
+#include <rwlock.h>
 
 #define ENTRIES_PER_TABLE_SECTOR	(128)
 
@@ -52,17 +53,17 @@ private:
 
     uint32_t* Block() { return _block; }
     uint32_t BlockId() const { return _blockId; }
-    uint32_t ReadCount() const { return _readCount; }
-    uint32_t WriteCount() const { return _writeCount; }
+    int ReadCount() const { return _readCount.get(); }
+    int WriteCount() const { return _writeCount.get(); }
 
-    uint32_t Read(uint32_t sectorId);
+    uint32_t Read(uint32_t sectorId) const;
     void Write(uint32_t sectorId, uint32_t value);
 
   private:
     uint32_t _block[ENTRIES_PER_TABLE_SECTOR];
     uint32_t _blockId;
-    uint32_t _readCount;
-    uint32_t _writeCount;
+    mutable upan::atomic::integral<int> _readCount;
+    mutable upan::atomic::integral<int> _writeCount;
   };
 
 private:
@@ -78,5 +79,6 @@ private:
 
     typedef upan::map<uint32_t, SectorBlock*> TableCache;
     TableCache _tableCache;
+    upan::rwlock _rwlock;
 };
 

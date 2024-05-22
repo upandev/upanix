@@ -672,22 +672,6 @@ void ProcessManager::WaitOnKernelService() {
   p.yield();
 }
 
-bool ProcessManager::CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem::PresentWorkingDirectory& mOldPWD) {
-	if(GetCurProcId() < 0)
-		return false;
-
-  SchedulableProcess* pSrcPAS = &GetSchedulableProcess(iProcessID).value();
-  Process* pDestPAS = &GetCurrentPAS();
-
-	iOldDriveId = pDestPAS->driveID();
-  mOldPWD = pDestPAS->processPWD();
-
-  pDestPAS->setDriveID(pSrcPAS->driveID());
-  pDestPAS->processPWD() = pSrcPAS->processPWD();
-
-	return true;
-}
-
 bool ProcessManager::WakeupProcessOnInterrupt(SchedulableProcess& p)
 {
   const IRQ& irq = *p.stateInfo().Irq();

@@ -25,7 +25,6 @@
 #include <Floppy.h>
 #include <ProcessManager.h>
 #include <FileSystem.h>
-#include <Directory.h>
 #include <MemManager.h>
 #include <DMM.h>
 #include <ATADeviceController.h>
@@ -243,7 +242,6 @@ void ConsoleCommands_ChangeDrive() {
   auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
   pas.setDriveID(storageDrive.Id());
-  pas.processPWD() = storageDrive.fileSystem().pwd();
   pas.pwd(storageDrive.fileSystem().root());
 }
 
@@ -339,12 +337,10 @@ void ConsoleCommands_ChangeDirectory() {
   FileOperations::Instance().changeDir(CommandLineParser::Instance().GetParameterAt(0));
 }
 
-void ConsoleCommands_PresentWorkingDir()
-{
-	char* szPWD ;
-	Directory_PresentWorkingDirectory(&ProcessManager::Instance().GetCurrentPAS(), &szPWD) ;
-	printf("\n%s", szPWD);
-	KernelDMM::Instance().free((uintptr_t)szPWD) ;
+void ConsoleCommands_PresentWorkingDir() {
+	char pwd[256] = "";
+  getenv("PWD", pwd);
+	printf("\n%s", pwd);
 }
 
 void ConsoleCommands_CopyFile()
@@ -925,19 +921,17 @@ private:
 };
 
 void graphics_photos(int x, int y) {
-  FileNode* pDirList ;
+  const upan::string listDirPath("usdb@/pictures/family/");
 
-  int iListSize = 0 ;
-  const char* szListDirName = "usdb@/pictures/family/" ;
-
-  FileOperations_GetDirectoryContent(szListDirName, &pDirList, &iListSize);
-  FileOperations::Instance().changeDir("usdb@/pictures/family/");
+  FileStats fileStats;
+  FileOperations::Instance().listDir(listDirPath, fileStats);
+  FileOperations::Instance().changeDir(listDirPath);
 
   upan::vector<upanui::Image*> images;
-  for(int i = 0; i < iListSize; i++) {
-    if (pDirList[i].IsFile()) {
-      auto fileSize = pDirList[i].Size();
-      auto& file = FileOperations::Instance().open(pDirList[i].Name(), O_RDONLY);
+  for (const auto& s : fileStats) {
+    if (S_ISFILE(s._stat.st_mode)) {
+      const auto fileSize = s._stat.st_size;
+      auto& file = FileOperations::Instance().open(s._name, O_RDONLY);
       file.seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file.read(buffer.get(), fileSize);
@@ -953,8 +947,6 @@ void graphics_photos(int x, int y) {
     while(1);
     exit(0);
   }
-
-  KernelDMM::Instance().free((uintptr_t)pDirList);
 
   const int photoCanvasWidth = 500, photoCanvasHeight = 500;
   upanui::GraphicsContext::Init();
@@ -1444,7 +1436,7 @@ void graphics_window_app(int x, int y) {
   auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5);
   child4.backgroundColor(0x0FF0FF);
 
-  auto& image_child = upanui::UIObjectFactory::createImageCanvas(uiMain, upanui::PngImageResource::TEST, 100, 100);
+  upanui::UIObjectFactory::createImageCanvas(uiMain, upanui::PngImageResource::TEST, 100, 100);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
@@ -1477,7 +1469,7 @@ void graphics_text_editor(int x, int y) {
   const int scrollBarWidth = 20;
   auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth);
 
-  auto& uiTextArea = upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight);
+  upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
@@ -1675,7 +1667,7 @@ void _DisplayReadStat()
 }
 
 void aThread(void* x) {
-  const int n = (int)x;
+  const int n = int64_t(x);
   printf("\n Running thread: %u", n);
   for(int i = 0; i < n; ++i) {
     printf("\nCounter: %d", i);

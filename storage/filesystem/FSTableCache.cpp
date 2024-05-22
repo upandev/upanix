@@ -27,6 +27,8 @@
 #define BLOCK_OFFSET(SectorID) ((SectorID) % ENTRIES_PER_TABLE_SECTOR)
 
 void FSTableCache::loadFreeSectors(upan::queue<uint32_t>& pool) {
+  upan::wlock_gaurd g(_rwlock);
+
   for(const auto& block : _tableCache) {
     auto uiSectorBlock = block.second->Block();
     for(int j = 0; j < ENTRIES_PER_TABLE_SECTOR; j++) {
@@ -41,6 +43,8 @@ void FSTableCache::loadFreeSectors(upan::queue<uint32_t>& pool) {
 }
 
 uint32_t FSTableCache::get(uint32_t uiSectorID) {
+  upan::rlock_gaurd g(_rwlock);
+
   if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4)) {
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
   }
@@ -48,7 +52,9 @@ uint32_t FSTableCache::get(uint32_t uiSectorID) {
   SectorBlock* pSectorBlockEntry = getSectorBlock(uiSectorID) ;
 
   if(pSectorBlockEntry == nullptr) {
+    _rwlock.read_unlock();
     add(uiSectorID);
+    _rwlock.read_lock();
     pSectorBlockEntry = getSectorBlock(uiSectorID) ;
   }
 
@@ -60,6 +66,8 @@ uint32_t FSTableCache::get(uint32_t uiSectorID) {
 }
 
 void FSTableCache::set(const uint32_t uiSectorID, uint32_t uiSectorEntryValue) {
+  upan::wlock_gaurd g(_rwlock);
+
   if(uiSectorID > (_bootBlock.getTableSize() * _bootBlock.getBytesPerSector() / 4))
     throw upan::exception(XLOC, "invalid cluster id: %u", uiSectorID);
 
@@ -88,6 +96,8 @@ uint32_t FSTableCache::getTableSectorId(uint32_t uiSectorID) const {
 }
 
 FSTableCache::SectorBlock* FSTableCache::getSectorBlock(uint32_t sectorId) {
+  upan::rlock_gaurd g(_rwlock);
+
   if(_tableCache.empty()) {
     return nullptr;
   }
@@ -96,6 +106,8 @@ FSTableCache::SectorBlock* FSTableCache::getSectorBlock(uint32_t sectorId) {
 }
 
 void FSTableCache::add(uint32_t sectorId) {
+  upan::wlock_gaurd g(_rwlock);
+
   if(_tableCache.size() == MAX_SECTORS_IN_TABLE_CACHE) {
     flush(1);
   }
@@ -111,6 +123,8 @@ void FSTableCache::add(uint32_t sectorId) {
 }
 
 void FSTableCache::flush(int flushSize) {
+  upan::wlock_gaurd g(_rwlock);
+
   if(flushSize > _tableCache.size()) {
     flushSize = _tableCache.size();
   }
@@ -127,6 +141,8 @@ void FSTableCache::flush(int flushSize) {
 }
 
 void FSTableCache::debugPrint() {
+  upan::rlock_gaurd g(_rwlock);
+
   printf("\nSTART\n");
   for(const auto& block : _tableCache)
     printf(", %u", block.second->BlockId());
@@ -137,8 +153,8 @@ FSTableCache::SectorBlock::SectorBlock(StorageDrive& diskDrive, uint32_t tableSe
   diskDrive.Read(tableSectorId, 1, (byte*)_block);
 }
 
-uint32_t FSTableCache::SectorBlock::Read(uint32_t sectorId) {
-  ++_readCount;
+uint32_t FSTableCache::SectorBlock::Read(uint32_t sectorId) const {
+  _readCount.inc();
   return _block[BLOCK_OFFSET(sectorId)] & EOC ;
 }
 
@@ -146,5 +162,5 @@ void FSTableCache::SectorBlock::Write(uint32_t sectorId, uint32_t value) {
   auto index = BLOCK_OFFSET(sectorId) ;
   _block[index] = _block[index] & 0xF0000000;
   _block[index] = _block[index] | (value & EOC);
-  ++_writeCount;
+  _writeCount.inc();
 }

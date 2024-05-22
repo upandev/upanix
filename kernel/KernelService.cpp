@@ -69,10 +69,6 @@ KernelService::ProcessExec::~ProcessExec()
 }
 
 void KernelService::ProcessExec::Execute() {
-	int iOldDDriveID ;
-	FileSystem::PresentWorkingDirectory mOldPWD ;
-	ProcessManager::Instance().CopyDiskDrive(GetRequestProcessID(), iOldDDriveID, mOldPWD) ;
-
   auto& srcPAS = ProcessManager::Instance().GetSchedulableProcess(GetRequestProcessID()).value();
   auto& curProc = ProcessManager::Instance().GetCurrentPAS();
 
@@ -86,8 +82,6 @@ void KernelService::ProcessExec::Execute() {
 
   curProc.setDriveID(curDriveId);
   curProc.pwd(curPwd);
-
-  curProc.processPWD() = mOldPWD;
 }
 
 void KernelService::ThreadExec::Execute() {

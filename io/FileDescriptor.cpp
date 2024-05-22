@@ -25,7 +25,6 @@
 #include <FileDescriptor.h>
 #include <ProcessManager.h>
 #include <StorageDrive.h>
-#include <Directory.h>
 
 FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
                                const FileNodeRef& fileNodeRef,
@@ -37,11 +36,6 @@ FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
         _offset(0),
         _lastReadSectorIndex(0),
         _lastReadSectorNo(startSectorId) {
-}
-
-FileSystem::PresentWorkingDirectory& FileDescriptor::getWorkingDirectory() {
-  auto& pas = ProcessManager::Instance().GetCurrentPAS();
-  return (pas.driveID() == _diskDrive.Id()) ? pas.processPWD() : _diskDrive.fileSystem().pwd();
 }
 
 int FileDescriptor::read(void* buffer, int len) {
@@ -57,19 +51,17 @@ int FileDescriptor::write(const void* buffer, int len) {
     throw upan::exception(XLOC, "insufficient permission to write file fd: %d", id());
   }
 
-  FileSystem::WorkingDirectory cwd = getWorkingDirectory();
-
-  unsigned uiIncLen = len ;
-  const unsigned uiLimit = 1 MB ;
+  int incLen = len ;
+  const int limit = 1 MB ;
 
   while(true) {
-    auto n = (uiIncLen > uiLimit) ? uiLimit : uiIncLen;
-    Directory_FileWrite(&_diskDrive, cwd, *this, (byte*)buffer, n);
-    uiIncLen -= n;
-    if (uiIncLen == 0) break;
+    auto n = (incLen > limit) ? limit : incLen;
+    n = _diskDrive.fileSystem().write(_fileNodeRef, *this, (const uint8_t*)buffer, n);
+    incLen -= n;
+    if (incLen == 0) { break; }
   }
 
-  FileOperations_UpdateTime(_diskDrive, cwd, getFileName().c_str(), DIR_ACCESS_TIME | DIR_MODIFIED_TIME);
+  _diskDrive.fileSystem().updateTime(_fileNodeRef, DIR_ACCESS_TIME | DIR_MODIFIED_TIME);
 
   return len;
 }
@@ -105,13 +97,6 @@ void FileDescriptor::setLastReadSectorDetails(int sectorIndex, uint32_t sectorId
 }
 
 void FileDescriptor::getLastReadSectorDetails(int& sectorIndex, uint32_t& sectorId) {
-//  if (_lastReadSectorNo == EOC) {
-//    if (node.Size() > 0) {
-//      _lastReadSectorIndex = 0;
-//      _lastReadSectorNo = node.StartSectorID();
-//    }
-//  }
-
   sectorIndex = _lastReadSectorIndex;
   sectorId = _lastReadSectorNo;
 }

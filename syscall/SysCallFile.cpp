@@ -51,23 +51,6 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			}
 			break ;
 
-		case SYS_CALL_PWD : //Get PWD
-			//P1 => Return Dir Name Pointer
-			{
-				char** szPathAddress = ( char**) p1;
-        *retVal = 0;
-        try
-        {
-          Directory_PresentWorkingDirectory( &ProcessManager::Instance().GetCurrentPAS(), szPathAddress);
-        }
-        catch(const upan::exception& ex)
-        {
-          ex.Print();
-          *retVal = -1;
-        }
-			}
-			break ;
-
 		case SYS_CALL_CWD : //Get CWD
 			//P1 => Return Dir Name Pointer
 			//P2 => Buf Length
@@ -133,18 +116,14 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Ret Dir Content List Address
 			// P3 => Ret Dir Content List Size Address
 			{
-				char* szPathAddress = ( char*) p1;
-				FileNode** pRetDirContentList = ( FileNode**) p2;
-				int* pRetDirContentListSize = ( int*) p3;
+				const char* dirPath = (char*) p1;
+				auto** retStats = (struct stat_ex**) p2;
+				int* retSize = ( int*) p3;
 				*retVal = 0 ;
 
-        try
-        {
-          FileOperations_SyncPWD();
-          FileOperations_GetDirectoryContent(szPathAddress, pRetDirContentList, pRetDirContentListSize);
-        }
-        catch(const upan::exception& ex)
-        {
+        try {
+          FileOperations::Instance().listDir(dirPath, retStats, retSize);
+        } catch(const upan::exception& ex) {
           ex.Print();
           *retVal = -1 ;
         }
@@ -160,13 +139,9 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
 				*retVal = 0 ;
 
-        try
-        {
-          FileOperations_SyncPWD();
+        try {
           *retVal = FileOperations::Instance().open(szFileNameAddr, mode).id();
-        }
-        catch(const upan::exception& ex)
-        {
+        } catch(const upan::exception& ex) {
           ex.Print();
           *retVal = -1 ;
         }
@@ -283,12 +258,9 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Seek Type
 			// P3 => Offset
 			{
-        try
-        {
-          *retVal = FileOperations_GetFileOpenMode((int)p1);
-        }
-        catch(const upan::exception& ex)
-				{
+        try {
+          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1).getMode();
+        } catch(const upan::exception& ex) {
 					*retVal = -1 ;
 				}
 			}

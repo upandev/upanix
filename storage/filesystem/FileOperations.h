@@ -44,9 +44,11 @@ public:
   bool fileExists(const upan::string& filePath);
   bool directoryExists(const upan::string& filePath);
   struct stat stats(const upan::string& filePath);
+  void getpwd(char** pwd);
   upan::string getcwd();
   void changeDir(const upan::string& dirPath);
   void listDir(const upan::string& filePath, FileStats& fileStats);
+  void listDir(const upan::string& filePath, struct stat_ex** fileStatsArray, int* size);
   bool fileAccess(const upan::string& filePath, uint8_t mode);
   void dup2(int oldFD, int newFD);
 
@@ -54,13 +56,6 @@ private:
   StorageDrive& parseFilePath(const upan::string& fullFilePath, const Process& process,
                               FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
   FileNodeRef exists(const upan::string& filePath);
-
-private:
-  upan::mutex _fileOpMutex;
 };
 
 bool FileOperations_ReadLine(int fd, upan::string& line);
-void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType);
-byte FileOperations_GetFileOpenMode(int fd) ;
-void FileOperations_SyncPWD() ;
-void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pDirList, int* iListSize) ;

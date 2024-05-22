@@ -21,52 +21,14 @@
  */
 # include <FileOperations.h>
 # include <FileDescriptor.h>
-# include <Directory.h>
 # include <FileSystem.h>
 # include <ProcessManager.h>
 # include <MountManager.h>
-# include <SystemUtil.h>
 # include <DMM.h>
 # include <StringUtil.h>
 # include <StorageDriveManager.h>
 # include <FileNodeRef.h>
 
-/************************************************************************************************************/
-static void FileOperations_ParseFilePathWithDrive(const char* szFileNameWithDrive, char* szFileName, unsigned* pDriveID) {
-	int i = String_Chr(szFileNameWithDrive, '@') ;
-
-	if(i == -1)
-	{
-		*pDriveID = ProcessManager::Instance().GetCurrentPAS().driveID() ;
-		strcpy(szFileName, szFileNameWithDrive) ;
-		return ;
-	}
-
-	if(i > 32)
-	{
-		strcpy(szFileName, szFileNameWithDrive) ;
-		return ;
-	}
-
-	char szDriveName[33] ;
-
-  memcpy(szDriveName, szFileNameWithDrive, i);
-	szDriveName[i] = '\0' ;
-
-	strcpy(szFileName, szFileNameWithDrive + i + 1) ;
-
-	if(strcmp(szDriveName, ROOT_DRIVE_SYN) == 0)
-	{
-		*pDriveID = ROOT_DRIVE_ID ;
-	}
-	else
-	{
-    auto r = StorageDriveManager::Instance().GetByDriveName(szDriveName, false);
-    *pDriveID = r.isGood() ? r.goodValue().Id() : ROOT_DRIVE_ID;
-	}
-}
-
-/************************************************************************************************************/
 bool FileOperations_ReadLine(int fd, upan::string& line)
 {
   line = "";
@@ -233,32 +195,6 @@ struct stat FileOperations::stats(const upan::string& filePath) {
   return storageDrive.fileSystem().stats(fileTokens, cwd);
 }
 
-void FileOperations_UpdateTime(StorageDrive& diskDrive, const FileSystem::WorkingDirectory& cwd, const char* szFileName, byte bTimeType) {
-	unsigned uiSectorNo ;
-	byte bSectorPos ;
-	byte bDirectoryBuffer[512] ;
-	
-  Directory_ReadDirEntryInfo(diskDrive, cwd, szFileName, uiSectorNo, bSectorPos, bDirectoryBuffer);
-
-  FileNode* pSrcDirEntry = &((FileNode*)bDirectoryBuffer)[bSectorPos] ;
-	if(bTimeType & DIR_ACCESS_TIME)
-    pSrcDirEntry->AccessedTime(SystemUtil_GetTimeOfDay());
-
-	if(bTimeType & DIR_MODIFIED_TIME)
-    pSrcDirEntry->ModifiedTime(SystemUtil_GetTimeOfDay());
-
-  diskDrive.xWrite(bDirectoryBuffer, uiSectorNo, 1);
-}
-
-byte FileOperations_GetFileOpenMode(int fd) {
-  return ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd).getMode();
-}
-
-void FileOperations_SyncPWD()
-{
-  Directory_SyncPWD(ProcessManager::Instance().GetCurrentPAS());
-}
-
 void FileOperations::changeDir(const upan::string& dirPath) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
@@ -290,12 +226,16 @@ void FileOperations::listDir(const upan::string& filePath, FileStats& fileStats)
   storageDrive.fileSystem().listDir(fileTokens, cwd, process, fileStats);
 }
 
-void FileOperations_GetDirectoryContent(const char* szPathAddress, FileNode** pDirList, int* iListSize)
-{
-	int iDriveID ;
-	char szPath[100] ;
-	FileOperations_ParseFilePathWithDrive(szPathAddress, szPath, (unsigned*)&iDriveID) ;
-  Directory_GetDirectoryContent(szPath, ProcessManager::Instance().GetCurrentPAS(), iDriveID, pDirList, iListSize);
+void FileOperations::listDir(const upan::string& filePath, struct stat_ex** fileStatsArray, int* size) {
+  FileStats fileStats;
+  listDir(filePath, fileStats);
+
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+  *fileStatsArray = (struct stat_ex*)process.dmm().allocate(fileStats.size() * sizeof(struct stat_ex));
+
+  for (int i = 0; i < fileStats.size(); ++i) {
+    (*fileStatsArray)[i] = fileStats[i];
+  }
 }
 
 bool FileOperations::fileAccess(const upan::string& filePath, uint8_t mode) {

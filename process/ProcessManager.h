@@ -70,7 +70,6 @@ class ProcessManager
     void WaitOnInterrupt(const IRQ&);
     void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
     int GetCurProcId();
-    bool CopyDiskDrive(int iProcessID, int& iOldDriveId, FileSystem::PresentWorkingDirectory& mOldPWD);
     void Kill(int iProcessID);
     void WakeUpFromKSWait(int iProcessID);
     bool IsAlive(int pid);

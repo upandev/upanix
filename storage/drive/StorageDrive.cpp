@@ -402,12 +402,3 @@ void StorageDrive::ReleaseCache()
   if(Mounted())
     _mCache.LFUCacheCleanUp();
 }
-
-upan::rwlock& StorageDrive::GetFileLock(const upan::string &nodeId) {
-  upan::mutex_guard g(_driveMutex);
-  auto it = _fileLocks.find(nodeId);
-  if (it != _fileLocks.end()) {
-    return *it->second;
-  }
-  return *_fileLocks.insert(FileLocks ::value_type(nodeId, new upan::rwlock())).first->second;
-}

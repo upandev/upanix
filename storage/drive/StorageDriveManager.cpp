@@ -156,12 +156,12 @@ byte StorageDriveManager::Change(const upan::string& szDriveName) {
     return DeviceDrive_ERR_INVALID_DRIVE_NAME;
   }
 
+  auto& storageDrive = r.goodValue();
 	auto& pas = ProcessManager::Instance().GetCurrentPAS();
-	pas.setDriveID(r.goodValue().Id());
-  pas.processPWD() = r.goodValue().fileSystem().pwd();
-  pas.pwd(r.goodValue().fileSystem().root());
+	pas.setDriveID(storageDrive.Id());
+  pas.pwd(storageDrive.fileSystem().root());
 
-  pas.setEnv("PWD", (const char*)r.goodValue().fileSystem().pwd().getNode().Name()) ;
+  pas.setEnv("PWD", storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(storageDrive.fileSystem().root()));
 
 	return DeviceDrive_SUCCESS ;
 }

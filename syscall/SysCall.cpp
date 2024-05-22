@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <SysCall.h>
-#include <exception.h>
 #include <Cpu.h>
 
 uint64_t SYSCALL_USER_ORIG_RSP = PROCESS_STACK_TOP_ADDRESS - 8 * 1;

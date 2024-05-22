@@ -77,7 +77,6 @@ void FileSystem::format() {
 void FileSystem::mount() {
   _bootBlock.load(_diskDrive);
   loadFreeSectors();
-  readRootDirectory();
   _fileTree.initialize(_diskDrive);
   _root.set(_fileTree._root);
 }
@@ -89,12 +88,6 @@ void FileSystem::unmount() {
   _diskDrive.FlushAllDirtyCacheSectors();
   _fileTree.uninitialize();
   _root.clear();
-}
-
-void FileSystem::readRootDirectory() {
-  byte bDataBuffer[512];
-  _diskDrive.xRead(bDataBuffer, 0, 1);
-  _pwd.Init(*reinterpret_cast<FileNode*>(bDataBuffer), 0, 0);
 }
 
 void FileSystem::loadFreeSectors() {
@@ -134,24 +127,28 @@ void FileSystem::loadFreeSectors() {
 }
 
 uint32_t FileSystem::allocateSector() {
+  upan::mutex_guard g(_freePoolMutex);
+
   if(_freePoolQueue.empty()) {
     loadFreeSectors();
     if(_freePoolQueue.empty())
       throw upan::exception(XLOC, "No free sectors available on disk: %s", _diskDrive.DriveName().c_str());
   }
 
-  auto uiFreeSectorID = _freePoolQueue.front();
+  auto freeSectorId = _freePoolQueue.front();
   _freePoolQueue.pop_front();
 
-  setSectorEntryValue(uiFreeSectorID, EOC);
-  return uiFreeSectorID;
+  setSectorEntryValue(freeSectorId, EOC);
+  return freeSectorId;
 }
 
 uint32_t FileSystem::deallocateSector(uint32_t currentSectorId) {
-  auto uiNextSectorID = getSectorEntryValue(currentSectorId);
+  upan::mutex_guard g(_freePoolMutex);
+
+  auto nextSectorId = getSectorEntryValue(currentSectorId);
   setSectorEntryValue(currentSectorId, 0);
   _freePoolQueue.push_back(currentSectorId);
-  return uiNextSectorID;
+  return nextSectorId;
 }
 
 uint32_t FileSystem::getRealSectorNumber(uint32_t uiSectorID) const {
@@ -475,15 +472,16 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   uint32_t currentSectorId;
   fdEntry.getLastReadSectorDetails(sectorIndex, currentSectorId);
 
-  int startReadSectorCount = offset / FileSystem::SECTOR_SIZE;
-  if(currentSectorId == EOC || sectorIndex < 0 || sectorIndex > startReadSectorCount)	{
+  int startReadSectorIndex = offset / FileSystem::SECTOR_SIZE;
+  if(currentSectorId == EOC || sectorIndex < 0 || sectorIndex > startReadSectorIndex)	{
     sectorIndex = 0;
     currentSectorId = node.startSectorId();
+    fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId);
   }
 
-  while(sectorIndex != startReadSectorCount)	{
+  while(sectorIndex != startReadSectorIndex)	{
     currentSectorId = getSectorEntryValue(currentSectorId);
-    sectorIndex++ ;
+    sectorIndex++;
   }
 
   fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId);
@@ -564,19 +562,213 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   throw upan::exception(XLOC, "fs table is corrupted for drive:%s", _diskDrive.DriveName().c_str());
 }
 
-void FileSystem::updateTime(FileNodeRef fileNodeRef, TIME_TYPE timeType) {
-  FileNodeRef::WriteGuard g(fileNodeRef);
+void FileSystem::_bufferedWrite(uint32_t sectorId, const uint8_t* dataBuffer, uint8_t* writeBuffer, unsigned& startSectorId, unsigned& prevSectorId, unsigned& count, bool flush) {
+  if(flush) {
+    if(count > 0) {
+      _diskDrive.xWrite(writeBuffer, startSectorId, count);
+    }
+    count = 0 ;
+    return;
+  }
+
+  bool newBuffering = false;
+
+  if(count == 0) {
+    startSectorId = prevSectorId = sectorId ;
+    memcpy(writeBuffer, dataBuffer, 512);
+    count = 1 ;
+  } else if(prevSectorId + 1 == sectorId) {
+    prevSectorId = sectorId ;
+    memcpy(writeBuffer + count * 512, dataBuffer, 512);
+    ++count;
+  } else {
+    newBuffering = true ;
+  }
+
+  if(count == MAX_SECTORS_PER_RW || newBuffering) {
+    _diskDrive.xWrite(writeBuffer, startSectorId, count);
+
+    count = 0 ;
+
+    if(newBuffering) {
+      startSectorId = prevSectorId = sectorId ;
+      memcpy(writeBuffer, dataBuffer, 512);
+      count = 1 ;
+    }
+  }
+}
+
+int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint8_t* dataBuffer, int size) {
+  const uint32_t offset = fdEntry.getOffset();
+  const uint32_t fileSize = node.size();
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+
+  const int startWriteSectorIndex = offset / FileSystem::SECTOR_SIZE;
+  const int startWriteSectorOffset = offset % FileSystem::SECTOR_SIZE;
+
+  int sectorIndex;
+  uint32_t currentSectorId;
+  fdEntry.getLastReadSectorDetails(sectorIndex, currentSectorId);
+
+  if(currentSectorId == EOC || sectorIndex < 0 || sectorIndex > startWriteSectorIndex) {
+    sectorIndex = 0 ;
+    currentSectorId = node.startSectorId();
+    fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId);
+  }
+
+  uint32_t prevSectorId = EOC ;
+
+  while(sectorIndex < startWriteSectorIndex && currentSectorId != EOC) {
+    auto nextSectorId = getSectorEntryValue(currentSectorId);
+    prevSectorId = currentSectorId;
+    currentSectorId = nextSectorId;
+    ++sectorIndex;
+  }
+
+  if(currentSectorId == EOC) {
+    memset(sectorBuffer, 0, FileSystem::SECTOR_SIZE);
+
+    do {
+      currentSectorId = allocateSector();
+
+      if(node.startSectorId() == EOC) {
+        node.startSectorId(currentSectorId);
+      } else {
+        setSectorEntryValue(prevSectorId, currentSectorId);
+      }
+
+      prevSectorId = currentSectorId;
+      _diskDrive.xWrite(sectorBuffer, currentSectorId, 1);
+
+      fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId);
+
+      ++sectorIndex;
+    } while(sectorIndex <= startWriteSectorIndex) ;
+  } else {
+    fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId) ;
+  }
+
+  uint32_t writtenCount = 0 ;
+  uint32_t writeRemainingCount = size ;
+
+  if(startWriteSectorOffset != 0) {
+    _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
+
+    writtenCount = 512 - startWriteSectorOffset;
+    if(size <= writtenCount) {
+      writtenCount = size;
+    }
+
+    memcpy(sectorBuffer + startWriteSectorOffset, dataBuffer, writtenCount);
+
+    _diskDrive.xWrite(sectorBuffer, currentSectorId, 1);
+
+    if(writtenCount == size) {
+      return size;
+    }
+
+    auto nextSectorId = getSectorEntryValue(currentSectorId);
+    prevSectorId = currentSectorId ;
+    currentSectorId = nextSectorId ;
+
+    writeRemainingCount -= writtenCount ;
+  }
+
+  bool allocationStarted = false ;
+
+  uint32_t uiBufStartSectorId, bufPrevSectorId;
+  uint8_t writeBuffer[MAX_SECTORS_PER_RW * FileSystem::SECTOR_SIZE];
+  uint32_t bufCount = 0;
+
+  while(true) {
+    if(currentSectorId == EOC || allocationStarted == true) {
+      allocationStarted = true ;
+      currentSectorId = allocateSector();
+      setSectorEntryValue(prevSectorId, currentSectorId);
+    }
+
+    if(writeRemainingCount < FileSystem::SECTOR_SIZE) {
+      if(allocationStarted == false && (offset + size) < fileSize) {
+        _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
+      }
+
+      memcpy(sectorBuffer, (dataBuffer + writtenCount), writeRemainingCount);
+
+      _bufferedWrite(currentSectorId, sectorBuffer, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, false);
+      _bufferedWrite(EOC, nullptr, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, true);
+
+      return size;
+    }
+
+    _bufferedWrite(currentSectorId, dataBuffer + writtenCount, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, false);
+
+    writtenCount += FileSystem::SECTOR_SIZE;
+    writeRemainingCount -= FileSystem::SECTOR_SIZE;
+
+    if(writeRemainingCount == 0) {
+      _bufferedWrite(EOC, nullptr, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, true);
+      return size;
+    }
+
+    auto nextSectorId = getSectorEntryValue(currentSectorId);
+    prevSectorId = currentSectorId ;
+    currentSectorId = nextSectorId ;
+  }
+
+  throw upan::exception(XLOC, "fs table is corrupted for drive:%s", _diskDrive.DriveName().c_str());
+}
+
+int FileSystem::write(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, const uint8_t* dataBuffer, int size) {
+  if (size == 0) {
+    return 0;
+  }
+
+  FileNodeRef::WriteGuard g1(fileNodeRef);
   auto& node = fileNodeRef.nodev();
+
+  fdEntry.setOffset(fdEntry.getMode() & O_APPEND ? node.size() : fdEntry.getOffset());
+
+  int n = _write(node, fdEntry, dataBuffer, size);
+
+  fdEntry.setOffset(fdEntry.getOffset() + n);
+
+  if(node.size() < fdEntry.getOffset()) {
+    FileNodeRef parentNodeRef(node.parent());
+    FileNodeRef::WriteGuard g2(parentNodeRef);
+
+    uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+    _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+    auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+    node.size(fdEntry.getOffset());
+
+    fileNode.Size(node.size());
+    fileNode.StartSectorID(node.startSectorId());
+
+    _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
+  }
+
+  return n;
+}
+
+
+void FileSystem::updateTime(FileNodeRef fileNodeRef, uint8_t timeType) {
+  FileNodeRef::WriteGuard g1(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  FileNodeRef parentNodeRef(node.parent());
+  FileNodeRef::WriteGuard g2(parentNodeRef);
 
   uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
   _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
 
+  const auto time = SystemUtil_GetTimeOfDay();
   if(timeType & DIR_ACCESS_TIME)
-    fileNode.AccessedTime(SystemUtil_GetTimeOfDay());
+    fileNode.AccessedTime(time);
 
   if(timeType & DIR_MODIFIED_TIME)
-    fileNode.ModifiedTime(SystemUtil_GetTimeOfDay());
+    fileNode.ModifiedTime(time);
 
   _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
 }

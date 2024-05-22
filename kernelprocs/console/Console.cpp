@@ -21,15 +21,9 @@
  */
 #include <Console.h>
 #include <KeyboardHandler.h>
-#include <Directory.h>
 #include <CommandLineParser.h>
-#include <DMM.h>
 #include <ConsoleCommands.h>
-#include <PIT.h>
 #include <SessionManager.h>
-
-#include <stdio.h>
-#include <string.h>
 
 void Console_StartUpanixConsole()
 {
@@ -50,10 +44,9 @@ void Console::ClearCommandLine()
 
 void Console::DisplayCommandLine()
 {
-	char* szPWD ;
-	Directory_PresentWorkingDirectory( &ProcessManager::Instance().GetCurrentPAS(), &szPWD) ;
-  printf("\nupanix:%s > ", szPWD);
-	KernelDMM::Instance().free((uintptr_t)szPWD) ;
+	char pwd[256] = "";
+  getenv("PWD", pwd);
+  printf("\nupanix:%s > ", pwd);
 }
 
 void Console::Start()

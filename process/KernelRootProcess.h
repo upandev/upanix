@@ -105,14 +105,6 @@ public:
     throw upan::exception(XLOC, "pwd(FileNodeRef&) unsupported");
   }
 
-  FileSystem::PresentWorkingDirectory& processPWD() override {
-    throw upan::exception(XLOC, "processPWD() unsupported");
-  }
-
-  const FileSystem::PresentWorkingDirectory& processPWD() const override {
-    throw upan::exception(XLOC, "processPWD() const unsupported");
-  }
-
   ProcessStateInfo& stateInfo() {
     throw upan::exception(XLOC, "stateInfo() unsupported");
   }

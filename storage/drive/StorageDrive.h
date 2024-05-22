@@ -93,8 +93,7 @@ public:
   void StopReleaseCacheTask(bool value) { _bStopReleaseCacheTask = value; }
   void FSType(FS_TYPE t) { _fsType = t; }
 
-  upan::rwlock &GetFileLock(const upan::string &nodeId);
-  FileSystem &fileSystem() { return _fileSystem; }
+  FileSystem& fileSystem() { return _fileSystem; }
 
 private:
   void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
@@ -122,8 +121,6 @@ private:
   DiskCache _mCache;
   bool _bStopReleaseCacheTask;
 
-  typedef upan::map<upan::string, upan::rwlock *> FileLocks;
-  FileLocks _fileLocks;
   FileSystem _fileSystem;
 
   friend class StorageDriveManager;

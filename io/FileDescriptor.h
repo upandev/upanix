@@ -45,9 +45,6 @@ public:
 
   void seek(int seekType, int offset) override;
   struct stat getStat();
-  const upan::string& getFileName() const {
-    return _fileName;
-  }
   uint32_t getOffset() const override {
     return _offset;
   }
@@ -72,10 +69,6 @@ public:
   }
 
 private:
-  FileSystem::PresentWorkingDirectory& getWorkingDirectory();
-
-private:
-  const upan::string _fileName;
   FileNodeRef _fileNodeRef;
   StorageDrive& _diskDrive;
   uint32_t _offset;

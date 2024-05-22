@@ -34,30 +34,6 @@
 #define DIR_SPECIAL_CURRENT		"."
 #define DIR_SPECIAL_PARENT		".."
 
-#define FILE_PERM(attr)	(attr & FILE_PERM_MASK)
-#define FILE_TYPE(attr) (attr & FILE_TYPE_MASK)
-
-#define S_ISDIR(attr) (FILE_TYPE(attr) == ATTR_TYPE_DIRECTORY)
-
-#define ATTR_READ	0x4
-#define ATTR_WRITE	0x2
-#define ATTR_EXE	0x1
-
-#define S_OWNER(perm)		((perm & 0x7) << 6)
-#define S_GROUP(perm)		((perm & 0x7) << 3)
-#define S_OTHERS(perm)		(perm & 0x7)
-
-#define G_OWNER(perm)		((perm >> 6) & 0x7)
-#define G_GROUP(perm)		((perm >> 3) & 0x7)
-#define G_OTHERS(perm)		(perm & 0x7)
-
-#define FILE_PERM_MASK	0x1FF
-#define FILE_TYPE_MASK	0xF000
-
-#define HAS_READ_PERM(perm)		((perm & 0x7) & ATTR_READ)
-#define HAS_WRITE_PERM(perm)	((perm & 0x7) & ATTR_WRITE)
-#define HAS_EXE_PERM(perm)		((perm & 0x7) & ATTR_EXE)
-
 #define FILE_STDOUT "STDOUT"
 #define FILE_STDIN  "STDIN"
 #define FILE_STDERR "STDERR"

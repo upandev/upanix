@@ -29,10 +29,10 @@ int SysFS_ChangeDirectory(const char* szDirPath)
 	return retStatus ;
 }
 
-void SysFS_PWD(char** uiReturnDirPathAddress)
-{
+int SysFS_CWD(char* uiReturnDirPathAddress, int len) {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_PWD, false, (uint64_t) uiReturnDirPathAddress, 2, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_CWD, false, (uint64_t) uiReturnDirPathAddress, len, 3, 4, 5);
+  return retStatus;
 }
 
 int SysFS_CreateDirectory(const char* szDirPath, unsigned short usAttribute)
@@ -134,56 +134,20 @@ int SysFS_FileStatFD(int iFD, struct stat* pFileStat)
 	return retStatus ;
 }
 
-int read(int fd, void* buf, int len)
-{
-	return SysFS_FileRead(fd, buf, len) ;
+int SysFS_GetDirContent(const char* szDirPath, struct stat_ex** dirList, int* size) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_GET_DIR_LIST, false, (uint64_t)szDirPath, (uint64_t)dirList, (uint64_t)size, 4, 5);
+  return retStatus;
 }
 
-int write(int fd, const void* buf, int len)
-{
-	return SysFS_FileWrite(fd, buf, len) ;
+int SysFS_FileAccess(const char* szFileName, int mode) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_ACCESS, false, (uint64_t)szFileName, (uint64_t)mode, 3, 4, 5);
+  return retStatus;
 }
 
-void select(io_descriptor* waitIODescriptors, io_descriptor* readyIODescriptors) {
-  return SysFS_FileSelect(waitIODescriptors, readyIODescriptors);
-}
-
-int lseek(int fd, int offset, int seekType)
-{
-	return SysFS_FileSeek(fd, offset, seekType) ;
-}
-
-unsigned tell(int fd)
-{
-	return SysFS_FileTell(fd) ;
-}
-
-int getomode(int fd)
-{
-	return SysFS_FileOpenMode(fd) ;
-}
-
-int create(const char* file_path, unsigned short file_attr)
-{
-	return SysFS_CreateFile(file_path, file_attr) ;
-}
-
-int open(const char* file_name, byte mode)
-{
-	return SysFS_FileOpen(file_name, mode) ;
-}
-
-int close(int fd)
-{
-	return SysFS_FileClose(fd) ;
-}
-
-int stat(const char* szFileName, struct stat* pFileStat)
-{
-	return SysFS_FileStat(szFileName, pFileStat) ;
-}
-
-int fstat(int iFD, struct stat* pFileStat)
-{
-	return SysFS_FileStatFD(iFD, pFileStat) ;
+int SysFS_Dup2(int oldFD, int newFD) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_DUP2, false, (uint64_t)oldFD, (uint64_t)newFD, 3, 4, 5);
+  return retStatus;
 }

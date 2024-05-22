@@ -24,7 +24,6 @@
 #include <DMM.h>
 #include <ProcessManager.h>
 #include <DynamicLinkLoader.h>
-#include <Directory.h>
 #include <PS2KeyboardDriver.h>
 #include <PIT.h>
 #include <StringUtil.h>

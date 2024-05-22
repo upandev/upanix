@@ -20,13 +20,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <DMM.h>
-# include <Directory.h>
 # include <FileOperations.h>
 # include <MultiBoot.h>
 # include <MountManager.h>
 # include <try.h>
-# include <drive.h>
 # include <StorageDriveManager.h>
+# include <ProcessManager.h>
 
 static char MountManager_szRootDriveName[33] = "" ;
 static int MountManager_iRootDriveID = CURRENT_DRIVE ;
@@ -91,7 +90,6 @@ static void MountManager_MountDrive(char* szDriveName)
 	// Set Process Drive
   auto& pas = ProcessManager::Instance().GetCurrentPAS();
   pas.setDriveID(storageDrive.Id());
-  pas.processPWD() = storageDrive.fileSystem().pwd();
   pas.pwd(storageDrive.fileSystem().root());
 
 	// Change To Root Directory

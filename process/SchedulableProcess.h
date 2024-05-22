@@ -99,9 +99,6 @@ public:
   FileNodeRef pwd() const override { return _pwd; }
   void pwd(const FileNodeRef& pwd) { _pwd = pwd; }
 
-  FileSystem::PresentWorkingDirectory& processPWD() override { return _processPWD; }
-  const FileSystem::PresentWorkingDirectory& processPWD() const override { return _processPWD; }
-
   const ProcessIDs& childProcessIDs() const { return _childProcessIDs; }
   void addChildProcessID(int pid) { _childProcessIDs.insert(pid); }
   void removeChildProcessID(int pid) { _childProcessIDs.erase(pid); }
@@ -142,7 +139,6 @@ protected:
   ProcessStateInfo& _stateInfo;
   TaskContext _taskContext;
   FileNodeRef _pwd;
-  FileSystem::PresentWorkingDirectory _processPWD;
   //this is managed like a shared_ptr
   ProcessGroup* _processGroup;
 

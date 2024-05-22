@@ -88,7 +88,7 @@ void FileTree::addNode(FileTree::Node& parent, const FileNode& newFileNode) {
 
 FileTree::Node* FileTree::removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock) {
   upan::mutex_guard g(_treeMutex);
-  parent.removeSubNode(deleteFileName, prevSectorId, deallocateSectorBlock);
+  return parent.removeSubNode(deleteFileName, prevSectorId, deallocateSectorBlock);
 }
 
 upan::string FileTree::getFullPath(FileTree::Node& node) {
@@ -98,6 +98,8 @@ upan::string FileTree::getFullPath(FileTree::Node& node) {
   while(cur != nullptr) {
     if (fullPath.empty()) {
       fullPath = cur->name();
+    } else if (cur->isRoot()) {
+      fullPath = cur->name() + fullPath;
     } else {
       fullPath = cur->name() + "/" + fullPath;
     }

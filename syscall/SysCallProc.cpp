@@ -21,7 +21,6 @@
  */
 # include <SysCall.h>
 # include <SysCallDisplay.h>
-# include <exception.h>
 
 byte SysCallProc_IsPresent(uint64_t sysCallId)
 {
