@@ -59,18 +59,16 @@ static void MountManager_GetBootMountDrive(char* szBootDriveName)
 	}
 }
 
-static bool MountManager_GetHomeMountDrive(char* szHomeDriveName, unsigned uiSize)
-{
-  auto result = upan::tryreturn([&]() {
-    auto& fd = FileOperations::Instance().open("ROOT@/.mount.lst", O_RDONLY);
-    return fd.read(szHomeDriveName, uiSize);
-  });
+static bool MountManager_GetHomeMountDrive(char* szHomeDriveName, unsigned uiSize) {
+  auto fd = FileOperations::Instance().open("ROOT@/.mount.lst", O_RDONLY);
 
-  if(result.isBad())
+  if(fd.isEmpty()) {
     return false;
+  }
 
-  int bytesRead = result.goodValue();
-	
+  const int bytesRead = fd.value().read(szHomeDriveName, uiSize);
+  FileOperations::Instance().close(fd.value().id());
+
   szHomeDriveName[bytesRead - 1] = '\0' ; /* Junk Fix... Use ctype and trim functions
 	from UPANIXApps library... port it to kernel using kernel coding conventions */
 

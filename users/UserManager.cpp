@@ -52,7 +52,7 @@ void UserManager::InitializeDefaultUserList() {
 }
 
 void UserManager::WriteUserList() {
-  auto& file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC);
+  auto& file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC).value();
 
   for(auto u : _users) {
     const User& user = *u.second;
@@ -74,9 +74,8 @@ void UserManager::WriteUserList() {
   }
 }
 
-bool UserManager::LoadUserList()
-{
-  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY);
+bool UserManager::LoadUserList() {
+  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY).value();
 
   upan::string name;
   while(FileOperations_ReadLine(file.id(), name))

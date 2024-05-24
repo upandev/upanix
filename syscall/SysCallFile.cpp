@@ -140,7 +140,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
 
         try {
-          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).id();
+          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).flatMap<int>(
+                  [](FileDescriptor& fd) {
+                    return upan::option<int>(fd.id());
+                  }).valueOrElse(-1);
         } catch(const upan::exception& ex) {
           ex.Print();
           *retVal = -1 ;
@@ -184,13 +187,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				const char* szBufferAddr = ( const char*) p2;
 
 				*retVal = 0 ;
-        try
-        {
+        try {
           auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
           *retVal =  file.write(szBufferAddr, (int)p3);
-        }
-        catch(const upan::exception& ex)
-				{
+        } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;
 				}

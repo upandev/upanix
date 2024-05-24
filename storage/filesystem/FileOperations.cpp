@@ -106,7 +106,7 @@ StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, co
   return storageDrive;
 }
 
-FileDescriptor& FileOperations::open(const upan::string& filePath, const uint8_t mode) {
+upan::option<FileDescriptor&> FileOperations::open(const upan::string& filePath, const uint8_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
@@ -115,9 +115,15 @@ FileDescriptor& FileOperations::open(const upan::string& filePath, const uint8_t
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
   auto fileNodeRef = storageDrive.fileSystem().open(fileTokens, mode, cwd, process);
 
-  return dynamic_cast<FileDescriptor&>(process.iodTable().allocate([&](int fd) {
+  if (fileNodeRef.empty()) {
+    return upan::option<FileDescriptor&>::empty();
+  }
+
+  auto& ioDescriptor = process.iodTable().allocate([&](int fd) {
     return new FileDescriptor(process.processID(), fd, mode, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
-  }));
+  });
+
+  return upan::option<FileDescriptor&>(dynamic_cast<FileDescriptor&>(ioDescriptor));
 }
 
 bool FileOperations::close(int fd) {

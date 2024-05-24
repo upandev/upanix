@@ -296,13 +296,15 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mo
   bool newFileCreated = false;
 
   if (fileNodeRef.empty()) {
-    if ( (mode & O_APPEND) || (mode & O_CREAT) ) {
+    if ( (mode & O_APPEND) || (mode & O_CREAT) || (mode & O_TRUNC) ) {
       FileTree::NodeTokens dirTokens(fileTokens);
       dirTokens.pop_back();
       const upan::string& fileName = fileTokens.back();
       create(dirTokens, fileName, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT, cwd, process);
       fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
       newFileCreated = true;
+    } else {
+      return {};
     }
   }
 
@@ -458,7 +460,7 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   FileNodeRef::ReadGuard g(fileNodeRef);
   auto& node = fileNodeRef.nodev();
 
-  const auto offset = fdEntry.getOffset();
+  const int offset = fdEntry.getOffset();
   if (offset >= node.size()) {
     return 0;
   }
@@ -489,7 +491,7 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   uint32_t lastReadSectorId = currentSectorId;
   int lastReadSectorIndex = sectorIndex;
 
-  const uint32_t currentFileSize = node.size();
+  const int currentFileSize = node.size();
   int readCount = 0 ;
   int readRemainingCount = (size < (currentFileSize - offset) && size > 0) ? size : (currentFileSize  - offset) ;
 
@@ -648,8 +650,8 @@ int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint
     fdEntry.setLastReadSectorDetails(sectorIndex, currentSectorId) ;
   }
 
-  uint32_t writtenCount = 0 ;
-  uint32_t writeRemainingCount = size ;
+  int writtenCount = 0 ;
+  int writeRemainingCount = size ;
 
   if(startWriteSectorOffset != 0) {
     _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
@@ -764,11 +766,13 @@ void FileSystem::updateTime(FileNodeRef fileNodeRef, uint8_t timeType) {
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
 
   const auto time = SystemUtil_GetTimeOfDay();
-  if(timeType & DIR_ACCESS_TIME)
+  if(timeType & DIR_ACCESS_TIME) {
     fileNode.AccessedTime(time);
+  }
 
-  if(timeType & DIR_MODIFIED_TIME)
+  if(timeType & DIR_MODIFIED_TIME) {
     fileNode.ModifiedTime(time);
+  }
 
   _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
 }

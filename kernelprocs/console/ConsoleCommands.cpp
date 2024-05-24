@@ -309,17 +309,15 @@ void ConsoleCommands_ReadFileContent()
 	
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY);
+  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY).value();
 
   printf("\n");
-	while(true)
-	{
+	while(true) {
     int n = file.read(bDataBuffer, 512);
 
 		bDataBuffer[n] = '\0' ;
 
-    if(n < 512)
-		{
+    if(n < 512) {
       printf("%s", bDataBuffer);
 			break ;
 		}
@@ -349,13 +347,13 @@ void ConsoleCommands_CopyFile()
 	char bDataBuffer[iBufSize] ;
 
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
-  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY);
+  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY).value();
 
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
   FileOperations::Instance().create(szDestFile, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT);
 
-  auto& file1 = FileOperations::Instance().open(szDestFile, O_RDWR);
+  auto& file1 = FileOperations::Instance().open(szDestFile, O_RDWR).value();
 
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
@@ -931,7 +929,7 @@ void graphics_photos(int x, int y) {
   for (const auto& s : fileStats) {
     if (S_ISFILE(s._stat.st_mode)) {
       const auto fileSize = s._stat.st_size;
-      auto& file = FileOperations::Instance().open(s._name, O_RDONLY);
+      auto& file = FileOperations::Instance().open(s._name, O_RDONLY).value();
       file.seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file.read(buffer.get(), fileSize);

@@ -46,7 +46,7 @@ void FileTree::uninitialize() {
   _root = nullptr;
 }
 
-FileNodeRef FileTree::getFileNodeRef(const FileTree::NodeTokens &nodeTokens, const FileNodeRef& cwd) {
+FileNodeRef FileTree::getFileNodeRef(const FileTree::NodeTokens& nodeTokens, const FileNodeRef& cwd) {
   upan::mutex_guard g(_treeMutex);
 
   FileNodeRef cur = cwd;
