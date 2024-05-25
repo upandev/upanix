@@ -190,11 +190,14 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
     throw upan::exception(XLOC, "%s is not a directory", parentNode.name().c_str());
   }
 
-  FileNodeRef::WriteGuard g(parentNodeRef);
+  FileNodeRef::WriteGuard g1(parentNodeRef);
 
   if (!parentNode.find(newFileName).isEmpty()) {
     throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (FILE_TYPE(fileType) == ATTR_TYPE_FILE ? "file" : "directory"));
   }
+
+  FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
+  FileNodeRef::WriteGuard g2(parentParentNodeRef);
 
   uint8_t parentDirBuffer[FileSystem::SECTOR_SIZE];
   _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
@@ -206,29 +209,35 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
 
   uint32_t newSectorId;
   uint8_t newSectorOffset;
-
+  bool newSector = false;
   if (!parentNode.getFreeSlot(newSectorId, newSectorOffset)) {
+    newSector = true;
     newSectorId = allocateSector();
     newSectorOffset = 0;
     auto lastSectorId = parentNode.getDirLastSectorId();
     if (lastSectorId == EOC) {
       parentFileNode.StartSectorID(newSectorId);
+      parentNode.startSectorId(newSectorId);
     } else {
       setSectorEntryValue(lastSectorId, newSectorId);
     }
   }
 
   uint8_t newSectorBuffer[FileSystem::SECTOR_SIZE];
-  _diskDrive.xRead(newSectorBuffer, newSectorId, 1);
+  if (newSector) {
+    memset(newSectorBuffer, 0, FileSystem::SECTOR_SIZE);
+  } else {
+    _diskDrive.xRead(newSectorBuffer, newSectorId, 1);
+  }
   auto& newFileNode = reinterpret_cast<FileNode*>(newSectorBuffer)[newSectorOffset];
-  newFileNode.Init(newFileName.c_str(), getFileAttr(fileType, mode), process.userID(), newSectorId, newSectorOffset);
+  newFileNode.Init(newFileName.c_str(), getFileAttr(fileType, mode), process.userID(), parentNode.sectorId(), parentNode.sectorOffset());
 
   parentFileNode.AddNode();
 
   _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
   _diskDrive.xWrite(newSectorBuffer, newSectorId, 1);
 
-  _fileTree.addNode(parentNode, newFileNode);
+  _fileTree.addNode(parentNode, newFileNode, newSectorId, newSectorOffset);
 }
 
 void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd, Process& process) {
@@ -246,6 +255,9 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   }
 
   FileNodeRef::WriteGuard g(parentNodeRef);
+
+  FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
+  FileNodeRef::WriteGuard g2(parentParentNodeRef);
 
   uint8_t parentDirBuffer[FileSystem::SECTOR_SIZE];
   _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
@@ -274,6 +286,7 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
     auto nextSectorId = deallocateSector(deleteNode->sectorId());
     if (deleteNode->sectorId() == parentFileNode.StartSectorID()) {
       parentFileNode.StartSectorID(nextSectorId);
+      parentNode.startSectorId(nextSectorId);
     } else {
       setSectorEntryValue(prevSectorId, nextSectorId);
     }

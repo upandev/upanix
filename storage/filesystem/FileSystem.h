@@ -46,8 +46,8 @@ public:
 
   ~FileSystem() = default;
 
-  uint64_t totalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * 512; }
-  uint64_t usedSize() const { return _bootBlock.getUsedSectors() * 512; }
+  uint64_t totalSize() const { return _bootBlock.getTableSize() * ENTRIES_PER_TABLE_SECTOR * SECTOR_SIZE; }
+  uint64_t usedSize() const { return _bootBlock.getUsedSectors() * SECTOR_SIZE; }
 
   uint32_t allocateSector();
   uint32_t deallocateSector(uint32_t currentSectorId);

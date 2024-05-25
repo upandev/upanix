@@ -37,7 +37,7 @@ void FileTree::initialize(StorageDrive& storageDrive) {
   storageDrive.xRead(sectorBuffer, 0, 1);
   auto& parentFileNode = reinterpret_cast<FileNode*>(sectorBuffer)[0];
 
-  _root = new Node(nullptr, parentFileNode);
+  _root = new Node(nullptr, parentFileNode, 0, 0);
   _root->Load(storageDrive);
 }
 
@@ -81,9 +81,9 @@ FileNodeRef FileTree::getFileNodeRef(const FileTree::NodeTokens& nodeTokens, con
   return { cur };
 }
 
-void FileTree::addNode(FileTree::Node& parent, const FileNode& newFileNode) {
+void FileTree::addNode(FileTree::Node& parent, const FileNode& newFileNode, uint32_t sectorId, uint8_t sectorOffset) {
   upan::mutex_guard g(_treeMutex);
-  parent.addSubNode(newFileNode);
+  parent.addSubNode(newFileNode, sectorId, sectorOffset);
 }
 
 FileTree::Node* FileTree::removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock) {
@@ -149,14 +149,16 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
     for(auto sectorOffset = 0; sectorOffset < FileSystem::DIR_ENTRIES_PER_SECTOR && fileCount < _size; ++sectorOffset) {
       const auto& fileNode = fileNodes[sectorOffset];
       if (fileNode.IsDeleted()) {
+        dirSectorBlock->nodes()[sectorOffset] = nullptr;
         continue;
       }
 
-      auto node = new FileTree::Node(this, fileNode);
+      auto node = new FileTree::Node(this, fileNode, currentSectorId, sectorOffset);
+      dirSectorBlock->nodes()[sectorOffset] = node;
+
       _subNodes.insert(SubNodes::value_type(node->name(), node));
 
       if (fileNode.IsDirectory()) {
-        dirSectorBlock->nodes()[sectorOffset] = node;
         node->Load(storageDrive);
       }
       ++fileCount;
@@ -168,12 +170,12 @@ void FileTree::Node::Load(StorageDrive& storageDrive) {
   }
 }
 
-FileTree::Node::Node(Node* parent, const FileNode& fileNode) :
+FileTree::Node::Node(Node* parent, const FileNode& fileNode, uint32_t sectorId, uint8_t sectorOffset) :
         _parent(parent),
         _name(fileNode.Name()),
         _startSectorId(fileNode.StartSectorID()),
-        _sectorId(fileNode.ParentSectorID()),
-        _sectorOffset(fileNode.ParentSectorPos()),
+        _sectorId(sectorId),
+        _sectorOffset(sectorOffset),
         _isFile(fileNode.IsFile()),
         _size(fileNode.Size()),
         _refCount(0) {
@@ -219,8 +221,8 @@ uint32_t FileTree::Node::getDirLastSectorId() {
   return _dirSectorBlocks.back()->sectorId();
 }
 
-void FileTree::Node::addSubNode(const FileNode& fileNode) {
-  auto subNode = new Node(this, fileNode);
+void FileTree::Node::addSubNode(const FileNode& fileNode, uint32_t sectorId, uint8_t sectorOffset) {
+  auto subNode = new Node(this, fileNode, sectorId, sectorOffset);
   if (_startSectorId == EOC) {
     _startSectorId = subNode->sectorId();
     auto dirSectorBlock = new DirSectorBlock();

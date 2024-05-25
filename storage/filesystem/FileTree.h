@@ -44,7 +44,7 @@ public:
 
   class Node {
   public:
-    Node(Node* parent, const FileNode& fileNode);
+    Node(Node* parent, const FileNode& fileNode, uint32_t sectorId, uint8_t sectorOffset);
     ~Node();
 
     bool isRoot() const { return _parent == nullptr; }
@@ -68,7 +68,7 @@ public:
     upan::option<Node*> find(const upan::string& name);
     bool getFreeSlot(uint32_t& sectorId, uint8_t& sectorOffset);
     uint32_t getDirLastSectorId();
-    void addSubNode(const FileNode& fileNode);
+    void addSubNode(const FileNode& fileNode, uint32_t sectorId, uint8_t sectorOffset);
     FileTree::Node* removeSubNode(const upan::string& fileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
 
     upan::rwlock& rwlock() { return _rwlock; }
@@ -102,7 +102,7 @@ public:
 private:
   void initialize(StorageDrive& storageDrive);
   void uninitialize();
-  void addNode(Node& parent, const FileNode& newFileNode);
+  void addNode(FileTree::Node& parent, const FileNode& newFileNode, uint32_t sectorId, uint8_t sectorOffset);
   FileTree::Node* removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
   upan::string getFullPath(Node& node);
 
