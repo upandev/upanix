@@ -68,6 +68,8 @@
 #include <metrics.h>
 #include <SysCall.h>
 #include <StorageDriveManager.h>
+#include <Terminal.h>
+#include <TerminalCommandExecutor.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -1481,6 +1483,55 @@ void graphics_text_editor(int x, int y) {
   exit(0);
 }
 
+class TCE : public upanui::TerminalCommandExecutor {
+public:
+  void setTerminal(upanui::Terminal* terminal) {
+    _terminal = terminal;
+  }
+
+  void execute(const upan::string& cmdLine) override {
+    _terminal->insertCommandOutput("Hello!\nWorld\n");
+    _terminal->insertCommandOutput(cmdLine + " -> Executed!");
+  }
+
+  void executeInBackground(const upan::string& cmdLine) override {
+  }
+
+private:
+  upanui::Terminal* _terminal;
+};
+
+void graphics_terminal(int x, int y) {
+  const int appWidth = 600;
+  const int mainHeight = 500;
+  const int menuBarHeight = 30;
+  upanui::GraphicsContext::Init();
+  auto& gc = upanui::GraphicsContext::Instance();
+  auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight);
+  uiMenuBar.backgroundColor(0xA59E9D);
+
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight);
+
+  const int scrollBarWidth = 20;
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth);
+
+  TCE tce;
+  tce.setTerminal(&upanui::UIObjectFactory::createTerminal(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, "msh:/", tce));
+
+  DragMouseHandler mouseHandler;
+  PassThroughMouseHandler passThroughMouseHandler;
+  uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
+
+  CloseButtonMouseHandler closeButtonMouseHandler;
+  closeBt.registerMouseEventHandler(closeButtonMouseHandler);
+
+  gc.eventManager().startEventLoop();
+
+  exit(0);
+}
+
 int testg_id = 0;
 void ConsoleCommands_TestGraphics() {
   if (CommandLineParser::Instance().GetNoOfParameters() != 3) {
@@ -1522,6 +1573,11 @@ void ConsoleCommands_TestGraphics() {
 
     case 6: {
       ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_text_editor, NO_PROCESS_ID, true, params);
+    }
+    break;
+
+    case 7: {
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, params);
     }
     break;
 
