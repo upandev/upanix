@@ -29,6 +29,7 @@
 #include <vector.h>
 #include <mutex.h>
 #include <MouseCursor.h>
+#include <MouseData.h>
 
 class GraphicsVideo : protected KernelUtil::TimerTask {
   private:
@@ -106,7 +107,12 @@ class GraphicsVideo : protected KernelUtil::TimerTask {
     upan::mutex _fgProcessMutex;
 
     upan::uniq_ptr<upanui::MouseCursor> _mouseCursor;
+    upan::uniq_ptr<upanui::Image> _mousePointerImage;
+    upan::uniq_ptr<upanui::Image> _mouseResizerImage;
+
     int _mousePrevX;
     int _mousePrevY;
+    int _mousePrevWidth;
+    int _mousePrevHeight;
     upan::atomic::integral<bool> _mouseChange;
 };

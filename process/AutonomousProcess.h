@@ -56,6 +56,9 @@ public:
     return _envMap;
   }
 
+  MouseCursorType mouseCursorType() const override { return _mouseCursorType; }
+  void setMouseCursorType(MouseCursorType type) { _mouseCursorType = type; }
+
 private:
   typedef upan::list<Thread*> ThreadSchedulerList;
   ThreadSchedulerList _threadSchedulerList;
@@ -64,6 +67,7 @@ private:
   IODescriptor* _uiKeyboardEventStreamFD;
   IODescriptor* _uiMouseEventStreamFD;
   bool _isGuiBase;
+  MouseCursorType _mouseCursorType;
 
   upan::mutex _envMutex;
   ProcessEnvMap _envMap;

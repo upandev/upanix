@@ -141,9 +141,13 @@ public:
   bool isGuiBase() const override {
     return true;
   }
-
   void setGuiBase(bool v) override {
     throw upan::exception(XLOC, "KernelRootProcess is always GuiBase process - can't modify this flag");
+  }
+
+  MouseCursorType mouseCursorType() const override { return MouseCursorType::NORMAL; }
+  void setMouseCursorType(MouseCursorType type) override {
+    throw upan::exception(XLOC, "setMouseCursorType() unsupported");
   }
 
   void setEnv(const upan::string& key, const upan::string& value) override;

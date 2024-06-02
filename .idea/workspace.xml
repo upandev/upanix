@@ -30,10 +30,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="bug fixes in the new in-memory file-tree based persisted file-system">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="text terminal test code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/video/GraphicsVideo.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDisplay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,7 +248,7 @@
       <workItem from="1716211856524" duration="58556000" />
       <workItem from="1716657243017" duration="655000" />
       <workItem from="1716679213062" duration="8690000" />
-      <workItem from="1716818633560" duration="11264000" />
+      <workItem from="1716818633560" duration="36259000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -585,7 +593,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="93" />
+    <option name="localTasksCounter" value="94" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -619,7 +627,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="test graphics code for textarea" />
     <MESSAGE value="refactored to move keyboard mapping utility to upanui library" />
     <MESSAGE value="adhere to new scroll related UIObject interfaces" />
     <MESSAGE value="change width, height to int from uint32" />
@@ -644,7 +651,8 @@
     <MESSAGE value="refactor filesystem with in-memory multi-thread/process safe file-tree and file-data management" />
     <MESSAGE value="return error and not throw exception when you open a non-existent file" />
     <MESSAGE value="bug fixes in the new in-memory file-tree based persisted file-system" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fixes in the new in-memory file-tree based persisted file-system" />
+    <MESSAGE value="text terminal test code" />
+    <option name="LAST_COMMIT_MESSAGE" value="text terminal test code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

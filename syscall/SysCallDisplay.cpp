@@ -142,6 +142,12 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
     }
     break;
 
+    case SYS_CALL_DISPLAY_SET_MOUSE_CURSOR_TYPE:
+    {
+      ProcessManager::Instance().GetCurrentPAS().setMouseCursorType((MouseCursorType)p1);
+    }
+    break;
+
     case SYS_CALL_DISPLAY_INIT_TERM_CONSOLE:
 	  {
       ProcessManager::Instance().GetCurrentPAS().setupAsTtyProcess();

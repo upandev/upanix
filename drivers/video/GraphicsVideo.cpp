@@ -34,7 +34,6 @@
 #include <RootGUIConsole.h>
 #include <GCoreFunctions.h>
 #include <metrics.h>
-#include <ImageResource.h>
 #include <PortCom.h>
 
 //make below extern as you load bmp files during testing
@@ -69,7 +68,8 @@ GraphicsVideo& GraphicsVideo::Instance() {
 
 GraphicsVideo::GraphicsVideo(const FrameBufferInfo& fbinfo)
   : _needRefresh(false), _initialized(false),
-    _mouseCursor(nullptr), _mouseChange(0), _mousePrevX(0), _mousePrevY(0) {
+    _mouseCursor(nullptr), _mousePointerImage(nullptr), _mouseResizerImage(nullptr), _mousePrevX(0), _mousePrevY(0),
+    _mousePrevWidth(0), _mousePrevHeight(0), _mouseChange(0) {
   _flatLFBAddress = (uint64_t)fbinfo._frameBuffer;
   _mappedLFBAddress = (uint64_t)fbinfo._frameBuffer;
   _zBuffer = (uint64_t)fbinfo._frameBuffer;
@@ -100,10 +100,7 @@ void GraphicsVideo::Initialize() {
   }
 
   printf("\n Initializing mouse cursor image\n");
-  upan::uniq_ptr<upanui::Image> image(&upanui::PngImageResource::MOUSE_CURSOR.create());
-  image->resize(12, 18);
-  _mouseCursor.reset(new upanui::MouseCursor(*image.get(), 0, 0));
-
+  _mouseCursor.reset(new upanui::MouseCursor());
 //  upanui::BmpEncoder decoder;
 //  upan::uniq_ptr<upanui::Image> image(&decoder.decode(upanui::ImageResource::MOUSE_CURSOR_BMP,
 //                                                      upan::option<uint32_t>(ColorPalettes::CP16::Get(ColorPalettes::CP16::FGColor::FG_RED))));
@@ -221,11 +218,15 @@ bool GraphicsVideo::TimerTrigger() {
       });
     }
   } else if (redrawInfo._mouseChanged) {
-    const int drawMinX = upan::min(_mousePrevX, _mouseCursor->x());
-    const int drawMaxX = upan::max(_mousePrevX, _mouseCursor->x()) + _mouseCursor->width();
+    ProcessManager::Instance().GetProcess(_inputEventFGProcess).ifPresent([this](Process& process) {
+      _mouseCursor->type(process.mouseCursorType());
+    });
 
-    const int drawMinY = upan::min(_mousePrevY, _mouseCursor->y());
-    const int drawMaxY = upan::max(_mousePrevY, _mouseCursor->y()) + _mouseCursor->height();
+    const int drawMinX = upan::min(_mousePrevX, _mouseCursor->drawX());
+    const int drawMaxX = upan::max(_mousePrevX, _mouseCursor->drawX()) + _mousePrevWidth;
+
+    const int drawMinY = upan::min(_mousePrevY, _mouseCursor->drawY());
+    const int drawMaxY = upan::max(_mousePrevY, _mouseCursor->drawY()) + _mousePrevHeight;
 
     for (int fgPid : _fgProcesses) {
       auto process = ProcessManager::Instance().GetProcess(fgPid);
@@ -249,8 +250,11 @@ bool GraphicsVideo::TimerTrigger() {
       });
     }
   }
-  _mousePrevX = _mouseCursor->x();
-  _mousePrevY = _mouseCursor->y();
+
+  _mousePrevX = _mouseCursor->drawX();
+  _mousePrevY = _mouseCursor->drawY();
+  _mousePrevWidth = _mouseCursor->width();
+  _mousePrevHeight = _mouseCursor->height();
 
   DrawMouseCursor();
 
@@ -302,7 +306,7 @@ void GraphicsVideo::SetMouseCursorPos(int x, int y) {
     newY = y;
   }
 
-  if (newX != _mouseCursor->x() || newY != _mouseCursor->y()) {
+  if (newX != _mouseCursor->realX() || newY != _mouseCursor->realY()) {
     _mouseCursor->x(newX);
     _mouseCursor->y(newY);
     _mouseChange.set(true);
@@ -321,8 +325,8 @@ upan::option<int> GraphicsVideo::getFGProcessUnderMouseCursor() {
     } else {
       if (!process.value().getGuiFrame().isEmpty()) {
         const auto& f = process.value().getGuiFrame().value();
-        if (f.viewport().x1() <= _mouseCursor->x() && _mouseCursor->x() < f.viewport().x2()
-        && f.viewport().y1() <= _mouseCursor->y() && _mouseCursor->y() < f.viewport().y2()) {
+        if (f.viewport().x1() <= _mouseCursor->realX() && _mouseCursor->realX() < f.viewport().x2()
+        && f.viewport().y1() <= _mouseCursor->realY() && _mouseCursor->realY() < f.viewport().y2()) {
           return upan::option<int>(pid);
         }
       }
@@ -379,7 +383,7 @@ void GraphicsVideo::switchFGProcess(int pid) {
 }
 
 void GraphicsVideo::DrawMouseCursor() {
-  CopyArea(_mouseCursor->x(), _mouseCursor->y(),
+  CopyArea(_mouseCursor->drawX(), _mouseCursor->drawY(),
            0, 0, _mouseCursor->width(),
            _mouseCursor->width(), _mouseCursor->height(),
            _mouseCursor->data(), true);

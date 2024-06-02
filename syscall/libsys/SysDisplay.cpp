@@ -90,6 +90,11 @@ void SysDisplay_SetGuiBase(bool isGuiBase) {
   SysCallDisplay_Handle(&retStatus, SYS_CALL_DISPLAY_SET_GUI_BASE, false, isGuiBase, 2, 3, 4, 5);
 }
 
+void SysDisplay_SetMouseCursorType(MouseCursorType mouseCursorType) {
+  uint64_t retStatus;
+  SysCallDisplay_Handle(&retStatus, SYS_CALL_DISPLAY_SET_MOUSE_CURSOR_TYPE, false, mouseCursorType, 2, 3, 4, 5);
+}
+
 void SysDisplay_InitTermConsole() {
   uint64_t retStatus;
   SysCallDisplay_Handle(&retStatus, SYS_CALL_DISPLAY_INIT_TERM_CONSOLE, false, 1, 2, 3, 4, 5);

@@ -116,6 +116,9 @@ public:
   virtual bool isGuiBase() const = 0;
   virtual void setGuiBase(bool) = 0;
 
+  virtual MouseCursorType mouseCursorType() const = 0;
+  virtual void setMouseCursorType(MouseCursorType) = 0;
+
   virtual upanui::GraphicsContext* getGraphicsContext() {
     throw upan::exception(XLOC, "getGraphicsContext unsupported");
   }

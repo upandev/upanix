@@ -57,7 +57,7 @@
 #include <RoundCanvas.h>
 #include <Line.h>
 #include <GCoreFunctions.h>
-#include <Point.h>
+#include <UIPosition.h>
 #include <ImageCanvas.h>
 #include <Label.h>
 #include <VerticalScroller.h>
@@ -1254,26 +1254,26 @@ public:
     initLayout();
   }
 
-  void populateSteps(upanui::Point (&steps)[60], const int r) {
+  void populateSteps(upanui::UIPosition (&steps)[60], const int r) {
     if (r < 0) {
       throw upan::exception(XLOC, "csize (%u) is smaller than minimum length", _csize);
     }
 
     for(int i = 0; i < X_Y_CO_SIZE; ++i) {
-      steps[i] = upanui::Point(roundtoi(X_CO[i] * r), roundtoi(Y_CO[i] * r));
+      steps[i] = upanui::UIPosition(roundtoi(X_CO[i] * r), roundtoi(Y_CO[i] * r));
 
       if (i == 0) {
-        steps[15] = upanui::Point(steps[i].y(), steps[i].x());
-        steps[30] = upanui::Point(steps[i].x(), -steps[i].y());
-        steps[45] = upanui::Point(-steps[i + 15].x(), steps[i + 15].y());
+        steps[15] = upanui::UIPosition(steps[i].y(), steps[i].x());
+        steps[30] = upanui::UIPosition(steps[i].x(), -steps[i].y());
+        steps[45] = upanui::UIPosition(-steps[i + 15].x(), steps[i + 15].y());
       } else {
-        steps[15 - i] = upanui::Point(steps[i].y(), steps[i].x());
-        steps[15 + i] = upanui::Point(steps[15 - i].x(), -steps[15 - i].y());
-        steps[45 - i] = upanui::Point(-steps[15 - i].x(), -steps[15 - i].y());
-        steps[45 + i] = upanui::Point(-steps[15 - i].x(), steps[15 - i].y());
-        steps[30 - i] = upanui::Point(steps[i].x(), -steps[i].y());
-        steps[30 + i] = upanui::Point(-steps[i].x(), -steps[i].y());
-        steps[60 - i] = upanui::Point(-steps[i].x(), steps[i].y());
+        steps[15 - i] = upanui::UIPosition(steps[i].y(), steps[i].x());
+        steps[15 + i] = upanui::UIPosition(steps[15 - i].x(), -steps[15 - i].y());
+        steps[45 - i] = upanui::UIPosition(-steps[15 - i].x(), -steps[15 - i].y());
+        steps[45 + i] = upanui::UIPosition(-steps[15 - i].x(), steps[15 - i].y());
+        steps[30 - i] = upanui::UIPosition(steps[i].x(), -steps[i].y());
+        steps[30 + i] = upanui::UIPosition(-steps[i].x(), -steps[i].y());
+        steps[60 - i] = upanui::UIPosition(-steps[i].x(), steps[i].y());
       }
     }
   }
@@ -1362,10 +1362,10 @@ private:
   const float _htomFactor;
   const int _cx;
   const int _cy;
-  upanui::Point _secondSteps[60];
-  upanui::Point _minuteSteps[60];
-  upanui::Point _hourSteps[60];
-  upanui::Point _labels[60];
+  upanui::UIPosition _secondSteps[60];
+  upanui::UIPosition _minuteSteps[60];
+  upanui::UIPosition _hourSteps[60];
+  upanui::UIPosition _labels[60];
   upanui::Line* _secondHand;
   upanui::Line* _minuteHand;
   upanui::Line* _hourHand;
@@ -1508,6 +1508,7 @@ void graphics_terminal(int x, int y) {
   upanui::GraphicsContext::Init();
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+  uiRoot.setResizable(true, true);
 
   auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight);
   uiMenuBar.backgroundColor(0xA59E9D);

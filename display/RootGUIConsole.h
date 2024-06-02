@@ -153,6 +153,12 @@ private:
     void setChangeState(const ChangeState) override {}
     bool isChangeState(const ChangeState, const bool only) const override { return false; }
 
+    bool isHResizable() const override { return false; }
+    bool isVResizable() const override { return false; }
+    void setResizable(bool, bool) {
+      throw upan::exception(XLOC,"unsupported setResizable() for ConsoleUIObject");
+    }
+
   private:
     RootFrame& _frame;
     upanui::DrawBuffer _drawBuffer;

@@ -92,6 +92,14 @@ public:
     return _parent.pml4Table();
   }
 
+  MouseCursorType mouseCursorType() const override {
+    return _parent.mouseCursorType();
+  }
+
+  void setMouseCursorType(MouseCursorType type) override {
+    _parent.setMouseCursorType(type);
+  }
+
 protected:
   AutonomousProcess& _parent;
 };
