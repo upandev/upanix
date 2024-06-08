@@ -149,15 +149,18 @@ private:
     void removeVerticalScroller() override {}
     upan::option<upanui::VerticalScroller&> getVerticalScroller() override { return upan::option<upanui::VerticalScroller&>::empty(); }
 
-    void notifyChange(const ChangeState) override {}
-    void setChangeState(const ChangeState) override {}
-    bool isChangeState(const ChangeState, const bool only) const override { return false; }
+    void notifyChange(const upanui::ChangeState) override {}
+    void setChangeState(const upanui::ChangeState) override {}
+    bool isChangeState(const upanui::ChangeState, const bool only) const override { return false; }
 
     bool isHResizable() const override { return false; }
     bool isVResizable() const override { return false; }
     void setResizable(bool, bool) {
       throw upan::exception(XLOC,"unsupported setResizable() for ConsoleUIObject");
     }
+
+    bool resize(upanui::ResizeMode, int, int) override { return false; }
+    upanui::HorizontalPlacementType getHorizontalPlacementType() const override { return upanui::HorizontalPlacementType::ABSOLUTE; }
 
   private:
     RootFrame& _frame;
