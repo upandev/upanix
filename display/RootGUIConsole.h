@@ -97,7 +97,7 @@ private:
     void x(const int) override {}
     void y(const int) override {}
     void xy(int, int) override {}
-    void width(int) override {}
+    bool width(int) override { return false; }
     void height(int) override {}
     void backgroundColor(const uint32_t color) override {}
     void backgroundColorAlpha(const uint8_t) override {}
@@ -159,7 +159,7 @@ private:
       throw upan::exception(XLOC,"unsupported setResizable() for ConsoleUIObject");
     }
 
-    bool resize(upanui::ResizeMode, int, int) override { return false; }
+    void resize(upanui::ResizeMode, int, int) override {}
     upanui::HorizontalPlacementType getHorizontalPlacementType() const override { return upanui::HorizontalPlacementType::ABSOLUTE; }
 
   private:
