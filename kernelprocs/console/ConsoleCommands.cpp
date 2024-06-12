@@ -959,7 +959,8 @@ void graphics_photos(int x, int y) {
   uiRoot.registerMouseEventHandler(mouseHandler);
   PassThroughMouseHandler passThroughMouseHandler;
 
-  auto &ic = upanui::UIObjectFactory::createImageCanvas(uiRoot, *images[0], 0, 0, photoCanvasWidth, photoCanvasHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto &ic = upanui::UIObjectFactory::createImageCanvas(uiRoot, *images[0], 0, 0, photoCanvasWidth, photoCanvasHeight,
+                                                        upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   ic.registerMouseEventHandler(passThroughMouseHandler);
 
   SlideShow ss(ic, images);
@@ -978,98 +979,108 @@ void graphics_test_process_canvas(int x, int y) {
   uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
   uiRoot.borderThickness(5);
 
-  auto& cc1 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 120, 10, 120, 120, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cc1 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 120, 10, 120, 120, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cc1.backgroundColor(ColorPalettes::CP256::Get(230));
   cc1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(80));
   cc1.borderColor(ColorPalettes::CP256::Get(177));
   cc1.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc1.borderThickness(10);
 
-  auto& cc2 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 250, 10, 120, 120, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cc2 = upanui::UIObjectFactory::createRoundCanvas(uiRoot, 250, 10, 120, 120, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cc2.backgroundColor(ColorPalettes::CP256::Get(230));
   cc2.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc2.borderColor(ColorPalettes::CP256::Get(177));
   cc2.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
   cc2.borderThickness(10);
 
-  auto& cpt = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, -10, 180, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cpt = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, -10, 180, 100, 100,
+                                                             upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cpt.backgroundColor(ColorPalettes::CP256::Get(30));
   cpt.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& cpt1 = upanui::UIObjectFactory::createRectangleCanvas(cpt, -10, 20, 60, 60, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cpt1 = upanui::UIObjectFactory::createRectangleCanvas(cpt, -10, 20, 60, 60,
+                                                              upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cpt1.backgroundColor(ColorPalettes::CP256::Get(0));
   cpt1.borderColor(ColorPalettes::CP256::Get(255));
   cpt1.borderThickness(2);
   cpt1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
   cpt1.borderColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& cp1c1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 180, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cp1c1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 180, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cp1c1.backgroundColor(ColorPalettes::CP256::Get(0));
   cp1c1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(25));
 
-  auto& cp1c2 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 220, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cp1c2 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 220, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cp1c2.backgroundColor(ColorPalettes::CP256::Get(10));
 
-  auto& cp1c3 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 260, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cp1c3 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 180, 260, 130, 40, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cp1c3.backgroundColor(ColorPalettes::CP256::Get(20));
   cp1c3.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(25));
 
-  auto& cp1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 200, 200, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& cp1 = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 200, 200, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   cp1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(70));
   cp1.backgroundColor(ColorPalettes::CP256::Get(25));
 
-  auto& ci1 = upanui::UIObjectFactory::createButton(cp1, 40, 10, 50, 30, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& ci1 = upanui::UIObjectFactory::createButton(cp1, 40, 10, 50, 30,
+                                                    upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   ci1.backgroundColor(ColorPalettes::CP256::Get(25));
-  auto& ci2 = upanui::UIObjectFactory::createButton(ci1, 10, 2, 30, 6, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& ci2 = upanui::UIObjectFactory::createButton(ci1, 10, 2, 30, 6,
+                                                    upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   ci2.backgroundColor(ColorPalettes::CP256::Get(85));
 
-  auto& c1 = upanui::UIObjectFactory::createButton(cp1, -50, 30, 80, 50, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& c1 = upanui::UIObjectFactory::createButton(cp1, -50, 30, 80, 50,
+                                                   upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   c1.backgroundColor(ColorPalettes::CP256::Get(25));
-  auto& c2 = upanui::UIObjectFactory::createButton(c1, 10, 10, 30, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& c2 = upanui::UIObjectFactory::createButton(c1, 10, 10, 30, 10,
+                                                   upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   c2.backgroundColor(ColorPalettes::CP256::Get(45));
-  auto& c3 = upanui::UIObjectFactory::createButton(c1, 10, 10, 50, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& c3 = upanui::UIObjectFactory::createButton(c1, 10, 10, 50, 10,
+                                                   upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   c3.backgroundColor(ColorPalettes::CP256::Get(65));
-  auto& c4 = upanui::UIObjectFactory::createButton(c1, 60, 20, 20, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& c4 = upanui::UIObjectFactory::createButton(c1, 60, 20, 20, 10,
+                                                   upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   c4.backgroundColor(ColorPalettes::CP256::Get(85));
-  auto& c5 = upanui::UIObjectFactory::createButton(c1, -10, 35, 80, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& c5 = upanui::UIObjectFactory::createButton(c1, -10, 35, 80, 10,
+                                                   upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   c5.backgroundColor(ColorPalettes::CP256::Get(75));
 
   const uint32_t btpColor = ColorPalettes::CP256::Get(10);
 
-  auto& bp1 = upanui::UIObjectFactory::createButton(uiRoot, 10, 50, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& bp1 = upanui::UIObjectFactory::createButton(uiRoot, 10, 50, 100, 100,
+                                                    upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   bp1.backgroundColor(btpColor);
   //bp1.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
   bp1.borderThickness(5);
 
   const uint32_t btColor = ColorPalettes::CP256::Get(25);
-  auto& b1 = upanui::UIObjectFactory::createButton(bp1, 50, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b1 = upanui::UIObjectFactory::createButton(bp1, 50, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b1.backgroundColor(btColor);
 
-  auto& b2 = upanui::UIObjectFactory::createButton(bp1, 0, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b2 = upanui::UIObjectFactory::createButton(bp1, 0, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b2.backgroundColor(btColor);
 
-  auto& b2a = upanui::UIObjectFactory::createButton(bp1, bp1.borderThickness(), 75, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b2a = upanui::UIObjectFactory::createButton(bp1, bp1.borderThickness(), 75, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b2a.backgroundColor(btColor);
 
-  auto& b3 = upanui::UIObjectFactory::createButton(bp1, 50, 0, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b3 = upanui::UIObjectFactory::createButton(bp1, 50, 0, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b3.backgroundColor(btColor);
 
-  auto& b4 = upanui::UIObjectFactory::createButton(bp1, -10, 10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b4 = upanui::UIObjectFactory::createButton(bp1, -10, 10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b4.backgroundColor(btColor);
 
-  auto& b5 = upanui::UIObjectFactory::createButton(bp1, 65, -10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b5 = upanui::UIObjectFactory::createButton(bp1, 65, -10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b5.backgroundColor(btColor);
 
-  auto& b6 = upanui::UIObjectFactory::createButton(bp1, 80, -10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b6 = upanui::UIObjectFactory::createButton(bp1, 80, -10, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b6.backgroundColor(btColor);
 
-  auto& b7 = upanui::UIObjectFactory::createButton(bp1, 80, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b7 = upanui::UIObjectFactory::createButton(bp1, 80, 50, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b7.backgroundColor(btColor);
 
-  auto& b8 = upanui::UIObjectFactory::createButton(bp1, 80, 85, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b8 = upanui::UIObjectFactory::createButton(bp1, 80, 85, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b8.backgroundColor(btColor);
 
-  auto& b9 = upanui::UIObjectFactory::createButton(bp1, 30, 90, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& b9 = upanui::UIObjectFactory::createButton(bp1, 30, 90, 30, 20, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   b9.backgroundColor(btColor);
 
   DragMouseHandler mouseHandler;
@@ -1093,69 +1104,69 @@ void graphics_test_process_line(int x, int y) {
   uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
   uiRoot.borderThickness(5);
 
-  auto& lineh = upanui::UIObjectFactory::createLine(uiRoot, 10, 20, 100, 20, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& lineh = upanui::UIObjectFactory::createLine(uiRoot, 10, 20, 100, 20, 10, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   lineh.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& linev = upanui::UIObjectFactory::createLine(uiRoot, 120, 10, 120, 50, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& linev = upanui::UIObjectFactory::createLine(uiRoot, 120, 10, 120, 50, 10, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   linev.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line2 = upanui::UIObjectFactory::createLine(uiRoot, 345, 10, 365, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line2 = upanui::UIObjectFactory::createLine(uiRoot, 345, 10, 365, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line2.backgroundColor(ColorPalettes::CP256::Get(190));
   line2.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
-  auto& line2a = upanui::UIObjectFactory::createLine(uiRoot, 375, 10, 395, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line2a = upanui::UIObjectFactory::createLine(uiRoot, 375, 10, 395, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line2a.backgroundColor(ColorPalettes::CP256::Get(190));
   line2a.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& line2o = upanui::UIObjectFactory::createLine(uiRoot, 455, 10, 435, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line2o = upanui::UIObjectFactory::createLine(uiRoot, 455, 10, 435, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line2o.backgroundColor(ColorPalettes::CP256::Get(190));
   line2o.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
-  auto& line2oa = upanui::UIObjectFactory::createLine(uiRoot, 485, 10, 465, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line2oa = upanui::UIObjectFactory::createLine(uiRoot, 485, 10, 465, 300, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line2oa.backgroundColor(ColorPalettes::CP256::Get(190));
   line2oa.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& line21 = upanui::UIObjectFactory::createLine(uiRoot, 260, 10, 280, 300, 2, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line21 = upanui::UIObjectFactory::createLine(uiRoot, 260, 10, 280, 300, 2, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line21.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line21o = upanui::UIObjectFactory::createLine(uiRoot, 310, 10, 290, 300, 2, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line21o = upanui::UIObjectFactory::createLine(uiRoot, 310, 10, 290, 300, 2, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line21o.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line22 = upanui::UIObjectFactory::createLine(uiRoot, 200, 10, 220, 300, 1, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line22 = upanui::UIObjectFactory::createLine(uiRoot, 200, 10, 220, 300, 1, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line22.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line22o = upanui::UIObjectFactory::createLine(uiRoot, 250, 10, 230, 300, 1, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line22o = upanui::UIObjectFactory::createLine(uiRoot, 250, 10, 230, 300, 1, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line22o.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line3 = upanui::UIObjectFactory::createLine(uiRoot, 20, 200, 200, 220, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line3 = upanui::UIObjectFactory::createLine(uiRoot, 20, 200, 200, 220, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line3.backgroundColor(ColorPalettes::CP256::Get(190));
   line3.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
-  auto& line3a = upanui::UIObjectFactory::createLine(uiRoot, 20, 230, 200, 250, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line3a = upanui::UIObjectFactory::createLine(uiRoot, 20, 230, 200, 250, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line3a.backgroundColor(ColorPalettes::CP256::Get(190));
   line3a.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& line3o = upanui::UIObjectFactory::createLine(uiRoot, 20, 350, 200, 330, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line3o = upanui::UIObjectFactory::createLine(uiRoot, 20, 350, 200, 330, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line3o.backgroundColor(ColorPalettes::CP256::Get(190));
   line3o.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(100));
 
-  auto& line3oa = upanui::UIObjectFactory::createLine(uiRoot, 20, 380, 200, 360, 25, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line3oa = upanui::UIObjectFactory::createLine(uiRoot, 20, 380, 200, 360, 25, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line3oa.backgroundColor(ColorPalettes::CP256::Get(190));
   line3oa.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
 
-  auto& line31 = upanui::UIObjectFactory::createLine(uiRoot, 20, 50, 200, 70, 1, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line31 = upanui::UIObjectFactory::createLine(uiRoot, 20, 50, 200, 70, 1, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line31.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line31o = upanui::UIObjectFactory::createLine(uiRoot, 20, 100, 200, 80, 1, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line31o = upanui::UIObjectFactory::createLine(uiRoot, 20, 100, 200, 80, 1, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line31o.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line32 = upanui::UIObjectFactory::createLine(uiRoot, 20, 110, 80, 170, 5, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line32 = upanui::UIObjectFactory::createLine(uiRoot, 20, 110, 80, 170, 5, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line32.backgroundColor(ColorPalettes::CP256::Get(190));
 
 //  auto& line32a = upanui::UIObjectFactory::createLine(uiRoot, 20, 110, 200, 130, 2);
 //  line32a.backgroundColor(ColorPalettes::CP256::Get(190));
 
-  auto& line32o = upanui::UIObjectFactory::createLine(uiRoot, 20, 160, 80, 100, 10, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& line32o = upanui::UIObjectFactory::createLine(uiRoot, 20, 160, 80, 100, 10, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   line32o.backgroundColor(ColorPalettes::CP256::Get(190));
 
 //  auto& line32oa = upanui::UIObjectFactory::createLine(uiRoot, 20, 160, 200, 140, 2);
@@ -1178,13 +1189,13 @@ void graphics_test_flag(int x, int y) {
   uiRoot.backgroundColor(ColorPalettes::CP256::Get(15));
   uiRoot.setResizable(true, true);
 
-  auto& orange = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, 450, 100, upanui::HorizontalPlacementType::STRETCHED);
+  auto& orange = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, 450, 100, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
   orange.backgroundColor(0xFF9933);
 
-  auto& white = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 100, 450, 100, upanui::HorizontalPlacementType::STRETCHED);
+  auto& white = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 100, 450, 100, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
   white.backgroundColor(ColorPalettes::CP256::Get(255));
 
-  auto& green = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 200, 450, 100, upanui::HorizontalPlacementType::STRETCHED);
+  auto& green = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 200, 450, 100, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
   green.backgroundColor(0x138808);
 
   int r = 45;
@@ -1223,11 +1234,11 @@ void graphics_test_flag(int x, int y) {
   for(int i = 0; i < 24; ++i) {
     const auto x = cx + spokeX[i];
     const auto y = cy - spokeY[i];
-    auto& line = upanui::UIObjectFactory::createLine(uiRoot, cx, cy, x, y, 1, upanui::HorizontalPlacementType::ABSOLUTE);
+    auto& line = upanui::UIObjectFactory::createLine(uiRoot, cx, cy, x, y, 1, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     line.backgroundColor(ColorPalettes::CP256::Get(4));
   }
 
-  auto& wheel = upanui::UIObjectFactory::createRoundCanvas(uiRoot, cx - r - 1, cy - r - 1, 2 * (r + 1), 2 * (r + 1), upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& wheel = upanui::UIObjectFactory::createRoundCanvas(uiRoot, cx - r - 1, cy - r - 1, 2 * (r + 1), 2 * (r + 1), upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   wheel.borderColor(ColorPalettes::CP256::Get(4));
   wheel.borderThickness(5);
   wheel.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
@@ -1318,21 +1329,21 @@ public:
 private:
   void initLayout() {
     upanui::GraphicsContext::Transaction gcTransaction;
-    _clockCanvas = &upanui::UIObjectFactory::createRoundCanvas(_uiRoot, PADDING, PADDING, _csize, _csize, upanui::HorizontalPlacementType::ABSOLUTE);
+    _clockCanvas = &upanui::UIObjectFactory::createRoundCanvas(_uiRoot, PADDING, PADDING, _csize, _csize, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     _clockCanvas->borderThickness(BORDER_THICKNESS);
     _clockCanvas->backgroundColor(0xFFFEF2);
     _clockCanvas->borderColor(0x5A3828);
 
-    _secondHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _secondSteps[0].x(), _cy - _secondSteps[0].y(), 2, upanui::HorizontalPlacementType::ABSOLUTE);
+    _secondHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _secondSteps[0].x(), _cy - _secondSteps[0].y(), 2, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     _secondHand->backgroundColor(0x41394C);
 
-    _minuteHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _minuteSteps[0].x(), _cy - _minuteSteps[0].y(), 3, upanui::HorizontalPlacementType::ABSOLUTE);
+    _minuteHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _minuteSteps[0].x(), _cy - _minuteSteps[0].y(), 3, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     _minuteHand->backgroundColor(0x524C4C);
 
-    _hourHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _hourSteps[0].x(), _cy - _hourSteps[0].y(), 4, upanui::HorizontalPlacementType::ABSOLUTE);
+    _hourHand = &upanui::UIObjectFactory::createLine(*_clockCanvas, _cx, _cy, _cx + _hourSteps[0].x(), _cy - _hourSteps[0].y(), 4, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     _hourHand->backgroundColor(0x4B4B4C);
 
-    auto& centerCircle = upanui::UIObjectFactory::createRoundCanvas(*_clockCanvas, _cx - 8, _cy - 8, 16, 16, upanui::HorizontalPlacementType::ABSOLUTE);
+    auto& centerCircle = upanui::UIObjectFactory::createRoundCanvas(*_clockCanvas, _cx - 8, _cy - 8, 16, 16, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
     centerCircle.backgroundColor(0xFADDBD);
 
     //VGA font --> 1 character is 8 width, 16 height with font size 16
@@ -1351,7 +1362,7 @@ private:
                                                          labelWidth, labelHeight,
                                                          buf, fgColor,
                                                          upanui::usfn::PreloadedFonts::VGA16,
-                                                         upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize, upanui::HorizontalPlacementType::ABSOLUTE);
+                                                         upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
       label.backgroundColor(0);
       label.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
     }
@@ -1414,30 +1425,30 @@ void graphics_window_app(int x, int y) {
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
 
-  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   uiMenuBar.backgroundColor(0xA59E9D);
 
-  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
   const int scrollBarWidth = 20;
-  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
-  auto& uiMain = upanui::UIObjectFactory::createRectangleCanvas(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight + mainHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& uiMain = upanui::UIObjectFactory::createRectangleCanvas(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight + mainHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   uiMain.backgroundColor(0xEFE8E6);
 
-  auto& child1 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 10, 40, 100, 200, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& child1 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 10, 40, 100, 200, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   child1.backgroundColor(0xFF0000);
 
-  auto& child2 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 50, mainHeight - 30, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& child2 = upanui::UIObjectFactory::createRectangleCanvas(uiMain, 50, mainHeight - 30, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   child2.backgroundColor(0x00FF00);
 
-  auto& child3 = upanui::UIObjectFactory::createRoundCanvas(uiMain, 200, 40, 150, 150, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& child3 = upanui::UIObjectFactory::createRoundCanvas(uiMain, 200, 40, 150, 150, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   child3.backgroundColor(0x0000FF);
 
-  auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& child4 = upanui::UIObjectFactory::createLine(uiMain, 10, 20, 150, 150, 5, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   child4.backgroundColor(0x0FF0FF);
 
-  upanui::UIObjectFactory::createImageCanvas(uiMain, upanui::PngImageResource::TEST, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE);
+  upanui::UIObjectFactory::createImageCanvas(uiMain, upanui::PngImageResource::TEST, 100, 100, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
@@ -1462,15 +1473,15 @@ void graphics_text_editor(int x, int y) {
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
 
-  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
   uiMenuBar.backgroundColor(0xA59E9D);
 
-  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
   const int scrollBarWidth = 20;
-  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::ABSOLUTE);
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
-  upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, upanui::HorizontalPlacementType::ABSOLUTE);
+  upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
@@ -1511,16 +1522,16 @@ void graphics_terminal(int x, int y) {
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
   uiRoot.setResizable(true, true);
 
-  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::STRETCHED);
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::TOP_FIXED);
   uiMenuBar.backgroundColor(0xA59E9D);
 
-  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::RIGHT_FIXED);
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::RIGHT_FIXED, upanui::VerticalPlacementType::TOP_FIXED);
 
   const int scrollBarWidth = 20;
-  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::STRETCHED);
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
 
   TCE tce;
-  tce.setTerminal(&upanui::UIObjectFactory::createTerminal(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, "msh:/", tce, upanui::HorizontalPlacementType::STRETCHED));
+  tce.setTerminal(&upanui::UIObjectFactory::createTerminal(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, "msh:/", tce, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED));
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;

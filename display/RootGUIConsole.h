@@ -97,8 +97,8 @@ private:
     void x(const int) override {}
     void y(const int) override {}
     void xy(int, int) override {}
-    bool width(int) override { return false; }
-    void height(int) override {}
+    int width(int) override { return 0; }
+    int height(int) override {}
     void backgroundColor(const uint32_t color) override {}
     void backgroundColorAlpha(const uint8_t) override {}
     void borderColor(const uint32_t) override {}
@@ -161,6 +161,7 @@ private:
 
     void resize(upanui::ResizeMode, int, int) override {}
     upanui::HorizontalPlacementType getHorizontalPlacementType() const override { return upanui::HorizontalPlacementType::ABSOLUTE; }
+    upanui::VerticalPlacementType getVerticalPlacementType() const override { return upanui::VerticalPlacementType::ABSOLUTE; }
 
   private:
     RootFrame& _frame;
