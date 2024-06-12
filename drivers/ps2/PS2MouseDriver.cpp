@@ -94,7 +94,9 @@ void PS2MouseDriver::HandleEvent() {
           return;
 
         const auto deltaX = static_cast<int8_t>(_packetData[1]);
-        const auto deltaY = static_cast<int8_t>(_packetData[2]);
+        //Mouse driver/event uses left-bottom corner of the screen as origin. However, the UI plotting takes left-top corner as origin.
+        //Therefore, reverse the sign of deltaY
+        const auto deltaY = -static_cast<int8_t>(_packetData[2]);
 
         bool leftPressed = status & 0x1;
         bool rightPressed = status & 0x2;

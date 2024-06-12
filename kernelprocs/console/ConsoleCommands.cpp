@@ -879,7 +879,7 @@ class DragMouseHandler : public upanui::MouseEventHandler {
   void onEvent(upanui::UIObject& uiObject, const upanui::MouseEvent& event) override {
     const upanui::MouseData& data = event.getData();
     if (data.leftButtonState() == upanui::MouseData::HOLD) {
-      uiObject.xy(uiObject.x() + data.deltaX(), uiObject.y() - data.deltaY());
+      uiObject.xy(uiObject.x() + data.deltaX(), uiObject.y() + data.deltaY());
     }
   }
 };
@@ -889,7 +889,7 @@ public:
   void onEvent(upanui::UIObject& uiObject, const upanui::MouseEvent& event) override {
     const upanui::MouseData& data = event.getData();
     if (data.leftButtonState() == upanui::MouseData::HOLD) {
-      uiObject.parent().xy(uiObject.parent().x() + data.deltaX(), uiObject.parent().y() - data.deltaY());
+      uiObject.parent().xy(uiObject.parent().x() + data.deltaX(), uiObject.parent().y() + data.deltaY());
     }
   }
 };
