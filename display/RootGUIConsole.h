@@ -159,7 +159,7 @@ private:
       throw upan::exception(XLOC,"unsupported setResizable() for ConsoleUIObject");
     }
 
-    void resize(upanui::ResizeMode, int, int) override {}
+    void resize(upanui::ResizeMode, int, int, bool) override {}
     upanui::HorizontalPlacementType getHorizontalPlacementType() const override { return upanui::HorizontalPlacementType::ABSOLUTE; }
     upanui::VerticalPlacementType getVerticalPlacementType() const override { return upanui::VerticalPlacementType::ABSOLUTE; }
 
