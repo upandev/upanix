@@ -85,8 +85,12 @@ private:
   private:
     int x() const override { return 0; }
     int y() const override { return 0; }
+
     int width() const override { return _frame.frameBuffer().width(); }
+    int minWidth() const override { return width(); }
     int height() const override { return _frame.frameBuffer().height(); }
+    int minHeight() const override { return height(); }
+
     uint32_t backgroundColor() const override { return 0; }
     uint32_t backgroundColorForDraw() const override { return 0; }
     uint8_t  backgroundColorAlpha() const override { return 100; }
@@ -97,8 +101,10 @@ private:
     void x(const int) override {}
     void y(const int) override {}
     void xy(int, int) override {}
-    int width(int) override { return 0; }
-    int height(int) override {}
+    int resizeWidth(int, bool) override { return 0; }
+    int minWidth(int) override { return 0; }
+    int resizeHeight(int, bool) override { return 0; }
+    int minHeight(int) override { return 0; }
     void backgroundColor(const uint32_t color) override {}
     void backgroundColorAlpha(const uint8_t) override {}
     void borderColor(const uint32_t) override {}
