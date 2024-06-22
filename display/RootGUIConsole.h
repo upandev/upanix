@@ -151,9 +151,9 @@ private:
     int scrollHeight() const override { return height(); }
     void vscroll(int rows, int scrollableHeight) override {}
     void hscroll(int columns) override {}
-    void registerVerticalScroller(upanui::VerticalScroller&) override {}
-    void removeVerticalScroller() override {}
+
     upan::option<upanui::VerticalScroller&> getVerticalScroller() override { return upan::option<upanui::VerticalScroller&>::empty(); }
+    void setVerticalScroller(upanui::VerticalScroller*) override {}
 
     void notifyChange(const upanui::ChangeState) override {}
     void setChangeState(const upanui::ChangeState) override {}
