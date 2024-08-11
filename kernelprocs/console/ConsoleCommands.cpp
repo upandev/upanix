@@ -69,7 +69,8 @@
 #include <SysCall.h>
 #include <StorageDriveManager.h>
 #include <Terminal.h>
-#include <TerminalCommandExecutor.h>
+#include <IconLabel.h>
+#include <IconImageMap.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -904,6 +905,36 @@ public:
   }
 };
 
+void graphics_terminal(int x, int y);
+
+class DesktopMouseHandler : public upanui::MouseEventHandler {
+public:
+  typedef upan::map<upanui::UIObject*, upan::string> IconMap;
+  IconMap& _m;
+
+  explicit DesktopMouseHandler(IconMap& m) : _m(m) {}
+
+  void onEvent(upanui::UIObject& uiObject, const upanui::MouseEvent& event) override {
+    const upanui::MouseData& data = event.getData();
+
+    auto it = _m.find(&uiObject);
+    if (it != _m.end()) {
+      auto il = dynamic_cast<upanui::IconLabel*>(&uiObject);
+      if (data.isDoubleClick()) {
+        il->select(false);
+        if (it->second == "terminal") {
+          upan::vector<uintptr_t> params;
+          params.push_back(100);
+          params.push_back(100);
+          ProcessManager::Instance().CreateKernelProcess(it->second, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, params);
+        }
+      } else if (data.leftButtonState() == upanui::MouseData::PRESSED) {
+        il->select(!il->isSelected());
+      }
+    }
+  }
+};
+
 class SlideShow : public upan::thread {
 public:
   SlideShow(upanui::ImageCanvas& c, const upan::vector<upanui::Image*> images) : _c(c), _images(images) {
@@ -1362,7 +1393,9 @@ private:
                                                          labelWidth, labelHeight,
                                                          buf, fgColor,
                                                          upanui::usfn::PreloadedFonts::VGA16,
-                                                         upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
+                                                         upanui::usfn::FAMILY_MONOSPACE, upanui::usfn::STYLE_REGULAR, labelSize,
+                                                         upanui::Label::HorizontalTextAlignment::LEFT, upanui::Label::VerticalTextAlignment::TOP,
+                                                         upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
       label.backgroundColor(0);
       label.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(0));
     }
@@ -1472,16 +1505,17 @@ void graphics_text_editor(int x, int y) {
   upanui::GraphicsContext::Init();
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+  uiRoot.setResizable(true, true);
 
-  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::TOP_FIXED);
   uiMenuBar.backgroundColor(0xA59E9D);
 
-  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::RIGHT_FIXED, upanui::VerticalPlacementType::TOP_FIXED);
 
   const int scrollBarWidth = 20;
-  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
 
-  upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, upanui::HorizontalPlacementType::ABSOLUTE, upanui::VerticalPlacementType::ABSOLUTE);
+  upanui::UIObjectFactory::createTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
 
   DragMouseHandler mouseHandler;
   PassThroughMouseHandler passThroughMouseHandler;
@@ -1495,7 +1529,7 @@ void graphics_text_editor(int x, int y) {
   exit(0);
 }
 
-class TCE : public upanui::TerminalCommandExecutor {
+class TCE : public upanui::Terminal::CommandExecutor {
 public:
   void setTerminal(upanui::Terminal* terminal) {
     _terminal = terminal;
@@ -1545,6 +1579,96 @@ void graphics_terminal(int x, int y) {
   exit(0);
 }
 
+class Icon {
+public:
+  virtual ~Icon() {}
+  virtual const upan::string& name() const = 0;
+  virtual upanui::Image& image() = 0;
+};
+
+class ShortcutIcon : public Icon {
+public:
+  ShortcutIcon(const upan::string& iconFile) {
+  }
+
+  const upan::string& name() const {
+    return _name;
+  }
+
+  upanui::Image& image() override {
+    return *_image;
+  }
+
+private:
+  upanui::Image* _image;
+  upan::string _name;
+};
+
+void graphics_desktop(int x, int y) {
+  try {
+    const int appWidth = 600;
+    const int mainHeight = 500;
+    const int menuBarHeight = 30;
+    upanui::GraphicsContext::Init();
+    auto& gc = upanui::GraphicsContext::Instance();
+
+    upanui::IconImageMap::Instance();
+
+    auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+
+    auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight,
+                                                                     upanui::HorizontalPlacementType::STRETCHED,
+                                                                     upanui::VerticalPlacementType::TOP_FIXED);
+    uiMenuBar.backgroundColor(0xA59E9D);
+
+    auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE,
+                                                              appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight,
+                                                              upanui::HorizontalPlacementType::RIGHT_FIXED,
+                                                              upanui::VerticalPlacementType::TOP_FIXED);
+
+    const upan::string desktopImageFile("usdb@/desktop/desktop.png");
+    auto& file = FileOperations::Instance().open(desktopImageFile, O_RDONLY).value();
+    auto fileSize = file.getStat().st_size;
+
+    upan::uniq_ptr<uint8_t[]> buffer(new uint8_t[fileSize]);
+    file.read(buffer.get(), fileSize);
+    upanui::PngEncoder decoder;
+    upanui::Image& bgImage = decoder.decode(buffer.get(), fileSize);
+
+    FileOperations::Instance().close(file.id());
+
+    auto& uiMain = upanui::UIObjectFactory::createImageCanvas(uiRoot, bgImage, upanui::ImageComposeType::STRETCH,
+                                                              0, menuBarHeight, appWidth, mainHeight,
+                                                              upanui::HorizontalPlacementType::ABSOLUTE,
+                                                              upanui::VerticalPlacementType::ABSOLUTE);
+
+    upanui::Image& terminalIconImage = upanui::IconImageMap::Instance().find("terminal", 0);
+    auto& icon1 = upanui::UIObjectFactory::createIconLabel(uiMain, terminalIconImage, "Terminal",
+                                                           20, 20, 80, 80,
+                                                           upanui::HorizontalPlacementType::ABSOLUTE,
+                                                           upanui::VerticalPlacementType::ABSOLUTE);
+
+    DesktopMouseHandler::IconMap m;
+    m.insert(DesktopMouseHandler::IconMap::value_type (&icon1, "terminal"));
+    DesktopMouseHandler desktopMouseHandler(m);
+
+    DragMouseHandler mouseHandler;
+    PassThroughMouseHandler passThroughMouseHandler;
+    uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
+
+    uiMain.captureMouseEvents(true);
+    icon1.registerMouseEventHandler(desktopMouseHandler);
+
+    CloseButtonMouseHandler closeButtonMouseHandler;
+    closeBt.registerMouseEventHandler(closeButtonMouseHandler);
+
+    gc.eventManager().startEventLoop();
+  } catch(const upan::exception& e) {
+    e.Print();
+  }
+  exit(0);
+}
+
 int testg_id = 0;
 void ConsoleCommands_TestGraphics() {
   if (CommandLineParser::Instance().GetNoOfParameters() != 3) {
@@ -1591,6 +1715,11 @@ void ConsoleCommands_TestGraphics() {
 
     case 7: {
       ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, params);
+    }
+    break;
+
+    case 8: {
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_desktop, NO_PROCESS_ID, true, params);
     }
     break;
 
