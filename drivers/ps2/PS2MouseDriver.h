@@ -49,6 +49,7 @@ class PS2MouseDriver
 		uint32_t _packetSize;
 		uint8_t _packetData[10];
 		upanui::MouseData _prevMouseData;
+    uint32_t _lastClickTimeInMs;
     upan::queue<upanui::MouseData> _qBuffer;
 
 	friend class KC ;

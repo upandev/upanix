@@ -34,7 +34,7 @@ extern "C" {
   void _mouse_interrupt_handler();
 }
 
-PS2MouseDriver::PS2MouseDriver() : _qBuffer(10240) {
+PS2MouseDriver::PS2MouseDriver() : _lastClickTimeInMs(0), _qBuffer(10240) {
   _dataCounter = 0;
   _packetSize = 3; //TODO: go with default - 3 bytes per mouse movement
 
@@ -101,10 +101,18 @@ void PS2MouseDriver::HandleEvent() {
         bool leftPressed = status & 0x1;
         bool rightPressed = status & 0x2;
         bool middlePressed = status & 0x4;
+
+        bool doubleClick = false;
+        if (!leftPressed && _prevMouseData.leftButtonState() == upanui::MouseData::PRESSED) {
+          const auto clickTimeInMs = btime();
+          doubleClick = _lastClickTimeInMs < clickTimeInMs && (clickTimeInMs - _lastClickTimeInMs) < 500;
+          _lastClickTimeInMs = clickTimeInMs;
+        }
+
         const upanui::MouseData mouseData = _prevMouseData.transition(deltaX, deltaY,
                                                                       leftPressed, rightPressed, middlePressed,
                                                                       KeyboardHandler::Instance().isShift(),
-                                                                      KeyboardHandler::Instance().isCtrl());
+                                                                      KeyboardHandler::Instance().isCtrl(), doubleClick);
 
         if (mouseData == _prevMouseData && !mouseData.anyButtonHeld()) {
           return;
@@ -132,7 +140,7 @@ upanui::MouseData PS2MouseDriver::GetMouseData(const upanui::MouseData& prevMous
                                                   prevMouseData.leftButtonState() == upanui::MouseData::PRESSED || prevMouseData.leftButtonState() == upanui::MouseData::HOLD,
                                                   prevMouseData.middleButtonState() == upanui::MouseData::PRESSED || prevMouseData.middleButtonState() == upanui::MouseData::HOLD,
                                                   prevMouseData.rightButtonState() == upanui::MouseData::PRESSED || prevMouseData.rightButtonState() == upanui::MouseData::HOLD,
-                                                  prevMouseData.isShiftPressed(), prevMouseData.isCtrlPressed());
+                                                  prevMouseData.isShiftPressed(), prevMouseData.isCtrlPressed(), prevMouseData.isDoubleClick());
         if (mouseData.anyButtonHeld()) {
           return mouseData;
         }
