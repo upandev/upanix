@@ -121,6 +121,15 @@ void TestException()
 	catch(...) { printf("\nCaught Rethrown unknown Exception"); }
 }
 
+class TG {
+public:
+  TG() {
+    printf("\n Global TG initialized");
+  }
+};
+
+static const TG x;
+
 void Initialize() {
 	KERNEL_MODE = true ;
 	SPECIAL_TASK = false ;
