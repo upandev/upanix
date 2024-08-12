@@ -1540,9 +1540,6 @@ public:
     _terminal->insertCommandOutput(cmdLine + " -> Executed!");
   }
 
-  void executeInBackground(const upan::string& cmdLine) override {
-  }
-
 private:
   upanui::Terminal* _terminal;
 };
@@ -1637,7 +1634,7 @@ void graphics_desktop(int x, int y) {
 
     FileOperations::Instance().close(file.id());
 
-    auto& uiMain = upanui::UIObjectFactory::createImageCanvas(uiRoot, bgImage, upanui::ImageComposeType::STRETCH,
+    auto& uiMain = upanui::UIObjectFactory::createImageCanvas(uiRoot, bgImage, upanui::ImageComposeType::FIT_IN,
                                                               0, menuBarHeight, appWidth, mainHeight,
                                                               upanui::HorizontalPlacementType::ABSOLUTE,
                                                               upanui::VerticalPlacementType::ABSOLUTE);

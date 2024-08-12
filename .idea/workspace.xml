@@ -30,11 +30,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support for resizable windows">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="desktop double click icon">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel.ld.in" beforeDir="false" afterPath="$PROJECT_DIR$/kernel.ld.in" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -246,7 +245,7 @@
       <workItem from="1718623013619" duration="48598000" />
       <workItem from="1719313287896" duration="4206000" />
       <workItem from="1722741285566" duration="37864000" />
-      <workItem from="1723299427631" duration="13408000" />
+      <workItem from="1723299427631" duration="32362000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -591,7 +590,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="103" />
+    <option name="localTasksCounter" value="105" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -625,8 +624,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="change width, height to int from uint32" />
-    <MESSAGE value="mouse event will also have keyboard shift and control key status" />
     <MESSAGE value="allow a process to wait on a mutex lock without context switch. support for aligned memory allocation for user-space" />
     <MESSAGE value="refactor to get rid of unwanted macros for syscall-&gt;userspace memory conversions" />
     <MESSAGE value="implement wait-queues for use by condition variables" />
@@ -650,7 +647,9 @@
     <MESSAGE value="text terminal test code" />
     <MESSAGE value="support for different mouse cursors for resizing windows. Actual window resize implementation is pending" />
     <MESSAGE value="support for resizable windows" />
-    <option name="LAST_COMMIT_MESSAGE" value="support for resizable windows" />
+    <MESSAGE value="detect mouse double click" />
+    <MESSAGE value="desktop double click icon" />
+    <option name="LAST_COMMIT_MESSAGE" value="desktop double click icon" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
