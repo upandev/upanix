@@ -47,6 +47,7 @@ SECTIONS
   .text BLOCK(4K) : ALIGN(4K)
   {
     *(EXCLUDE_FILE(*UpanixStart_Main.grub) .text)
+    *(.text*)
   }
 
   /* Read-only data. */
