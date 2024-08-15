@@ -24,6 +24,7 @@
 # include <StorageDrive.h>
 # include <try.h>
 # include <FileDescriptor.h>
+# include <StreamBufferDescriptor.h>
 
 byte SysCallFile_IsPresent(uint64_t sysCallId)
 {
@@ -150,6 +151,26 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         }
 			}
 			break ;
+
+    case SYS_CALL_FILE_OPEN_STREAM:
+      // P1 => Mode
+    {
+      uint32_t mode = p1;
+
+      *retVal = 0 ;
+
+      try {
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        auto& ioDescriptor = process.iodTable().allocate([&](int fd) {
+          return new StreamBufferDescriptor(process.processID(), fd, 4096, mode);
+        });
+        *retVal = ioDescriptor.id();
+      } catch(const upan::exception& ex) {
+        ex.Print();
+        *retVal = -1 ;
+      }
+    }
+    break ;
 
 		case SYS_CALL_FILE_CLOSE:
 			// P1 => File Desc

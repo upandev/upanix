@@ -65,11 +65,18 @@ int SysFS_CreateFile(const char* szDirPath, unsigned short usAttribute)
 	return retStatus ;
 }
 
-int SysFS_FileOpen(const char* szFileName, byte bMode)
+int SysFS_FileOpen(const char* szFileName, uint32_t mode)
 {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN, false, (uint64_t) szFileName, (uint64_t) bMode, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN, false, (uint64_t) szFileName, (uint64_t) mode, 3, 4, 5);
 	return retStatus ;
+}
+
+int SysFS_FileOpenStream(uint32_t mode)
+{
+  uint64_t retStatus ;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN_STREAM, false, (uint64_t) mode, 2, 3, 4, 5);
+  return retStatus ;
 }
 
 int SysFS_FileClose(int fd)
