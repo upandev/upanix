@@ -242,6 +242,7 @@ void FileOperations::listDir(const upan::string& filePath, struct stat_ex** file
   for (int i = 0; i < fileStats.size(); ++i) {
     (*fileStatsArray)[i] = fileStats[i];
   }
+  *size = fileStats.size();
 }
 
 bool FileOperations::fileAccess(const upan::string& filePath, uint8_t mode) {
