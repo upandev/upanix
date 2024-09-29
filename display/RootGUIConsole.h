@@ -169,6 +169,9 @@ private:
     upanui::HorizontalPlacementType getHorizontalPlacementType() const override { return upanui::HorizontalPlacementType::ABSOLUTE; }
     upanui::VerticalPlacementType getVerticalPlacementType() const override { return upanui::VerticalPlacementType::ABSOLUTE; }
 
+    bool isVisible() const override { return true; }
+    void setVisible(bool) override {}
+
   private:
     RootFrame& _frame;
     upanui::DrawBuffer _drawBuffer;

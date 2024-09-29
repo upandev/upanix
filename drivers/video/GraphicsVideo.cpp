@@ -24,15 +24,10 @@
 #include <MemManager.h>
 #include <GraphicsVideo.h>
 #include <ProcessManager.h>
-#include <mutex.h>
 #include <DMM.h>
 
-#include <usfncontext.h>
-#include <usfntypes.h>
 #include <Pat.h>
-#include <ColorPalettes.h>
 #include <RootGUIConsole.h>
-#include <GCoreFunctions.h>
 #include <metrics.h>
 #include <PortCom.h>
 
