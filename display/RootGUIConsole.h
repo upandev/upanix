@@ -83,6 +83,12 @@ private:
     void draw() override { _frame.touch(); }
 
   private:
+    upan::string nameId() const override { return "ConsoleUIObject"; }
+    void nameId(const upan::string&) override {}
+
+    int zIndex() const override { return 0; }
+    void zIndex(int) override {}
+
     int x() const override { return 0; }
     int y() const override { return 0; }
 
@@ -170,6 +176,7 @@ private:
     upanui::VerticalPlacementType getVerticalPlacementType() const override { return upanui::VerticalPlacementType::ABSOLUTE; }
 
     bool isVisible() const override { return true; }
+    bool getVisible() const override { return true; }
     void setVisible(bool) override {}
 
   private:

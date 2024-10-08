@@ -30,11 +30,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="some updates">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support visibility for UIObjects">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -245,7 +245,9 @@
       <workItem from="1718623013619" duration="48598000" />
       <workItem from="1719313287896" duration="4206000" />
       <workItem from="1722741285566" duration="37864000" />
-      <workItem from="1723299427631" duration="42079000" />
+      <workItem from="1723299427631" duration="48790000" />
+      <workItem from="1727003684309" duration="29399000" />
+      <workItem from="1728139559647" duration="18751000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -590,7 +592,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="108" />
+    <option name="localTasksCounter" value="111" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -624,9 +626,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="use read-write locks for file read/write operations at file-descriptor level&#10;TODO: further changes and refactoring required in diskDrive and fileSystem to make it thread-safe" />
-    <MESSAGE value="refactor file-system and disk-drive for better thread synchronization" />
-    <MESSAGE value="move disk drive related files under drivers/storage" />
     <MESSAGE value="move disk-drive and file-system related files under storage" />
     <MESSAGE value="refactor disk-drive and file-system file org" />
     <MESSAGE value="refactor to rename disk-drive related files as storage-drive" />
@@ -649,7 +648,10 @@
     <MESSAGE value="put all .text* sections into a single .text section" />
     <MESSAGE value="added some code to test global constructor initialization upon calling _cxx_global_init()" />
     <MESSAGE value="some updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="some updates" />
+    <MESSAGE value="bug fix to set size of file stats array in stats system call response" />
+    <MESSAGE value="support for system call to open a stream descriptor (un-named FIFO stream/queue)" />
+    <MESSAGE value="support visibility for UIObjects" />
+    <option name="LAST_COMMIT_MESSAGE" value="support visibility for UIObjects" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

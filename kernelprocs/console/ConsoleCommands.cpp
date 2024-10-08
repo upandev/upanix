@@ -1546,30 +1546,21 @@ private:
 
 void graphics_terminal(int x, int y) {
   const int appWidth = 600;
-  const int mainHeight = 500;
-  const int menuBarHeight = 30;
+  const int appHeight = 550;
   upanui::GraphicsContext::Init();
   auto& gc = upanui::GraphicsContext::Instance();
-  auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+  auto& uiRoot = gc.initUIRoot(x, y, appWidth, appHeight, true);
   uiRoot.setResizable(true, true);
+  uiRoot.initMenuBar();
 
-  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::TOP_FIXED);
-  uiMenuBar.backgroundColor(0xA59E9D);
-
-  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::RIGHT_FIXED, upanui::VerticalPlacementType::TOP_FIXED);
+  const int menuBarHeight = uiRoot.menuBarHeight();
+  const int mainHeight = appHeight - menuBarHeight;
 
   const int scrollBarWidth = 20;
   auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
 
   TCE tce;
   tce.setTerminal(&upanui::UIObjectFactory::createTerminal(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, "msh:/", tce, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED));
-
-  DragMouseHandler mouseHandler;
-  PassThroughMouseHandler passThroughMouseHandler;
-  uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
-
-  CloseButtonMouseHandler closeButtonMouseHandler;
-  closeBt.registerMouseEventHandler(closeButtonMouseHandler);
 
   gc.eventManager().startEventLoop();
 
