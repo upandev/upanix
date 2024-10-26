@@ -179,6 +179,9 @@ private:
     bool getVisible() const override { return true; }
     void setVisible(bool) override {}
 
+    bool isKeyboardFocusable() const override { return true; }
+    void setKeyboardFocusable(bool) override {}
+
   private:
     RootFrame& _frame;
     upanui::DrawBuffer _drawBuffer;
