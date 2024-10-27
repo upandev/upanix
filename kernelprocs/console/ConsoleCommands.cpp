@@ -71,6 +71,7 @@
 #include <Terminal.h>
 #include <IconLabel.h>
 #include <IconImageMap.h>
+#include <Menu.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -1544,6 +1545,12 @@ private:
   upanui::Terminal* _terminal;
 };
 
+class MenuActionHandler : public upanui::Menu::ActionHandler {
+public:
+  void invoke(int id, const upan::string& name) override {
+  }
+};
+
 void graphics_terminal(int x, int y) {
   const int appWidth = 600;
   const int appHeight = 550;
@@ -1551,7 +1558,21 @@ void graphics_terminal(int x, int y) {
   auto& gc = upanui::GraphicsContext::Instance();
   auto& uiRoot = gc.initUIRoot(x, y, appWidth, appHeight, true);
   uiRoot.setResizable(true, true);
-  uiRoot.initMenuBar();
+
+  MenuActionHandler menuActionHandler;
+  uiRoot.initMenuBar({
+    { "File", {
+      {1, "New", menuActionHandler },
+      {2, "Open", menuActionHandler },
+      {3, "Exit", menuActionHandler }
+    }},
+
+    { "Edit", {
+      {4, "Cut", menuActionHandler },
+      {5, "Copy", menuActionHandler },
+      {6, "Paste", menuActionHandler }
+    }}
+  });
 
   const int menuBarHeight = uiRoot.menuBarHeight();
   const int mainHeight = appHeight - menuBarHeight;
