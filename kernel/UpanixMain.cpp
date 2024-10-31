@@ -47,6 +47,7 @@
 # include <PS2MouseDriver.h>
 # include <metrics.h>
 # include <StorageDriveManager.h>
+# include <logger.h>
 
 /**** Global Variable declaration/definition *****/
 byte KERNEL_MODE ;
@@ -235,4 +236,11 @@ bool UpanixMain_IsKernelDebugOn() {
     return strcmp(szVal, "1") == 0;
   }
 	return false ;
+}
+
+void klog(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::logarg(fmsg, arg);
+  va_end(arg);
 }

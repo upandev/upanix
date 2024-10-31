@@ -242,7 +242,7 @@ class PCIEntry {
 		} CardBus;
 	} BusEntity;
 
-  uint64_t GetIOMapAddress();
+  uint64_t GetIOMapAddress() const;
   void ReadPCIConfig(unsigned uiPCIEntryOffset, unsigned uiPCIEntrySize, void* pValue) const;
   void WritePCIConfig(unsigned uiPCIEntryOffset, unsigned uiPCIEntrySize, unsigned uiValue) const;
   unsigned GetPCIMemSize(int iAddressIndex) const;

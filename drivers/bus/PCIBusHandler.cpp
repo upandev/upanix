@@ -316,7 +316,7 @@ PCIEntry::PCIEntry(unsigned uiBusNo, unsigned uiDeviceNo, unsigned uiFunc, byte 
   }
 }
 
-uint64_t PCIEntry::GetIOMapAddress() {
+uint64_t PCIEntry::GetIOMapAddress() const {
   uint64_t bar0 = BusEntity.NonBridge.uiBaseAddress0;
   uint32_t addrType = (bar0 >> 1 & 0x3);
   printf("\n PCI BaseAddr Type: %d", addrType);

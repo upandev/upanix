@@ -1570,7 +1570,8 @@ void graphics_terminal(int x, int y) {
     { "Edit", {
       {4, "Cut", menuActionHandler },
       {5, "Copy", menuActionHandler },
-      {6, "Paste", menuActionHandler }
+      {6, "Paste", menuActionHandler },
+      {7, "Find", menuActionHandler }
     }}
   });
 

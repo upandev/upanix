@@ -75,44 +75,20 @@ E1000NICDevice::~E1000NICDevice() {
 }
 
 void E1000NICDevice::Initialize() {
-  uint64_t ioAddr = _pciEntry.BusEntity.NonBridge.uiBaseAddress0;
-	printf("\n PCI BaseAddr: %x", ioAddr);
-
-	ioAddr &= PCI_ADDRESS_MEMORY_32_MASK;
-	const unsigned ioSize = _pciEntry.GetPCIMemSize(0);
+  const uint64_t ioAddress = _pciEntry.GetIOMapAddress();
+  const unsigned ioSize = _pciEntry.GetPCIMemSize(0);
   const unsigned availableMemMapSize = NET_E1000_MMIO_BASE_ADDR_END - NET_E1000_MMIO_BASE_ADDR;
 
-	printf(", Raw MMIO BaseAddr: %x, IOSize: %d, AvailableIOSize: %d", ioAddr, ioSize, availableMemMapSize);
+	printf(", Raw MMIO BaseAddr: %lx, IOSize: %d, AvailableIOSize: %d", ioAddress, ioSize, availableMemMapSize);
   
-	if(ioSize > availableMemMapSize)
+	if(ioSize > availableMemMapSize) {
     throw upan::exception(XLOC, "E1000 IO Size is %x > greater than available size %x !", ioSize, availableMemMapSize);
-
-  unsigned pagesToMap = ioSize / PAGE_SIZE;
-  if(ioSize % PAGE_SIZE)
-    ++pagesToMap;
-
-  uint64_t uiPDEAddress = (uint64_t)MEM_PML4_TABLE;
-  uint64_t memMapBaseAddress = NET_E1000_MMIO_BASE_ADDR;
-  printf("\n Total pages to Map: %d", pagesToMap);
-  ReturnCode markPageRetCode = Success;
-  for(unsigned i = 0; i < pagesToMap; ++i)
-  {
-  	unsigned uiPDEIndex = ((memMapBaseAddress >> 22) & 0x3FF) ;
-	  unsigned uiPTEIndex = ((memMapBaseAddress >> 12) & 0x3FF) ;
-    uint64_t uiPTEAddress = (((uint64_t*)(uiPDEAddress))[uiPDEIndex]) & 0xFFFFF000 ;
-    // This page is a Read Only area for user process. 0x5 => 101 => User Domain, Read Only, Present Bit
-    ((uint64_t*)(uiPTEAddress))[uiPTEIndex] = (ioAddr & 0xFFFFF000) | 0x5 ;
-    markPageRetCode = MemManager::Instance().MarkPageAsAllocated(ioAddr / PAGE_SIZE, markPageRetCode);
-    if(markPageRetCode != Success) {
-    }
-
-    memMapBaseAddress += PAGE_SIZE;
-    ioAddr += PAGE_SIZE;
   }
 
-	Mem_FlushTLB();
+  MemManager::Instance().MapAddressSpace(MEM_PML4_TABLE, 0x7, NET_E1000_MMIO_BASE_ADDR, ioAddress, ioSize);
+  Mem_FlushTLB();
 
-  _memIOBase = NET_E1000_MMIO_BASE_ADDR + (ioAddr % PAGE_SIZE);
+  _memIOBase = NET_E1000_MMIO_BASE_ADDR + (ioAddress % PAGE_SIZE);
 
     /* Enable busmaster */
   unsigned short usCommand;
@@ -145,18 +121,20 @@ void E1000NICDevice::NotifyEvent() {
   if (icrVal & ICR_RECEIVE) {
     ProcessRxQueue();
   } else if (icrVal & ICR_LINK_CHANGE) {
-    printf("\n Link status changed");
+    klog("\n Link status changed");
   } else if (icrVal & ICR_TRANSMIT) {
-    printf("\n Packet Transmitted");
+    klog("\n Packet Transmitted");
+  } else if (icrVal & STATUS_LINK_UP) {
+    klog("\n Status link-up");
   } else {
-    printf("\n Int on Other Reason: %x", icrVal);
+    klog("\n Int for other Reason: %x", icrVal);
   }
   IrqManager::Instance().SendEOI(*_irq);
 }
 
 void E1000NICDevice::SendPacket(const uint8_t* data, uint32_t len) {
   regTx->SendPacket(data, len);
-  printf("\n Packet sent with len: %d", len);
+  klog("\n Packet sent with len: %d", len);
 }
 
 void E1000NICDevice::ProcessRxQueue() {

@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
+#pragma once
 
 #define SUCCESS 1
 #define FAILURE 0
@@ -68,5 +67,4 @@ extern byte SPECIAL_TASK ;
 #define MAX( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
 
 bool UpanixMain_IsKernelDebugOn() ;
-
-#endif
+void klog(const char* __restrict fmsg, ...);

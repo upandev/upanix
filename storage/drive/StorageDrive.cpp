@@ -35,6 +35,7 @@
 # include <FileSystem.h>
 # include <try.h>
 # include <drive.h>
+# include <logger.h>
 
 static unsigned uiTotalFloppyDiskReads = 0;
 static unsigned uiTotalATADiskReads = 0;
@@ -114,12 +115,16 @@ void StorageDrive::Mount() {
   }
   fileSystem().mount();
   _mounted = true;
+  if (!upan::logger::is_good()) {
+    upan::logger::create(_driveName + "@" + "/var/log/sys.log");
+  }
 }
 
 void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
+  upan::logger::close();
   fileSystem().unmount();
   _mounted = false;
 }
