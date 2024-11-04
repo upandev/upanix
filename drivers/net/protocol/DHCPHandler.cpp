@@ -40,7 +40,7 @@ void DHCPHandler::Process(const UDP4RecvPacket& packet) {
 void DHCPHandler::ObtainIPAddress() {
   uint8_t clientHardwareAddress[16];
   memset(clientHardwareAddress, 0, 16);
-  memcpy(clientHardwareAddress, GetNetworkDevice().GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
+  memcpy(clientHardwareAddress, GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
 
   DHCPSendPacket dhcpSendPacket(1, 1, NetworkPacket::MAC_ADDR_LEN, 0,
                                 0x3903F326, 0, 0,

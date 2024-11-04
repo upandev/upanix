@@ -78,12 +78,15 @@ private:
       return _macAddress;
     }
     void print() const;
+
   private:
-    uint16_t readEEPROM(const int wordPos);
+    uint16_t readEEPROM(int wordPos);
+    MACAddress fetchMACAddress();
+
   private:
     const uint32_t REG_EEPROM = 0x14;
     volatile uint32_t* const _eeprom;
-    MACAddress _macAddress;
+    const MACAddress _macAddress;
   };
 
   class RegIntControl {

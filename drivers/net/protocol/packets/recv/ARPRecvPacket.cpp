@@ -43,20 +43,20 @@ void ARPRecvPacket::Print() const {
 
   if (_arpIPV4) {
     printf("\n SHA: ");
-    for (uint32_t i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+    for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
       printf("%02x%s", _arpIPV4->_senderHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
     }
     printf(", SPA: ");
-    for (uint32_t i = 0; i < NetworkPacket::IPV4_ADDR_LEN; i++) {
+    for (int i = 0; i < NetworkPacket::IPV4_ADDR_LEN; i++) {
       printf("%d%s", _arpIPV4->_senderProtocolAddress[i], i < NetworkPacket::IPV4_ADDR_LEN - 1 ? "." : "");
     }
 
     printf("\n THA: ");
-    for (uint32_t i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+    for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
       printf("%02x%s", _arpIPV4->_targetHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
     }
     printf(", TPA: ");
-    for (uint32_t i = 0; i < NetworkPacket::IPV4_ADDR_LEN; i++) {
+    for (int i = 0; i < NetworkPacket::IPV4_ADDR_LEN; i++) {
       printf("%d%s", _arpIPV4->_targetProtocolAddress[i], i < NetworkPacket::IPV4_ADDR_LEN - 1 ? "." : "");
     }
   }

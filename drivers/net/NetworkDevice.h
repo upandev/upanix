@@ -23,8 +23,8 @@
 
 #include <ustring.h>
 #include <option.h>
-#include <DHCPHandler.h>
-#include "NetworkUtil.h"
+#include <NetworkUtil.h>
+#include <MACAddress.h>
 
 class PCIEntry;
 class SocketBuffer;

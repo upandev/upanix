@@ -38,5 +38,8 @@ public:
     return static_cast<EtherType>(_arpHeader._pType);
   }
 
+  bool isRequest() const { return _arpHeader._opCode == 1; }
+  bool isResponse() const { return _arpHeader._opCode == 2; }
+
   void Print() const;
 };

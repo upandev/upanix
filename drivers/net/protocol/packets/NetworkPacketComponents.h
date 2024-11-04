@@ -25,8 +25,8 @@
 #include <ustring.h>
 
 namespace NetworkPacket {
-  constexpr uint32_t MAC_ADDR_LEN = 6;
-  constexpr uint32_t IPV4_ADDR_LEN = 4;
+  constexpr int MAC_ADDR_LEN = 6;
+  constexpr int IPV4_ADDR_LEN = 4;
 
   namespace ARP {
     struct Header {

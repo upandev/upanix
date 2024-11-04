@@ -55,46 +55,6 @@ uint32_t NetworkUtil::AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes
   return sum;
 }
 
-MACAddress::MACAddress(const upan::string &macAddr) : _macAddrStr(macAddr) {
-  upan::vector<upan::string> tokens = upan::tokenize(macAddr.c_str(), ':');
-  if (tokens.size() != NetworkPacket::MAC_ADDR_LEN) {
-    throw upan::exception(XLOC, "Invalid MAC Address: %s", macAddr.c_str());
-  }
-  for(int i = 0; i < tokens.size(); ++i) {
-    _macAddr[i] = atoi(tokens[i].c_str());
-  }
-}
-
-MACAddress::MACAddress(const upan::vector<uint8_t>& macAddr) {
-  if (macAddr.size() != NetworkPacket::MAC_ADDR_LEN) {
-    throw upan::exception(XLOC, "Invalid MAC Address Len: %d", macAddr.size());
-  }
-  convert(macAddr);
-}
-
-MACAddress::MACAddress(const uint8_t* macAddr) {
-  convert(macAddr);
-}
-
-MACAddress::MACAddress(const MACAddress& r) {
-  copy(r);
-}
-
-MACAddress& MACAddress::operator=(const MACAddress& r) {
-  copy(r);
-  return *this;
-}
-
-MACAddress& MACAddress::operator=(const MACAddress&& r) {
-  copy(r);
-  return *this;
-}
-
-void MACAddress::copy(const MACAddress& r) {
-  this->_macAddrStr = r._macAddrStr;
-  memcpy(this->_macAddr, r._macAddr, NetworkPacket::MAC_ADDR_LEN);
-}
-
 IPAddress::IPAddress(const upan::string &ipAddr) : _ipAddrStr(ipAddr) {
   upan::vector<upan::string> tokens = upan::tokenize(ipAddr.c_str(), '.');
   if (tokens.size() != NetworkPacket::IPV4_ADDR_LEN) {

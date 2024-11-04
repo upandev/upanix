@@ -155,14 +155,9 @@ constexpr volatile uint32_t* REG(const uint32_t base, const uint32_t offset) {
   return reinterpret_cast<volatile uint32_t*>(base + offset);
 }
 
-E1000NICDevice::RegEEPROM::RegEEPROM(const uint32_t memIOBase) : _eeprom(REG(memIOBase, REG_EEPROM)) {
-  upan::vector<uint8_t> macAddr;
-  for(int i = 0; i < 3; ++i) {
-    uint16_t word = readEEPROM(i);
-    macAddr.push_back(word & 0xFF);
-    macAddr.push_back(word >> 8);
-  }
-  _macAddress = MACAddress(macAddr);
+E1000NICDevice::RegEEPROM::RegEEPROM(const uint32_t memIOBase) :
+  _eeprom(REG(memIOBase, REG_EEPROM)),
+  _macAddress(fetchMACAddress()) {
 }
 
 void E1000NICDevice::RegEEPROM::print() const {
@@ -178,6 +173,16 @@ uint16_t E1000NICDevice::RegEEPROM::readEEPROM(const int wordPos) {
     return val & 0xFFFF;
   }
   throw upan::exception(XLOC, "E1000 NIC EEPROM register is not supported!");
+}
+
+MACAddress E1000NICDevice::RegEEPROM::fetchMACAddress() {
+  upan::vector<uint8_t> macAddr;
+  for(int i = 0; i < 3; ++i) {
+    uint16_t word = readEEPROM(i);
+    macAddr.push_back(word & 0xFF);
+    macAddr.push_back(word >> 8);
+  }
+  return macAddr;
 }
 
 E1000NICDevice::RegIntControl::RegIntControl(const uint32_t memIOBase) :

@@ -72,6 +72,7 @@
 #include <IconLabel.h>
 #include <IconImageMap.h>
 #include <Menu.h>
+#include <DHCPHandler.h>
 
 /**** Command Fucntion Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;

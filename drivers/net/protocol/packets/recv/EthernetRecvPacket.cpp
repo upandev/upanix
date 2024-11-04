@@ -32,11 +32,11 @@ EthernetRecvPacket::EthernetRecvPacket(const RawNetPacket& rawNetPacket) :
 
 void EthernetRecvPacket::Print() const {
   printf("\n ETHERNET PACKET: D ");
-  for(uint32_t  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+  for(int  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
     printf("%02x%s", _header._destinationMAC[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
   }
   printf(", S ");
-  for(uint32_t  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+  for(int  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
     printf("%02x%s", _header._sourceMAC[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
   }
   printf(", Type: %x", _header._type);

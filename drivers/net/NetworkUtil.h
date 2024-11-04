@@ -24,52 +24,16 @@
 
 #include <stdlib.h>
 #include <ustring.h>
-#include <drivers/net/protocol/packets/NetworkPacketComponents.h>
+#include <NetworkPacketComponents.h>
 #include <vector.h>
-
-#define LITTLE_ENDIAN 1
 
 class NetworkUtil {
 public:
-  static uint8_t SwitchEndian(const uint8_t val);
-  static uint16_t SwitchEndian(const uint16_t val);
-  static uint32_t SwitchEndian(const uint32_t val);
+  static uint8_t SwitchEndian(uint8_t val);
+  static uint16_t SwitchEndian(uint16_t val);
+  static uint32_t SwitchEndian(uint32_t val);
   static uint16_t CalculateChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum);
   static uint32_t AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum);
-};
-
-class MACAddress {
-public:
-  MACAddress() {}
-  MACAddress(const upan::string& macAddr);
-  MACAddress(const upan::vector<uint8_t>& macAddr);
-  MACAddress(const uint8_t* macAddr);
-  MACAddress(const MACAddress&);
-  MACAddress& operator=(const MACAddress&);
-
-  MACAddress(const MACAddress&&) = delete;
-  MACAddress& operator=(const MACAddress&&);
-
-  const upan::string str() const {
-    return _macAddrStr;
-  }
-  const uint8_t* get() const {
-    return _macAddr;
-  }
-private:
-  template <typename MACAddr>
-  void convert(const MACAddr& macAddr) {
-    char c[5];
-    for(uint32_t i = 0; i < NetworkPacket::MAC_ADDR_LEN; ++i) {
-      sprintf(c, "%02x%s", macAddr[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
-      _macAddrStr += c;
-      _macAddr[i] = macAddr[i];
-    }
-  }
-  void copy(const MACAddress&);
-
-  upan::string _macAddrStr;
-  uint8_t _macAddr[NetworkPacket::MAC_ADDR_LEN];
 };
 
 class IPAddress {

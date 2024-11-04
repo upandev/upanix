@@ -30,9 +30,23 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="imlemented a simple kernel logger (klog) and started using it in nic handler">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="setup tap kext on macOs and add tap up/down script in qemu start-up to configure tap interface">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkUtil.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/ARPHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/DHCPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/DHCPHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/EthernetHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/PacketHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/PacketHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/ARPRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/ARPRecvPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/ARPRecvPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/ARPRecvPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/EthernetRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/EthernetRecvPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/EthernetRecvPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/packets/recv/EthernetRecvPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,6 +130,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -244,7 +263,7 @@
       <workItem from="1729818407524" duration="36321000" />
       <workItem from="1730386544717" duration="598000" />
       <workItem from="1730445741985" duration="2568000" />
-      <workItem from="1730540237437" duration="3000" />
+      <workItem from="1730540237437" duration="11316000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -589,7 +608,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="115" />
+    <option name="localTasksCounter" value="116" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -623,7 +642,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor RawDiskDriveTypes enum name" />
     <MESSAGE value="use upan::map for fsTableCache" />
     <MESSAGE value="refactoring of file system" />
     <MESSAGE value="started implementing file-tree" />
@@ -648,7 +666,8 @@
     <MESSAGE value="support for menu" />
     <MESSAGE value="pass menu info as param to root" />
     <MESSAGE value="imlemented a simple kernel logger (klog) and started using it in nic handler" />
-    <option name="LAST_COMMIT_MESSAGE" value="imlemented a simple kernel logger (klog) and started using it in nic handler" />
+    <MESSAGE value="setup tap kext on macOs and add tap up/down script in qemu start-up to configure tap interface" />
+    <option name="LAST_COMMIT_MESSAGE" value="setup tap kext on macOs and add tap up/down script in qemu start-up to configure tap interface" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

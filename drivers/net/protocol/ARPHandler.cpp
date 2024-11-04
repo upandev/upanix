@@ -25,7 +25,6 @@
 #include <ARPRecvPacket.h>
 #include <ARPSendPacket.h>
 #include <EthernetHandler.h>
-#include <NetworkDevice.h>
 #include <NetworkUtil.h>
 
 ARPHandler::ARPHandler(EthernetHandler &ethernetHandler)
@@ -33,9 +32,11 @@ ARPHandler::ARPHandler(EthernetHandler &ethernetHandler)
 }
 
 void ARPHandler::Process(const EthernetRecvPacket& packet) {
-  printf("\n Handling ARP packet");
   ARPRecvPacket arpPacket(packet);
-  arpPacket.Print();
+  if (arpPacket.isResponse()) {
+    printf("\n Handling ARP packet");
+    arpPacket.Print();
+  }
 }
 
 void ARPHandler::SendRequestForMAC(const IPAddress& ipAddress) {
@@ -45,7 +46,7 @@ void ARPHandler::SendRequestForMAC(const IPAddress& ipAddress) {
 
   ARPSendPacket arpSendPacket(1, EtherType::IPV4,
                               NetworkPacket::MAC_ADDR_LEN, NetworkPacket::IPV4_ADDR_LEN, 1,
-                              _ethernetHandler.GetNetworkDevice().GetMACAddress().get(),
+                              _ethernetHandler.GetMACAddress().get(),
                               spa, tha, ipAddress.get());
   _ethernetHandler.SendPacket(arpSendPacket.buf(), arpSendPacket.len(), EtherType::ARP, broadcast);
 }
@@ -53,7 +54,7 @@ void ARPHandler::SendRequestForMAC(const IPAddress& ipAddress) {
 void ARPHandler::SendRARP() {
   const uint8_t spa[] = { 255, 255, 255, 255 };
   const uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-  const uint8_t* mac = GetNetworkDevice().GetMACAddress().get();
+  const uint8_t* mac = GetMACAddress().get();
 
   ARPSendPacket arpSendPacket(1, EtherType::IPV4,
                               NetworkPacket::MAC_ADDR_LEN, NetworkPacket::IPV4_ADDR_LEN, 3,

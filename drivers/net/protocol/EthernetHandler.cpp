@@ -41,7 +41,13 @@ void EthernetHandler::Process(const RawNetPacket& packet) {
     throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet.len(), MIN_ETHERNET_PACKET_LEN);
   }
   const EthernetRecvPacket ethernetPacket(packet);
-//  ethernetPacket.Print();
+
+  const MACAddress& destMAC = ethernetPacket.DestinationMAC();
+  if (!destMAC.isBroadcast() && destMAC != GetMACAddress()) {
+    return;
+  }
+
+  //ethernetPacket.Print();
   EtherPacketHandlerMap::const_iterator it = _etherPacketHandlers.find(ethernetPacket.Type());
   if (it == _etherPacketHandlers.end()) {
     //throw upan::exception(XLOC, "Unhandled Ethernet Packet Type: %x", ethernetPacket.Type());
@@ -53,7 +59,7 @@ void EthernetHandler::Process(const RawNetPacket& packet) {
 void EthernetHandler::SendPacket(uint8_t* buf, uint32_t len, EtherType pType, const uint8_t* destMac) {
   auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(buf);
   memcpy(header->_destinationMAC, destMac, NetworkPacket::MAC_ADDR_LEN);
-  memcpy(header->_sourceMAC, GetNetworkDevice().GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
+  memcpy(header->_sourceMAC, GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
   header->_type = NetworkUtil::SwitchEndian((uint16_t)pType);
   GetNetworkDevice().SendPacket(buf, len);
 }

@@ -19,36 +19,42 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
 #pragma once
 
+#include <ustring.h>
+#include <vector.h>
 #include <NetworkPacketComponents.h>
-#include <RawNetPacket.h>
-#include <EtherType.h>
-#include <NetworkUtil.h>
-#include <MACAddress.h>
 
-class EthernetRecvPacket {
-private:
-  const RawNetPacket& _rawNetPacket;
-  NetworkPacket::Ethernet::Header& _header;
-
+class MACAddress {
 public:
-  explicit EthernetRecvPacket(const RawNetPacket& rawNetPacket);
-  void Print() const;
+  MACAddress(const upan::string& macAddr);
+  MACAddress(const upan::vector<uint8_t>& macAddr);
+  MACAddress(const uint8_t* macAddr);
+  MACAddress(const MACAddress&);
+  MACAddress& operator=(const MACAddress&);
 
-  MACAddress DestinationMAC() const {
-    return _header._destinationMAC;
+  bool operator==(const MACAddress&) const;
+  bool operator!=(const MACAddress& r) const {
+    return !this->operator==(r);
   }
 
-  MACAddress SourceMAC() const {
-    return _header._sourceMAC;
-  }
+  bool isBroadcast() const;
+  const upan::string str() const { return _macAddrStr; }
+  const uint8_t* get() const { return _macAddr; }
 
-  EtherType Type() const {
-    return static_cast<EtherType>(_header._type);
+private:
+  template <typename MACAddr>
+  void convert(const MACAddr& macAddr) {
+    char c[5];
+    for(int i = 0; i < NetworkPacket::MAC_ADDR_LEN; ++i) {
+      sprintf(c, "%02x%s", macAddr[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+      _macAddrStr += c;
+      _macAddr[i] = macAddr[i];
+    }
   }
+  void copy(const MACAddress&);
 
-  uint8_t* PacketData() const {
-    return _rawNetPacket.PacketData() + sizeof(NetworkPacket::Ethernet::Header);
-  }
+  upan::string _macAddrStr;
+  uint8_t _macAddr[NetworkPacket::MAC_ADDR_LEN];
 };
