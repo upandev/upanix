@@ -132,9 +132,9 @@ void E1000NICDevice::NotifyEvent() {
   IrqManager::Instance().SendEOI(*_irq);
 }
 
-void E1000NICDevice::SendPacket(const uint8_t* data, uint32_t len) {
-  regTx->SendPacket(data, len);
-  klog("\n Packet sent with len: %d", len);
+void E1000NICDevice::SendPacket(const RawNetPacket& packet) {
+  regTx->SendPacket(packet.buf(), packet.len());
+  klog("\n Packet sent with len: %d", packet.len());
 }
 
 void E1000NICDevice::ProcessRxQueue() {

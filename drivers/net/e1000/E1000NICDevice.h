@@ -47,7 +47,7 @@ public:
 
   void Initialize() override;
   void NotifyEvent() override;
-  void SendPacket(const uint8_t* data, uint32_t len) override;
+  void SendPacket(const RawNetPacket& packet) override;
   EthernetHandler& GetEthernetHandler() override {
     return _ethernetHandler;
   }

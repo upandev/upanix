@@ -20,17 +20,22 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <DMM.h>
+
 #include <RawNetPacket.h>
+#include <string.h>
+#include <newalloc.h>
+#include <DMM.h>
 
 RawNetPacket::RawNetPacket() : _buf(nullptr), _len(0) {
 }
 
-RawNetPacket::RawNetPacket(const uintptr_t addr, const uint32_t len) :
+RawNetPacket::RawNetPacket(const uintptr_t addr, const int len) :
   _buf(new uint8_t[len]), _len(len) {
   memcpy(_buf, (uint8_t*)addr, _len);
+}
+
+RawNetPacket::RawNetPacket(const int len) :
+  _buf(new ((void*)KernelDMM::Instance().allocate(len, 16))uint8_t[len]), _len(len) {
 }
 
 RawNetPacket::~RawNetPacket() {
@@ -40,11 +45,11 @@ RawNetPacket::~RawNetPacket() {
   }
 }
 
-RawNetPacket::RawNetPacket(const RawNetPacket& o) {
+RawNetPacket::RawNetPacket(const RawNetPacket&& o) {
   assign(o);
 }
 
-RawNetPacket& RawNetPacket::operator=(const RawNetPacket& o) {
+RawNetPacket& RawNetPacket::operator=(const RawNetPacket&& o) {
   assign(o);
   return *this;
 }

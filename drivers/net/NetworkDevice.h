@@ -25,6 +25,7 @@
 #include <option.h>
 #include <NetworkUtil.h>
 #include <MACAddress.h>
+#include "RawNetPacket.h"
 
 class PCIEntry;
 class SocketBuffer;
@@ -41,7 +42,7 @@ public:
   
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
-  virtual void SendPacket(const uint8_t* data, uint32_t len) = 0;
+  virtual void SendPacket(const RawNetPacket& packet) = 0;
   virtual EthernetHandler& GetEthernetHandler() = 0;
   virtual upan::option<ARPHandler&> GetARPHandler() = 0;
   virtual upan::option<IPV4Handler&> GetIPV4Handler() = 0;

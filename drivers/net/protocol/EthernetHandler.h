@@ -46,7 +46,7 @@ public:
     return upan::option<T&>(dynamic_cast<T&>(*i->second));
   }
 
-  void SendPacket(uint8_t* buf, uint32_t len, EtherType pType, const uint8_t* destMac);
+  void SendPacket(RawNetPacket& packet, EtherType pType, const uint8_t* destMac);
 
   private:
     typedef upan::map<EtherType, PacketHandler<EthernetRecvPacket>*> EtherPacketHandlerMap;

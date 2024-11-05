@@ -39,5 +39,8 @@ public:
   }
 
 private:
+  RawNetPacket CreatePacket(uint16_t hType, EtherType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
+                            const uint8_t* sha, const uint8_t* spa, const uint8_t* tha, const uint8_t* tpa);
+
   EthernetHandler& _ethernetHandler;
 };

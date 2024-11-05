@@ -49,6 +49,6 @@ public:
   }
 
   uint8_t* PacketData() const {
-    return _rawNetPacket.PacketData() + sizeof(NetworkPacket::Ethernet::Header);
+    return _rawNetPacket.buf() + sizeof(NetworkPacket::Ethernet::Header);
   }
 };

@@ -27,7 +27,6 @@
 #include <IPV4Handler.h>
 #include <EthernetHandler.h>
 #include <EthernetRecvPacket.h>
-#include <ARPSendPacket.h>
 #include <NetworkDevice.h>
 #include <NetworkUtil.h>
 
@@ -56,10 +55,10 @@ void EthernetHandler::Process(const RawNetPacket& packet) {
   }
 }
 
-void EthernetHandler::SendPacket(uint8_t* buf, uint32_t len, EtherType pType, const uint8_t* destMac) {
-  auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(buf);
+void EthernetHandler::SendPacket(RawNetPacket& packet, EtherType pType, const uint8_t* destMac) {
+  auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(packet.buf());
   memcpy(header->_destinationMAC, destMac, NetworkPacket::MAC_ADDR_LEN);
   memcpy(header->_sourceMAC, GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
   header->_type = NetworkUtil::SwitchEndian((uint16_t)pType);
-  GetNetworkDevice().SendPacket(buf, len);
+  GetNetworkDevice().SendPacket(packet);
 }

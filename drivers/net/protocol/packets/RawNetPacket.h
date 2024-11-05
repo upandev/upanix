@@ -21,19 +21,24 @@
  */
 #pragma once
 
+#include <stdlib.h>
+
 class RawNetPacket {
 public:
   RawNetPacket();
-  RawNetPacket(const uintptr_t addr, const uint32_t len);
+  RawNetPacket(uintptr_t addr, int len);
+  RawNetPacket(int len);
   ~RawNetPacket();
-  RawNetPacket(const RawNetPacket& o);
-  RawNetPacket& operator=(const RawNetPacket& o);
+  RawNetPacket(const RawNetPacket& o) = delete;
+  RawNetPacket(const RawNetPacket&& o);
+  RawNetPacket& operator=(const RawNetPacket& o) = delete;
+  RawNetPacket& operator=(const RawNetPacket&& o);
 
-  uint8_t* PacketData() const { return _buf; }
-  uint32_t len() const { return _len; }
+  uint8_t* buf() const { return _buf; }
+  int len() const { return _len; }
 
 private:
   void assign(const RawNetPacket& o);
   uint8_t* _buf;
-  uint32_t _len; 
+  int _len;
 };
