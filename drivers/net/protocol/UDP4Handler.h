@@ -26,7 +26,6 @@
 #include <IPV4RecvPacket.h>
 #include <IPType.h>
 #include <UDP4RecvPacket.h>
-#include <NetworkProtocolType.h>
 #include <option.h>
 
 class IPV4Handler;
@@ -36,15 +35,6 @@ public:
   explicit UDP4Handler(IPV4Handler& ipv4Handler);
   void Process(const IPV4RecvPacket& packet) override;
 
-  template <typename T>
-  upan::option<T&> GetHandler() {
-    auto i = _udpPacketHandlers.find(T::HandlerType());
-    if (i == _udpPacketHandlers.end()) {
-      return upan::option<T&>::empty();
-    }
-    return upan::option<T&>(dynamic_cast<T&>(*i->second));
-  }
-
   void SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort);
 
   static constexpr IPType HandlerType() {
@@ -52,9 +42,5 @@ public:
   }
 
 private:
-  NetProtocolType Type(const UDP4RecvPacket&) const;
-
-  typedef upan::map<NetProtocolType, PacketHandler<UDP4RecvPacket>*> UDPPacketHandlerMap;
-  UDPPacketHandlerMap _udpPacketHandlers;
   IPV4Handler& _ipv4Handler;
 };

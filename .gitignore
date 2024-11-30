@@ -23,3 +23,5 @@ Upanix.cbp
 *.log
 .cmake
 /kernel.ld
+/.idea/misc.xml
+/.idea/codeStyles/codeStyleConfig.xml

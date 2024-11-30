@@ -5,38 +5,26 @@
  *  I am making my contributions/submissions to this project solely in
  *  my personal capacity and am not conveying any rights to any
  *  intellectual property of any third parties.
- *                                                                          
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *                                                                          
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *                                                                          
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
 
-#include <map.h>
-#include <PacketHandler.h>
-#include <UDP4RecvPacket.h>
-#include <NetworkProtocolType.h>
+#include <Socket.h>
 
-class UDP4Handler;
-
-class DHCPHandler : public PacketHandler<UDP4RecvPacket> {
+class DataGramSocket : public Socket {
 public:
-  explicit DHCPHandler(UDP4Handler& udp4Handler);
-  void Process(const UDP4RecvPacket& packet) override;
-  void ObtainIPAddress();
-
-  static constexpr NetProtocolType HandlerType() {
-    return NetProtocolType::DHCP;
-  }
-private:
-  UDP4Handler& _udpHandler;
+  int read(void* buffer, int len) override;
+  int write(const void* buffer, int len) override;
 };

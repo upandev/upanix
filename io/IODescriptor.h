@@ -31,7 +31,7 @@ protected:
   }
 
 public:
-  virtual ~IODescriptor() {}
+  virtual ~IODescriptor() = default;
 
   int id() const {
     return _id;

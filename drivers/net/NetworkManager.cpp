@@ -72,3 +72,11 @@ void NetworkManager::Probe(const PCIEntry& pciEntry)
     e.Print();
   }
 }
+
+uint16_t NetworkManager::allocatePort() {
+  return _portPool.allocate(49152, 65535);
+}
+
+bool NetworkManager::isPortAllocated(uint16_t port) const {
+  return _portPool.test(port);
+}

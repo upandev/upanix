@@ -47,7 +47,6 @@ public:
   virtual upan::option<ARPHandler&> GetARPHandler() = 0;
   virtual upan::option<IPV4Handler&> GetIPV4Handler() = 0;
   virtual upan::option<UDP4Handler&> GetUDP4Handler() = 0;
-  virtual upan::option<DHCPHandler&> GetDHCPHandler() = 0;
   virtual const MACAddress& GetMACAddress() const = 0;
 
   // virtual int Configure() = 0;

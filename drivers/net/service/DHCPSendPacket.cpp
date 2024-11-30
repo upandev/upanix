@@ -21,11 +21,9 @@
  */
 
 #include <DHCPSendPacket.h>
-#include <EtherType.h>
 #include <NetworkPacketComponents.h>
 #include <NetworkUtil.h>
 #include <memory/DMM.h>
-#include <option.h>
 
 uint8_t _hType;
 uint8_t _hLen;

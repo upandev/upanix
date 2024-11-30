@@ -800,7 +800,7 @@ void ConsoleCommands_ObtainIPAddress() {
     return;
   }
   auto& device = d.value();
-  device.GetDHCPHandler().ifPresent([&](DHCPHandler& handler) { handler.ObtainIPAddress(); });
+  //device.GetDHCPHandler().ifPresent([&](DHCPHandler& handler) { handler.ObtainIPAddress(); });
 }
 
 void ConsoleCommands_SetXHCIEventMode()

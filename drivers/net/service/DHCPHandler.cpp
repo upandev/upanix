@@ -19,36 +19,30 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
+#include <stdio.h>
+#include <DHCPHandler.h>
+#include <UDP4Handler.h>
+#include <UDP4RecvPacket.h>
+#include <DHCPRecvPacket.h>
+#include <DHCPSendPacket.h>
 
-#include <map.h>
-#include <PacketHandler.h>
-#include <IPV4RecvPacket.h>
-#include <IPType.h>
-#include <option.h>
+DHCPHandler::DHCPHandler(UDP4Handler &udpHandler) : _udpHandler(udpHandler) {
+}
 
-class EthernetHandler;
+void DHCPHandler::Process(const UDP4RecvPacket& packet) {
+  printf("\n Handling DHCP Packet");
+  DHCPRecvPacket dhcpPacket(packet);
+  dhcpPacket.Print();
+}
 
-class IPV4Handler : public PacketHandler<EthernetRecvPacket> {
-public:
-  explicit IPV4Handler(EthernetHandler& ethernetHandler);
-  void Process(const EthernetRecvPacket& packet) override;
+void DHCPHandler::ObtainIPAddress() {
+  uint8_t clientHardwareAddress[16];
+  memset(clientHardwareAddress, 0, 16);
+  memcpy(clientHardwareAddress, _udpHandler.GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
 
-  template <typename T>
-  upan::option<T&> GetHandler() {
-    auto i = _ipPacketHandlers.find(T::HandlerType());
-    if (i == _ipPacketHandlers.end()) {
-      return upan::option<T&>::empty();
-    }
-    return upan::option<T&>(dynamic_cast<T&>(*i->second));
-  }
-
-  static constexpr EtherType HandlerType() {
-    return EtherType::IPV4;
-  }
-
-private:
-  typedef upan::map<IPType, PacketHandler<IPV4RecvPacket>*> IPPacketHandlerMap;
-  IPPacketHandlerMap _ipPacketHandlers;
-  EthernetHandler& _ethernetHandler;
-};
+  DHCPSendPacket dhcpSendPacket(1, 1, NetworkPacket::MAC_ADDR_LEN, 0,
+                                0x3903F326, 0, 0,
+                                nullptr, nullptr, nullptr, nullptr,
+                                clientHardwareAddress, nullptr, nullptr);
+  _udpHandler.SendPacket(dhcpSendPacket.buf(), dhcpSendPacket.len(), 68, 67);
+}

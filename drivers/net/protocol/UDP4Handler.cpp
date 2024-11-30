@@ -24,31 +24,24 @@
 #include <IPV4Handler.h>
 #include <IPV4RecvPacket.h>
 #include <UDP4RecvPacket.h>
-#include <DHCPHandler.h>
 
 UDP4Handler::UDP4Handler(IPV4Handler &ipv4Handler)
   : PacketHandler<IPV4RecvPacket>(ipv4Handler.GetNetworkDevice()), _ipv4Handler(ipv4Handler) {
-  _udpPacketHandlers.insert(UDPPacketHandlerMap::value_type(NetProtocolType::DHCP, new DHCPHandler(*this)));
 }
 
 void UDP4Handler::Process(const IPV4RecvPacket& packet) {
   printf("\n Handling UDP Packet");
   UDP4RecvPacket udpPacket(packet);
   udpPacket.Print();
-
-  auto it = _udpPacketHandlers.find(Type(udpPacket));
-  if (it != _udpPacketHandlers.end()) {
-    it->second->Process(udpPacket);
-  }
 }
 
 void UDP4Handler::SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort) {
 }
 
-NetProtocolType UDP4Handler::Type(const UDP4RecvPacket& packet) const {
-  const auto& header = packet.Header();
-  if ((header._srcPort == 67 && header._destPort == 68) || (header._srcPort == 68 && header._destPort == 67)) {
-    return NetProtocolType::DHCP;
-  }
-  return NetProtocolType::Unknown;
-}
+//NetProtocolType UDP4Handler::Type(const UDP4RecvPacket& packet) const {
+//  const auto& header = packet.Header();
+//  if ((header._srcPort == 67 && header._destPort == 68) || (header._srcPort == 68 && header._destPort == 67)) {
+//    return NetProtocolType::DHCP;
+//  }
+//  return NetProtocolType::Unknown;
+//}
