@@ -79,6 +79,8 @@ enum CPU_FEATURE
   CF_RDRAND       = CR_ECX|30,
 };
 
+#define MSR_FS_BASE 0xC0000100
+
 class Cpu
 {
   private:

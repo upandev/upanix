@@ -33,6 +33,7 @@
 #include <ProcessGroup.h>
 #include <Process.h>
 #include <InterruptHandlers.h>
+#include <ThreadLocalStorage.h>
 
 class SchedulableProcess : public Process
 {
@@ -143,5 +144,5 @@ protected:
   ProcessGroup* _processGroup;
 
   ProcessIDs _childProcessIDs;
-  uint64_t _threadContextPageNumber;
+  upan::uniq_ptr<ThreadLocalStorage> _tls;
 };

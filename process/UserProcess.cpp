@@ -270,9 +270,6 @@ void UserProcess::DeallocateResources() {
 
   //Threads and main-thread/process share common page-table (CR3)
   //Therefore, the allocated pages of page-table are de-allocated only in the main-thread/process
-  auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), upan::thread_context::SHARED_ADDRESS);
-  auto ptIndex = PT_INDEX(upan::thread_context::SHARED_ADDRESS);
-  ptTable[ptIndex] = 0;
 
   //release the PDP that's mapped to Kernel space
   auto pdpPage = PAGE_TABLE(_pml4Table, 0);

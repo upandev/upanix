@@ -27,6 +27,7 @@
 #include <drive.h>
 #include <UserManager.h>
 #include <MemManager.h>
+#include <ThreadLocalSpace.h>
 
 class KernelRootProcess : public Process {
 private:
@@ -40,6 +41,7 @@ public:
   }
 
   void createScheduleRunner();
+  void initTLS();
 
   bool isKernelProcess() const override {
     return true;
@@ -156,7 +158,10 @@ public:
     return _envMap;
   }
 
+  ThreadLocalSpace& tlsp() { return *_tlsp; }
+
 private:
   IODescriptorTable _iodTable;
   ProcessEnvMap _envMap;
+  upan::uniq_ptr<ThreadLocalSpace> _tlsp;
 };

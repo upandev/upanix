@@ -59,10 +59,6 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
   _processGroup->AddProcess();
   if(isFGProcess)
     _processGroup->PutOnFGProcessList(_processID);
-
-  _threadContextPageNumber = MemManager::Instance().AllocatePhysicalPage();
-  auto tc = (_thread_local_space*)(_threadContextPageNumber * PAGE_SIZE);
-  tc->_pid = _processID;
 }
 
 SchedulableProcess::~SchedulableProcess() {
@@ -100,8 +96,6 @@ void SchedulableProcess::Destroy() {
     });
   }
 
-  MemManager::Instance().DeAllocatePhysicalPage(_threadContextPageNumber);
-
   // Deallocate Resources
   DeallocateResources();
 
@@ -138,13 +132,14 @@ bool SchedulableProcess::CanPreempt() {
 
 void SchedulableProcess::Load(TaskContext& taskContext) {
   _runTick = PIT::Instance().GetClockCount();
+  _tls->switchSpace();
   onLoad();
 
   //switch thread-local space
   //don't deallocate page-table entries for thread-local space for kernel processes as it is shared across all kernel processes
-  auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), upan::thread_context::SHARED_ADDRESS);
-  auto ptIndex = PT_INDEX(upan::thread_context::SHARED_ADDRESS);
-  ptTable[ptIndex] = (_threadContextPageNumber * PAGE_SIZE) | (isKernelProcess() ? 0x3 : 0x7);
+//  auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), upan::thread_context::SHARED_ADDRESS);
+//  auto ptIndex = PT_INDEX(upan::thread_context::SHARED_ADDRESS);
+//  ptTable[ptIndex] = (_threadContextPageNumber * PAGE_SIZE) | (isKernelProcess() ? 0x3 : 0x7);
 
   taskContext = _taskContext;
 }

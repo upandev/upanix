@@ -78,11 +78,6 @@ class MemManager
 			return ((uiSizeInBytes - 1) / PAGE_SIZE) + 1 ;
 		}
 
-		static inline unsigned GetPTESizeInPages(unsigned uiSizeInPages)
-		{
-			return ((uiSizeInPages - 1) / PAGE_TABLE_ENTRIES) + 1 ;
-		}
-
 		static uint64_t GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign);
 
 private:

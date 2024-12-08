@@ -21,8 +21,7 @@
  */
 #pragma once
 
-#define SYS_LINEAR_SELECTOR_DEFINED 0x8
-#define SYS_DATA_SELECTOR_DEFINED 0x18
+#include <mosstd.h>
 
 extern uint16_t SYS_CODE_SELECTOR;
 extern uint16_t SYS_DATA_SELECTOR;
@@ -40,14 +39,8 @@ extern uintptr_t LDT_BASE_ADDR;
 extern uintptr_t IDT_BASE_ADDR;
 extern uintptr_t TSS_BASE_ADDR;
 
-#define GB * 1024UL * 1024 * 1024
-#define MB * 1024 * 1024
-#define KB * 1024
-
 #define PAGE_SIZE 4096u // 4 KB
 #define ENTRIES_PER_PAGE_TABLE 512
-#define PAGE_TABLE_ENTRIES 1024u // 1 KB
-#define PAGE_TABLE_SIZE 4096 // 4 KB
 
 constexpr uint64_t MAX_PROCESS_SPACE_SIZE = 8 MB;
 
@@ -126,6 +119,7 @@ constexpr uint64_t PAGE_MASK = ~PAGE_CONFIG_MASK;
 #define PD_INDEX(ADDR) (((ADDR) >> 21) & PAGE_CONFIG_MASK)
 #define PT_INDEX(ADDR) (((ADDR) >> 12) & PAGE_CONFIG_MASK)
 #define PAGE_INDEX(ADDR) ((ADDR) & 0xFFF)
+#define PAGE_OFFSET(ADDR) ((ADDR) % PAGE_SIZE)
 
 #define PAGE_IS_PRESENT(TABLE, INDEX) ((TABLE)[INDEX] & 0x1)
 #define PAGE_ADDRESS(TABLE, INDEX) ((TABLE)[INDEX] & PAGE_MASK)

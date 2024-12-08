@@ -58,7 +58,7 @@ byte SPECIAL_TASK ;
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
-	KernelRootProcess::Instance().createScheduleRunner();
+  KernelRootProcess::Instance().createScheduleRunner();
 
 	KC::MKernelService().Spawn() ;
 	KC::MKernelService().Spawn() ;
@@ -223,6 +223,7 @@ upan::mutex& UpanixMain_GetDMMMutex()
 
 void UpanixMain() {
 	Initialize();
+  KernelRootProcess::Instance().initTLS();
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
   KERNEL_MODE = false;

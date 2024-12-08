@@ -23,11 +23,14 @@
 #include <KernelThread.h>
 #include <KernelProcess.h>
 #include <MemManager.h>
+#include <KernelRootProcess.h>
 
 KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  _tls.reset(new ThreadLocalStorage(_processID, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
+
   //we know number of params to thread function is only 3 which is less than PROCESS_ARGUMENTS_ON_REGS_X86_64 (6)
   //so, there is no need to use stack for passing any arguments
   //the only (auto)argument on stack is return address

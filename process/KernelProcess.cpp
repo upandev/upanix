@@ -25,8 +25,8 @@
 #include <KernelThread.h>
 #include <GraphicsVideo.h>
 #include <DMM.h>
-#include <InterruptHandlers.h>
 #include <PortCom.h>
+#include <KernelRootProcess.h>
 
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
@@ -34,6 +34,7 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   _processBase = 0;
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
+  _tls.reset(new ThreadLocalStorage(_processID, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
 
   const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
 

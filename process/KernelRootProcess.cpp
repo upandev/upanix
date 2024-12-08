@@ -22,8 +22,11 @@
 
 #include <KernelRootProcess.h>
 #include <GraphicsVideo.h>
-#include <KeyboardHandler.h>
-#include "ProcessManager.h"
+#include <ProcessManager.h>
+#include <Cpu.h>
+
+extern uintptr_t __tdata_start, __tdata_end;
+extern uintptr_t __tbss_start, __tbss_end;
 
 [[noreturn]] void schedule_runner_process() {
   while(true) {
@@ -34,6 +37,18 @@
 void KernelRootProcess::createScheduleRunner() {
   ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+}
+
+void KernelRootProcess::initTLS() {
+  _tlsp.reset(new ThreadLocalSpace());
+  //As per kernel.ld script, the .tbss section comes after .tdata
+  //The thread local modules (sections) are stored before TCB
+  //The initialization of these thread local modules are done backwards
+  //starting at TCB. Therefore, the .tbss is added first to the vector and then .tdata
+  _tlsp->add((uintptr_t)&__tbss_end - (uintptr_t)&__tbss_start, nullptr);
+  _tlsp->add((uintptr_t)&__tdata_end - (uintptr_t)&__tdata_start, (uint8_t*)&__tdata_start);
+
+  Cpu::Instance().MSRwrite(MSR_FS_BASE, THREAD_LOCAL_META_SPACE_ADDRESS);
 }
 
 void KernelRootProcess::initGuiFrame() {

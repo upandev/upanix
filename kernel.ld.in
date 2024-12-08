@@ -75,10 +75,12 @@ SECTIONS
   {
     *(.tm_clone_table)
   }
+
   .jcr BLOCK(4K) : ALIGN(4K)
   {
     *(.jcr)
   }
+
   .got.plt BLOCK(4K) : ALIGN(4K)
   {
     *(.got.plt)
@@ -120,6 +122,23 @@ SECTIONS
     *(.gcc_except_table*)
   }
 
+  .tdata : ALIGN(4)
+  {
+    __tdata_start = .;
+    *(.tdata*)
+    . = ALIGN(4);
+    __tdata_end = .;
+  } : tdata
+
+  .tbss : ALIGN(4)
+  {
+
+    __tbss_start = .;
+    *(.tbss*)
+    . = ALIGN(4);
+    __tbss_end = .;
+  } : tdata
+
   .debug_info BLOCK(4K) : ALIGN(4K) { *(.debug_info*) }
   .debug_abbrev BLOCK(4K) : ALIGN(4K) { *(.debug_abbrev*) }
   .debug_aranges BLOCK(4K) : ALIGN(4K) { *(.debug_aranges*) }
@@ -134,3 +153,8 @@ SECTIONS
   /* The compiler may produce other sections, by default it will put them in
      a segment with the same name. Simply add stuff here as needed. */
 }
+
+PHDRS {
+  tdata PT_LOAD FLAGS(6);
+}
+
