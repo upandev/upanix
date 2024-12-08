@@ -35,7 +35,7 @@ public:
 
 private:
   uintptr_t getPageAddress(uint64_t address);
-  void allocate(int index, uint64_t offset, ThreadLocalSpace::DTV_LIST::element_type& dtv);
+  void allocate(int index, uint64_t offset, const ThreadLocalSpace::dtv_entry& dtv);
   void setPDAddress(uintptr_t value);
 
   static const int MAX_DTV_SIZE = 200;

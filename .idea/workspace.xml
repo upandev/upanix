@@ -33,21 +33,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor packet structure and send packet logic">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel.ld.in" beforeDir="false" afterPath="$PROJECT_DIR$/kernel.ld.in" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -506,7 +500,9 @@
       <workItem from="1733493039487" duration="368000" />
       <workItem from="1733495596377" duration="28922000" />
       <workItem from="1733591031776" duration="3303000" />
-      <workItem from="1733621251568" duration="358000" />
+      <workItem from="1733621251568" duration="1702000" />
+      <workItem from="1733630733419" duration="2231000" />
+      <workItem from="1733654298100" duration="5841000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -851,7 +847,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="118" />
+    <option name="localTasksCounter" value="119" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -885,7 +881,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="started implementing file-tree" />
     <MESSAGE value="filesystem refactoring - introducing directory reference, that reference counts the FileTree::Node resource" />
     <MESSAGE value="refactor fileSystem method names" />
     <MESSAGE value="refactor fileSystem with in memory file-tree" />
@@ -910,7 +905,8 @@
     <MESSAGE value="setup tap kext on macOs and add tap up/down script in qemu start-up to configure tap interface" />
     <MESSAGE value="refactor network protocol code" />
     <MESSAGE value="refactor packet structure and send packet logic" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor packet structure and send packet logic" />
+    <MESSAGE value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
+    <option name="LAST_COMMIT_MESSAGE" value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

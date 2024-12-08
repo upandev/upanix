@@ -26,12 +26,18 @@
 
 class ThreadLocalSpace {
 public:
-  typedef upan::vector<upan::pair<uint64_t, uint8_t*>> DTV_LIST;
-
   ThreadLocalSpace() = default;
   ~ThreadLocalSpace();
 
-  void add(uint64_t len, const uint8_t* initImage);
+  void add(int totalLen, int initLen, const uint8_t* initImage);
+
+  typedef struct {
+    int total_len;
+    int init_len;
+    uint8_t* init_image;
+  } dtv_entry;
+
+  typedef upan::vector<dtv_entry> DTV_LIST;
   const DTV_LIST& getDTV() const { return _dtv; }
 
 private:

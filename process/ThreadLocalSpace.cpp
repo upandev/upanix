@@ -23,15 +23,20 @@
 
 ThreadLocalSpace::~ThreadLocalSpace() {
   for(auto& i : _dtv) {
-    delete i.second;
+    delete i.init_image;
   }
 }
 
-void ThreadLocalSpace::add(uint64_t len, const uint8_t* initImage) {
-  uint8_t* buf = nullptr;
-  if (initImage) {
-    buf = new uint8_t[len];
-    memcpy(buf, initImage, len);
+void ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) {
+  dtv_entry dtvEntry;
+  dtvEntry.total_len = totalLen;
+  dtvEntry.init_len = initLen;
+  dtvEntry.init_image = nullptr;
+
+  if (dtvEntry.init_len) {
+    dtvEntry.init_image = new uint8_t[dtvEntry.init_len];
+    memcpy(dtvEntry.init_image, initImage, dtvEntry.init_len);
   }
-  _dtv.push_back(upan::make_pair(len, buf));
+
+  _dtv.push_back(dtvEntry);
 }

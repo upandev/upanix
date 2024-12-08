@@ -43,10 +43,10 @@ void KernelRootProcess::initTLS() {
   _tlsp.reset(new ThreadLocalSpace());
   //As per kernel.ld script, the .tbss section comes after .tdata
   //The thread local modules (sections) are stored before TCB
-  //The initialization of these thread local modules are done backwards
-  //starting at TCB. Therefore, the .tbss is added first to the vector and then .tdata
-  _tlsp->add((uintptr_t)&__tbss_end - (uintptr_t)&__tbss_start, nullptr);
-  _tlsp->add((uintptr_t)&__tdata_end - (uintptr_t)&__tdata_start, (uint8_t*)&__tdata_start);
+  //The initialization of these thread local modules are done backwards starting at TCB
+  _tlsp->add((uintptr_t)&__tbss_end - (uintptr_t)&__tdata_start,
+             (uintptr_t)&__tdata_end - (uintptr_t)&__tdata_start,
+             (uint8_t*)&__tdata_start);
 
   Cpu::Instance().MSRwrite(MSR_FS_BASE, THREAD_LOCAL_META_SPACE_ADDRESS);
 }

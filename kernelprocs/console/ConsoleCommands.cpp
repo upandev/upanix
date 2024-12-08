@@ -73,8 +73,9 @@
 #include <IconImageMap.h>
 #include <Menu.h>
 #include <DHCPHandler.h>
+#include <KernelRootProcess.h>
 
-/**** Command Fucntion Declarations  *****/
+/**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
 static void ConsoleCommands_ShowDrive() ;
 static void ConsoleCommands_MountDrive() ;
@@ -1894,16 +1895,55 @@ void ConsoleCommands_PrintKPIs() {
   }
 }
 
-void ConsoleCommands_Test() {
-  for(auto& e : get_syscall_stats()) {
-    printf("\n %lu", e.first);
-    int total = 0;
-    for(auto& i : e.second) {
-      printf("\n   %d -> %d", i.first, i.second);
-      total += i.second;
-    }
-    printf("\n   Total -> %d", total);
+static thread_local int _t_local_var_data1 = 100;
+static thread_local uint8_t _t_local_var_data2 = 200;
+static thread_local uint8_t _t_local_var_data3 = 201;
+static thread_local int _t_local_var_global1;
+static thread_local int _t_local_var_global2;
+
+extern thread_local int _lib_data1_thread_local;
+extern thread_local int _lib_global1_thread_local;
+
+class TLSDemo : public upan::thread {
+  void run() override {
+    _t_local_var_data1 += getpid();
+    sleepms(500);
+    _t_local_var_global1 += getpid();
+    sleepms(500);
+    printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
   }
+};
+
+void ConsoleCommands_Test() {
+  printf("\n %d", _t_local_var_data1);
+  printf("\n %d", (int)_t_local_var_data2);
+  printf("\n %d", (int)_t_local_var_data3);
+  printf("\n %d", (int)_t_local_var_global1);
+  printf("\n %d", (int)_t_local_var_global2);
+
+  printf("\n Static Library Thread Local Data -> %d", _lib_data1_thread_local);
+  printf("\n Static Library Thread Local Global -> %d", _lib_global1_thread_local);
+  
+  TLSDemo t1, t2;
+  _t_local_var_global1 = getpid();
+  t1.start();
+  printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+
+  t2.start();
+  printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+
+  waitpid(t1.pid());
+  waitpid(t2.pid());
+
+//  for(auto& e : get_syscall_stats()) {
+//    printf("\n %lu", e.first);
+//    int total = 0;
+//    for(auto& i : e.second) {
+//      printf("\n   %d -> %d", i.first, i.second);
+//      total += i.second;
+//    }
+//    printf("\n   Total -> %d", total);
+//  }
   //MemManager::Instance().DisplayPageAllocationStats();
   //printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }

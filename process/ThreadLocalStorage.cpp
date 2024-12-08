@@ -40,6 +40,9 @@ ThreadLocalStorage::ThreadLocalStorage(int pid, uint64_t* pml4Table,
   _tlPDTable = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
   _tcb = (ThreadControlBlock*)getPageAddress(THREAD_LOCAL_META_SPACE_ADDRESS);
 
+  //when thread locals that are statically compiled and loaded as part of binary are accessed with fs register as the base
+  //fs should be set to THREAD_LOCAL_META_SPACE_ADDRESS and the value at that address i.e. fs:00 should also point to the same
+  //base address (self) relative to which the thread local variable offsets are calculated by the linker
   _tcb->_self = THREAD_LOCAL_META_SPACE_ADDRESS;
   _tcb->_tlms._pid = pid;
   //the size of dtv itself is used as the generation-id
@@ -78,19 +81,19 @@ void ThreadLocalStorage::update() {
 
   uint64_t offset = 0;
   for (int i = 0; i < (int)_tcb->_dtv[0]; ++i) {
-    offset += dtv[i].first;
+    offset += dtv[i].total_len;
   }
 
   printf("\n DTV offset = %x", offset);
 
   for (int i = (int)_tcb->_dtv[0]; i < dtv.size(); ++i) {
-    offset += dtv[i].first;
+    offset += dtv[i].total_len;
     allocate(i, offset, dtv[i]);
   }
   _tcb->_dtv[0] = dtv.size();
 }
 
-void ThreadLocalStorage::allocate(int index, uint64_t offset, ThreadLocalSpace::DTV_LIST::element_type& dtv) {
+void ThreadLocalStorage::allocate(int index, uint64_t offset, const ThreadLocalSpace::dtv_entry& dtv) {
   if (index + 1 == MAX_DTV_SIZE) {
     throw upan::exception(XLOC, "TLS is out-of-memory - count cap reached");
   }
@@ -103,23 +106,37 @@ void ThreadLocalStorage::allocate(int index, uint64_t offset, ThreadLocalSpace::
   _tcb->_dtv[index + 1] = address;
 
   printf("\n Allocating DTV for %d @ %d", index, offset);
-  auto remainingLen = dtv.first;
-  while (remainingLen > 0) {
+  //initialize the tdata section
+  auto remaining_len = dtv.init_len;
+  while (remaining_len > 0) {
     const auto copy_offset = PAGE_OFFSET(address);
 
     auto copy_len = PAGE_SIZE - copy_offset;
-    if (copy_len > remainingLen) copy_len = remainingLen;
+    if (copy_len > remaining_len) copy_len = remaining_len;
 
     const auto copy_address = getPageAddress(address) + copy_offset;
 
-    printf("\n Copying DTV module @ %lx with offset:%d for len: %d (remaining: %d)", copy_address, copy_offset, copy_len, remainingLen);
+    printf("\n init tdata module @ %lx with offset:%d for len: %d (remaining: %d)", copy_address, copy_offset, copy_len, remaining_len);
 
-    if (dtv.second) {
-      memcpy((uint8_t*)copy_address, dtv.second + dtv.first - remainingLen, copy_len);
-    } else {
-      memset((uint8_t*)copy_address, 0, copy_len);
-    }
-    remainingLen -= copy_len;
+    memcpy((uint8_t*)copy_address, dtv.init_image + dtv.init_len - remaining_len, copy_len);
+    remaining_len -= copy_len;
+    address += copy_len;
+  }
+
+  remaining_len = dtv.total_len - dtv.init_len;
+  while (remaining_len > 0) {
+    const auto copy_offset = PAGE_OFFSET(address);
+
+    auto copy_len = PAGE_SIZE - copy_offset;
+    if (copy_len > remaining_len) copy_len = remaining_len;
+
+    const auto copy_address = getPageAddress(address) + copy_offset;
+
+    printf("\n init tbss module @ %lx with offset:%d for len: %d (remaining: %d)", copy_address, copy_offset, copy_len, remaining_len);
+
+    memset((uint8_t*)copy_address, 0, copy_len);
+    remaining_len -= copy_len;
+    address += copy_len;
   }
 }
 
