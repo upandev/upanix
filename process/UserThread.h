@@ -22,11 +22,12 @@
 #pragma once
 
 #include <Thread.h>
-#include <AutonomousProcess.h>
+
+class UserProcess;
 
 class UserThread : public Thread {
 public:
-  UserThread(AutonomousProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
+  UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
 
   bool isKernelProcess() const override {
     return false;

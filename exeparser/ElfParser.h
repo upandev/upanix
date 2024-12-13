@@ -47,6 +47,9 @@ class ElfParser {
 		Elf64_Phdr* _programHeader;
 		int* _sectionTableMap;
 		ElfSymTables* m_pSymbolTable;
+    int _tlsTotalSize;
+    int _tlsInitImageSize;
+    upan::uniq_ptr<uint8_t> _tlsInitImage;
 
 	public:
 		ElfParser(Elf64_Ehdr* pELFHeader, Elf64_Shdr* pELFSectionHeader, char* pSecHeaderStrTable);
@@ -76,6 +79,10 @@ class ElfParser {
 		inline const char* GetSecHeaderStrTable() const { return m_pSecHeaderStrTable; }
 		inline char* GetSecHeaderStrTable() { return m_pSecHeaderStrTable; }
 
+    int GetTLSTotalSize() const { return _tlsTotalSize; }
+    int GetTLSInitImageSize() const { return _tlsInitImageSize; }
+    const uint8_t* GetTLSInitImage() const { return _tlsInitImage.get(); }
+
 	private:
 		void AllocateSymbolTable();
 		void DeAllocateSymbolTable();
@@ -85,6 +92,7 @@ class ElfParser {
     void ReadSectionHeaders();
     void ReadSecHeaderStrTable();
     void ReadSymbolTables();
+    void ReadTLS();
 
     upan::result<Elf64_Off*> GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName);
     upan::result<uint32_t> GetNoOfGOTEntriesBySectionName(const char* szSectionName);

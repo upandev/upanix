@@ -33,7 +33,6 @@
 #include <ElfSymbolTable.h>
 #include <DMM.h>
 #include <GraphicsVideo.h>
-#include <thread_context.h>
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define BSS_SEC_NAME      ".bss"
@@ -68,7 +67,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   if((minMemAddr % PAGE_SIZE) != 0)
     throw upan::exception(XLOC, "process min load address %x is not page aligned", minMemAddr);
 
-  uint64_t processImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 8) ;
+  uint64_t processImageSize = upan::align(maxMemAddr - minMemAddr, 8);
   _processSpaceSize = processImageSize + DynamicLinkLoader::Instance().dllResolverSize();
 
   _processBase = minMemAddr;
@@ -109,6 +108,13 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
   const auto entryAdddress = mELFParser.GetProgramStartAddress();
 
+  _tlsp.reset(new ThreadLocalSpace());
+  if (mELFParser.GetTLSTotalSize()) {
+    _tlsp->add(mELFParser.GetTLSTotalSize(), mELFParser.GetTLSInitImageSize(), mELFParser.GetTLSInitImage());
+  }
+
+  _tls.reset(new ThreadLocalStorage(_processID, _pml4Table, tlsp(), 0x7));
+
   _taskContext.rdi = numOfParams; //argc
   _taskContext.rsi = stackTopAddress; //argv
 
@@ -128,7 +134,7 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
   }
 
   //The stack must be aligned to 16 byte otherwise SSE/SSE2/SSE3 instructions will cause General Protection Fault
-  const uint32_t processEntryStackSize = MemManager::GetCeilAlignedAddress(argvEntriesSize + argumentSize, 16);
+  const uint32_t processEntryStackSize = upan::align(argvEntriesSize + argumentSize, 16);
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {
     throw upan::exception(XLOC, "Startup arguments size is larger than reserved init stack size of %u", PROCESS_INIT_STACK_SIZE);
   }
@@ -181,7 +187,7 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   if(minMemAddr != 0)
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
 
-  const uint32_t uiDLLImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
+  const uint32_t uiDLLImageSize = upan::align(maxMemAddr - minMemAddr, 4) ;
   const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
   const uint32_t uiNoOfPagesForDLL = MemManager::Instance().GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
 

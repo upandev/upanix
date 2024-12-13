@@ -37,7 +37,10 @@ ElfParser::ElfParser(Elf64_Ehdr* pELFHeader, Elf64_Shdr* pELFSectionHeader, char
         m_pSecHeaderStrTable(pSecHeaderStrTable),
         _programHeader(nullptr),
         _sectionTableMap(nullptr),
-        m_pSymbolTable(nullptr) {
+        m_pSymbolTable(nullptr),
+        _tlsTotalSize(0),
+        _tlsInitImageSize(0),
+        _tlsInitImage(nullptr) {
 }
 
 ElfParser::ElfParser(const upan::string& szFileName) :
@@ -48,12 +51,16 @@ ElfParser::ElfParser(const upan::string& szFileName) :
         m_pSecHeaderStrTable(nullptr),
         _programHeader(nullptr),
         _sectionTableMap(nullptr),
-        m_pSymbolTable(nullptr) {
+        m_pSymbolTable(nullptr),
+        _tlsTotalSize(0),
+        _tlsInitImageSize(0),
+        _tlsInitImage(nullptr) {
   ReadHeader();
   ReadProgramHeaders();
   ReadSectionHeaders();
   ReadSecHeaderStrTable();
   ReadSymbolTables();
+  ReadTLS();
 }
 
 ElfParser::~ElfParser() {
@@ -96,7 +103,7 @@ void ElfParser::DeAllocateSymbolTable() {
 void ElfParser::ReadHeader() {
   _header = new Elf64_Ehdr;
   _bufferedReader->Seek(0);
-  const unsigned n = _bufferedReader->Read((char*)_header, sizeof(Elf64_Ehdr));
+  const unsigned n = _bufferedReader->Read((uint8_t*)_header, sizeof(Elf64_Ehdr));
 
 	if(n < sizeof(Elf64_Ehdr))
     throw upan::exception(XLOC, "elf file header size %u is less than Elf64_Ehdr size %u", n, sizeof(Elf64_Ehdr));
@@ -115,7 +122,7 @@ void ElfParser::ReadProgramHeaders() {
 
   _bufferedReader->Seek(_header->e_phoff);
 
-  const unsigned n = _bufferedReader->Read((char*)_programHeader, sizeof(Elf64_Phdr) * _header->e_phnum);
+  const unsigned n = _bufferedReader->Read((uint8_t *)_programHeader, sizeof(Elf64_Phdr) * _header->e_phnum);
 
 	if(n < sizeof(Elf64_Phdr) * _header->e_phnum)
     throw upan::exception(XLOC, "Invalid program header size: %u - expected: %u", n, sizeof(Elf64_Phdr) * _header->e_phnum);
@@ -133,7 +140,7 @@ void ElfParser::ReadSectionHeaders() {
 
   _bufferedReader->Seek(_header->e_shoff);
 
-  const auto n = _bufferedReader->Read((char*)_sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
+  const auto n = _bufferedReader->Read((uint8_t*)_sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
 
 	if(n < sizeof(Elf64_Shdr) * _header->e_shnum)
     upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(Elf64_Shdr) * _header->e_shnum);
@@ -147,7 +154,7 @@ void ElfParser::ReadSecHeaderStrTable() {
 
   _bufferedReader->Seek(uiSecOffset);
 
-  auto n = _bufferedReader->Read((char*)m_pSecHeaderStrTable, uiSecSize);
+  auto n = _bufferedReader->Read((uint8_t*)m_pSecHeaderStrTable, uiSecSize);
 
 	if(n < uiSecSize)
     upan::exception(XLOC, "Invalid elf section header string table size: %u - expected: %u", n, uiSecSize);
@@ -160,7 +167,7 @@ void ElfParser::ReadSymbolTables() {
   for(uint32_t i = 0; i < _header->e_shnum; i++) {
 		if(_sectionHeader[i].sh_type == ElfSectionHeader::SHT_SYMTAB) {
       _bufferedReader->Seek(_sectionHeader[i].sh_offset);
-      const auto n = _bufferedReader->Read((char*)(m_pSymbolTable[uiSymTabIndex].symTabEntries), sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
+      const auto n = _bufferedReader->Read((uint8_t*)(m_pSymbolTable[uiSymTabIndex].symTabEntries), sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
 
 			if(n < sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size)
         throw upan::exception(XLOC, "Invalid elf symbol table size: %u - excpected: %u", n, sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
@@ -169,6 +176,18 @@ void ElfParser::ReadSymbolTables() {
       ++uiSymTabIndex;
 		}
 	}
+}
+
+void ElfParser::ReadTLS() {
+  for(auto i = 0; i < _header->e_phnum; i++) {
+    if(_programHeader[i].p_type == ElfProgramHeader::PT_TLS) {
+      _tlsTotalSize = upan::align(_programHeader[i].p_memsz, _programHeader[i].p_align);
+      _tlsInitImageSize = _programHeader[i].p_filesz;
+      _tlsInitImage.reset(new uint8_t[_tlsInitImageSize]);
+      _bufferedReader->Seek(_programHeader[i].p_offset);
+      _bufferedReader->Read(_tlsInitImage.get(), _tlsInitImageSize);
+    }
+  }
 }
 
 upan::result<uint64_t*> ElfParser::GetAddressBySectionName(byte* bProcessImage, unsigned uiMinMemAddr, const char* szSectionName) {
@@ -257,7 +276,7 @@ void ElfParser::CopyProcessImage(byte* processImage, uint64_t processBase, uint6
 			if(offset >= maxImageSize)
         throw upan::exception(XLOC, "process load virtual address %x is larger than max image size %x", offset, maxImageSize);
 
-      const uint32_t n = _bufferedReader->Read((char*)processImage + offset, _programHeader[i].p_filesz);
+      const uint32_t n = _bufferedReader->Read((uint8_t*)processImage + offset, _programHeader[i].p_filesz);
 
 			if(n < _programHeader[i].p_filesz)
         throw upan::exception(XLOC, "Invalid elf file size: %u - expected: %u", n, _programHeader[i].p_filesz);

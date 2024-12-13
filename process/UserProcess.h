@@ -69,6 +69,7 @@ public:
   }
   void initGuiFrame() override;
   void allocateGUIFramebuffer();
+  ThreadLocalSpace& tlsp() { return *_tlsp; }
 
 private:
   void Load(int numOfParams, char** argvList);
@@ -93,4 +94,5 @@ private:
   ProcessDLLInfo::ELFInfo _elfInfo;
   UserDMM _dmm;
   uint64_t* _pml4Table;
+  upan::uniq_ptr<ThreadLocalSpace> _tlsp;
 };

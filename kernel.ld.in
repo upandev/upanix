@@ -122,20 +122,20 @@ SECTIONS
     *(.gcc_except_table*)
   }
 
-  .tdata : ALIGN(4)
+  .tdata : ALIGN(8)
   {
     __tdata_start = .;
     *(.tdata*)
-    . = ALIGN(4);
+    . = ALIGN(8);
     __tdata_end = .;
   } : tdata
 
-  .tbss : ALIGN(4)
+  .tbss : ALIGN(8)
   {
 
     __tbss_start = .;
     *(.tbss*)
-    . = ALIGN(4);
+    . = ALIGN(8);
     __tbss_end = .;
   } : tdata
 

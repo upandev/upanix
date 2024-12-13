@@ -77,7 +77,7 @@ static byte* DynamicLinkLoader_LoadDLLFileIntoMemory(const ElfParser& elfParser)
 	if(minMemAddr != 0)
     throw upan::exception(XLOC, "Not a PIC");
 
-	uint64_t memImageSize = MemManager::GetCeilAlignedAddress(maxMemAddr - minMemAddr, 4) ;
+	uint64_t memImageSize = upan::align(maxMemAddr - minMemAddr, 4);
 
   upan::uniq_ptr<byte[]> dllImage(new byte[memImageSize]);
 

@@ -43,6 +43,7 @@ namespace ElfProgramHeader {
 	static const unsigned PT_NOTE = 4;
 	static const unsigned PT_SHLIB = 5;
 	static const unsigned PT_PHDR = 6;
+  static const unsigned PT_TLS = 7;
 	static const unsigned PT_LOPROC = 0x70000000;
 	static const unsigned PT_HIPROC = 0x7fffffff ;
 

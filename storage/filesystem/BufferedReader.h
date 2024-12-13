@@ -37,9 +37,9 @@ class BufferedReader
 		~BufferedReader() ;
 
     void Seek(unsigned uiOffSet) ;
-    int Read(char* szBuffer, int iLen) ;
+    int Read(uint8_t* szBuffer, int iLen) ;
 
   private:
     IODescriptor* _file;
-    int DoRead(char* szBuffer, int iLen);
+    int DoRead(uint8_t* szBuffer, int iLen);
 };

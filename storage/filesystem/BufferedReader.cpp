@@ -57,12 +57,12 @@ void BufferedReader::Seek(unsigned uiOffSet) {
   _file->seek(SEEK_SET, uiOffSet);
 }
 
-int BufferedReader::Read(char* szBuffer, int iLen)
+int BufferedReader::Read(uint8_t* szBuffer, int iLen)
 {
   return DoRead(szBuffer, iLen);
 }
 
-int BufferedReader::DoRead(char* szBuffer, int iLen)
+int BufferedReader::DoRead(uint8_t* szBuffer, int iLen)
 {
   unsigned uiCurrentOffset = _file->getOffset();
 
