@@ -37,9 +37,7 @@
 #include <file_util.h>
 
 using namespace ElfSectionHeader;
-//using namespace ElfHeader ;
-//using namespace ElfRelocSection ;
-//using namespace ElfSymbolTable ;
+using namespace ElfSymbolTable;
 using namespace ElfDynamicSection;
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
@@ -111,19 +109,19 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     memset(bss, 0, bssSectionHeader->sh_size);
   });
 
-  CopyElfImage(bProcessImage.get(), _processSpaceSize, _processBase);
-
-  const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
-  const auto entryAdddress = mELFParser.GetProgramStartAddress();
-
   _tlsp.reset(new ThreadLocalSpace());
   if (mELFParser.GetTLSTotalSize()) {
     _tlsp->add(mELFParser.GetTLSTotalSize(), mELFParser.GetTLSInitImageSize(), mELFParser.GetTLSInitImage());
   }
 
+  LoadDLLs(mELFParser, bProcessImage.get());
+
   _tls.reset(new ThreadLocalStorage(_processID, _pml4Table, tlsp(), 0x7));
 
-  LoadDLLs(mELFParser, bProcessImage.get());
+  CopyElfImage(bProcessImage.get(), _processSpaceSize, _processBase);
+
+  const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
+  const auto entryAdddress = mELFParser.GetProgramStartAddress();
 
   _taskContext.rdi = numOfParams; //argc
   _taskContext.rsi = stackTopAddress; //argv
@@ -189,23 +187,45 @@ void UserProcess::CopyElfImage(const uint8_t* processImage, int imageSize, uint6
   }
 }
 
-void UserProcess::LoadDLLs(ElfParser& elfParser, uint8_t* processImage) {
-  const auto dynSectionHeader = elfParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
+void UserProcess::LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage) {
+  const auto dynSectionHeader = exeElfParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
   const auto noOfEntries = dynSectionHeader->sh_size / dynSectionHeader->sh_entsize;
   const auto dynSection = (Elf64_Dyn*)(processImage + dynSectionHeader->sh_addr - _processBase) ;
-  const auto dynSymStrSectionHeader = elfParser.GetSectionHeaderByIndex(dynSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  const auto dynSymStrSectionHeader = exeElfParser.GetSectionHeaderByIndex(dynSectionHeader->sh_link).goodValueOrThrow(XLOC);
   const auto dynSymStrTable = (const char*)(processImage + dynSymStrSectionHeader->sh_addr - _processBase) ;
+
+  ELF_RELA_SYM_MAP relSymMap;
+  exeElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
+    const auto dynSymSecHeader = exeElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
+
+    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) processImage + relSecHeader->sh_addr - _processBase);
+    const auto noOfDelRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+
+    auto dynRelSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) processImage + dynSymSecHeader->sh_addr - _processBase);
+
+    for (uint32_t i = 0; i < noOfDelRelEntries; i++) {
+      const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
+
+      if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
+        //TODO
+      } else if (uiRelType == ElfRelocSection::R_X86_64_TPOFF64) {
+        auto rel_offset = (uint64_t*)((uint64_t)processImage + dynRelTable[i].r_offset - _processBase);
+        const char* symName = (char*)&dynSymStrTable[dynRelSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+        *rel_offset = dynRelTable[i].r_addend;
+        relSymMap.insert(ELF_RELA_SYM_MAP::value_type(symName, rel_offset));
+      }
+    }
+  });
 
   for(uint32_t i = 0; i < noOfEntries; ++i) {
     if (dynSection[i].d_tag == DT_NEEDED) {
       const auto dllName = (char*)&dynSymStrTable[ dynSection[i].d_un.d_val ];
-      printf("\n loading dll: %s", dllName);
-      LoadELFDLL(dllName);
+      LoadELFDLL(dllName, relSymMap);
     }
   }
 }
 
-void UserProcess::LoadELFDLL(const upan::string& dllName) {
+void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relSymMap) {
   if(!getDLLInfo(dllName).isEmpty()) {
     return;
   }
@@ -219,15 +239,17 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
 
   uint64_t minMemAddr, maxMemAddr ;
   mELFParser.GetMemImageSize(minMemAddr, maxMemAddr) ;
-  if(minMemAddr != 0)
+  if(minMemAddr != 0) {
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
+  }
 
   const uint32_t uiDLLImageSize = upan::align(maxMemAddr - minMemAddr, 4) ;
   const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
   const uint32_t uiNoOfPagesForDLL = MemManager::Instance().GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
 
-  if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE)
+  if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE) {
     throw upan::exception(XLOC, "DLL mem size %lu exceeds max limit per dll", uiMemImageSize, MAX_PROCESS_SPACE_SIZE);
+  }
 
   MapDLLPagesToProcess(uiNoOfPagesForDLL, dllName);
 
@@ -257,23 +279,44 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
     });
   });
 
+  uint64_t tls_offset = 0;
+  if (mELFParser.GetTLSTotalSize()) {
+    tls_offset = _tlsp->add(mELFParser.GetTLSTotalSize(), mELFParser.GetTLSInitImageSize(), mELFParser.GetTLSInitImage());
+  }
+
+  const auto dynSymSecHeader = mELFParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
+  const auto noOfEntries = dynSymSecHeader->sh_size / dynSymSecHeader->sh_entsize;
+  const auto dynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + dynSymSecHeader->sh_addr);
+  const auto dynSymStrSectionHeader = mELFParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
+  const auto dynSymStrTable = (const char*)((uint64_t)bDLLImage.get() + dynSymStrSectionHeader->sh_addr) ;
+
+  for(uint32_t i = 0; i < noOfEntries; ++i) {
+    const auto& dynSym = dynSymTable[i];
+    if (ELF64_ST_TYPE(dynSym.st_info) == STT_TLS) {
+      const char* symName = (char*)&dynSymStrTable[dynSym.st_name];
+      auto it = relSymMap.find(symName);
+      if (it != relSymMap.end()) {
+        //r_addend is already added while populating relSymMap
+        *(it->second) = dynSym.st_value - tls_offset;
+      }
+    }
+  }
+
 /* Dynamic Relocation Entries are resolved here in Global Offset Table */
-  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* pRelocationSectionHeader) {
-    Elf64_Shdr *pDynamicSymSectiomHeader = mELFParser.GetSectionHeaderByIndex(pRelocationSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
+    const auto dynSymSecHeader = mELFParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
+    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) bDLLImage.get() + relSecHeader->sh_addr);
+    const auto noOfDynRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+    const auto dynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + dynSymSecHeader->sh_addr);
 
-    auto pELFDynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) bDLLImage.get() + pRelocationSectionHeader->sh_addr);
-    unsigned uiNoOfDynRelEntries = pRelocationSectionHeader->sh_size / pRelocationSectionHeader->sh_entsize;
-
-    auto pELFDynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + pDynamicSymSectiomHeader->sh_addr);
-
-    for (uint32_t i = 0; i < uiNoOfDynRelEntries; i++) {
-      const auto uiRelType = ELF64_R_TYPE(pELFDynRelTable[i].r_info);
+    for (uint32_t i = 0; i < noOfDynRelEntries; i++) {
+      const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
 
       if (uiRelType == ElfRelocSection::R_X86_64_RELATIVE) {
-        ((uint64_t*)((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] += uiDLLLoadAddress;
+        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] += uiDLLLoadAddress;
       } else if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
-        ((uint64_t*)((uint64_t) bDLLImage.get() + pELFDynRelTable[i].r_offset))[0] =
-                pELFDynSymTable[ELF64_R_SYM(pELFDynRelTable[i].r_info)].st_value + uiDLLLoadAddress + pELFDynRelTable[i].r_addend;
+        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] =
+                dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_value + uiDLLLoadAddress + dynRelTable[i].r_addend;
       }
     }
   });

@@ -73,9 +73,11 @@ public:
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
 private:
+  typedef upan::map<upan::string, uint64_t*> ELF_RELA_SYM_MAP;
+
   void Load(int numOfParams, char** argvList);
-  void LoadDLLs(ElfParser&, uint8_t* processImage);
-  void LoadELFDLL(const upan::string& dllName);
+  void LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage);
+  void LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relSymMap);
   void AllocateAddressSpace();
   void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
   uint64_t PushProgramInitStackData(int numOfParams, char **argvList);

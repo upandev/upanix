@@ -27,7 +27,7 @@ ThreadLocalSpace::~ThreadLocalSpace() {
   }
 }
 
-void ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) {
+uint64_t ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) {
   dtv_entry dtvEntry;
   dtvEntry.total_len = totalLen;
   dtvEntry.init_len = initLen;
@@ -39,4 +39,11 @@ void ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) 
   }
 
   _dtv.push_back(dtvEntry);
+
+  uint64_t offset = 0;
+  for (const auto& dtv : _dtv) {
+    offset += dtv.total_len;
+  }
+
+  return offset;
 }

@@ -49,17 +49,5 @@ namespace ElfRelocSection {
 	static const unsigned R_X86_64_JMP_SLOT = 7;
 	static const unsigned R_X86_64_RELATIVE = 8;
 	static const unsigned R_X86_64_GOTPCREL = 9;
-
-	static const char RelocationType[11][40] = {
-		"R_X86_64_NONE",
-		"R_X86_64_32",
-		"R_X86_64_PC32",
-		"R_X86_64_GOT32 ",
-		"R_X86_64_PLT32",
-		"R_X86_64_COPY",
-		"R_X86_64_GLOB_DAT",
-		"R_X86_64_JMP_SLOT",
-		"R_X86_64_RELATIVE",
-		"R_X86_64_GOTPCREL"
-	};
+  static const unsigned R_X86_64_TPOFF64 = 18;
 };

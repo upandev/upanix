@@ -142,8 +142,9 @@ void ElfParser::ReadSectionHeaders() {
 
   const auto n = _bufferedReader->Read((uint8_t*)_sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
 
-	if(n < sizeof(Elf64_Shdr) * _header->e_shnum)
+  if (n < sizeof(Elf64_Shdr) * _header->e_shnum) {
     upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(Elf64_Shdr) * _header->e_shnum);
+  }
 }
 
 void ElfParser::ReadSecHeaderStrTable() {

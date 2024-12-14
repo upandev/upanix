@@ -55,6 +55,7 @@ namespace ElfSymbolTable {
 	static const unsigned STT_FUNC = 2;
 	static const unsigned STT_SECTION = 3;
 	static const unsigned STT_FILE = 4;
+  static const unsigned STT_TLS = 6;
 	static const unsigned STT_LOPROC = 13;
 	static const unsigned STT_HIPROC = 15;
 

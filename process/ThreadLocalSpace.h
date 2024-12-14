@@ -29,7 +29,7 @@ public:
   ThreadLocalSpace() = default;
   ~ThreadLocalSpace();
 
-  void add(int totalLen, int initLen, const uint8_t* initImage);
+  uint64_t add(int totalLen, int initLen, const uint8_t* initImage);
 
   typedef struct {
     int total_len;
