@@ -35,10 +35,6 @@ public:
 
   void onLoad() override;
 
-  void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override {
-    _parent.LoadELFDLL(szDLLName, szJustDLLName);
-  }
-
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override {
     return _parent.MapDLLPagesToProcess(noOfPagesForDLL, dllName);
   }

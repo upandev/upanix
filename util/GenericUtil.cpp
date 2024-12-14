@@ -26,49 +26,6 @@
 # include <DMM.h>
 #include <ProcessManager.h>
 
-class StrPathTokenizer : public StringTokenizer
-{
-	public:
-		StrPathTokenizer(const char* szFileName, char* szFullFilePath) : 
-			m_szFileName(szFileName), 
-			m_szFullFilePath(szFullFilePath), 
-			m_bFound(false) 
-	{}
-	
-	void operator()(int index, const char* src, int len)
-	{
-		if(!m_bFound)
-		{
-			byte szTemp[128] ;
-
-      memcpy(szTemp, src, len);
-			szTemp[len] = '\0' ;
-			
-			if(szTemp[len - 1] != '/')
-				strcat((char*)szTemp, "/") ;
-			
-			strcat((char*)szTemp, m_szFileName) ;
-
-      if(FileOperations::Instance().fileExists((const char*) szTemp)) {
-				m_bFound = true ;
-
-        memcpy(m_szFullFilePath, src, len);
-				m_szFullFilePath[len] = '\0' ;
-				
-				if(m_szFullFilePath[len - 1] != '/')
-					strcat(m_szFullFilePath, "/") ;
-			}
-		}
-	}
-
-	bool IsFound() { return m_bFound ; }
-
-	private:
-	const char* m_szFileName ;
-	char* m_szFullFilePath ;
-	bool m_bFound ;
-} ;
-
 void GenericUtil_ReadInput(char* szInputBuffer, const int iMaxReadLength, byte bEcho)
 {
 	int iCurrentReadPos = 0 ;
@@ -132,37 +89,6 @@ void GenericUtil_ReadInput(char* szInputBuffer, const int iMaxReadLength, byte b
 				}
 		}
 	}
-}
-
-bool GenericUtil_GetFullFilePathFromEnv(const char* szPathEnvVar, const char* szPathEnvDefVal, const char* szFileName, char* szFullFilePath)
-{
-  auto& pas = ProcessManager::Instance().GetCurrentPAS();
-  char szEnvValue[MAX_ENV_VAL_LEN] ;
-  const auto& val = pas.getEnv(szPathEnvVar);
-	if(val.isEmpty())
-	{
-		//Default Env Path
-		strcpy(szEnvValue, szPathEnvDefVal) ;
-	}
-	else
-	{
-		//Deafult Env Path
-		strcpy(szEnvValue, val.value().c_str()) ;
-		strcat(szEnvValue, szPathEnvDefVal) ;
-	}
-
-	// If no path env, then its from root "/"
-	if(strlen(szEnvValue) == 0)
-	{
-		strcpy(szFullFilePath, "/") ;
-		return true ;
-	}
-
-	int iListSize ;
-	StrPathTokenizer tokenizer(szFileName, szFullFilePath) ;
-	String_Tokenize(szEnvValue, ':', &iListSize, tokenizer) ;
-
-  return tokenizer.IsFound() ;
 }
 
 void debug_step(const char* msg)

@@ -21,7 +21,6 @@
  */
 
 #include <NetworkUtil.h>
-#include <stringalgo.h>
 
 uint8_t NetworkUtil::SwitchEndian(const uint8_t val) {
   return (val >> 4) | (val << 4);
@@ -56,7 +55,8 @@ uint32_t NetworkUtil::AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes
 }
 
 IPAddress::IPAddress(const upan::string &ipAddr) : _ipAddrStr(ipAddr) {
-  upan::vector<upan::string> tokens = upan::tokenize(ipAddr.c_str(), '.');
+  upan::vector<upan::string> tokens;
+  ipAddr.tokenize(".", false, tokens);
   if (tokens.size() != NetworkPacket::IPV4_ADDR_LEN) {
     throw upan::exception(XLOC, "Invalid IP Address: %s", ipAddr.c_str());
   }

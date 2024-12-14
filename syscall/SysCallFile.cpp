@@ -330,7 +330,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           *retVal = FileOperations::Instance().fileAccess(szPathAddress, (uint8_t)p2) ? 0 : -1;
         } catch(const upan::exception& ex) {
-          ex.Print();
+          //ex.Print();
           *retVal = -1;
         }
 			}

@@ -35,17 +35,19 @@
   <component name="ChangeListManager">
     <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfProgHeader.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfProgHeader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel.ld.in" beforeDir="false" afterPath="$PROJECT_DIR$/kernel.ld.in" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/protocol/MACAddress.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/protocol/MACAddress.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessDLLInfo.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/GenericUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/GenericUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/GenericUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/GenericUtil.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,11 +135,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -513,6 +510,9 @@
       <workItem from="1733630733419" duration="2231000" />
       <workItem from="1733654298100" duration="5841000" />
       <workItem from="1734087017864" duration="4942000" />
+      <workItem from="1734104627037" duration="4127000" />
+      <workItem from="1734129330602" duration="1460000" />
+      <workItem from="1734136891560" duration="9440000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>

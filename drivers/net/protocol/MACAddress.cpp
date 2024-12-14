@@ -21,10 +21,10 @@
  */
 
 #include <MACAddress.h>
-#include <stringalgo.h>
 
 MACAddress::MACAddress(const upan::string &macAddr) : _macAddrStr(macAddr) {
-  upan::vector<upan::string> tokens = upan::tokenize(macAddr.c_str(), ':');
+  upan::vector<upan::string> tokens;
+  macAddr.tokenize(":", false, tokens);
   if (tokens.size() != NetworkPacket::MAC_ADDR_LEN) {
     throw upan::exception(XLOC, "Invalid MAC Address: %s", macAddr.c_str());
   }

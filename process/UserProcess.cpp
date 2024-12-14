@@ -33,6 +33,14 @@
 #include <ElfSymbolTable.h>
 #include <DMM.h>
 #include <GraphicsVideo.h>
+#include <ElfDynamicSection.h>
+#include <file_util.h>
+
+using namespace ElfSectionHeader;
+//using namespace ElfHeader ;
+//using namespace ElfRelocSection ;
+//using namespace ElfSymbolTable ;
+using namespace ElfDynamicSection;
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define BSS_SEC_NAME      ".bss"
@@ -103,7 +111,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     memset(bss, 0, bssSectionHeader->sh_size);
   });
 
-  CopyElfImage(bProcessImage.get());
+  CopyElfImage(bProcessImage.get(), _processSpaceSize, _processBase);
 
   const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
   const auto entryAdddress = mELFParser.GetProgramStartAddress();
@@ -114,6 +122,8 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   }
 
   _tls.reset(new ThreadLocalStorage(_processID, _pml4Table, tlsp(), 0x7));
+
+  LoadDLLs(mELFParser, bProcessImage.get());
 
   _taskContext.rdi = numOfParams; //argc
   _taskContext.rsi = stackTopAddress; //argv
@@ -157,11 +167,11 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
   return virtualStackTopAddress;
 }
 
-void UserProcess::CopyElfImage(byte* processImage) {
-  uint64_t virtualAddress = _processBase;
-  const uint64_t endAddress = virtualAddress + _processSpaceSize;
+void UserProcess::CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress) {
+  uint64_t virtualAddress = virtualLoadAddress;
+  const uint64_t endAddress = virtualAddress + imageSize;
 
-  for(uint64_t offset = 0, copySize = _processSpaceSize;
+  for(uint64_t offset = 0, copySize = imageSize;
     virtualAddress < endAddress;
     virtualAddress += PAGE_SIZE, offset += PAGE_SIZE, copySize -= PAGE_SIZE) {
     auto ptTable = MemManager::Instance().GetPTTable(_pml4Table, virtualAddress);
@@ -179,8 +189,33 @@ void UserProcess::CopyElfImage(byte* processImage) {
   }
 }
 
-void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) {
-  ElfParser mELFParser(szDLLName) ;
+void UserProcess::LoadDLLs(ElfParser& elfParser, uint8_t* processImage) {
+  const auto dynSectionHeader = elfParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
+  const auto noOfEntries = dynSectionHeader->sh_size / dynSectionHeader->sh_entsize;
+  const auto dynSection = (Elf64_Dyn*)(processImage + dynSectionHeader->sh_addr - _processBase) ;
+  const auto dynSymStrSectionHeader = elfParser.GetSectionHeaderByIndex(dynSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  const auto dynSymStrTable = (const char*)(processImage + dynSymStrSectionHeader->sh_addr - _processBase) ;
+
+  for(uint32_t i = 0; i < noOfEntries; ++i) {
+    if (dynSection[i].d_tag == DT_NEEDED) {
+      const auto dllName = (char*)&dynSymStrTable[ dynSection[i].d_un.d_val ];
+      printf("\n loading dll: %s", dllName);
+      LoadELFDLL(dllName);
+    }
+  }
+}
+
+void UserProcess::LoadELFDLL(const upan::string& dllName) {
+  if(!getDLLInfo(dllName).isEmpty()) {
+    return;
+  }
+
+  auto dllPath = upan::file_path::resolve(dllName, LD_LIBRARY_PATH_ENV, LIB_PATH);
+  if (dllPath.isEmpty()) {
+    throw upan::exception(XLOC, "DLL shared object file not found: %s", dllName.c_str());
+  }
+
+  ElfParser mELFParser(dllPath.value());
 
   uint64_t minMemAddr, maxMemAddr ;
   mELFParser.GetMemImageSize(minMemAddr, maxMemAddr) ;
@@ -194,15 +229,12 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE)
     throw upan::exception(XLOC, "DLL mem size %lu exceeds max limit per dll", uiMemImageSize, MAX_PROCESS_SPACE_SIZE);
 
-  if(!KC::MKernelService().RequestDLLAlloCopy(uiNoOfPagesForDLL, szJustDLLName)) {
-    throw upan::exception(XLOC, "Failed to allocate memory for DLL via kernal service");
-  }
+  MapDLLPagesToProcess(uiNoOfPagesForDLL, dllName);
 
-  ProcessDLLInfo& dllInfo = getDLLInfo(szJustDLLName).value();
+  ProcessDLLInfo& dllInfo = getDLLInfo(dllName).value();
   const uint64_t uiDLLLoadAddress = dllInfo.loadAddressForProcess();
 
-  dllInfo.elfInfo()._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
-  dllInfo.elfInfo()._elfSecStrTable = mELFParser.CopyELFSecStrTable();
+  dllInfo.setElfInfo(mELFParser.CopyELFSectionHeader(), mELFParser.CopyELFSecStrTable());
 
   upan::uniq_ptr<byte[]> bDLLImage(new byte[sizeof(char) * uiMemImageSize]);
 
@@ -247,7 +279,8 @@ void UserProcess::LoadELFDLL(const upan::string& szDLLName, const upan::string& 
   });
 
   /* End of Dynamic Relocation Entries resolution */
-  memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
+  CopyElfImage(bDLLImage.get(), uiMemImageSize, dllInfo.loadAddress());
+  //memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 
 void UserProcess::AllocateAddressSpace() {

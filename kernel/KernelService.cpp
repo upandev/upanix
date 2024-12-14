@@ -25,6 +25,7 @@
 # include <UserManager.h>
 # include <GenericUtil.h>
 # include <MemManager.h>
+# include <file_util.h>
 
 KernelService::DLLAllocCopy::DLLAllocCopy(unsigned uiNoOfPages, const upan::string& dllName) : _noOfPagesForDLL(uiNoOfPages), _dllName(dllName) {
 }
@@ -50,7 +51,7 @@ void KernelService::FlatAddress::Execute() {
 	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pml4Table(), m_uiAddress) ;
 }
 
-KernelService::ProcessExec::ProcessExec(int iNoOfArgs, const char* szFile, const char** szArgs)
+KernelService::ProcessExec::ProcessExec(int iNoOfArgs, const upan::string& szFile, const char** szArgs)
    	: m_iNoOfArgs(iNoOfArgs), _szFile(szFile), m_szArgs(NULL)
 {
 	m_szArgs = new char*[iNoOfArgs] ;
@@ -120,27 +121,17 @@ uint64_t KernelService::RequestFlatAddress(uint64_t uiVirtualAddress)
 	return uiFlatAddress ;
 }
 
-int KernelService::RequestProcessExec(const char* szFile, int iNoOfArgs, const char** szArgs)
-{
-	char szProcessPath[128] ;
-	char szFullProcPath[128] ;
-	
-	if(String_Chr(szFile, '/') < 0)
-	{
-		if(!GenericUtil_GetFullFilePathFromEnv(PATH_ENV, BIN_PATH, szFile, szProcessPath))
-		{
-			return -2 ;
-		}
-
-		strcpy(szFullProcPath, szProcessPath) ;
-		strcat(szFullProcPath, szFile) ;
-	}
-	else
-	{
-		strcpy(szFullProcPath, szFile) ;
+int KernelService::RequestProcessExec(const upan::string& fileName, int iNoOfArgs, const char** szArgs) {
+  upan::string fullPath = fileName;
+  if (fileName.find('/') < 0) {
+    const auto& r = upan::file_path::resolve(fileName, PATH_ENV, BIN_PATH);
+    if (r.isEmpty()) {
+      throw upan::exception(XLOC, "Executable file not found: %s", fileName.c_str());
+    }
+    fullPath = r.value();
 	}
 	
-	auto pRequest = new KernelService::ProcessExec(iNoOfArgs, szFullProcPath, szArgs) ;
+	auto pRequest = new KernelService::ProcessExec(iNoOfArgs, fullPath, szArgs) ;
 
 	AddRequest(pRequest) ;
 	ProcessManager::Instance().WaitOnKernelService() ;

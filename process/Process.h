@@ -71,10 +71,6 @@ public:
     throw upan::exception(XLOC, "dllMutex unsupported");
   }
 
-  virtual void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) {
-    throw upan::exception(XLOC, "LoadELFDLL unsupported");
-  }
-
   virtual void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
     throw upan::exception(XLOC, "MapDLLPagesToProcess unsupported");
   }

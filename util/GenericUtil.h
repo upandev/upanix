@@ -25,7 +25,6 @@
 # include <Global.h>
 
 void GenericUtil_ReadInput(char* szInputBuffer, const int iMaxReadLength, byte bEcho) ;
-bool GenericUtil_GetFullFilePathFromEnv(const char* szPathEnvVar, const char* szPathEnvDefVal, const char* szFileName, char* szFullFilePath) ;
 void debug_step(const char* msg);
 
 #endif

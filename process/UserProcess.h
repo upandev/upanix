@@ -25,6 +25,8 @@
 #include <AutonomousProcess.h>
 #include <UserThread.h>
 
+class ElfParser;
+
 class UserProcess : public AutonomousProcess {
 public:
   typedef upan::map<upan::string, ProcessDLLInfo> DLLInfoMap;
@@ -39,7 +41,6 @@ public:
   void onLoad() override;
   UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
-  void LoadELFDLL(const upan::string& szDLLName, const upan::string& szJustDLLName) override;
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
   const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
     return _elfInfo;
@@ -73,8 +74,10 @@ public:
 
 private:
   void Load(int numOfParams, char** argvList);
+  void LoadDLLs(ElfParser&, uint8_t* processImage);
+  void LoadELFDLL(const upan::string& dllName);
   void AllocateAddressSpace();
-  void CopyElfImage(byte* bProcessImage);
+  void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
   uint64_t PushProgramInitStackData(int numOfParams, char **argvList);
 
   void DeallocateResources() override;

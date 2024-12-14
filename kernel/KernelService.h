@@ -63,7 +63,7 @@ class KernelService
 		// RequestFactory
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
     uint64_t RequestFlatAddress(uint64_t uiAddress) ;
-		int RequestProcessExec(const char* szFile, int iNoOfArgs, const char** szArgs) ;
+		int RequestProcessExec(const upan::string& fileName, int iNoOfArgs, const char** szArgs) ;
 		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
 
@@ -108,7 +108,7 @@ class KernelService
 				int m_iNewProcId;
 
 			public:
-				ProcessExec(int iNoOfArgs, const char* szFile, const char** szArgs) ;
+				ProcessExec(int iNoOfArgs, const upan::string& szFile, const char** szArgs) ;
 				~ProcessExec() ;
         void Execute() ;
 				inline int GetNewProcId() { return m_iNewProcId ; }

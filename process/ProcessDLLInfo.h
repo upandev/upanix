@@ -41,15 +41,23 @@ public:
   }
 
   int id() const { return _id; }
+
   uint64_t loadAddress() const {
     return _loadAddress;
   }
   uint64_t loadAddressForProcess() const {
     return _loadAddress /*- PROCESS_BASE*/;
   }
-  ELFInfo& elfInfo() {
+
+  const ELFInfo& elfInfo() const {
     return _elfInfo;
   }
+
+  void setElfInfo(ElfSectionHeader::Elf64_Shdr* elfSectionHeaders,  char* elfSecStrTable) {
+    _elfInfo._elfSectionHeaders = elfSectionHeaders;
+    _elfInfo._elfSecStrTable = elfSecStrTable;
+  }
+
   uint32_t noOfPages() const { return _noOfPages; }
 
 private:
