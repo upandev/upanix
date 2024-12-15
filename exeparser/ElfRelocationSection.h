@@ -49,5 +49,7 @@ namespace ElfRelocSection {
 	static const unsigned R_X86_64_JMP_SLOT = 7;
 	static const unsigned R_X86_64_RELATIVE = 8;
 	static const unsigned R_X86_64_GOTPCREL = 9;
+  static const unsigned R_X86_64_DTPMOD64 = 16;
+  static const unsigned R_X86_64_DTPOFF64 = 17;
   static const unsigned R_X86_64_TPOFF64 = 18;
 };

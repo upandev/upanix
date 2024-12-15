@@ -29,7 +29,7 @@ class ElfParser;
 
 class UserProcess : public AutonomousProcess {
 public:
-  typedef upan::map<upan::string, ProcessDLLInfo> DLLInfoMap;
+  typedef upan::map<upan::string, DLLInfo> DLLInfoMap;
 
 public:
   UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess, int noOfParams, char** args);
@@ -42,11 +42,11 @@ public:
   UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
-  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+  const ELFInfo& getELFInfo() const override {
     return _elfInfo;
   }
-  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override;
-  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override;
+  upan::option<DLLInfo&> getDLLInfo(const upan::string& dllName) override;
+  upan::option<DLLInfo&> getDLLInfo(int id) override;
 
   DMM& dmm() override { return _dmm; }
 
@@ -89,14 +89,13 @@ private:
   uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;
   uint64_t _stackPDAddress;
-  upan::vector<upan::string> _loadedDLLs;
   DLLInfoMap _dllInfoMap;
   upan::mutex _pageFaultMutex;
   upan::mutex _dllMutex;
   upan::mutex _addressSpaceMutex;
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
-  ProcessDLLInfo::ELFInfo _elfInfo;
+  ELFInfo _elfInfo;
   UserDMM _dmm;
   uint64_t* _pml4Table;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;

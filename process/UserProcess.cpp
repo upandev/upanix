@@ -83,8 +83,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   }
 
   AllocateAddressSpace();
-  _elfInfo._elfSectionHeaders = mELFParser.CopyELFSectionHeader();
-  _elfInfo._elfSecStrTable = mELFParser.CopyELFSecStrTable();
+  _elfInfo.set(mELFParser.CopyELFSectionHeader(), mELFParser.CopyELFSecStrTable());
 
   upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * _processSpaceSize]);
 
@@ -197,7 +196,6 @@ void UserProcess::LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage) {
   ELF_RELA_SYM_MAP relSymMap;
   exeElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
     const auto dynSymSecHeader = exeElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
-
     const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) processImage + relSecHeader->sh_addr - _processBase);
     const auto noOfDelRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
 
@@ -235,10 +233,10 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
     throw upan::exception(XLOC, "DLL shared object file not found: %s", dllName.c_str());
   }
 
-  ElfParser mELFParser(dllPath.value());
+  ElfParser dllElfParser(dllPath.value());
 
   uint64_t minMemAddr, maxMemAddr ;
-  mELFParser.GetMemImageSize(minMemAddr, maxMemAddr) ;
+  dllElfParser.GetMemImageSize(minMemAddr, maxMemAddr) ;
   if(minMemAddr != 0) {
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
   }
@@ -253,14 +251,14 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
 
   MapDLLPagesToProcess(uiNoOfPagesForDLL, dllName);
 
-  ProcessDLLInfo& dllInfo = getDLLInfo(dllName).value();
-  const uint64_t uiDLLLoadAddress = dllInfo.loadAddressForProcess();
+  DLLInfo& dllInfo = getDLLInfo(dllName).value();
+  const uint64_t uiDLLLoadAddress = dllInfo.virtualLoadAddress();
 
-  dllInfo.setElfInfo(mELFParser.CopyELFSectionHeader(), mELFParser.CopyELFSecStrTable());
+  dllInfo.setELFInfo(dllElfParser.CopyELFSectionHeader(), dllElfParser.CopyELFSecStrTable());
 
   upan::uniq_ptr<byte[]> bDLLImage(new byte[sizeof(char) * uiMemImageSize]);
 
-  upan::trycall([&] () { mELFParser.CopyProcessImage(bDLLImage.get(), 0, uiMemImageSize); }).onBad([&] (const upan::error& err) {
+  upan::trycall([&] () { dllElfParser.CopyProcessImage(bDLLImage.get(), 0, uiMemImageSize); }).onBad([&] (const upan::error& err) {
     throw upan::exception(XLOC, err);
   });
 
@@ -269,25 +267,25 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
          DynamicLinkLoader::Instance().dllResolverSize());
 
   // Setting the Dynamic Link Loader Address in GOT
-  mELFParser.GetGOTAddress(bDLLImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
+  dllElfParser.GetGOTAddress(bDLLImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
     uiGOT[1] = dllInfo.id();
     uiGOT[2] = uiDLLImageSize + uiDLLLoadAddress;
 
-    mELFParser.GetNoOfGOTEntries().onGood([&](uint32_t uiNoOfGOTEntries) {
+    dllElfParser.GetNoOfGOTEntries().onGood([&](uint32_t uiNoOfGOTEntries) {
       for(uint32_t i = 3; i < uiNoOfGOTEntries; i++)
         uiGOT[i] += uiDLLLoadAddress ;
     });
   });
 
-  uint64_t tls_offset = 0;
-  if (mELFParser.GetTLSTotalSize()) {
-    tls_offset = _tlsp->add(mELFParser.GetTLSTotalSize(), mELFParser.GetTLSInitImageSize(), mELFParser.GetTLSInitImage());
+  if (dllElfParser.GetTLSTotalSize()) {
+    const auto& tlsInfo = _tlsp->add(dllElfParser.GetTLSTotalSize(), dllElfParser.GetTLSInitImageSize(), dllElfParser.GetTLSInitImage());
+    dllInfo.setTLSInfo(tlsInfo.moduleId(), tlsInfo.offset());
   }
 
-  const auto dynSymSecHeader = mELFParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
+  const auto dynSymSecHeader = dllElfParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
   const auto noOfEntries = dynSymSecHeader->sh_size / dynSymSecHeader->sh_entsize;
   const auto dynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + dynSymSecHeader->sh_addr);
-  const auto dynSymStrSectionHeader = mELFParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
+  const auto dynSymStrSectionHeader = dllElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
   const auto dynSymStrTable = (const char*)((uint64_t)bDLLImage.get() + dynSymStrSectionHeader->sh_addr) ;
 
   for(uint32_t i = 0; i < noOfEntries; ++i) {
@@ -297,17 +295,15 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
       auto it = relSymMap.find(symName);
       if (it != relSymMap.end()) {
         //r_addend is already added while populating relSymMap
-        *(it->second) = dynSym.st_value - tls_offset;
+        *(it->second) = dynSym.st_value - dllInfo.tlsInfo().offset();
       }
     }
   }
 
 /* Dynamic Relocation Entries are resolved here in Global Offset Table */
-  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
-    const auto dynSymSecHeader = mELFParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
+  dllElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
     const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) bDLLImage.get() + relSecHeader->sh_addr);
     const auto noOfDynRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
-    const auto dynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + dynSymSecHeader->sh_addr);
 
     for (uint32_t i = 0; i < noOfDynRelEntries; i++) {
       const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
@@ -317,12 +313,17 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
       } else if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
         ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] =
                 dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_value + uiDLLLoadAddress + dynRelTable[i].r_addend;
+      } else if (uiRelType == ElfRelocSection::R_X86_64_DTPMOD64) {
+        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] = dllInfo.tlsInfo().moduleId();
+      } else if (uiRelType == ElfRelocSection::R_X86_64_DTPOFF64) {
+        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] =
+                dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_value + dynRelTable[i].r_addend;
       }
     }
   });
 
   /* End of Dynamic Relocation Entries resolution */
-  CopyElfImage(bDLLImage.get(), uiMemImageSize, dllInfo.loadAddress());
+  CopyElfImage(bDLLImage.get(), uiMemImageSize, dllInfo.virtualLoadAddress());
   //memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 
@@ -363,24 +364,25 @@ void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::str
   const auto virtualDLLLoadAddress = PROCESS_DLL_START_ADDRESS + _totalNoOfPagesForDLL * PAGE_SIZE;
   //printf("\n DLL Addr: %llx, %d", virtualDLLLoadAddress, noOfPagesForDLL);
   MemManager::Instance().AllocateAddressSpace(pml4Table(), 0x7, virtualDLLLoadAddress, noOfPagesForDLL * PAGE_SIZE);
-  _loadedDLLs.push_back(dllName);
-  _dllInfoMap.insert(DLLInfoMap::value_type(dllName, ProcessDLLInfo(_loadedDLLs.size() - 1, virtualDLLLoadAddress, noOfPagesForDLL)));
+  _dllInfoMap.insert(DLLInfoMap::value_type(dllName, DLLInfo(_dllInfoMap.size(), virtualDLLLoadAddress, noOfPagesForDLL)));
   _totalNoOfPagesForDLL += noOfPagesForDLL;
 }
 
-upan::option<ProcessDLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) {
+upan::option<DLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) {
   auto it = _dllInfoMap.find(dllName);
   if (it == _dllInfoMap.end()) {
-    return upan::option<ProcessDLLInfo&>::empty();
+    return upan::option<DLLInfo&>::empty();
   }
-  return upan::option<ProcessDLLInfo&>(it->second);
+  return upan::option<DLLInfo&>(it->second);
 }
 
-upan::option<ProcessDLLInfo&> UserProcess::getDLLInfo(int id) {
-  if (id < 0 || id >= _loadedDLLs.size()) {
-    return upan::option<ProcessDLLInfo&>::empty();
+upan::option<DLLInfo&> UserProcess::getDLLInfo(int id) {
+  for(auto& i : _dllInfoMap) {
+    if (i.second.id() == id) {
+      return upan::option<DLLInfo&>(i.second);
+    }
   }
-  return getDLLInfo(_loadedDLLs[id]);
+  return upan::option<DLLInfo&>::empty();
 }
 
 void UserProcess::onLoad() {

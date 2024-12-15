@@ -27,7 +27,7 @@ ThreadLocalSpace::~ThreadLocalSpace() {
   }
 }
 
-uint64_t ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) {
+TLSInfo ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImage) {
   dtv_entry dtvEntry;
   dtvEntry.total_len = totalLen;
   dtvEntry.init_len = initLen;
@@ -45,5 +45,5 @@ uint64_t ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initIma
     offset += dtv.total_len;
   }
 
-  return offset;
+  return TLSInfo(_dtv.size(), offset);
 }

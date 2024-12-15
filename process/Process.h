@@ -27,7 +27,7 @@
 #include <FileSystem.h>
 #include <FileOperations.h>
 #include <ProcessStateInfo.h>
-#include <ProcessDLLInfo.h>
+#include <ProcessBinaryInfo.h>
 #include <RootFrame.h>
 #include <KeyboardData.h>
 #include <MouseData.h>
@@ -75,15 +75,15 @@ public:
     throw upan::exception(XLOC, "MapDLLPagesToProcess unsupported");
   }
 
-  virtual const ProcessDLLInfo::ELFInfo& getELFInfo() const {
+  virtual const ELFInfo& getELFInfo() const {
     throw upan::exception(XLOC, "getELFInfo unsupported");
   }
 
-  virtual upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) {
+  virtual upan::option<DLLInfo&> getDLLInfo(const upan::string& dllName) {
     throw upan::exception(XLOC, "getDLLInfo unsupported");
   }
 
-  virtual upan::option<ProcessDLLInfo&> getDLLInfo(int id) {
+  virtual upan::option<DLLInfo&> getDLLInfo(int id) {
     throw upan::exception(XLOC, "getDLLInfo unsupported");
   }
 

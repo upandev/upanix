@@ -35,13 +35,19 @@
   <component name="ChangeListManager">
     <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,6 +135,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -510,6 +521,8 @@
       <workItem from="1734147235140" duration="28000" />
       <workItem from="1734147304247" duration="13617000" />
       <workItem from="1734166315620" duration="377000" />
+      <workItem from="1734180350901" duration="8588000" />
+      <workItem from="1734235621848" duration="2544000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>

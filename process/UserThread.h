@@ -39,14 +39,14 @@ public:
     return _parent.MapDLLPagesToProcess(noOfPagesForDLL, dllName);
   }
 
-  const ProcessDLLInfo::ELFInfo& getELFInfo() const override {
+  const ELFInfo& getELFInfo() const override {
     return _parent.getELFInfo();
   }
 
-  upan::option<ProcessDLLInfo&> getDLLInfo(const upan::string& dllName) override {
+  upan::option<DLLInfo&> getDLLInfo(const upan::string& dllName) override {
     return _parent.getDLLInfo(dllName);
   }
-  upan::option<ProcessDLLInfo&> getDLLInfo(int id) override {
+  upan::option<DLLInfo&> getDLLInfo(int id) override {
     return _parent.getDLLInfo(id);
   }
 

@@ -1911,6 +1911,9 @@ class TLSDemo : public upan::thread {
     _t_local_var_global1 += getpid();
     sleepms(500);
     printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+    access_thread_local_test();
+    printf("\n TLS Lib data1 -> %d", _lib_data1_thread_local);
+    printf("\n TLS Lib global1 -> %d", _lib_global1_thread_local);
   }
 };
 
@@ -1921,9 +1924,11 @@ void ConsoleCommands_Test() {
   printf("\n %d", (int)_t_local_var_global1);
   printf("\n %d", (int)_t_local_var_global2);
 
+  access_thread_local_test();
+
   printf("\n Static Library Thread Local Data -> %d", _lib_data1_thread_local);
   printf("\n Static Library Thread Local Global -> %d", _lib_global1_thread_local);
-  
+
   TLSDemo t1, t2;
   _t_local_var_global1 = getpid();
   t1.start();

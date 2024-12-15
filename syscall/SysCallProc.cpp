@@ -39,7 +39,7 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
       try
       {
         //ProcessManager_DisableTaskSwitch() ;
-        DynamicLinkLoader_DoRelocation(&ProcessManager::Instance().GetCurrentPAS(), (int)p4, p5, retVal);
+        DynamicLinkLoader_DoRelocation(ProcessManager::Instance().GetCurrentPAS(), (int)p4, p5, retVal);
         //ProcessManager_EnableTaskSwitch() ;
       }
       catch(const upan::exception& e)
@@ -47,6 +47,14 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         printf("\n Dynamic Relocation Failed: %s", e.ErrorMsg().c_str());
       }
 			break ;
+
+    case SYS_CALL_DLL_INIT_RELOCATE:
+      try {
+        DynamicLinkLoader_InitRelocate(ProcessManager::Instance().GetCurrentPAS());
+      } catch(const upan::exception& e) {
+        printf("\n Dynamic Init Relocation Failed: %s", e.ErrorMsg().c_str());
+      }
+      break;
 
 		case SYS_CALL_PROCESS_EXEC :
 			// P1 => Address of File Name Char Array

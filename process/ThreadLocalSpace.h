@@ -23,13 +23,14 @@
 
 #include <vector.h>
 #include <pair.h>
+#include <ProcessBinaryInfo.h>
 
 class ThreadLocalSpace {
 public:
   ThreadLocalSpace() = default;
   ~ThreadLocalSpace();
 
-  uint64_t add(int totalLen, int initLen, const uint8_t* initImage);
+  TLSInfo add(int totalLen, int initLen, const uint8_t* initImage);
 
   typedef struct {
     int total_len;
