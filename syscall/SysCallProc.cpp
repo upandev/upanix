@@ -21,16 +21,13 @@
  */
 # include <SysCall.h>
 # include <SysCallDisplay.h>
+# include <typeinfo.h>
 
-byte SysCallProc_IsPresent(uint64_t sysCallId)
-{
-	return (sysCallId > SYS_CALL_PROC_START && sysCallId < SYS_CALL_PROC_END) ;
+byte SysCallProc_IsPresent(uint64_t sysCallId) {
+	return (sysCallId > SYS_CALL_PROC_START && sysCallId < SYS_CALL_PROC_END);
 }
 
-void
-SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3,
-                   uint64_t p4, uint64_t p5)
-{
+void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
 	switch(sysCallId)
 	{
 		case SYS_CALL_DLL_RELOCATE :
@@ -50,7 +47,11 @@ SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 
     case SYS_CALL_DLL_INIT_RELOCATE:
       try {
-        DynamicLinkLoader_InitRelocate(ProcessManager::Instance().GetCurrentPAS());
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        if (typeid(process) != typeid(UserProcess)) {
+          throw upan::exception(XLOC, "DLL Init Relocate can be done on a User Process once at program start-up");
+        }
+        dynamic_cast<UserProcess&>(process).dllInitRelocate();
       } catch(const upan::exception& e) {
         printf("\n Dynamic Init Relocation Failed: %s", e.ErrorMsg().c_str());
       }

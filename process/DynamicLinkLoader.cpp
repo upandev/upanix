@@ -66,10 +66,6 @@ DynamicLinkLoader::DynamicLinkLoader() {
   printf("\n DLL resolved loaded (size: %d)", _dll_resolver_size);
 }
 
-void DynamicLinkLoader_InitRelocate(Process& process) {
-  printf("\n DLL INIT RELOCATE");
-}
-
 void DynamicLinkLoader_DoRelocation(Process& process, int64_t iID, uint64_t relocationOffset, uint64_t *dynamicSymAddress) {
   //printf("\n %lld, %lu", iID, relocationOffset);
   //multithread synchronization

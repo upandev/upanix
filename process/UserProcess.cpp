@@ -188,42 +188,21 @@ void UserProcess::CopyElfImage(const uint8_t* processImage, int imageSize, uint6
 
 void UserProcess::LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage) {
   const auto dynSectionHeader = exeElfParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
-  const auto noOfEntries = dynSectionHeader->sh_size / dynSectionHeader->sh_entsize;
   const auto dynSection = (Elf64_Dyn*)(processImage + dynSectionHeader->sh_addr - _processBase) ;
+  const auto noOfEntries = dynSectionHeader->sh_size / dynSectionHeader->sh_entsize;
+
   const auto dynSymStrSectionHeader = exeElfParser.GetSectionHeaderByIndex(dynSectionHeader->sh_link).goodValueOrThrow(XLOC);
   const auto dynSymStrTable = (const char*)(processImage + dynSymStrSectionHeader->sh_addr - _processBase) ;
-
-  ELF_RELA_SYM_MAP relSymMap;
-  exeElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
-    const auto dynSymSecHeader = exeElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
-    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) processImage + relSecHeader->sh_addr - _processBase);
-    const auto noOfDelRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
-
-    auto dynRelSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) processImage + dynSymSecHeader->sh_addr - _processBase);
-
-    for (uint32_t i = 0; i < noOfDelRelEntries; i++) {
-      const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
-
-      if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
-        //TODO
-      } else if (uiRelType == ElfRelocSection::R_X86_64_TPOFF64) {
-        auto rel_offset = (uint64_t*)((uint64_t)processImage + dynRelTable[i].r_offset - _processBase);
-        const char* symName = (char*)&dynSymStrTable[dynRelSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
-        *rel_offset = dynRelTable[i].r_addend;
-        relSymMap.insert(ELF_RELA_SYM_MAP::value_type(symName, rel_offset));
-      }
-    }
-  });
 
   for(uint32_t i = 0; i < noOfEntries; ++i) {
     if (dynSection[i].d_tag == DT_NEEDED) {
       const auto dllName = (char*)&dynSymStrTable[ dynSection[i].d_un.d_val ];
-      LoadELFDLL(dllName, relSymMap);
+      LoadELFDLL(dllName);
     }
   }
 }
 
-void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relSymMap) {
+void UserProcess::LoadELFDLL(const upan::string& dllName) {
   if(!getDLLInfo(dllName).isEmpty()) {
     return;
   }
@@ -290,13 +269,9 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
 
   for(uint32_t i = 0; i < noOfEntries; ++i) {
     const auto& dynSym = dynSymTable[i];
-    if (ELF64_ST_TYPE(dynSym.st_info) == STT_TLS) {
+    if (dynSym.st_shndx != STN_UNDEF && ELF64_ST_TYPE(dynSym.st_info) == STT_TLS) {
       const char* symName = (char*)&dynSymStrTable[dynSym.st_name];
-      auto it = relSymMap.find(symName);
-      if (it != relSymMap.end()) {
-        //r_addend is already added while populating relSymMap
-        *(it->second) = dynSym.st_value - dllInfo.tlsInfo().offset();
-      }
+      _relocateInfoMap.insert(RELOCATE_INFO_MAP::value_type (symName, RelocateInfo(dllInfo, dynSym.st_value)));
     }
   }
 
@@ -313,11 +288,6 @@ void UserProcess::LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relS
       } else if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
         ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] =
                 dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_value + uiDLLLoadAddress + dynRelTable[i].r_addend;
-      } else if (uiRelType == ElfRelocSection::R_X86_64_DTPMOD64) {
-        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] = dllInfo.tlsInfo().moduleId();
-      } else if (uiRelType == ElfRelocSection::R_X86_64_DTPOFF64) {
-        ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] =
-                dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_value + dynRelTable[i].r_addend;
       }
     }
   });
@@ -426,5 +396,86 @@ void UserProcess::DeallocateGUIFramebuffer() {
     KernelDMM::Instance().free((uint64_t)_frame->frameBuffer().buffer());
     MemManager::Instance().UnMapAddressSpace(pml4Table(), PROCESS_GUI_FRAMEBUFFER_ADDRESS, GraphicsVideo::Instance().LFBPageCount() * PAGE_SIZE);
     GraphicsVideo::Instance().removeFGProcess(processID());
+  }
+}
+
+upan::option<RelocateInfo&> UserProcess::getRelocateInfo(const upan::string& symName) {
+  auto it = _relocateInfoMap.find(symName);
+  if (it == _relocateInfoMap.end()) {
+    printf("\n Dynamic Symbol %s not found in any DLL, relocation failed!", symName.c_str());
+    return upan::option<RelocateInfo&>::empty();
+  }
+  return upan::option<RelocateInfo&>(it->second);
+}
+
+void UserProcess::dllInitRelocate() {
+  relocateMainExe();
+  relocateDLLs();
+}
+
+void UserProcess::relocateMainExe() {
+  ElfParser exeElfParser((Elf64_Ehdr*) _processBase, _elfInfo.elfSectionHeaders(), _elfInfo.elfSecStrTable());
+
+  //relocate dynamic symbols used within the main process space
+  exeElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&](Elf64_Shdr* relSecHeader) {
+    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*) relSecHeader->sh_addr;
+    const auto noOfDelRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+
+    const auto dynSymSecHeader = exeElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
+    auto dynSymTable = (ElfSymbolTable::Elf64_Sym*) dynSymSecHeader->sh_addr;
+
+    const auto dynSymStrSectionHeader = exeElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
+    const auto dynSymStrTable = (const char*) dynSymStrSectionHeader->sh_addr;
+
+    for (uint32_t i = 0; i < noOfDelRelEntries; i++) {
+      const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
+
+      if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
+        //TODO
+      } else if (uiRelType == ElfRelocSection::R_X86_64_TPOFF64) {
+        const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+        auto rel_offset = (uint64_t*) dynRelTable[i].r_offset;
+
+        getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
+          *rel_offset = relocateInfo.value() + dynRelTable[i].r_addend - relocateInfo.dllInfo().tlsInfo().offset();
+        });
+      }
+    }
+  });
+}
+
+void UserProcess::relocateDLLs() {
+  for (auto& i: _dllInfoMap) {
+    auto& dllInfo = i.second;
+    ElfParser dllElfParser((Elf64_Ehdr*) dllInfo.virtualLoadAddress(),
+                           dllInfo.elfInfo().elfSectionHeaders(),
+                           dllInfo.elfInfo().elfSecStrTable());
+
+    dllElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&](Elf64_Shdr* relSecHeader) {
+      const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)GLOBAL_REL_ADDR(relSecHeader->sh_addr, dllInfo.virtualLoadAddress());
+      const auto noOfDynRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+
+      const auto dynSymSecHeader = dllElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
+      auto dynSymTable = (ElfSymbolTable::Elf64_Sym*) GLOBAL_REL_ADDR(dynSymSecHeader->sh_addr, dllInfo.virtualLoadAddress());
+
+      const auto dynSymStrSectionHeader = dllElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
+      const auto dynSymStrTable = (const char*) GLOBAL_REL_ADDR(dynSymStrSectionHeader->sh_addr, dllInfo.virtualLoadAddress());
+
+      for (uint32_t i = 0; i < noOfDynRelEntries; i++) {
+        const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
+
+        if (uiRelType == ElfRelocSection::R_X86_64_DTPMOD64) {
+          const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+          getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
+            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, dllInfo.virtualLoadAddress()))[0] = relocateInfo.dllInfo().tlsInfo().moduleId();
+          });
+        } else if (uiRelType == ElfRelocSection::R_X86_64_DTPOFF64) {
+          const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+          getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
+            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, dllInfo.virtualLoadAddress()))[0] = relocateInfo.value() + dynRelTable[i].r_addend;
+          });
+        }
+      }
+    });
   }
 }

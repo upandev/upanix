@@ -93,3 +93,13 @@ private:
   ELFInfo _elfInfo;
   TLSInfo _tlsInfo;
 };
+
+class RelocateInfo {
+public:
+  RelocateInfo(const DLLInfo& dllInfo, uint64_t value) : _dllInfo(dllInfo), _value(value) {}
+  const DLLInfo& dllInfo() const { return _dllInfo; }
+  uint64_t value() const { return _value; }
+private:
+  const DLLInfo& _dllInfo;
+  uint64_t _value;
+};

@@ -33,21 +33,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code.">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfRelocationSection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessDLLInfo.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,11 +127,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -522,7 +509,8 @@
       <workItem from="1734147304247" duration="13617000" />
       <workItem from="1734166315620" duration="377000" />
       <workItem from="1734180350901" duration="8588000" />
-      <workItem from="1734235621848" duration="2544000" />
+      <workItem from="1734235621848" duration="3195000" />
+      <workItem from="1734238992229" duration="4734000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -867,7 +855,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="119" />
+    <option name="localTasksCounter" value="120" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -901,7 +889,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="filesystem refactoring - introducing directory reference, that reference counts the FileTree::Node resource" />
     <MESSAGE value="refactor fileSystem method names" />
     <MESSAGE value="refactor fileSystem with in memory file-tree" />
     <MESSAGE value="refactor fileSystem with in-memory file-tree" />
@@ -926,7 +913,8 @@
     <MESSAGE value="refactor network protocol code" />
     <MESSAGE value="refactor packet structure and send packet logic" />
     <MESSAGE value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
-    <option name="LAST_COMMIT_MESSAGE" value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
+    <MESSAGE value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -70,14 +70,21 @@ public:
   }
   void initGuiFrame() override;
   void allocateGUIFramebuffer();
+
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
+  void dllInitRelocate();
+
 private:
-  typedef upan::map<upan::string, uint64_t*> ELF_RELA_SYM_MAP;
+  typedef upan::map<upan::string, RelocateInfo> RELOCATE_INFO_MAP;
 
   void Load(int numOfParams, char** argvList);
   void LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage);
-  void LoadELFDLL(const upan::string& dllName, ELF_RELA_SYM_MAP& relSymMap);
+  void LoadELFDLL(const upan::string& dllName);
+  upan::option<RelocateInfo&> getRelocateInfo(const upan::string& symName);
+  void relocateMainExe();
+  void relocateDLLs();
+
   void AllocateAddressSpace();
   void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
   uint64_t PushProgramInitStackData(int numOfParams, char **argvList);
@@ -96,6 +103,7 @@ private:
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   ELFInfo _elfInfo;
+  RELOCATE_INFO_MAP _relocateInfoMap;
   UserDMM _dmm;
   uint64_t* _pml4Table;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
