@@ -71,9 +71,8 @@
 #include <Terminal.h>
 #include <IconLabel.h>
 #include <IconImageMap.h>
-#include <Menu.h>
-#include <DHCPHandler.h>
 #include <KernelRootProcess.h>
+#include <math.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -1914,6 +1913,9 @@ class TLSDemo : public upan::thread {
     access_thread_local_test();
     printf("\n TLS Lib data1 -> %d", _lib_data1_thread_local);
     printf("\n TLS Lib global1 -> %d", _lib_global1_thread_local);
+    tls_xlib_test();
+    printf("\n TLS XLib data1 -> %d", _lib_data1_thread_local);
+    printf("\n TLS XLib global1 -> %d", _lib_global1_thread_local);
   }
 };
 
@@ -1928,6 +1930,10 @@ void ConsoleCommands_Test() {
 
   printf("\n Static Library Thread Local Data -> %d", _lib_data1_thread_local);
   printf("\n Static Library Thread Local Global -> %d", _lib_global1_thread_local);
+
+  tls_xlib_test();
+  printf("\n X Library Thread Local Data -> %d", _lib_data1_thread_local);
+  printf("\n X Library Thread Local Global -> %d", _lib_global1_thread_local);
 
   TLSDemo t1, t2;
   _t_local_var_global1 = getpid();

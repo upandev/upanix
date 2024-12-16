@@ -33,13 +33,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="moved relocation of TLS variables that are accessed across shared libraries and the main executable into dllInitRelocate() method that is called once at program start-up">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -510,7 +508,10 @@
       <workItem from="1734166315620" duration="377000" />
       <workItem from="1734180350901" duration="8588000" />
       <workItem from="1734235621848" duration="3195000" />
-      <workItem from="1734238992229" duration="4734000" />
+      <workItem from="1734238992229" duration="5313000" />
+      <workItem from="1734262687204" duration="2091000" />
+      <workItem from="1734273947818" duration="4777000" />
+      <workItem from="1734350288604" duration="3000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -855,7 +856,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="120" />
+    <option name="localTasksCounter" value="121" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -889,7 +890,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor fileSystem method names" />
     <MESSAGE value="refactor fileSystem with in memory file-tree" />
     <MESSAGE value="refactor fileSystem with in-memory file-tree" />
     <MESSAGE value="refactor filesystem with in-memory multi-thread/process safe file-tree and file-data management" />
@@ -914,7 +914,8 @@
     <MESSAGE value="refactor packet structure and send packet logic" />
     <MESSAGE value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
     <MESSAGE value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
+    <MESSAGE value="moved relocation of TLS variables that are accessed across shared libraries and the main executable into dllInitRelocate() method that is called once at program start-up" />
+    <option name="LAST_COMMIT_MESSAGE" value="moved relocation of TLS variables that are accessed across shared libraries and the main executable into dllInitRelocate() method that is called once at program start-up" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
