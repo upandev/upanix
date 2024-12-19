@@ -57,6 +57,8 @@ public:
   _dynSection(upan::option<Elf64_Dyn*>::empty()), _dynSectionSize(0),
   _dynSymTable(upan::option<Elf64_Sym*>::empty()), _dynSymTableSize(0),
   _dynRelTable(upan::option<Elf64_Rela*>::empty()), _dynRelTableSize(0),
+  _dynRelPltTable(upan::option<Elf64_Rela*>::empty()), _dynRelPltTableSize(0),
+  _hashTable(upan::option<Elf64_Word*>::empty()),
   _dynSymStrTable(nullptr) {
   }
 
@@ -72,16 +74,21 @@ public:
   ElfSectionHeader::Elf64_Shdr* elfSectionHeaders() const { return _elfSectionHeaders; }
   char* elfSecStrTable() const { return _elfSecStrTable; }
 
-  upan::option<Elf64_Dyn*> getDynSection() { return _dynSection; }
-  Elf64_Xword getDynSectionSize() { return _dynSectionSize; }
+  upan::option<Elf64_Dyn*> getDynSection() const { return _dynSection; }
+  Elf64_Xword getDynSectionSize() const { return _dynSectionSize; }
 
-  upan::option<Elf64_Sym*> getDynSymTable() { return _dynSymTable; }
-  Elf64_Xword getDynSymTableSize() { return _dynSymTableSize; }
+  upan::option<Elf64_Sym*> getDynSymTable() const { return _dynSymTable; }
+  Elf64_Xword getDynSymTableSize() const { return _dynSymTableSize; }
 
-  upan::option<Elf64_Rela*> getDynRelTable() { return _dynRelTable; }
-  Elf64_Xword getDynRelTableSize() { return _dynRelTableSize; }
+  upan::option<Elf64_Rela*> getDynRelTable() const { return _dynRelTable; }
+  Elf64_Xword getDynRelTableSize() const { return _dynRelTableSize; }
 
-  const char* getDynSymName(Elf64_Xword index);
+  upan::option<Elf64_Rela*> getDynRelPltTable() const { return _dynRelPltTable; }
+  Elf64_Xword getDynRelPltTableSize() const { return _dynRelPltTableSize; }
+
+  upan::option<Elf64_Word*> getHashTable() const { return _hashTable; }
+
+  const char* getDynSymName(Elf64_Xword index) const;
 
   upan::option<Section> getGOT();
   upan::result<ELFInfo::Section> getSectionByName(const upan::string& name);
@@ -103,6 +110,11 @@ private:
 
   upan::option<Elf64_Rela*> _dynRelTable;
   Elf64_Xword _dynRelTableSize;
+
+  upan::option<Elf64_Rela*> _dynRelPltTable;
+  Elf64_Xword _dynRelPltTableSize;
+
+  upan::option<Elf64_Word*> _hashTable;
 
   const char* _dynSymStrTable;
 };

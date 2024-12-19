@@ -410,27 +410,18 @@ void UserProcess::dllInitRelocate() {
   relocateDLLs();
 }
 
+//relocate dynamic symbols used within the main process space
 void UserProcess::relocateMainExe() {
-  ElfParser exeElfParser((Elf64_Ehdr*) _processBase, _elfInfo.elfSectionHeaders(), _elfInfo.elfSecStrTable());
+  _elfInfo.getDynRelTable().ifPresent([&](Elf64_Rela* dynRelTable) {
+    auto dynSymTable = _elfInfo.getDynSymTable().valueOrThrow(XLOC, "no dynamic symbol table found");
 
-  //relocate dynamic symbols used within the main process space
-  exeElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&](Elf64_Shdr* relSecHeader) {
-    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*) relSecHeader->sh_addr;
-    const auto noOfDelRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+    for (Elf64_Xword i = 0; i < _elfInfo.getDynRelTableSize(); ++i) {
+      const auto relType = ELF64_R_TYPE(dynRelTable[i].r_info);
 
-    const auto dynSymSecHeader = exeElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
-    auto dynSymTable = (ElfSymbolTable::Elf64_Sym*) dynSymSecHeader->sh_addr;
-
-    const auto dynSymStrSectionHeader = exeElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
-    const auto dynSymStrTable = (const char*) dynSymStrSectionHeader->sh_addr;
-
-    for (uint32_t i = 0; i < noOfDelRelEntries; i++) {
-      const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
-
-      if (uiRelType == ElfRelocSection::R_X86_64_GLOB_DAT) {
+      if (relType == ElfRelocSection::R_X86_64_GLOB_DAT) {
         //TODO
-      } else if (uiRelType == ElfRelocSection::R_X86_64_TPOFF64) {
-        const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+      } else if (relType == ElfRelocSection::R_X86_64_TPOFF64) {
+        const char* symName = _elfInfo.getDynSymName(dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name);
         auto rel_offset = (uint64_t*) dynRelTable[i].r_offset;
 
         getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
@@ -443,33 +434,22 @@ void UserProcess::relocateMainExe() {
 
 void UserProcess::relocateDLLs() {
   for (auto& i: _dllInfoMap) {
-    auto& dllInfo = i.second;
-    ElfParser dllElfParser((Elf64_Ehdr*) dllInfo.virtualLoadAddress(),
-                           dllInfo.elfInfo().elfSectionHeaders(),
-                           dllInfo.elfInfo().elfSecStrTable());
+    auto& elfInfo = i.second.elfInfo();
+    elfInfo.getDynRelTable().ifPresent([&](Elf64_Rela* dynRelTable) {
+      auto dynSymTable = elfInfo.getDynSymTable().valueOrThrow(XLOC, "no dynamic symbol table found");
 
-    dllElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&](Elf64_Shdr* relSecHeader) {
-      const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)GLOBAL_REL_ADDR(relSecHeader->sh_addr, dllInfo.virtualLoadAddress());
-      const auto noOfDynRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
+      for (Elf64_Xword i = 0; i < elfInfo.getDynRelTableSize(); ++i) {
+        const auto relType = ELF64_R_TYPE(dynRelTable[i].r_info);
 
-      const auto dynSymSecHeader = dllElfParser.GetSectionHeaderByIndex(relSecHeader->sh_link).goodValueOrThrow(XLOC);
-      auto dynSymTable = (ElfSymbolTable::Elf64_Sym*) GLOBAL_REL_ADDR(dynSymSecHeader->sh_addr, dllInfo.virtualLoadAddress());
-
-      const auto dynSymStrSectionHeader = dllElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
-      const auto dynSymStrTable = (const char*) GLOBAL_REL_ADDR(dynSymStrSectionHeader->sh_addr, dllInfo.virtualLoadAddress());
-
-      for (uint32_t i = 0; i < noOfDynRelEntries; i++) {
-        const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
-
-        if (uiRelType == ElfRelocSection::R_X86_64_DTPMOD64) {
-          const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+        if (relType == ElfRelocSection::R_X86_64_DTPMOD64) {
+          const char* symName = elfInfo.getDynSymName(dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name);
           getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
-            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, dllInfo.virtualLoadAddress()))[0] = relocateInfo.dllInfo().tlsInfo().moduleId();
+            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase()))[0] = relocateInfo.dllInfo().tlsInfo().moduleId();
           });
-        } else if (uiRelType == ElfRelocSection::R_X86_64_DTPOFF64) {
-          const char* symName = (char*) &dynSymStrTable[dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name];
+        } else if (relType == ElfRelocSection::R_X86_64_DTPOFF64) {
+          const char* symName = elfInfo.getDynSymName(dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)].st_name);
           getRelocateInfo(symName).ifPresent([&](RelocateInfo& relocateInfo) {
-            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, dllInfo.virtualLoadAddress()))[0] = relocateInfo.value() + dynRelTable[i].r_addend;
+            ((uint64_t*) GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase()))[0] = relocateInfo.value() + dynRelTable[i].r_addend;
           });
         }
       }

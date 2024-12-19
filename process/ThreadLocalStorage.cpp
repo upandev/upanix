@@ -59,14 +59,12 @@ uintptr_t ThreadLocalStorage::getPageAddress(uint64_t address) {
   auto pdIndex = PD_INDEX(address);
   if (!PAGE_IS_PRESENT(_tlPDTable, pdIndex)) {
     _tlPDTable[pdIndex] = (uintptr_t) (MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE) | _pageFlag;
-    printf("\n Allocating DTV PT");
   }
 
   auto ptTable = PAGE_TABLE(_tlPDTable, pdIndex);
   auto ptIndex = PT_INDEX(address);
   if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
     ptTable[ptIndex] = (uintptr_t) (MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE) | _pageFlag;
-    printf("\n Allocating DTV PAGE");
   }
 
   return PAGE_ADDRESS(ptTable, ptIndex);
@@ -83,8 +81,6 @@ void ThreadLocalStorage::update() {
   for (int i = 0; i < (int)_tcb->_dtv[0]; ++i) {
     offset += dtv[i].total_len;
   }
-
-  printf("\n DTV offset = %x", offset);
 
   for (int i = (int)_tcb->_dtv[0]; i < dtv.size(); ++i) {
     offset += dtv[i].total_len;
@@ -105,7 +101,6 @@ void ThreadLocalStorage::allocate(int index, uint64_t offset, const ThreadLocalS
   uint64_t address = THREAD_LOCAL_META_SPACE_ADDRESS - offset;
   _tcb->_dtv[index + 1] = address;
 
-  printf("\n Allocating DTV for %d @ %d", index, offset);
   //initialize the tdata section
   auto remaining_len = dtv.init_len;
   while (remaining_len > 0) {
@@ -115,8 +110,6 @@ void ThreadLocalStorage::allocate(int index, uint64_t offset, const ThreadLocalS
     if (copy_len > remaining_len) copy_len = remaining_len;
 
     const auto copy_address = getPageAddress(address) + copy_offset;
-
-    printf("\n init tdata module @ %lx with offset:%d for len: %d (remaining: %d)", copy_address, copy_offset, copy_len, remaining_len);
 
     memcpy((uint8_t*)copy_address, dtv.init_image + dtv.init_len - remaining_len, copy_len);
     remaining_len -= copy_len;
@@ -131,8 +124,6 @@ void ThreadLocalStorage::allocate(int index, uint64_t offset, const ThreadLocalS
     if (copy_len > remaining_len) copy_len = remaining_len;
 
     const auto copy_address = getPageAddress(address) + copy_offset;
-
-    printf("\n init tbss module @ %lx with offset:%d for len: %d (remaining: %d)", copy_address, copy_offset, copy_len, remaining_len);
 
     memset((uint8_t*)copy_address, 0, copy_len);
     remaining_len -= copy_len;

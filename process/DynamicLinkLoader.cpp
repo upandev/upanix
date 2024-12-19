@@ -21,24 +21,18 @@
  */
 #include <ProcessManager.h>
 #include <DynamicLinkLoader.h>
-#include <MemManager.h>
-#include <ElfSectionHeader.h>
 #include <ElfConstants.h>
-#include <ElfParser.h>
 #include <ElfRelocationSection.h>
 #include <ElfSymbolTable.h>
 #include <ElfDynamicSection.h>
-#include <BufferedReader.h>
 #include <MountManager.h>
 #include <GenericUtil.h>
 
 using namespace ElfSectionHeader ;
-using namespace ElfHeader ;
 using namespace ElfRelocSection ;
 using namespace ElfSymbolTable ;
 using namespace ElfDynamicSection ;
 
-# define REL_PLT_SUB_NAME	".rela.plt"
 # define LIBC "libc.so"
 
 /****************************** Static Functions *******************************************/
@@ -53,58 +47,44 @@ static unsigned long DynamicLinkLoader_GetHashValue(const char* name) {
   return h;
 }
 
-bool DynamicLinkLoader_GetSymbolOffsetFromProcess(ElfParser& elfParser, const char* szSymName, uint64_t& symGOTAddress, int64_t relocationAddend) {
-  const Elf64_Shdr* pDynSymTableSectionHeader = elfParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
-  const Elf64_Shdr* pDynSymStrTableSectionHeader = elfParser.GetSectionHeaderByIndex(pDynSymTableSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const char* pSymStrTable = (const char*)(GLOBAL_REL_ADDR(pDynSymStrTableSectionHeader->sh_addr, 0)) ;
+bool DynamicLinkLoader_GetSymbolOffsetFromProcess(Process& process, const char* szSymName, uint64_t& symGOTAddress, int64_t relocationAddend) {
+   const auto elfDynSymTable = process.getELFInfo().getDynSymTable().valueOrThrow(XLOC, "no dynamic symbol table found");
 
-  const auto tableSize = pDynSymTableSectionHeader->sh_size / pDynSymTableSectionHeader->sh_entsize;
-  const Elf64_Sym* entries = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynSymTableSectionHeader->sh_addr, 0)) ;
-  for(uint32_t i = 0; i < tableSize; ++i) {
-    if (strcmp(&pSymStrTable[entries[i].st_name], szSymName) == 0) {
-      if (entries[i].st_value == 0) {
+   for (Elf64_Xword i = 0; i < process.getELFInfo().getDynSymTableSize(); ++i) {
+    if (strcmp(process.getELFInfo().getDynSymName(elfDynSymTable[i].st_name), szSymName) == 0) {
+      if (elfDynSymTable[i].st_value == 0) {
         break;
       }
-      symGOTAddress = relocationAddend + entries[i].st_value;
+      symGOTAddress = relocationAddend + elfDynSymTable[i].st_value;
       return true;
     }
   }
+
   return false;
 }
 
 bool DynamicLinkLoader_GetSymbolOffset(const upan::string& dllName, const upan::string& symName,
                                        uint64_t& symGOTAddress, int64_t relocationAddend, Process& process) {
-  const auto& dllInfo = process.getDLLInfo(dllName).value();
-  const auto pELFHeader = (Elf64_Ehdr*)(dllInfo.virtualLoadAddress());
-  const auto pELFSectionHeader = dllInfo.elfInfo().elfSectionHeaders();
+  auto& dllInfo = process.getDLLInfo(dllName).value();
 
-  ElfParser elsParser(pELFHeader, pELFSectionHeader, nullptr);
+  auto dynSymTable = dllInfo.elfInfo().getDynSymTable().valueOrThrow(XLOC, "no dynamic symbol table found");
+  auto hashTable = dllInfo.elfInfo().getHashTable().valueOrThrow(XLOC, "elf hash table not found");
+  auto uiNoOfBuckets = hashTable[0];
 
-  const auto pHashSectionHeader = elsParser.GetSectionHeaderByType(SHT_HASH).goodValueOrThrow(XLOC);
-  const auto pDynamicSymSectionHeader = elsParser.GetSectionHeaderByIndex(pHashSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const auto pDynamicSymStringSectionHeader = elsParser.GetSectionHeaderByIndex(pDynamicSymSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const auto pELFDynSymTable = (Elf64_Sym*)(dllInfo.virtualLoadAddress() + pDynamicSymSectionHeader->sh_addr);
-  const auto pDynStrTable = (const char*)(dllInfo.virtualLoadAddress() + pDynamicSymStringSectionHeader->sh_addr);
+  __attribute__((unused)) auto uiNoOfChains = hashTable[1];
+  auto pBucket = (Elf64_Word*)((Elf64_Word*)hashTable + 2);
+  auto pChain = (Elf64_Word*)((Elf64_Word*)hashTable + 2 + uiNoOfBuckets);
+  auto hashValue = DynamicLinkLoader_GetHashValue(symName.c_str());
+  uint32_t symTabIndex = pBucket[hashValue % uiNoOfBuckets];
 
-  auto pHashTable = (Elf64_Word*)(dllInfo.virtualLoadAddress() + pHashSectionHeader->sh_addr);
-  auto uiNoOfBuckets = pHashTable[0];
-
-  __attribute__((unused)) auto uiNoOfChains = pHashTable[1];
-  auto pBucket = (Elf64_Word*)((Elf64_Word*)pHashTable + 2);
-  auto pChain = (Elf64_Word*)((Elf64_Word*)pHashTable + 2 + uiNoOfBuckets);
-  auto uiHashValue = DynamicLinkLoader_GetHashValue(symName.c_str());
-  uint32_t uiSymTabIndex = pBucket[uiHashValue % uiNoOfBuckets];
-  uint32_t uiSymStrIndex;
-
-  for(; uiSymTabIndex != STN_UNDEF;) {
-    uiSymStrIndex = pELFDynSymTable[uiSymTabIndex].st_name;
-    if(strcmp(&pDynStrTable[uiSymStrIndex], symName.c_str()) == 0) {
-      if(pELFDynSymTable[uiSymTabIndex].st_value != 0) {
-        symGOTAddress = dllInfo.virtualLoadAddress() + relocationAddend + pELFDynSymTable[uiSymTabIndex].st_value;
+  for(; symTabIndex != STN_UNDEF;) {
+    if(strcmp(dllInfo.elfInfo().getDynSymName(dynSymTable[symTabIndex].st_name), symName.c_str()) == 0) {
+      if(dynSymTable[symTabIndex].st_value != 0) {
+        symGOTAddress = dllInfo.elfInfo().getBase() + relocationAddend + dynSymTable[symTabIndex].st_value;
         return true;
       }
     }
-    uiSymTabIndex = pChain[uiSymTabIndex];
+    symTabIndex = pChain[symTabIndex];
   }
 
   return false;
@@ -127,69 +107,36 @@ void DynamicLinkLoader_DoRelocation(Process& process, int64_t iID, uint64_t relo
   //multithread synchronization
   upan::mutex_guard g(process.dllMutex().value());
 
-	Elf64_Ehdr* pELFHeader ;
-	Elf64_Shdr* pELFSectionHeader ;
-	char* pSecHeaderStrTable ;
-	
-	Elf64_Ehdr* pProcessELFHeader ;
-	Elf64_Shdr* pProcessELFSectionHeader ;
-	char* pProcessSecHeaderStrTable ;
-
-	uint64_t uiBaseAddress ;
+  const ELFInfo* elfInfo;
 
 	if(iID >= 0) {
-		const DLLInfo& dllInfo = process.getDLLInfo(iID).value();
-    uiBaseAddress = dllInfo.virtualLoadAddress();
-    pELFHeader = (Elf64_Ehdr*) dllInfo.virtualLoadAddress();
-    pELFSectionHeader = dllInfo.elfInfo().elfSectionHeaders();
-    pSecHeaderStrTable = dllInfo.elfInfo().elfSecStrTable();
+    elfInfo = &process.getDLLInfo(iID).value().elfInfo();
   } else {
-		uiBaseAddress = 0;
-		pELFHeader = (Elf64_Ehdr*)process.getProcessBase();
-    pELFSectionHeader = process.getELFInfo().elfSectionHeaders();
-    pSecHeaderStrTable = process.getELFInfo().elfSecStrTable();
+    elfInfo = &process.getELFInfo();
   }
 
-	ElfParser mELFParser(pELFHeader, pELFSectionHeader, pSecHeaderStrTable) ;
+  auto elfDynRelPltTable = elfInfo->getDynRelPltTable().valueOrThrow(XLOC, "no plt relocation table found");
+  auto elfDynSymTable = elfInfo->getDynSymTable().valueOrThrow(XLOC, "not dynamic symbol table found");
 
-  auto pRelocationSectionHeader = mELFParser.GetSectionHeaderByTypeAndName(SHT_RELA, REL_PLT_SUB_NAME).goodValueOrThrow(XLOC);
-  auto  pDynamicSymSectionHeader = mELFParser.GetSectionHeaderByIndex(pRelocationSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  __attribute__((unused)) Elf64_Shdr* pProcedureLinkSectionHeader = mELFParser.GetSectionHeaderByIndex(pRelocationSectionHeader->sh_info).goodValueOrThrow(XLOC);
-  auto  pDynamicSymStringSectionHeader = mELFParser.GetSectionHeaderByIndex(pDynamicSymSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  auto pELFRelTable = (Elf64_Rela*)(GLOBAL_REL_ADDR(pRelocationSectionHeader->sh_addr, uiBaseAddress)) ;
-  auto pELFDynSymTable = (Elf64_Sym*)(GLOBAL_REL_ADDR(pDynamicSymSectionHeader->sh_addr, uiBaseAddress)) ;
-	const char* pDynStrTable = (const char*)(GLOBAL_REL_ADDR(pDynamicSymStringSectionHeader->sh_addr, uiBaseAddress)) ;
-	const auto uiSymIndex = ELF64_R_SYM(pELFRelTable[relocationOffset].r_info);
-  const auto uiSymStrIndex = pELFDynSymTable[uiSymIndex].st_name ;
-	const auto szSymName = (char*)&pDynStrTable[uiSymStrIndex] ;
-  uint64_t& symGOTAddress = *(uint64_t*)GLOBAL_REL_ADDR(pELFRelTable[relocationOffset].r_offset, uiBaseAddress);
-  const auto relocationAddend = pELFRelTable[relocationOffset].r_addend;
+	const auto symIndex = ELF64_R_SYM(elfDynRelPltTable[relocationOffset].r_info);
+	const auto szSymName = elfInfo->getDynSymName(elfDynSymTable[symIndex].st_name);
+  auto& symGOTAddress = *(uint64_t*)GLOBAL_REL_ADDR(elfDynRelPltTable[relocationOffset].r_offset, elfInfo->getBase());
+  const auto relocationAddend = elfDynRelPltTable[relocationOffset].r_addend;
 
   //printf("\n %s", szSymName);
-	pProcessELFHeader = (Elf64_Ehdr*)process.getProcessBase();
-	pProcessELFSectionHeader = process.getELFInfo().elfSectionHeaders();
-	pProcessSecHeaderStrTable = process.getELFInfo().elfSecStrTable();
-
-	ElfParser mProgELFParser(pProcessELFHeader, pProcessELFSectionHeader, pProcessSecHeaderStrTable) ;
-
 	if (iID >= 0) {
-	  if (DynamicLinkLoader_GetSymbolOffsetFromProcess(mProgELFParser, szSymName, symGOTAddress, relocationAddend)) {
+	  if (DynamicLinkLoader_GetSymbolOffsetFromProcess(process, szSymName, symGOTAddress, relocationAddend)) {
 	    *dynamicSymAddress = symGOTAddress;
       return;
 	  }
 	}
 
-  auto pDynamicSectionHeader = mProgELFParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
-  auto pELFDynSection = (Elf64_Dyn*)(GLOBAL_REL_ADDR(pDynamicSectionHeader->sh_addr, 0)) ;
-  auto pProcDynamicSymStringSecHeader = mProgELFParser.GetSectionHeaderByIndex(pDynamicSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const auto pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, 0));
-  const auto uiNoOfEntries = pDynamicSectionHeader->sh_size / pDynamicSectionHeader->sh_entsize ;
-
   bool libcChecked = false;
-  for(auto uiIndex = 0; uiIndex < uiNoOfEntries; uiIndex++) {
+  const auto procDynSection = process.getELFInfo().getDynSection().valueOrThrow(XLOC, "no dynamic section found");
+  for(Elf64_Xword i = 0; i < process.getELFInfo().getDynSectionSize(); ++i) {
     // TODO: Maintain a Map of tagID and tagType
-		if(pELFDynSection[uiIndex].d_tag == DT_NEEDED) {
-			const auto szDLLName = (char*)&pProcessDynStrTable[ pELFDynSection[uiIndex].d_un.d_val ] ;
+		if(procDynSection[i].d_tag == DT_NEEDED) {
+			const auto szDLLName = process.getELFInfo().getDynSymName(procDynSection[i].d_un.d_val);
       libcChecked = strcmp(szDLLName, LIBC) == 0;
       if(DynamicLinkLoader_GetSymbolOffset(szDLLName, szSymName, symGOTAddress, relocationAddend, process)) {
         *dynamicSymAddress = symGOTAddress;

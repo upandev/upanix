@@ -25,13 +25,13 @@
 #include <result.h>
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
+#define REL_PLT_SUB_NAME	".rela.plt"
 
 void ELFInfo::init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable) {
   _base = base;
   _elfSectionHeaderSize = elfSectionHeaderSize;
   _elfSectionHeaders = elfSectionHeaders;
   _elfSecStrTable = elfSecStrTable;
-
 
   getSectionByType(SHT_DYNAMIC).onGood([&](Section& section) {
     _dynSection = upan::option<Elf64_Dyn*>(section.get<Elf64_Dyn>());
@@ -51,10 +51,20 @@ void ELFInfo::init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::El
     _dynRelTable = upan::option<Elf64_Rela*>(section.get<Elf64_Rela>());
     _dynRelTableSize = section.size();
   });
+
+  getSectionByTypeAndName(SHT_RELA, REL_PLT_SUB_NAME).onGood([&](Section& section) {
+    _dynRelPltTable = upan::option<Elf64_Rela*>(section.get<Elf64_Rela>());
+    _dynRelPltTableSize = section.size();
+  });
+
+  getSectionByType(SHT_HASH).onGood([&](Section& section) {
+    _hashTable = upan::option<Elf64_Word*>(section.get<Elf64_Word>());
+  });
 }
 
 void ELFInfo::adjustBase(uint64_t base) {
-  uint64_t adjust = base - _base;
+  const uint64_t adjust = base - _base;
+  _base = base;
 
   _dynSection.ifPresent([&](Elf64_Dyn* s) {
     _dynSection = upan::option<Elf64_Dyn*>(reinterpret_cast<Elf64_Dyn*>((uint64_t)s + adjust));
@@ -71,9 +81,17 @@ void ELFInfo::adjustBase(uint64_t base) {
   _dynRelTable.ifPresent([&](Elf64_Rela* s) {
     _dynRelTable = upan::option<Elf64_Rela*>(reinterpret_cast<Elf64_Rela*>((uint64_t)s + adjust));
   });
+
+  _dynRelPltTable.ifPresent([&](Elf64_Rela* s) {
+    _dynRelPltTable = upan::option<Elf64_Rela*>(reinterpret_cast<Elf64_Rela*>((uint64_t)s + adjust));
+  });
+
+  _hashTable.ifPresent([&](Elf64_Word* s) {
+    _hashTable = upan::option<Elf64_Word*>(reinterpret_cast<Elf64_Word*>((uint64_t)s + adjust));
+  });
 }
 
-const char* ELFInfo::getDynSymName(Elf64_Xword index) {
+const char* ELFInfo::getDynSymName(Elf64_Xword index) const {
   return (const char*)&_dynSymStrTable[index];
 }
 

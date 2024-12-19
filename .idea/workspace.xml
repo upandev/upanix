@@ -33,12 +33,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="while doing dynamic relocation, fall back to resolving the symbol using libc.so - this is particularly necessary when shared libs are accessing auto-generated functions like __tls_get_adr() which is defined in libc.so">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor managing ELF tables and sections while resolving dynamic symbols">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -516,7 +517,7 @@
       <workItem from="1734516733728" duration="2093000" />
       <workItem from="1734519323897" duration="30000" />
       <workItem from="1734519358313" duration="1272000" />
-      <workItem from="1734612146782" duration="198000" />
+      <workItem from="1734612146782" duration="3483000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -861,7 +862,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="122" />
+    <option name="localTasksCounter" value="123" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -895,7 +896,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor fileSystem with in-memory file-tree" />
     <MESSAGE value="refactor filesystem with in-memory multi-thread/process safe file-tree and file-data management" />
     <MESSAGE value="return error and not throw exception when you open a non-existent file" />
     <MESSAGE value="bug fixes in the new in-memory file-tree based persisted file-system" />
@@ -920,7 +920,8 @@
     <MESSAGE value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
     <MESSAGE value="moved relocation of TLS variables that are accessed across shared libraries and the main executable into dllInitRelocate() method that is called once at program start-up" />
     <MESSAGE value="while doing dynamic relocation, fall back to resolving the symbol using libc.so - this is particularly necessary when shared libs are accessing auto-generated functions like __tls_get_adr() which is defined in libc.so" />
-    <option name="LAST_COMMIT_MESSAGE" value="while doing dynamic relocation, fall back to resolving the symbol using libc.so - this is particularly necessary when shared libs are accessing auto-generated functions like __tls_get_adr() which is defined in libc.so" />
+    <MESSAGE value="refactor managing ELF tables and sections while resolving dynamic symbols" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor managing ELF tables and sections while resolving dynamic symbols" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
