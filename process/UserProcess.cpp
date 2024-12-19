@@ -83,10 +83,8 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   }
 
   AllocateAddressSpace();
-  _elfInfo.set(mELFParser.CopyELFSectionHeader(), mELFParser.CopyELFSecStrTable());
 
   upan::uniq_ptr<byte[]> bProcessImage(new byte[sizeof(char) * _processSpaceSize]);
-
   upan::trycall([&] { mELFParser.CopyProcessImage(bProcessImage.get(), _processBase, processImageSize); }).onBad([&] (const upan::error& err) {
     DeallocateResources();
     throw upan::exception(XLOC, err);
@@ -96,16 +94,21 @@ void UserProcess::Load(int numOfParams, char** argvList) {
          DynamicLinkLoader::Instance().dllResolverProgBits(),
          DynamicLinkLoader::Instance().dllResolverSize());
 
+  _elfInfo.init((uint64_t)bProcessImage.get() - minMemAddr,
+                mELFParser.GetHeader()->e_shnum,
+                mELFParser.CopyELFSectionHeader(),
+                mELFParser.CopyELFSecStrTable());
+
   // Setting the Dynamic Link Loader Address in GOT
-  mELFParser.GetGOTAddress(bProcessImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
-    uiGOT[1] = -1;
-    uiGOT[2] = minMemAddr + processImageSize;
+  _elfInfo.getGOT().ifPresent([&](ELFInfo::Section& gotSection){
+    auto got = gotSection.get<uint64_t>();
+    got[1] = -1;
+    got[2] = minMemAddr + processImageSize;
   });
 
   // initialize BSS segment to 0
-  mELFParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_NOBITS, BSS_SEC_NAME).onGood([&] (Elf64_Shdr* bssSectionHeader) {
-    void* bss = (void*) (bProcessImage.get() + bssSectionHeader->sh_addr - minMemAddr);
-    memset(bss, 0, bssSectionHeader->sh_size);
+  _elfInfo.getSectionByTypeAndName(ElfSectionHeader::SHT_NOBITS, BSS_SEC_NAME).onGood([&](ELFInfo::Section& section) {
+    memset(section.get<void*>(), 0, section.size());
   });
 
   _tlsp.reset(new ThreadLocalSpace());
@@ -113,7 +116,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
     _tlsp->add(mELFParser.GetTLSTotalSize(), mELFParser.GetTLSInitImageSize(), mELFParser.GetTLSInitImage());
   }
 
-  LoadDLLs(mELFParser, bProcessImage.get());
+  LoadDLLs();
 
   _tls.reset(new ThreadLocalStorage(_processID, _pml4Table, tlsp(), 0x7));
 
@@ -121,6 +124,8 @@ void UserProcess::Load(int numOfParams, char** argvList) {
 
   const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
   const auto entryAdddress = mELFParser.GetProgramStartAddress();
+
+  _elfInfo.adjustBase(0);
 
   _taskContext.rdi = numOfParams; //argc
   _taskContext.rsi = stackTopAddress; //argv
@@ -186,20 +191,14 @@ void UserProcess::CopyElfImage(const uint8_t* processImage, int imageSize, uint6
   }
 }
 
-void UserProcess::LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage) {
-  const auto dynSectionHeader = exeElfParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
-  const auto dynSection = (Elf64_Dyn*)(processImage + dynSectionHeader->sh_addr - _processBase) ;
-  const auto noOfEntries = dynSectionHeader->sh_size / dynSectionHeader->sh_entsize;
-
-  const auto dynSymStrSectionHeader = exeElfParser.GetSectionHeaderByIndex(dynSectionHeader->sh_link).goodValueOrThrow(XLOC);
-  const auto dynSymStrTable = (const char*)(processImage + dynSymStrSectionHeader->sh_addr - _processBase) ;
-
-  for(uint32_t i = 0; i < noOfEntries; ++i) {
-    if (dynSection[i].d_tag == DT_NEEDED) {
-      const auto dllName = (char*)&dynSymStrTable[ dynSection[i].d_un.d_val ];
-      LoadELFDLL(dllName);
+void UserProcess::LoadDLLs() {
+  _elfInfo.getDynSection().ifPresent([&](const Elf64_Dyn* dynSection) {
+    for (Elf64_Xword i = 0; i < _elfInfo.getDynSectionSize(); ++i) {
+      if (dynSection[i].d_tag == DT_NEEDED) {
+        LoadELFDLL(_elfInfo.getDynSymName(dynSection[i].d_un.d_val));
+      }
     }
-  }
+  });
 }
 
 void UserProcess::LoadELFDLL(const upan::string& dllName) {
@@ -233,8 +232,6 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
   DLLInfo& dllInfo = getDLLInfo(dllName).value();
   const uint64_t uiDLLLoadAddress = dllInfo.virtualLoadAddress();
 
-  dllInfo.setELFInfo(dllElfParser.CopyELFSectionHeader(), dllElfParser.CopyELFSecStrTable());
-
   upan::uniq_ptr<byte[]> bDLLImage(new byte[sizeof(char) * uiMemImageSize]);
 
   upan::trycall([&] () { dllElfParser.CopyProcessImage(bDLLImage.get(), 0, uiMemImageSize); }).onBad([&] (const upan::error& err) {
@@ -245,15 +242,19 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
          DynamicLinkLoader::Instance().dllResolverProgBits(),
          DynamicLinkLoader::Instance().dllResolverSize());
 
-  // Setting the Dynamic Link Loader Address in GOT
-  dllElfParser.GetGOTAddress(bDLLImage.get(), minMemAddr).onGood([&](uint64_t* uiGOT) {
-    uiGOT[1] = dllInfo.id();
-    uiGOT[2] = uiDLLImageSize + uiDLLLoadAddress;
+  dllInfo.elfInfo().init((uint64_t)bDLLImage.get(),
+                     dllElfParser.GetHeader()->e_shnum,
+                     dllElfParser.CopyELFSectionHeader(),
+                     dllElfParser.CopyELFSecStrTable());
 
-    dllElfParser.GetNoOfGOTEntries().onGood([&](uint32_t uiNoOfGOTEntries) {
-      for(uint32_t i = 3; i < uiNoOfGOTEntries; i++)
-        uiGOT[i] += uiDLLLoadAddress ;
-    });
+  // Setting the Dynamic Link Loader Address in GOT
+  dllInfo.elfInfo().getGOT().ifPresent([&](ELFInfo::Section& gotSection) {
+    auto got = gotSection.get<uint64_t>();
+    got[1] = dllInfo.id();
+    got[2] = uiDLLImageSize + uiDLLLoadAddress;
+
+    for (uint32_t i = 3; i < gotSection.size(); i++)
+      got[i] += uiDLLLoadAddress;
   });
 
   if (dllElfParser.GetTLSTotalSize()) {
@@ -261,27 +262,21 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
     dllInfo.setTLSInfo(tlsInfo.moduleId(), tlsInfo.offset());
   }
 
-  const auto dynSymSecHeader = dllElfParser.GetSectionHeaderByType(SHT_DYNSYM).goodValueOrThrow(XLOC);
-  const auto noOfEntries = dynSymSecHeader->sh_size / dynSymSecHeader->sh_entsize;
-  const auto dynSymTable = (ElfSymbolTable::Elf64_Sym*)((uint64_t) bDLLImage.get() + dynSymSecHeader->sh_addr);
-  const auto dynSymStrSectionHeader = dllElfParser.GetSectionHeaderByIndex(dynSymSecHeader->sh_link).goodValueOrThrow(XLOC);
-  const auto dynSymStrTable = (const char*)((uint64_t)bDLLImage.get() + dynSymStrSectionHeader->sh_addr) ;
-
-  for(uint32_t i = 0; i < noOfEntries; ++i) {
-    const auto& dynSym = dynSymTable[i];
-    if (dynSym.st_shndx != STN_UNDEF && ELF64_ST_TYPE(dynSym.st_info) == STT_TLS) {
-      const char* symName = (char*)&dynSymStrTable[dynSym.st_name];
-      _relocateInfoMap.insert(RELOCATE_INFO_MAP::value_type (symName, RelocateInfo(dllInfo, dynSym.st_value)));
+  dllInfo.elfInfo().getDynSymTable().ifPresent([&](const Elf64_Sym* dynSymTable) {
+    for(Elf64_Xword i = 0; i < dllInfo.elfInfo().getDynSymTableSize(); ++i) {
+      const auto& dynSym = dynSymTable[i];
+      if (dynSym.st_shndx != STN_UNDEF && ELF64_ST_TYPE(dynSym.st_info) == STT_TLS) {
+        const char* symName = dllInfo.elfInfo().getDynSymName(dynSym.st_name);
+        _relocateInfoMap.insert(RELOCATE_INFO_MAP::value_type (symName, RelocateInfo(dllInfo, dynSym.st_value)));
+      }
     }
-  }
+  });
 
 /* Dynamic Relocation Entries are resolved here in Global Offset Table */
-  dllElfParser.GetSectionHeaderByTypeAndName(ElfSectionHeader::SHT_RELA, REL_DYN_SUB_NAME).onGood([&] (Elf64_Shdr* relSecHeader) {
-    const auto dynRelTable = (ElfRelocSection::Elf64_Rela*)((uint64_t) bDLLImage.get() + relSecHeader->sh_addr);
-    const auto noOfDynRelEntries = relSecHeader->sh_size / relSecHeader->sh_entsize;
-
-    for (uint32_t i = 0; i < noOfDynRelEntries; i++) {
+  dllInfo.elfInfo().getDynRelTable().ifPresent([&](Elf64_Rela* dynRelTable) {
+    for (Elf64_Xword i = 0; i < dllInfo.elfInfo().getDynRelTableSize(); ++i) {
       const auto uiRelType = ELF64_R_TYPE(dynRelTable[i].r_info);
+      const auto dynSymTable = dllInfo.elfInfo().getDynSymTable().valueOrThrow(XLOC, "dynSymTable not found");
 
       if (uiRelType == ElfRelocSection::R_X86_64_RELATIVE) {
         ((uint64_t*)((uint64_t) bDLLImage.get() + dynRelTable[i].r_offset))[0] += uiDLLLoadAddress;
@@ -294,6 +289,8 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
 
   /* End of Dynamic Relocation Entries resolution */
   CopyElfImage(bDLLImage.get(), uiMemImageSize, dllInfo.virtualLoadAddress());
+
+  dllInfo.elfInfo().adjustBase(dllInfo.virtualLoadAddress());
   //memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 

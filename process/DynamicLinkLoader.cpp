@@ -178,25 +178,17 @@ void DynamicLinkLoader_DoRelocation(Process& process, int64_t iID, uint64_t relo
       return;
 	  }
 	}
+
   auto pDynamicSectionHeader = mProgELFParser.GetSectionHeaderByType(SHT_DYNAMIC).goodValueOrThrow(XLOC);
-	
-	unsigned uiIndex, uiNoOfEntries = pDynamicSectionHeader->sh_size / pDynamicSectionHeader->sh_entsize ;
   auto pELFDynSection = (Elf64_Dyn*)(GLOBAL_REL_ADDR(pDynamicSectionHeader->sh_addr, 0)) ;
+  auto pProcDynamicSymStringSecHeader = mProgELFParser.GetSectionHeaderByIndex(pDynamicSectionHeader->sh_link).goodValueOrThrow(XLOC);
+  const auto pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, 0));
+  const auto uiNoOfEntries = pDynamicSectionHeader->sh_size / pDynamicSectionHeader->sh_entsize ;
 
   bool libcChecked = false;
-  for(uiIndex = 0; uiIndex < uiNoOfEntries; uiIndex++) {
+  for(auto uiIndex = 0; uiIndex < uiNoOfEntries; uiIndex++) {
     // TODO: Maintain a Map of tagID and tagType
 		if(pELFDynSection[uiIndex].d_tag == DT_NEEDED) {
-			const char* pProcessDynStrTable ;
-			if(iID >= 0) {
-			  Elf64_Shdr* pProcRelocSectionHeader = mProgELFParser.GetSectionHeaderByTypeAndName(SHT_RELA, REL_PLT_SUB_NAME).goodValueOrThrow(XLOC);
-			  Elf64_Shdr* pProcDynamicSymSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcRelocSectionHeader->sh_link).goodValueOrThrow(XLOC);
-			  Elf64_Shdr* pProcDynamicSymStringSecHeader = mProgELFParser.GetSectionHeaderByIndex(pProcDynamicSymSecHeader->sh_link).goodValueOrThrow(XLOC);
-			  pProcessDynStrTable = (const char*)(GLOBAL_REL_ADDR(pProcDynamicSymStringSecHeader->sh_addr, 0)) ;
-			}	else {
-			  pProcessDynStrTable = pDynStrTable ;
-			}
-
 			const auto szDLLName = (char*)&pProcessDynStrTable[ pELFDynSection[uiIndex].d_un.d_val ] ;
       libcChecked = strcmp(szDLLName, LIBC) == 0;
       if(DynamicLinkLoader_GetSymbolOffset(szDLLName, szSymName, symGOTAddress, relocationAddend, process)) {

@@ -23,27 +23,88 @@
 
 #include <ProcessConstants.h>
 #include <ElfSectionHeader.h>
+#include <result.h>
+#include <option.h>
+#include <ElfDynamicSection.h>
+#include <ElfSymbolTable.h>
+#include <ElfRelocationSection.h>
+
+using namespace ElfDynamicSection;
+using namespace ElfSectionHeader;
+using namespace ElfSymbolTable;
+using namespace ElfRelocSection;
 
 class ELFInfo {
 public:
-  ELFInfo() : _elfSectionHeaders(nullptr), _elfSecStrTable(nullptr) {}
+  class Section {
+  public:
+    Section() : _ptr(0), _sh_link(0), _size(0) {}
+    Section(uintptr_t ptr, Elf64_Word sh_link, Elf64_Xword size) : _ptr(ptr), _sh_link(sh_link), _size(size) {}
+
+    template<typename T>
+    T* get() const { return reinterpret_cast<T*>(_ptr); }
+    Elf64_Word sh_link() const { return _sh_link; }
+    Elf64_Xword size() const { return _size; }
+
+  private:
+    uintptr_t _ptr;
+    Elf64_Word _sh_link;
+    Elf64_Xword _size;
+  };
+
+  ELFInfo() : _base(0), _elfSectionHeaderSize(0),
+  _elfSectionHeaders(nullptr), _elfSecStrTable(nullptr),
+  _dynSection(upan::option<Elf64_Dyn*>::empty()), _dynSectionSize(0),
+  _dynSymTable(upan::option<Elf64_Sym*>::empty()), _dynSymTableSize(0),
+  _dynRelTable(upan::option<Elf64_Rela*>::empty()), _dynRelTableSize(0),
+  _dynSymStrTable(nullptr) {
+  }
 
   ~ELFInfo() {
     delete []_elfSectionHeaders;
     delete []_elfSecStrTable;
   }
 
-  void set(ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable) {
-    _elfSectionHeaders = elfSectionHeaders;
-    _elfSecStrTable = elfSecStrTable;
-  }
+  void init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable);
+  void adjustBase(uint64_t base);
 
+  uint64_t getBase() const { return _base; }
   ElfSectionHeader::Elf64_Shdr* elfSectionHeaders() const { return _elfSectionHeaders; }
   char* elfSecStrTable() const { return _elfSecStrTable; }
 
+  upan::option<Elf64_Dyn*> getDynSection() { return _dynSection; }
+  Elf64_Xword getDynSectionSize() { return _dynSectionSize; }
+
+  upan::option<Elf64_Sym*> getDynSymTable() { return _dynSymTable; }
+  Elf64_Xword getDynSymTableSize() { return _dynSymTableSize; }
+
+  upan::option<Elf64_Rela*> getDynRelTable() { return _dynRelTable; }
+  Elf64_Xword getDynRelTableSize() { return _dynRelTableSize; }
+
+  const char* getDynSymName(Elf64_Xword index);
+
+  upan::option<Section> getGOT();
+  upan::result<ELFInfo::Section> getSectionByName(const upan::string& name);
+  upan::result<ELFInfo::Section> getSectionByType(int type);
+  upan::result<ELFInfo::Section> getSectionByTypeAndName(int type, const upan::string& name);
+  upan::result<ELFInfo::Section> getSectionByIndex(Elf64_Word index);
+
 private:
+  uint64_t _base;
+  int _elfSectionHeaderSize;
   ElfSectionHeader::Elf64_Shdr* _elfSectionHeaders;
   char* _elfSecStrTable;
+
+  upan::option<Elf64_Dyn*> _dynSection;
+  Elf64_Xword _dynSectionSize;
+
+  upan::option<Elf64_Sym*> _dynSymTable;
+  Elf64_Xword _dynSymTableSize;
+
+  upan::option<Elf64_Rela*> _dynRelTable;
+  Elf64_Xword _dynRelTableSize;
+
+  const char* _dynSymStrTable;
 };
 
 class TLSInfo {
@@ -75,12 +136,8 @@ public:
   int id() const { return _id; }
   uint64_t virtualLoadAddress() const { return _virtualLoadAddress; }
   uint32_t noOfPages() const { return _noOfPages; }
-  const ELFInfo& elfInfo() const { return _elfInfo; }
+  ELFInfo& elfInfo() { return _elfInfo; }
   const TLSInfo& tlsInfo() const { return _tlsInfo; }
-
-  void setELFInfo(ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable) {
-    _elfInfo.set(elfSectionHeaders, elfSecStrTable);
-  }
 
   void setTLSInfo(int module, uint64_t offset) {
     _tlsInfo.set(module, offset);

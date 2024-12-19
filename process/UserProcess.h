@@ -79,7 +79,7 @@ private:
   typedef upan::map<upan::string, RelocateInfo> RELOCATE_INFO_MAP;
 
   void Load(int numOfParams, char** argvList);
-  void LoadDLLs(ElfParser& exeElfParser, uint8_t* processImage);
+  void LoadDLLs();
   void LoadELFDLL(const upan::string& dllName);
   upan::option<RelocateInfo&> getRelocateInfo(const upan::string& symName);
   void relocateMainExe();
