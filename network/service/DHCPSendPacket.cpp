@@ -22,27 +22,13 @@
 
 #include <DHCPSendPacket.h>
 #include <NetworkPacketComponents.h>
-#include <NetworkUtil.h>
 #include <memory/DMM.h>
-
-uint8_t _hType;
-uint8_t _hLen;
-uint8_t _hops;
-uint32_t _xid;
-uint16_t _secs; // seconds elapsed since client started the protocol
-uint16_t _flags;
-uint8_t _ciAddr[4]; // Client IP Address
-uint8_t _yiAddr[4]; // Your (Client) IP Address
-uint8_t _siAddr[4]; // Server IP Address;
-uint8_t _giAddr[4]; // Relay agent (Gateway) IP Address
-uint8_t _chAddr[16]; // Client Hardware Address;
-uint8_t _sName[64]; // Optional server host name (null terminated string)
-uint8_t _file[128]; // boot file name (null terminated string)
-
+#include <newalloc.h>
 
 DHCPSendPacket::DHCPSendPacket(uint8_t op, uint8_t hType, uint8_t hLen, uint8_t hops,
                                uint32_t xid, uint16_t secs, uint16_t flags,
-                               uint8_t* ciAddr, uint8_t* yiAddr, uint8_t* siAddr, uint8_t* giAddr,
+                               const struct in_addr& ciAddr, const struct in_addr& yiAddr,
+                               const struct in_addr& siAddr, const struct in_addr& giAddr,
                                uint8_t* chAddr, uint8_t* sName, uint8_t* file)
                                : _len(0), _buf(nullptr) {
   _len = NetworkPacket::Ethernet::HEADER_SIZE
@@ -59,22 +45,14 @@ DHCPSendPacket::DHCPSendPacket(uint8_t op, uint8_t hType, uint8_t hLen, uint8_t 
   header->_hType = hType;
   header->_hLen = hLen;
   header->_hops = hops;
-  header->_xid = NetworkUtil::SwitchEndian(xid);
-  header->_secs = NetworkUtil::SwitchEndian(secs);
-  header->_flags = NetworkUtil::SwitchEndian(flags);
+  header->_xid = htons(xid);
+  header->_secs = htons(secs);
+  header->_flags = htons(flags);
+  header->_ciAddr = ciAddr;
+  header->_yiAddr = yiAddr;
+  header->_siAddr = siAddr;
+  header->_giAddr = giAddr;
 
-  if (ciAddr) {
-    memcpy(header->_ciAddr, ciAddr, NetworkPacket::IPV4_ADDR_LEN);
-  }
-  if (yiAddr) {
-    memcpy(header->_yiAddr, yiAddr, NetworkPacket::IPV4_ADDR_LEN);
-  }
-  if (siAddr) {
-    memcpy(header->_siAddr, siAddr, NetworkPacket::IPV4_ADDR_LEN);
-  }
-  if (giAddr) {
-    memcpy(header->_giAddr, giAddr, NetworkPacket::IPV4_ADDR_LEN);
-  }
   printf("\n %d: %d: %d", sizeof(header->_chAddr), sizeof(header->_sName), sizeof(header->_file));
   if (chAddr) {
     memcpy(header->_chAddr, chAddr, sizeof(header->_chAddr));

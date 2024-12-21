@@ -23,6 +23,7 @@
   
 #include <stdlib.h>
 #include <ustring.h>
+#include <net/socket.h>
 
 namespace NetworkPacket {
   constexpr int MAC_ADDR_LEN = 6;
@@ -39,9 +40,9 @@ namespace NetworkPacket {
 
     struct IPV4 {
       uint8_t _senderHardwareAddress[MAC_ADDR_LEN];
-      uint8_t _senderProtocolAddress[IPV4_ADDR_LEN];
+      struct in_addr _senderProtocolAddress;
       uint8_t _targetHardwareAddress[MAC_ADDR_LEN];
-      uint8_t _targetProtocolAddress[IPV4_ADDR_LEN];
+      struct in_addr _targetProtocolAddress;
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
@@ -112,10 +113,10 @@ namespace NetworkPacket {
       uint32_t _xid;
       uint16_t _secs; // seconds elapsed since client started the protocol
       uint16_t _flags;
-      uint8_t _ciAddr[4]; // Client IP Address
-      uint8_t _yiAddr[4]; // Your (Client) IP Address
-      uint8_t _siAddr[4]; // Server IP Address;
-      uint8_t _giAddr[4]; // Relay agent (Gateway) IP Address
+      struct in_addr _ciAddr; // Client IP Address
+      struct in_addr _yiAddr; // Your (Client) IP Address
+      struct in_addr _siAddr; // Server IP Address;
+      struct in_addr _giAddr; // Relay agent (Gateway) IP Address
       uint8_t _chAddr[16]; // Client Hardware Address;
       uint8_t _sName[64]; // Optional server host name (null terminated string)
       uint8_t _file[128]; // boot file name (null terminated string)

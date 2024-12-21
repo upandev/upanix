@@ -32,7 +32,10 @@ private:
 public:
   DHCPSendPacket(uint8_t op, uint8_t hType, uint8_t hLen, uint8_t hops,
                  uint32_t xid, uint16_t secs, uint16_t flags,
-                 uint8_t* ciAddr, uint8_t* yiAddr, uint8_t* siAddr, uint8_t* giAddr,
+                 const struct in_addr& ciAddr,
+                 const struct in_addr& yiAddr,
+                 const struct in_addr& siAddr,
+                 const struct in_addr& giAddr,
                  uint8_t* chAddr, uint8_t* sName, uint8_t* file);
 
   ~DHCPSendPacket();

@@ -24,7 +24,6 @@
 #include <ARPHandler.h>
 #include <ARPRecvPacket.h>
 #include <EthernetHandler.h>
-#include <NetworkUtil.h>
 
 ARPHandler::ARPHandler(EthernetHandler &ethernetHandler)
   : PacketHandler<EthernetRecvPacket>(ethernetHandler.GetNetworkDevice()), _ethernetHandler(ethernetHandler) {
@@ -39,40 +38,42 @@ void ARPHandler::Process(const EthernetRecvPacket& packet) {
 }
 
 RawNetPacket ARPHandler::CreatePacket(uint16_t hType, EtherType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
-                                      const uint8_t* sha, const uint8_t* spa, const uint8_t* tha, const uint8_t* tpa) {
+                                      const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa) {
 
   RawNetPacket packet(NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE + NetworkPacket::ARP::IPV4_SIZE);
 
   auto arpHeader = reinterpret_cast<NetworkPacket::ARP::Header*>(packet.buf() + NetworkPacket::Ethernet::HEADER_SIZE);
-  arpHeader->_hType = NetworkUtil::SwitchEndian(hType);
-  arpHeader->_pType = NetworkUtil::SwitchEndian((uint16_t) pType);
+  arpHeader->_hType = htons(hType);
+  arpHeader->_pType = htons((uint16_t) pType);
   arpHeader->_hLen = hLen;
   arpHeader->_pLen = pLen;
-  arpHeader->_opCode = NetworkUtil::SwitchEndian(opCode);
+  arpHeader->_opCode = htons(opCode);
 
   auto _arpIPV4 = reinterpret_cast<NetworkPacket::ARP::IPV4*>(
           packet.buf() + NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE);
+
   memcpy(_arpIPV4->_senderHardwareAddress, sha, NetworkPacket::MAC_ADDR_LEN);
-  memcpy(_arpIPV4->_senderProtocolAddress, spa, NetworkPacket::IPV4_ADDR_LEN);
+  _arpIPV4->_senderProtocolAddress = spa;
+
   memcpy(_arpIPV4->_targetHardwareAddress, tha, NetworkPacket::MAC_ADDR_LEN);
-  memcpy(_arpIPV4->_targetProtocolAddress, tpa, NetworkPacket::IPV4_ADDR_LEN);
+  _arpIPV4->_targetProtocolAddress = tpa;
 
   return packet;
 }
 
-void ARPHandler::SendRequestForMAC(const IPAddress& ipAddress) {
-  const uint8_t spa[] = { 0, 0, 0, 0 };
+void ARPHandler::SendRequestForMAC(const struct in_addr& ipAddress) {
+  const struct in_addr spa = { INADDR_ANY };
   const uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
   const uint8_t tha[] = { 0, 0, 0, 0, 0, 0 };
 
   auto packet = CreatePacket(1, EtherType::IPV4,
                              NetworkPacket::MAC_ADDR_LEN, NetworkPacket::IPV4_ADDR_LEN, 1,
-                             _ethernetHandler.GetMACAddress().get(), spa, tha, ipAddress.get());
+                             _ethernetHandler.GetMACAddress().get(), spa, tha, ipAddress);
   _ethernetHandler.SendPacket(packet, EtherType::ARP, broadcast);
 }
 
 void ARPHandler::SendRARP() {
-  const uint8_t spa[] = { 255, 255, 255, 255 };
+  const struct in_addr spa = { INADDR_BROADCAST };
   const uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
   const uint8_t* mac = GetMACAddress().get();
 

@@ -22,18 +22,6 @@
 
 #include <NetworkUtil.h>
 
-uint8_t NetworkUtil::SwitchEndian(const uint8_t val) {
-  return (val >> 4) | (val << 4);
-}
-
-uint16_t NetworkUtil::SwitchEndian(const uint16_t val) {
-    return (val >> 8) | (val << 8);
-}
-
-uint32_t NetworkUtil::SwitchEndian(const uint32_t val) {
-    return ((val >> 24) & 0xFF) | ((val >> 8) & 0xFF00) | ((val << 8) & 0xFF0000) | ((val << 24) & 0xFF000000);
-}
-
 uint16_t NetworkUtil::CalculateChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum) {
   uint32_t sum = AddForChecksum(buf, lengthInBytes, initSum);
   while((sum >> 16)) {
@@ -52,40 +40,4 @@ uint32_t NetworkUtil::AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes
     sum += ((uint8_t*)buf)[lengthInBytes - 1];
   }
   return sum;
-}
-
-IPAddress::IPAddress(const upan::string &ipAddr) : _ipAddrStr(ipAddr) {
-  upan::vector<upan::string> tokens;
-  ipAddr.tokenize(".", false, tokens);
-  if (tokens.size() != NetworkPacket::IPV4_ADDR_LEN) {
-    throw upan::exception(XLOC, "Invalid IP Address: %s", ipAddr.c_str());
-  }
-  for(int i = 0; i < tokens.size(); ++i) {
-    _ipAddr[i] = atoi(tokens[i].c_str());
-  }
-}
-
-IPAddress::IPAddress(const upan::vector<uint8_t>& ipAddr) {
-  if (ipAddr.size() != NetworkPacket::IPV4_ADDR_LEN) {
-    throw upan::exception(XLOC, "Invalid IP Address Len: %d", ipAddr.size());
-  }
-  convert(ipAddr);
-}
-
-IPAddress::IPAddress(const uint8_t* ipAddr) {
-  convert(ipAddr);
-}
-
-IPAddress::IPAddress(const IPAddress& r) {
-  copy(r);
-}
-
-IPAddress& IPAddress::operator=(const IPAddress& r) {
-  copy(r);
-  return *this;
-}
-
-void IPAddress::copy(const IPAddress& r) {
-  this->_ipAddrStr = r._ipAddrStr;
-  memcpy(this->_ipAddr, r._ipAddr, NetworkPacket::IPV4_ADDR_LEN);
 }

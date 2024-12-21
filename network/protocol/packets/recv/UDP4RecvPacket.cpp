@@ -23,15 +23,14 @@
 #include <stdio.h>
 #include <IPV4RecvPacket.h>
 #include <UDP4RecvPacket.h>
-#include <NetworkUtil.h>
 
 UDP4RecvPacket::UDP4RecvPacket(const IPV4RecvPacket& ipv4RecvPacket) :
     _ipv4RecvPacket(ipv4RecvPacket), _udpHeader(reinterpret_cast<NetworkPacket::UDP::Header&>(*ipv4RecvPacket.PacketData())) {
   VerifyChecksum();
-  _udpHeader._srcPort = NetworkUtil::SwitchEndian(_udpHeader._srcPort);
-  _udpHeader._destPort = NetworkUtil::SwitchEndian(_udpHeader._destPort);
-  _udpHeader._len = NetworkUtil::SwitchEndian(_udpHeader._len);
-  _udpHeader._checksum = NetworkUtil::SwitchEndian(_udpHeader._checksum);
+  _udpHeader._srcPort = ntohs(_udpHeader._srcPort);
+  _udpHeader._destPort = ntohs(_udpHeader._destPort);
+  _udpHeader._len = ntohs(_udpHeader._len);
+  _udpHeader._checksum = ntohs(_udpHeader._checksum);
 }
 
 void UDP4RecvPacket::VerifyChecksum() {
@@ -43,7 +42,7 @@ void UDP4RecvPacket::VerifyChecksum() {
     pseudoHeader._protocol = IPType::UDP;
     pseudoHeader._udpLen = _udpHeader._len;
 
-    const uint32_t len = NetworkUtil::SwitchEndian(_udpHeader._len);
+    const uint32_t len = ntohs(_udpHeader._len);
     const uint16_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *) _ipv4RecvPacket.PacketData(),
                                                                        len,
                                                                        NetworkUtil::AddForChecksum(

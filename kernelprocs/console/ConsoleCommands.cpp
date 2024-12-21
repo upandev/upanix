@@ -787,9 +787,8 @@ void ConsoleCommands_ARPing() {
       arpHandler.SendRARP();
     });
   } else {
-    const IPAddress targetIPAddr(param);
     device.GetARPHandler().ifPresent([&](ARPHandler& arpHandler) {
-      arpHandler.SendRequestForMAC(targetIPAddr);
+      arpHandler.SendRequestForMAC({ inet_aton(param.c_str()) });
     });
   }
 }

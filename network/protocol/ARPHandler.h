@@ -31,7 +31,7 @@ class ARPHandler : public PacketHandler<EthernetRecvPacket> {
 public:
   explicit ARPHandler(EthernetHandler& ethernetHandler);
   void Process(const EthernetRecvPacket& packet) override;
-  void SendRequestForMAC(const IPAddress& ipAddress);
+  void SendRequestForMAC(const struct in_addr& ipAddress);
   void SendRARP();
 
   static constexpr EtherType HandlerType() {
@@ -40,7 +40,7 @@ public:
 
 private:
   RawNetPacket CreatePacket(uint16_t hType, EtherType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
-                            const uint8_t* sha, const uint8_t* spa, const uint8_t* tha, const uint8_t* tpa);
+                            const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa);
 
   EthernetHandler& _ethernetHandler;
 };

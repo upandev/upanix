@@ -28,7 +28,6 @@
 #include <EthernetHandler.h>
 #include <EthernetRecvPacket.h>
 #include <NetworkDevice.h>
-#include <NetworkUtil.h>
 
 EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler<RawNetPacket>(networkDevice) {
   _etherPacketHandlers.insert(EtherPacketHandlerMap::value_type(ARPHandler::HandlerType(), new ARPHandler(*this)));
@@ -59,6 +58,6 @@ void EthernetHandler::SendPacket(RawNetPacket& packet, EtherType pType, const ui
   auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(packet.buf());
   memcpy(header->_destinationMAC, destMac, NetworkPacket::MAC_ADDR_LEN);
   memcpy(header->_sourceMAC, GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
-  header->_type = NetworkUtil::SwitchEndian((uint16_t)pType);
+  header->_type = htons((uint16_t)pType);
   GetNetworkDevice().SendPacket(packet);
 }

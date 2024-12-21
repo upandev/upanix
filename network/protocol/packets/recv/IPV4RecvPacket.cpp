@@ -21,15 +21,14 @@
  */
 
 #include <IPV4RecvPacket.h>
-#include <NetworkUtil.h>
 
 IPV4RecvPacket::IPV4RecvPacket(const EthernetRecvPacket& ethernetPacket) :
   _ethernetPacket(ethernetPacket),
   _ipv4Header(reinterpret_cast<NetworkPacket::IPV4::Header&>(*ethernetPacket.PacketData())) {
   VerifyChecksum();
-  _ipv4Header._totalLen = NetworkUtil::SwitchEndian(_ipv4Header._totalLen);
-  _ipv4Header._identification = NetworkUtil::SwitchEndian(_ipv4Header._identification);
-  _ipv4Header._checksum = NetworkUtil::SwitchEndian(_ipv4Header._checksum);
+  _ipv4Header._totalLen = ntohs(_ipv4Header._totalLen);
+  _ipv4Header._identification = ntohs(_ipv4Header._identification);
+  _ipv4Header._checksum = ntohs(_ipv4Header._checksum);
   //_ipv4Header._fragmentOffset = NetworkUtil::SwitchEndian(_ipv4Header._fragmentOffset);
 }
 
@@ -39,7 +38,7 @@ void IPV4RecvPacket::VerifyChecksum() {
   if (calculatedChecksum ^ (uint16_t)0xFFFF) {
     Print();
     throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)",
-                          NetworkUtil::SwitchEndian(_ipv4Header._identification), calculatedChecksum);
+                          ntohs(_ipv4Header._identification), calculatedChecksum);
   }
 }
 

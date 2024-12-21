@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <UDP4RecvPacket.h>
 #include <DHCPRecvPacket.h>
-#include <NetworkUtil.h>
 
 DHCPRecvPacket::DHCPRecvPacket(const UDP4RecvPacket& udp4RecvPacket) :
   _udp4RecvPacket(udp4RecvPacket),
@@ -31,18 +30,18 @@ DHCPRecvPacket::DHCPRecvPacket(const UDP4RecvPacket& udp4RecvPacket) :
   if (_udp4RecvPacket.Header()._len < NetworkPacket::DHCP::HEADER_SIZE) {
     throw upan::exception(XLOC, "Invalid DHCP Packet with len: %d", _udp4RecvPacket.Header()._len);
   }
-  _header._xid = NetworkUtil::SwitchEndian(_header._xid);
-  _header._secs = NetworkUtil::SwitchEndian(_header._secs);
-  _header._flags = NetworkUtil::SwitchEndian(_header._flags);
+  _header._xid = ntohs(_header._xid);
+  _header._secs = ntohs(_header._secs);
+  _header._flags = ntohs(_header._flags);
 }
 
 void DHCPRecvPacket::Print() const {
   printf("\n DHCP: Op: %d, HType: %d, HLen: %d, Hops: %d", _header._op, _header._hType, _header._hLen, _header._hops);
   printf("\n XID: 0x%x, Secs: %d, Flags: 0x%x", _header._xid, _header._secs, _header._flags);
   printf("\n CIAddr: %s, YIAddr: %s, SIAddr: %s, GIAddr: %s",
-         IPAddress(_header._ciAddr).str().c_str(),
-         IPAddress(_header._yiAddr).str().c_str(),
-         IPAddress(_header._siAddr).str().c_str(),
-         IPAddress(_header._giAddr).str().c_str());
+         inet_ntoa(_header._ciAddr),
+         inet_ntoa(_header._yiAddr),
+         inet_ntoa(_header._siAddr),
+         inet_ntoa(_header._giAddr));
   printf("\n CHAddr: %s", MACAddress(_header._chAddr).str().c_str());
 }

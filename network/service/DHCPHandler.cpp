@@ -42,7 +42,7 @@ void DHCPHandler::ObtainIPAddress() {
 
   DHCPSendPacket dhcpSendPacket(1, 1, NetworkPacket::MAC_ADDR_LEN, 0,
                                 0x3903F326, 0, 0,
-                                nullptr, nullptr, nullptr, nullptr,
+                                { INADDR_ANY }, { INADDR_ANY }, { INADDR_ANY }, { INADDR_ANY },
                                 clientHardwareAddress, nullptr, nullptr);
   _udpHandler.SendPacket(dhcpSendPacket.buf(), dhcpSendPacket.len(), 68, 67);
 }

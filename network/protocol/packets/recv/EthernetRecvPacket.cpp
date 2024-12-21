@@ -21,13 +21,12 @@
  */
 
 #include <stdio.h>
-#include <NetworkUtil.h>
 #include <EthernetRecvPacket.h>
 
 EthernetRecvPacket::EthernetRecvPacket(const RawNetPacket& rawNetPacket) :
   _rawNetPacket(rawNetPacket),
   _header(reinterpret_cast<NetworkPacket::Ethernet::Header&>(*rawNetPacket.buf())) {
-  _header._type = NetworkUtil::SwitchEndian(_header._type);
+  _header._type = ntohs(_header._type);
 }
 
 void EthernetRecvPacket::Print() const {
