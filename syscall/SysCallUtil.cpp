@@ -24,7 +24,7 @@
 # include <SystemUtil.h>
 # include <RTC.h>
 
-byte SysCallUtil_IsPresent(uint64_t sysCallId)
+bool SysCallUtil_IsPresent(uint64_t sysCallId)
 {
 	return (sysCallId > SYS_CALL_UTIL_START && sysCallId < SYS_CALL_UTIL_END) ;
 }

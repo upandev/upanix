@@ -73,6 +73,7 @@
 #include <IconImageMap.h>
 #include <KernelRootProcess.h>
 #include <math.h>
+#include <net/socket.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -801,6 +802,27 @@ void ConsoleCommands_ObtainIPAddress() {
   }
   auto& device = d.value();
   //device.GetDHCPHandler().ifPresent([&](DHCPHandler& handler) { handler.ObtainIPAddress(); });
+
+  const int DHCP_CLIENT_PORT = 68;
+
+  int sock;
+  struct sockaddr_in server_addr;
+  struct sockaddr_in client_addr;
+  //struct dhcp_message dhcp_msg;
+  char buffer[1024];
+  ssize_t len;
+
+  // Create a UDP socket
+  sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  if (sock < 0) {
+    throw upan::exception(XLOC, "socket creation failed");
+  }
+
+  // Bind the socket to the DHCP client port
+  memset(&client_addr, 0, sizeof(client_addr));
+  client_addr.sin_family = AF_INET;
+  client_addr.sin_port = htons(DHCP_CLIENT_PORT);
+  client_addr.sin_addr.s_addr = INADDR_ANY;
 }
 
 void ConsoleCommands_SetXHCIEventMode()

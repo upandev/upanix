@@ -24,7 +24,7 @@
 
 # include <Global.h>
 
-byte SysCallFile_IsPresent(uint64_t sysCallId) ;
+bool SysCallFile_IsPresent(uint64_t sysCallId) ;
 
 void
 SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3,

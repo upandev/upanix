@@ -36,6 +36,7 @@
 #include <SysCallProc.h>
 #include <SysCallDrive.h>
 #include <SysCallUtil.h>
+#include <SysCallNet.h>
 #include <syscalldefs.h>
 
 upan::map<uint64_t, upan::map<int, int>>& get_syscall_stats();

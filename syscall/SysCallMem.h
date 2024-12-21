@@ -24,7 +24,7 @@
 
 # include <Global.h>
 
-byte SysCallMem_IsPresent(uint64_t sysCallId) ;
+bool SysCallMem_IsPresent(uint64_t sysCallId) ;
 
 void
 SysCallMem_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2,

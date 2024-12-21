@@ -28,7 +28,7 @@ uint64_t SYSCALL_RETURN_ADDRESS = PROCESS_STACK_TOP_ADDRESS - 8 * 3;
 uint64_t SYSCALL_STACK_TOP = SYSCALL_RETURN_ADDRESS;
 
 typedef void Handler(uint64_t* retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
-typedef byte Check(uint64_t uiSysCallID);
+typedef bool Check(uint64_t uiSysCallID);
 
 typedef struct
 {
@@ -84,6 +84,8 @@ void SysCall_Initialize() {
 	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallDrive_IsPresent, &SysCallDrive_Handle);
 
 	SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallUtil_IsPresent, &SysCallUtil_Handle);
+
+  SysCall_InitializeHandler(&SysCall_Handlers[SysCall_NoOfHandlers++], &SysCallNet_IsPresent, &SysCallNet_Handle);
 
   KC::MConsole().LoadMessage("SysCall Initialization", Success) ;
 }

@@ -24,7 +24,7 @@
 
 # include <Global.h>
 
-byte SysCallDrive_IsPresent(uint64_t sysCallId) ;
+bool SysCallDrive_IsPresent(uint64_t sysCallId) ;
 
 void
 SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3,

@@ -26,7 +26,7 @@
 # include <FileDescriptor.h>
 # include <StreamBufferDescriptor.h>
 
-byte SysCallFile_IsPresent(uint64_t sysCallId)
+bool SysCallFile_IsPresent(uint64_t sysCallId)
 {
 	return (sysCallId > SYS_CALL_FILE_START && sysCallId < SYS_CALL_FILE_END) ;
 }

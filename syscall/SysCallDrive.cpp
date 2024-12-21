@@ -25,7 +25,7 @@
 # include <try.h>
 # include <StorageDriveManager.h>
 
-byte SysCallDrive_IsPresent(uint64_t sysCallId)
+bool SysCallDrive_IsPresent(uint64_t sysCallId)
 {
 	return (sysCallId > SYS_CALL_DRIVE_START && sysCallId < SYS_CALL_DRIVE_END) ;
 }

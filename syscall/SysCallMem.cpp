@@ -22,7 +22,7 @@
 # include <SysCall.h>
 # include <SysCallMem.h>
 
-byte SysCallMem_IsPresent(uint64_t sysCallId)
+bool SysCallMem_IsPresent(uint64_t sysCallId)
 {
 	return (sysCallId > SYS_CALL_MEM_START && sysCallId < SYS_CALL_MEM_END) ;
 }

@@ -21,9 +21,9 @@
  */
 #pragma once
 
-#include <Socket.h>
+#include <SocketBase.h>
 
-class DataGramSocket : public Socket {
+class DataGramSocket : public SocketBase {
 public:
   int read(void* buffer, int len) override;
   int write(const void* buffer, int len) override;

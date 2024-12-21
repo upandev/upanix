@@ -24,7 +24,7 @@
 # include <MultiBoot.h>
 #include <BaseFrame.h>
 
-byte SysCallDisplay_IsPresent(uint64_t sysCallID)
+bool SysCallDisplay_IsPresent(uint64_t sysCallID)
 {
 	return (sysCallID > SYS_CALL_DISPLAY_START && sysCallID < SYS_CALL_DISPLAY_END) ;
 }

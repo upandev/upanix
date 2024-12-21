@@ -21,9 +21,9 @@
  */
 #pragma once
 
-#include <Socket.h>
+#include <SocketBase.h>
 
-class StreamSocket : public Socket {
+class StreamSocket : public SocketBase {
 public:
   int read(void* buffer, int len) override { return 0; }
   int write(const void* buffer, int len) override { return 0; }

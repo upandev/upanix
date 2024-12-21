@@ -21,9 +21,9 @@
  */
 #pragma once
 
-class Socket {
+class SocketBase {
 public:
-  virtual ~Socket() = default;
+  virtual ~SocketBase() = default;
   virtual int read(void* buffer, int len) = 0;
   virtual int write(const void* buffer, int len) = 0;
 };

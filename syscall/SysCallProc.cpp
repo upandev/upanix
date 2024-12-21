@@ -23,7 +23,7 @@
 # include <SysCallDisplay.h>
 # include <typeinfo.h>
 
-byte SysCallProc_IsPresent(uint64_t sysCallId) {
+bool SysCallProc_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_PROC_START && sysCallId < SYS_CALL_PROC_END);
 }
 

@@ -24,7 +24,7 @@
 
 # include <Global.h>
 
-byte SysCallDisplay_IsPresent(uint64_t sysCallID) ;
+bool SysCallDisplay_IsPresent(uint64_t sysCallID) ;
 
 void SysCallDisplay_Handle(
         uint64_t* piRetVal,
