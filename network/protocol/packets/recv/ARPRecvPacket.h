@@ -19,25 +19,27 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+#pragma once
 
-#include <stdio.h>
-#include <NetworkUtil.h>
-#include <drivers/net/protocol/packets/recv/EthernetRecvPacket.h>
+#include <NetworkPacketComponents.h>
+#include <EthernetRecvPacket.h>
 
-EthernetRecvPacket::EthernetRecvPacket(const RawNetPacket& rawNetPacket) :
-  _rawNetPacket(rawNetPacket),
-  _header(reinterpret_cast<NetworkPacket::Ethernet::Header&>(*rawNetPacket.buf())) {
-  _header._type = NetworkUtil::SwitchEndian(_header._type);
-}
 
-void EthernetRecvPacket::Print() const {
-  printf("\n ETHERNET PACKET: D ");
-  for(int  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
-    printf("%02x%s", _header._destinationMAC[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+class ARPRecvPacket {
+private:
+  const EthernetRecvPacket& _ethernetPacket;
+  NetworkPacket::ARP::Header& _arpHeader;
+  NetworkPacket::ARP::IPV4* _arpIPV4;
+
+public:
+  explicit ARPRecvPacket(const EthernetRecvPacket& ethernetPacket);
+
+  EtherType Type() const {
+    return static_cast<EtherType>(_arpHeader._pType);
   }
-  printf(", S ");
-  for(int  i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
-    printf("%02x%s", _header._sourceMAC[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
-  }
-  printf(", Type: %x", _header._type);
-}
+
+  bool isRequest() const { return _arpHeader._opCode == 1; }
+  bool isResponse() const { return _arpHeader._opCode == 2; }
+
+  void Print() const;
+};

@@ -20,8 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <drivers/net/protocol/packets/recv/ARPRecvPacket.h>
-#include <stdio.h>
+#include <ARPRecvPacket.h>
 #include <NetworkUtil.h>
 
 ARPRecvPacket::ARPRecvPacket(const EthernetRecvPacket& ethernetPacket) :

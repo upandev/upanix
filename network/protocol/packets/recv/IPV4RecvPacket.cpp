@@ -21,7 +21,6 @@
  */
 
 #include <IPV4RecvPacket.h>
-#include <stdio.h>
 #include <NetworkUtil.h>
 
 IPV4RecvPacket::IPV4RecvPacket(const EthernetRecvPacket& ethernetPacket) :

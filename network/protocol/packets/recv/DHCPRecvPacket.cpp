@@ -23,8 +23,7 @@
 #include <stdio.h>
 #include <UDP4RecvPacket.h>
 #include <DHCPRecvPacket.h>
-#include <exception.h>
-#include <drivers/net/NetworkUtil.h>
+#include <NetworkUtil.h>
 
 DHCPRecvPacket::DHCPRecvPacket(const UDP4RecvPacket& udp4RecvPacket) :
   _udp4RecvPacket(udp4RecvPacket),
