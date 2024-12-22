@@ -26,17 +26,15 @@
 #include <E1000NICDevice.h>
 #include <NetworkManager.h>
 
-NetworkManager::NetworkManager()
-{
+NetworkManager::NetworkManager() {
   //initialize();
 }
 
-void NetworkManager::Initialize()
-{
-  for(auto pPCIEntry : PCIBusHandler::Instance().PCIEntries())
-  {
-    if(pPCIEntry->bHeaderType & PCI_HEADER_BRIDGE)
+void NetworkManager::Initialize() {
+  for(auto pPCIEntry : PCIBusHandler::Instance().PCIEntries())   {
+    if(pPCIEntry->bHeaderType & PCI_HEADER_BRIDGE) {
       continue;
+    }
     Probe(*pPCIEntry);
   }
 }
@@ -74,9 +72,31 @@ void NetworkManager::Probe(const PCIEntry& pciEntry)
 }
 
 uint16_t NetworkManager::allocatePort() {
+  upan::mutex_guard g(_nMutex);
   return _portPool.allocate(49152, 65535);
 }
 
-bool NetworkManager::isPortAllocated(uint16_t port) const {
+bool NetworkManager::isPortAllocated(in_port_t port) const {
+  upan::mutex_guard g(_nMutex);
   return _portPool.test(port);
+}
+
+bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
+  if (ip == INADDR_BROADCAST || ip == INADDR_LOOPBACK) {
+    return _socketBindSet.exists(port);
+  } else {
+    return _socketBindMap[INADDR_BROADCAST].exists(port)
+    || _socketBindMap[INADDR_LOOPBACK].exists(port)
+    || _socketBindMap[ip].exists(port);
+  }
+}
+
+void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketBase& socket) {
+  upan::mutex_guard g(_nMutex);
+
+  if (isPortBounded(ip, port)) {
+    throw upan::exception(XLOC, "port %d is already bound", port);
+  }
+  _socketBindMap[ip][port] = &socket;
+  _socketBindSet.insert(port);
 }

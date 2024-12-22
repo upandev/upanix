@@ -19,47 +19,30 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+# include <SysCall.h>
+# include <SysCallFile.h>
+# include <StorageDrive.h>
+# include <try.h>
+# include <FileDescriptor.h>
+# include <StreamBufferDescriptor.h>
 
-#pragma once
+bool SysCallIO_IsPresent(uint64_t sysCallId) {
+	return (sysCallId > SYS_CALL_IO_START && sysCallId < SYS_CALL_IO_END) ;
+}
 
-#include <Global.h>
-#include <map.h>
-#include <uniq_ptr.h>
-#include <fs.h>
-#include <mutex.h>
-#include <IODescriptor.h>
-#include <function.h>
-#include <mosstd.h>
-#include <vector.h>
-
-class IODescriptorTable {
-public:
-  typedef enum {
-    STDIN = 0,
-    STDOUT = 1,
-    STDERR = 2
-  } STD_DESCRIPTORS;
-
-  typedef upan::map<int, IODescriptor*> IODMap;
-
-  IODescriptorTable(int pid, int parentPid);
-  ~IODescriptorTable() noexcept;
-
-  IODescriptor& allocate(const upan::function<IODescriptor*, int>& descriptorBuilder);
-  void free(int fd);
-  void dup2(int oldFD, int newFD);
-  IODescriptor& getRealNonDupped(int fd);
-  IODescriptor& get(int fd);
-  void setupStreamedStdio();
-  void setupNullStdio();
-  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);
-  upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
-
-private:
-  IODMap::iterator getItr(int fd);
-
-  int _pid;
-  int _descIdCounter;
-  upan::mutex _ioMutex;
-  IODMap _iodMap;
-};
+void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
+	switch (sysCallId) {
+		case SYS_CALL_IO_CLOSE:
+			// P1 => descriptor
+			{
+        *retVal = 0;
+        try {
+          ProcessManager::Instance().GetCurrentPAS().iodTable().free((int)p1);
+        } catch(upan::exception& e) {
+          e.Print();
+          *retVal = -1;
+        }
+			}
+			break;
+	}
+}

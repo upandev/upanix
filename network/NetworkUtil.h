@@ -30,5 +30,5 @@
 class NetworkUtil {
 public:
   static uint16_t CalculateChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum);
-  static uint32_t AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum);
+  static uint32_t CalculatePartialChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum);
 };

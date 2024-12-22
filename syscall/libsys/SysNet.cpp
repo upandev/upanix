@@ -21,8 +21,14 @@
  */
 # include <SysCall.h>
 
-int SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, IPPROTO_TYPE protocol) {
+sock_t SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, IPPROTO_TYPE protocol) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_CREATE_SOCKET, false, (uint64_t)sa_family, (uint64_t)socket_type, (uint64_t)protocol, 4, 5);
+  return (sock_t)retStatus;
+}
+
+int SysNet_Bind(sock_t fd, struct sockaddr* client_addr, socklen_t len) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_BIND, false, (uint64_t)fd, (uint64_t)client_addr, (uint64_t)len, 4, 5);
   return (int)retStatus;
 }

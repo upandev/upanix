@@ -48,6 +48,7 @@
 # include <metrics.h>
 # include <StorageDriveManager.h>
 # include <logger.h>
+# include <NetworkOperations.h>
 
 /**** Global Variable declaration/definition *****/
 byte KERNEL_MODE ;
@@ -198,6 +199,7 @@ void Initialize() {
     KeyboardHandler::Instance().Getch();
 
     FileOperations::Instance();
+    NetworkOperations::Instance();
     SessionManager_Initialize() ;
 
     Console::Instance();

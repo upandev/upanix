@@ -25,8 +25,10 @@
 #include <fs.h>
 #include <StreamSocket.h>
 #include <DataGramSocket.h>
+#include <NetworkManager.h>
 
-SocketDescriptor::SocketDescriptor(int pid, int fd, SOCKET_TYPE type) : IODescriptor(pid, fd, O_RDWR), _socket(nullptr) {
+SocketDescriptor::SocketDescriptor(int pid, int fd, SOCKET_TYPE type, IPPROTO_TYPE protocol)
+  : IODescriptor(pid, fd, O_RDWR), _protocol(protocol), _socket(nullptr) {
   switch (type) {
     case SOCK_STREAM:
       _socket = new StreamSocket();
@@ -37,6 +39,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, SOCKET_TYPE type) : IODescri
     default:
       throw upan::exception(XLOC, "unsupport socket-type: %d", type);
   }
+  memset((void*)&_bindAddress, 0, sizeof(struct sockaddr_in));
 }
 
 SocketDescriptor::~SocketDescriptor() {
@@ -49,4 +52,19 @@ int SocketDescriptor::read(void* buffer, int len) {
 
 int SocketDescriptor::write(const void* buffer, int len) {
   return len;
+}
+
+void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
+  upan::mutex_guard g(_mutex);
+
+  if (_bindAddress.sin_port != 0) {
+    throw upan::exception(XLOC, "bind failed - socket %d is already bound to port %d", id(), _bindAddress.sin_port);
+  }
+
+  if (len != sizeof(struct sockaddr_in)) {
+    throw upan::exception(XLOC, "bind failed - only IPV4 address is supported");
+  }
+
+  memcpy((void*)&_bindAddress, (void*)&address, len);
+  NetworkManager::Instance().bind(_bindAddress.sin_addr.s_addr, _bindAddress.sin_port, *_socket);
 }

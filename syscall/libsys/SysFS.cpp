@@ -79,13 +79,6 @@ int SysFS_FileOpenStream(uint32_t mode)
   return retStatus ;
 }
 
-int SysFS_FileClose(int fd)
-{
-  uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_CLOSE, false, fd, 2, 3, 4, 5);
-	return retStatus ;
-}
-
 int SysFS_FileRead(int fd, void* buf, int len)
 {
   uint64_t retStatus ;

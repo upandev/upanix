@@ -22,31 +22,15 @@
 
 #pragma once
 
-#include <IODescriptor.h>
 #include <net/socket.h>
-#include <mutex.h>
 
-class NetworkDevice;
-class SocketBase;
-
-class SocketDescriptor : public IODescriptor {
-public:
-  SocketDescriptor(int pid, int fd, SOCKET_TYPE type, IPPROTO_TYPE protocol);
-  ~SocketDescriptor() override;
-
-  int read(void* buffer, int len) override;
-  bool canRead() override { return true; }
-
-  int write(const void* buffer, int len) override;
-  bool canWrite() override { return true; }
-
-  void seek(int seekType, int offset) override { }
-  uint32_t getOffset() const override { return 0; }
-
-  void bind(const struct sockaddr& address, socklen_t len);
+class NetworkOperations {
 private:
-  const IPPROTO_TYPE _protocol;
-  struct sockaddr_in _bindAddress;
-  SocketBase* _socket;
-  upan::mutex _mutex;
+  NetworkOperations();
+
+public:
+  static NetworkOperations& Instance();
+
+  int createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, IPPROTO_TYPE protocol);
+  void bind(sock_t fd, const struct sockaddr& address, socklen_t len);
 };

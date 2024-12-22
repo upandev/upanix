@@ -64,12 +64,12 @@ void UserManager::WriteUserList() {
     try {
       file.write((const char*)buffer.get(), buf_size);
     } catch(const upan::exception&) {
-      FileOperations::Instance().close(file.id());
+      close(file.id());
       throw;
     }
   }
 
-	if(!FileOperations::Instance().close(file.id())) {
+	if(close(file.id())) {
     throw upan::exception(XLOC, "erroring closing fd for user file list");
   }
 }
@@ -96,7 +96,7 @@ bool UserManager::LoadUserList() {
     _users.insert(UserMap::value_type(name, new User(name, password, homeDirPath, type)));
   }
 
-  return FileOperations::Instance().close(file.id());
+  return close(file.id()) == 0;
 }
 
 bool UserManager::Create(const upan::string& name, const upan::string& password, const upan::string& homeDirPath, USER_TYPES type)

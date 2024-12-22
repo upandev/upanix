@@ -30,7 +30,7 @@
 
 constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
-IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _fdIdCounter(0) {
+IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descIdCounter(0) {
   if (pid == NO_PROCESS_ID) {
     allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     auto& stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
@@ -50,7 +50,7 @@ IODescriptorTable::~IODescriptorTable() noexcept {
 }
 
 void IODescriptorTable::setupStreamedStdio() {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
   delete _iodMap[STDOUT];
   _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_WR_NONBLOCK);
 
@@ -59,7 +59,7 @@ void IODescriptorTable::setupStreamedStdio() {
 }
 
 void IODescriptorTable::setupNullStdio() {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
 
   delete _iodMap[STDOUT];
   _iodMap[STDOUT] = new NullDescriptor(_pid, STDOUT);
@@ -69,13 +69,13 @@ void IODescriptorTable::setupNullStdio() {
 }
 
 IODescriptor& IODescriptorTable::allocate(const upan::function<IODescriptor*, int>& descriptorBuilder) {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
 
   if(_iodMap.size() >= PROC_SYS_MAX_OPEN_FILES) {
     throw upan::exception(XLOC, "can't open new file - max open files limit %d reached", PROC_SYS_MAX_OPEN_FILES);
   }
 
-  const auto fd = _fdIdCounter++;
+  const auto fd = _descIdCounter++;
   auto i = _iodMap.insert(IODMap::value_type(fd, descriptorBuilder(fd)));
 
   if (!i.second) {
@@ -94,17 +94,17 @@ IODescriptorTable::IODMap::iterator IODescriptorTable::getItr(int fd) {
 }
 
 IODescriptor& IODescriptorTable::get(int fd) {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
   return *(getItr(fd)->second);
 }
 
 IODescriptor& IODescriptorTable::getRealNonDupped(int fd) {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
   return get(fd).getRealDescriptor();
 }
 
 void IODescriptorTable::free(int fd) {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
   auto e = getItr(fd);
 
   if (e->second->getRefCount() > 1) {
@@ -119,7 +119,7 @@ void IODescriptorTable::free(int fd) {
 }
 
 void IODescriptorTable::dup2(int oldFD, int newFD) {
-  upan::mutex_guard g(_fdMutex);
+  upan::mutex_guard g(_ioMutex);
   auto& oldF = get(oldFD);
   auto& newF = get(newFD);
   free(newFD);

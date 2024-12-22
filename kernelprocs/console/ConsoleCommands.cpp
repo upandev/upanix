@@ -331,7 +331,7 @@ void ConsoleCommands_ReadFileContent()
     printf("%s", bDataBuffer);
 	}
 
-	if(!FileOperations::Instance().close(file.id())) {
+	if(close(file.id())) {
     printf("\n File Close Failed");
 		return ;
 	}
@@ -391,12 +391,12 @@ void ConsoleCommands_CopyFile()
     KC::MConsole().ShowProgress("", cr, (i * iBufSize * 100) / fsize) ;
 	}
 
-	if(!FileOperations::Instance().close(file.id())) {
+	if(close(file.id())) {
     printf("\n File Close Failed");
 		return ;
 	}
 
-	if(!FileOperations::Instance().close(file1.id())) {
+	if(close(file1.id())) {
 	  printf("\n File1 Close Failed");
 		return ;
 	}
@@ -804,24 +804,28 @@ void ConsoleCommands_ObtainIPAddress() {
 
   const int DHCP_CLIENT_PORT = 68;
 
-  int sock;
-  struct sockaddr_in server_addr;
-  struct sockaddr_in client_addr;
   //struct dhcp_message dhcp_msg;
   char buffer[1024];
   ssize_t len;
 
-  // Create a UDP socket
-  sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-  if (sock < 0) {
+  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }
 
   // Bind the socket to the DHCP client port
+  struct sockaddr_in client_addr;
   memset(&client_addr, 0, sizeof(client_addr));
   client_addr.sin_family = AF_INET;
   client_addr.sin_port = htons(DHCP_CLIENT_PORT);
   client_addr.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to bind socket");
+  }
+
+  struct sockaddr_in server_addr;
 }
 
 void ConsoleCommands_SetXHCIEventMode()
@@ -992,7 +996,7 @@ void graphics_photos(int x, int y) {
       upanui::BmpEncoder decoder;
       upanui::Image& image = decoder.decode(buffer.get(), upan::option<uint32_t>::empty());
       images.push_back(&image);
-      FileOperations::Instance().close(file.id());
+      close(file.id());
     }
   }
 
@@ -1667,7 +1671,7 @@ void graphics_desktop(int x, int y) {
     upanui::PngEncoder decoder;
     upanui::Image& bgImage = decoder.decode(buffer.get(), fileSize);
 
-    FileOperations::Instance().close(file.id());
+    close(file.id());
 
     auto& uiMain = upanui::UIObjectFactory::createImageCanvas(uiRoot, bgImage, upanui::ImageComposeType::FIT_IN,
                                                               0, menuBarHeight, appWidth, mainHeight,

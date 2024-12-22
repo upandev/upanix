@@ -172,13 +172,6 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
     }
     break ;
 
-		case SYS_CALL_FILE_CLOSE:
-			// P1 => File Desc
-			{
-				*retVal = FileOperations::Instance().close((int)p1) ? 0 : -1;
-			}
-			break ;
-
 		case SYS_CALL_FILE_READ:
 			// P1 => File Desc
 			// P2 => Read buffer address

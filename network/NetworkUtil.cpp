@@ -23,14 +23,14 @@
 #include <NetworkUtil.h>
 
 uint16_t NetworkUtil::CalculateChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum) {
-  uint32_t sum = AddForChecksum(buf, lengthInBytes, initSum);
+  uint32_t sum = CalculatePartialChecksum(buf, lengthInBytes, initSum);
   while((sum >> 16)) {
     sum = (sum & 0xFFFF) + (sum >> 16);
   }
   return sum & 0xFFFF;
 }
 
-uint32_t NetworkUtil::AddForChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum) {
+uint32_t NetworkUtil::CalculatePartialChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum) {
   const uint32_t lengthInWords = lengthInBytes / 2;
   uint32_t sum = initSum;
   for(uint32_t i = 0; i < lengthInWords; ++i) {

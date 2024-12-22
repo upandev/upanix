@@ -45,9 +45,10 @@ void UDP4RecvPacket::VerifyChecksum() {
     const uint32_t len = ntohs(_udpHeader._len);
     const uint16_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *) _ipv4RecvPacket.PacketData(),
                                                                        len,
-                                                                       NetworkUtil::AddForChecksum(
-                                                                           (uint16_t *) &pseudoHeader,
-                                                                           NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0));
+                                                                       NetworkUtil::CalculatePartialChecksum(
+                                                                               (uint16_t*) &pseudoHeader,
+                                                                               NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE,
+                                                                               0));
 
     const uint16_t r = calculatedChecksum ^ (uint16_t)0xFFFF;
     if (r) {

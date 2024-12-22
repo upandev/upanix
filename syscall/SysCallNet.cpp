@@ -22,7 +22,7 @@
 
 #include <SysCall.h>
 #include <SysCallNet.h>
-#include <SocketBase.h>
+#include <NetworkOperations.h>
 
 bool SysCallNet_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_NETWORK_START && sysCallId < SYS_CALL_NETWORK_END);
@@ -35,8 +35,29 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
         const auto family = (SA_FAMILY_TYPE)p1;
         const auto type = (SOCKET_TYPE)p2;
         const auto protocol = (IPPROTO_TYPE)p3;
-        //create socket descriptor
+
+        try {
+          *retVal = NetworkOperations::Instance().createSocket(family, type, protocol);
+        } catch(const upan::exception& e) {
+          e.Print();
+          *retVal = -1;
+        }
 			}
 			break;
+
+    case SYS_CALL_SOCKET_BIND:
+      {
+        *retVal = 0;
+        const auto fd = (sock_t)p1;
+        const auto& address = *(struct sockaddr*)p2;
+        const auto len = (socklen_t)p3;
+        try {
+          NetworkOperations::Instance().bind(fd, address, len);
+        } catch(const upan::exception& e) {
+          e.Print();
+          *retVal = -1;
+        }
+      }
+      break;
 	}
 }

@@ -39,7 +39,6 @@ public:
 
   void create(const upan::string& filePath, uint16_t fileType, uint16_t mode);
   upan::option<FileDescriptor&> open(const upan::string& filePath, const uint8_t mode);
-  bool close(int fd);
   void remove(const upan::string& filePath) ;
   bool fileExists(const upan::string& filePath);
   bool directoryExists(const upan::string& filePath);

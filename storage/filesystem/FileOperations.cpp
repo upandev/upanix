@@ -126,16 +126,6 @@ upan::option<FileDescriptor&> FileOperations::open(const upan::string& filePath,
   return upan::option<FileDescriptor&>(dynamic_cast<FileDescriptor&>(ioDescriptor));
 }
 
-bool FileOperations::close(int fd) {
-  try {
-    ProcessManager::Instance().GetCurrentPAS().iodTable().free(fd);
-  } catch(upan::exception& e) {
-    e.Print();
-    return false;
-  }
-  return true;
-}
-
 void FileOperations::create(const upan::string& filePath, uint16_t fileType, uint16_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 

@@ -42,7 +42,7 @@ BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet
   }
   catch(...)
 	{
-    FileOperations::Instance().close(_file->id());
+    close(_file->id());
     throw;
 	}
 }
@@ -50,7 +50,7 @@ BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet
 BufferedReader::~BufferedReader()
 {
   delete[] m_szBuffer;
-	FileOperations::Instance().close(_file->id()) ;
+	close(_file->id()) ;
 }
 
 void BufferedReader::Seek(unsigned uiOffSet) {

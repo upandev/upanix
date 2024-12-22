@@ -33,23 +33,30 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="more changes for network/socket support">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor to use net/socket.h util functions and remove those util methods in kernel NetworkUtil">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkUtil.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkUtil.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/ARPRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/ARPRecvPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/EthernetRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/EthernetRecvPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/IPV4RecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/IPV4RecvPacket.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/UDP4RecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/UDP4RecvPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPSendPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPSendPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPSendPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPSendPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.h" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/UserManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/users/UserManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,25 +115,25 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/syscall&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/syscall/libsys&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.language&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
     &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/syscall" />
       <recent name="$PROJECT_DIR$/syscall/libsys" />
+      <recent name="$PROJECT_DIR$/syscall" />
+      <recent name="$PROJECT_DIR$/network" />
       <recent name="$PROJECT_DIR$/process" />
       <recent name="$PROJECT_DIR$/drivers/net/protocol/socket" />
-      <recent name="$PROJECT_DIR$/io" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/network" />
@@ -137,9 +144,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -539,7 +546,10 @@
       <workItem from="1734783655885" duration="539000" />
       <workItem from="1734784231894" duration="1330000" />
       <workItem from="1734786013216" duration="646000" />
-      <workItem from="1734802603439" duration="2502000" />
+      <workItem from="1734802603439" duration="4836000" />
+      <workItem from="1734834139638" duration="1984000" />
+      <workItem from="1734836212819" duration="654000" />
+      <workItem from="1734839598629" duration="5181000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -884,7 +894,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="125" />
+    <option name="localTasksCounter" value="126" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -918,7 +928,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="return error and not throw exception when you open a non-existent file" />
     <MESSAGE value="bug fixes in the new in-memory file-tree based persisted file-system" />
     <MESSAGE value="text terminal test code" />
     <MESSAGE value="support for different mouse cursors for resizing windows. Actual window resize implementation is pending" />
@@ -943,7 +952,8 @@
     <MESSAGE value="while doing dynamic relocation, fall back to resolving the symbol using libc.so - this is particularly necessary when shared libs are accessing auto-generated functions like __tls_get_adr() which is defined in libc.so" />
     <MESSAGE value="refactor managing ELF tables and sections while resolving dynamic symbols" />
     <MESSAGE value="more changes for network/socket support" />
-    <option name="LAST_COMMIT_MESSAGE" value="more changes for network/socket support" />
+    <MESSAGE value="refactor to use net/socket.h util functions and remove those util methods in kernel NetworkUtil" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor to use net/socket.h util functions and remove those util methods in kernel NetworkUtil" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
