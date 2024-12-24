@@ -39,7 +39,7 @@
 # include <Acpi.h>
 # include <Cpu.h>
 # include <IrqManager.h>
-# include <NetworkManager.h>
+# include "network/NetworkManager.h"
 # include <Mtrr.h>
 # include <Pat.h>
 # include <PS2Controller.h>

@@ -29,35 +29,27 @@
 #include <EthernetRecvPacket.h>
 #include <NetworkDevice.h>
 
-EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler<RawNetPacket>(networkDevice) {
-  _etherPacketHandlers.insert(EtherPacketHandlerMap::value_type(ARPHandler::HandlerType(), new ARPHandler(*this)));
-  _etherPacketHandlers.insert(EtherPacketHandlerMap::value_type(IPV4Handler::HandlerType(), new IPV4Handler(*this)));
+EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void EthernetHandler::Process(const RawNetPacket& packet) {
+void EthernetHandler::recv(const RawNetPacket& packet) {
   if (packet.len() < MIN_ETHERNET_PACKET_LEN) {
     throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet.len(), MIN_ETHERNET_PACKET_LEN);
   }
-  const EthernetRecvPacket ethernetPacket(packet);
 
-  const MACAddress& destMAC = ethernetPacket.DestinationMAC();
-  if (!destMAC.isBroadcast() && destMAC != GetMACAddress()) {
+  const auto& ethernetHeader = packet.getEthernetHeader();
+  const MACAddress& destMAC = ethernetHeader._destinationMAC;
+  if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
     return;
   }
 
-  //ethernetPacket.Print();
-  EtherPacketHandlerMap::const_iterator it = _etherPacketHandlers.find(ethernetPacket.Type());
-  if (it == _etherPacketHandlers.end()) {
-    //throw upan::exception(XLOC, "Unhandled Ethernet Packet Type: %x", ethernetPacket.Type());
-  } else {
-    it->second->Process(ethernetPacket);
-  }
+  device().getHandler(ethernetHeader.type()).ifPresent([&packet](PacketHandler& handler) { handler.recv(packet); });
 }
 
-void EthernetHandler::SendPacket(RawNetPacket& packet, EtherType pType, const uint8_t* destMac) {
+void EthernetHandler::SendPacket(RawNetPacket& packet, NetworkPacket::PacketType pType, const uint8_t* destMac) {
   auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(packet.buf());
   memcpy(header->_destinationMAC, destMac, NetworkPacket::MAC_ADDR_LEN);
-  memcpy(header->_sourceMAC, GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
+  memcpy(header->_sourceMAC, device().GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
   header->_type = htons((uint16_t)pType);
-  GetNetworkDevice().SendPacket(packet);
+  device().SendPacket(packet);
 }

@@ -23,15 +23,10 @@
 
 #include <NetworkPacketComponents.h>
 #include <EthernetRecvPacket.h>
-#include <IPType.h>
 
 class IPV4RecvPacket {
 public:
   explicit IPV4RecvPacket(const EthernetRecvPacket& ethernetPacket);
-
-  IPType Type() const {
-    return static_cast<IPType>(_ipv4Header._protocol);
-  }
 
   void Print() const;
 

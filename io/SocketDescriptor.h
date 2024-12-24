@@ -27,11 +27,12 @@
 #include <mutex.h>
 
 class NetworkDevice;
-class SocketBase;
 
 class SocketDescriptor : public IODescriptor {
+protected:
+  SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol);
+
 public:
-  SocketDescriptor(int pid, int fd, SOCKET_TYPE type, IPPROTO_TYPE protocol);
   ~SocketDescriptor() override;
 
   int read(void* buffer, int len) override;
@@ -44,9 +45,26 @@ public:
   uint32_t getOffset() const override { return 0; }
 
   void bind(const struct sockaddr& address, socklen_t len);
+  virtual void sendTo(const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+
+  void setAllowBroadcast(bool val) { _allowBroadcast = val; }
+  bool canBroadcast() const { return _allowBroadcast; }
+
+protected:
+  void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
+  void ensureBind();
+
 private:
+  bool isBound() const { return _bindAddress.sin_port != 0; }
+  void validateSockAddrLen(socklen_t len) const;
+  void validateFlags(int flags) const;
+  void validateBuf(const void* buf) const;
+
+private:
+
   const IPPROTO_TYPE _protocol;
   struct sockaddr_in _bindAddress;
-  SocketBase* _socket;
   upan::mutex _mutex;
+
+  bool _allowBroadcast;
 };

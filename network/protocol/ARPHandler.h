@@ -22,25 +22,20 @@
 #pragma once
 #include <PacketHandler.h>
 #include <EthernetRecvPacket.h>
-#include <EtherType.h>
 
-class EthernetHandler;
-class IPAddress;
-
-class ARPHandler : public PacketHandler<EthernetRecvPacket> {
+class ARPHandler : public PacketHandler {
 public:
-  explicit ARPHandler(EthernetHandler& ethernetHandler);
-  void Process(const EthernetRecvPacket& packet) override;
+  explicit ARPHandler(NetworkDevice& networkDevice);
+  void recv(const RawNetPacket& packet) override;
+
   void SendRequestForMAC(const struct in_addr& ipAddress);
   void SendRARP();
 
-  static constexpr EtherType HandlerType() {
-    return EtherType::ARP;
+  static constexpr NetworkPacket::PacketType HandlerType() {
+    return NetworkPacket::PacketType::ARP_TYPE;
   }
 
 private:
-  RawNetPacket CreatePacket(uint16_t hType, EtherType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
+  RawNetPacket CreatePacket(uint16_t hType, NetworkPacket::PacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
                             const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa);
-
-  EthernetHandler& _ethernetHandler;
 };

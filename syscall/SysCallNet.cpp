@@ -30,7 +30,7 @@ bool SysCallNet_IsPresent(uint64_t sysCallId) {
 
 void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
 	switch(sysCallId) {
-		case SYS_CALL_CREATE_SOCKET:
+		case SYS_CALL_SOCKET_CREATE:
 			{
         const auto family = (SA_FAMILY_TYPE)p1;
         const auto type = (SOCKET_TYPE)p2;
@@ -59,5 +59,58 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
         }
       }
       break;
+
+    case SYS_CALL_SOCKET_SET_OPT:
+      {
+        *retVal = 0;
+        const auto fd = (sock_t)p1;
+        const auto& address = *(struct sockaddr*)p2;
+        const auto len = (socklen_t)p3;
+        try {
+          NetworkOperations::Instance().setSockOpt((sock_t)fd, (int)p2, (SOCKET_OPTION)p3, (const void*)p4, (socklen_t)p5);
+        } catch(const upan::exception& e) {
+          e.Print();
+          *retVal = -1;
+        }
+      }
+      break;
+
+    case SYS_CALL_SOCKET_SEND_TO:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      const auto buf = (void*)p2;
+      const auto n = (size_t)p3;
+      const auto flags = (int)p4;
+      auto ext_param = (uint64_t*)p5;
+      const auto address = (struct sockaddr*)ext_param[0];
+      const auto len = (socklen_t)ext_param[1];
+      try {
+        NetworkOperations::Instance().sendTo(fd, buf, n, flags, address, len);
+      } catch(const upan::exception& e) {
+        e.Print();
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_SOCKET_RECV_FROM:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      const auto buf = (void*)p2;
+      const auto n = (size_t)p3;
+      const auto flags = (int)p4;
+      auto ext_param = (uint64_t*)p5;
+      const auto address = (struct sockaddr*)ext_param[0];
+      const auto len = (socklen_t*)ext_param[1];
+      try {
+        NetworkOperations::Instance().recvFrom(fd, buf, n, flags, address, len);
+      } catch(const upan::exception& e) {
+        e.Print();
+        *retVal = -1;
+      }
+    }
+    break;
 	}
 }

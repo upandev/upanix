@@ -218,7 +218,7 @@ int KernelService::Spawn()
 	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &(KernelService::Server),
                                                           ProcessManager::GetCurrentProcessID(), false, params);
 	if(pid < 0) {
-		printf("\n Failed to create Kernel Service Process %s", szName.c_str()) ;
+		printf("\n Failed to create Kernel Service recv %s", szName.c_str()) ;
 	} else {
     m_lServerList.push_back(pid);
   }

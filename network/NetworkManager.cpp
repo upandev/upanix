@@ -39,34 +39,25 @@ void NetworkManager::Initialize() {
   }
 }
 
-upan::option<NetworkDevice&> NetworkManager::GetDefaultDevice() {
+upan::option<NetworkDevice&> NetworkManager::getDefaultDevice() {
   if (_devices.empty()) {
     return upan::option<NetworkDevice&>::empty();
   }
   return upan::option<NetworkDevice&>(*_devices.front());
 }
 
-void NetworkManager::Probe(const PCIEntry& pciEntry)
-{
-  try
-  {
-    if(pciEntry.usVendorID == 0x168C && pciEntry.usDeviceID == 0x36)
-    {
+void NetworkManager::Probe(const PCIEntry& pciEntry) {
+  try {
+    if(pciEntry.usVendorID == 0x168C && pciEntry.usDeviceID == 0x36) {
       printf("ATH9K network-card detected");
       //return new ATH9KDevice(pciEntry);
-    }
-    else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x100E)
-    {
+    } else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x100E) {
       E1000NICDevice::Create(pciEntry);
       _devices.push_back(&E1000NICDevice::Instance());
-    }
-    else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x153A)
-    {
+    } else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x153A) {
       printf("Ethernet i217-v network-card detected");
     }
-  }
-  catch(const upan::exception& e)
-  {
+  } catch(const upan::exception& e) {
     e.Print();
   }
 }
@@ -81,6 +72,11 @@ bool NetworkManager::isPortAllocated(in_port_t port) const {
   return _portPool.test(port);
 }
 
+void NetworkManager::releasePort(in_port_t port) {
+  upan::mutex_guard g(_nMutex);
+  return _portPool.set(port);
+}
+
 bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
   if (ip == INADDR_BROADCAST || ip == INADDR_LOOPBACK) {
     return _socketBindSet.exists(port);
@@ -91,7 +87,7 @@ bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
   }
 }
 
-void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketBase& socket) {
+void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket) {
   upan::mutex_guard g(_nMutex);
 
   if (isPortBounded(ip, port)) {
@@ -99,4 +95,7 @@ void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketBase& socket) {
   }
   _socketBindMap[ip][port] = &socket;
   _socketBindSet.insert(port);
+}
+
+void NetworkManager::send(const struct sockaddr_in& from, const struct sockaddr_in& to, const void* buf, socklen_t n) {
 }

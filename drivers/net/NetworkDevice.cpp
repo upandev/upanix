@@ -22,10 +22,21 @@
 #include <PCIBusHandler.h>
 #include <NetworkDevice.h>
 
-NetworkDevice::NetworkDevice(const PCIEntry& pciEntry) : _pciEntry(pciEntry)
-{
+NetworkDevice::NetworkDevice(const PCIEntry& pciEntry)
+  : _pciEntry(pciEntry),
+    _ethernetHandler(*this), _ipv4Handler(*this), _udp4Handler(*this), _arpHandler(*this) {
 }
 
-NetworkDevice::~NetworkDevice()
-{
+NetworkDevice::~NetworkDevice() {
+}
+
+upan::option<PacketHandler&> NetworkDevice::getHandler(const NetworkPacket::PacketType type) {
+  switch (type) {
+    case NetworkPacket::PacketType::ETHER_TYPE: return upan::option<PacketHandler&>(_ethernetHandler);
+    case NetworkPacket::PacketType::IPV4_TYPE: return upan::option<PacketHandler&>(_ipv4Handler);
+    case NetworkPacket::PacketType::UDP4_TYPE: return upan::option<PacketHandler&>(_udp4Handler);
+    case NetworkPacket::PacketType::ARP_TYPE: return upan::option<PacketHandler&>(_arpHandler);
+  }
+  return upan::option<PacketHandler&>::empty();
+  //throw upan::exception(XLOC, "no network protocol handler found for packet-type: %d", type);
 }

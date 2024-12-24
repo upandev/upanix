@@ -20,37 +20,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
+
 #include <map.h>
-#include <EtherType.h>
 #include <NetworkPacketComponents.h>
 #include <PacketHandler.h>
 #include <EthernetRecvPacket.h>
 #include <option.h>
 
 class RawNetPacket;
-class EtherPacketHandler;
 class NetworkDevice;
-class ARPSendPacket;
 
-class EthernetHandler : public PacketHandler<RawNetPacket> {
+class EthernetHandler : public PacketHandler {
 public:
-  EthernetHandler(NetworkDevice& networkDevice);
-  void Process(const RawNetPacket& packet);
+  explicit EthernetHandler(NetworkDevice& networkDevice);
+  void recv(const RawNetPacket& packet) override;
 
-  template <typename T>
-  upan::option<T&> GetHandler() {
-    auto i = _etherPacketHandlers.find(T::HandlerType());
-    if (i == _etherPacketHandlers.end()) {
-      return upan::option<T&>::empty();
-    }
-    return upan::option<T&>(dynamic_cast<T&>(*i->second));
-  }
-
-  void SendPacket(RawNetPacket& packet, EtherType pType, const uint8_t* destMac);
+  void SendPacket(RawNetPacket& packet, NetworkPacket::PacketType pType, const uint8_t* destMac);
 
   private:
-    typedef upan::map<EtherType, PacketHandler<EthernetRecvPacket>*> EtherPacketHandlerMap;
-    EtherPacketHandlerMap _etherPacketHandlers;
-
     const static uint32_t MIN_ETHERNET_PACKET_LEN = NetworkPacket::MAC_ADDR_LEN /*dmac*/ + NetworkPacket::MAC_ADDR_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
 };

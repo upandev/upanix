@@ -22,24 +22,15 @@
 #include <stdio.h>
 #include <EthernetRecvPacket.h>
 #include <IPV4Handler.h>
-#include <UDP4Handler.h>
-#include <EthernetHandler.h>
-#include <IPV4RecvPacket.h>
+#include <NetworkDevice.h>
 
-IPV4Handler::IPV4Handler(EthernetHandler &ethernetHandler)
-  : PacketHandler<EthernetRecvPacket>(ethernetHandler.GetNetworkDevice()), _ethernetHandler(ethernetHandler) {
-  _ipPacketHandlers.insert(IPPacketHandlerMap::value_type(IPType::UDP, new UDP4Handler(*this)));
+IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void IPV4Handler::Process(const EthernetRecvPacket& packet) {
+void IPV4Handler::recv(const RawNetPacket& packet) {
   printf("\n Handling IPV4 Packet");
-  IPV4RecvPacket ipv4Packet(packet);
-  ipv4Packet.Print();
+  const auto& ipv4Header = packet.getIPV4Header();
+  ipv4Header.print();
 
-  auto it = _ipPacketHandlers.find(ipv4Packet.Type());
-  if (it != _ipPacketHandlers.end()) {
-    it->second->Process(ipv4Packet);
-  } else {
-    //throw upan::exception(XLOC, "Unhandled IPV4 Packet of Type: %d", ipv4Packet.Type());
-  }
+  device().getHandler(ipv4Header.type()).ifPresent([&packet](PacketHandler& handler) { handler.recv(packet); });
 }

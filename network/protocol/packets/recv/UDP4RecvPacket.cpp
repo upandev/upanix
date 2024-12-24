@@ -36,10 +36,10 @@ UDP4RecvPacket::UDP4RecvPacket(const IPV4RecvPacket& ipv4RecvPacket) :
 void UDP4RecvPacket::VerifyChecksum() {
   if (_udpHeader._checksum) {
     NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader;
-    memcpy(pseudoHeader._srcAddr, _ipv4RecvPacket.header()._srcAddr, NetworkPacket::IPV4_ADDR_LEN);
-    memcpy(pseudoHeader._destAddr, _ipv4RecvPacket.header()._destAddr, NetworkPacket::IPV4_ADDR_LEN);
+    memcpy(pseudoHeader._srcAddr, (void*)&_ipv4RecvPacket.header()._srcAddr, NetworkPacket::IPV4_ADDR_LEN);
+    memcpy(pseudoHeader._destAddr, (void*)&_ipv4RecvPacket.header()._destAddr, NetworkPacket::IPV4_ADDR_LEN);
     pseudoHeader._zeros = 0;
-    pseudoHeader._protocol = IPType::UDP;
+    pseudoHeader._protocol = NetworkPacket::PacketType::UDP4_TYPE;
     pseudoHeader._udpLen = _udpHeader._len;
 
     const uint32_t len = ntohs(_udpHeader._len);

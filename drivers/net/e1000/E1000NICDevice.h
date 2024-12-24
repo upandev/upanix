@@ -48,18 +48,6 @@ public:
   void Initialize() override;
   void NotifyEvent() override;
   void SendPacket(const RawNetPacket& packet) override;
-  EthernetHandler& GetEthernetHandler() override {
-    return _ethernetHandler;
-  }
-  upan::option<ARPHandler&> GetARPHandler() override {
-    return _ethernetHandler.GetHandler<ARPHandler>();
-  }
-  upan::option<IPV4Handler&> GetIPV4Handler() override {
-    return _ethernetHandler.GetHandler<IPV4Handler>();
-  }
-  upan::option<UDP4Handler&> GetUDP4Handler() override {
-    return GetIPV4Handler().flatMap<UDP4Handler&>([](IPV4Handler& handler) { return handler.GetHandler<UDP4Handler>(); });
-  }
   const MACAddress& GetMACAddress() const override {
     return regEEPROM->getMACAddress();
   }

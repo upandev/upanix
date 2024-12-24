@@ -25,15 +25,15 @@
 #include <option.h>
 #include <NetworkUtil.h>
 #include <MACAddress.h>
-#include "RawNetPacket.h"
+#include <RawNetPacket.h>
+#include <EthernetHandler.h>
+#include <IPV4Handler.h>
+#include <UDP4Handler.h>
+#include <ARPHandler.h>
 
 class PCIEntry;
 class SocketBuffer;
 class EthernetHandler;
-class ARPHandler;
-class IPV4Handler;
-class UDP4Handler;
-class DHCPHandler;
 
 class NetworkDevice {
 public:
@@ -43,11 +43,13 @@ public:
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
   virtual void SendPacket(const RawNetPacket& packet) = 0;
-  virtual EthernetHandler& GetEthernetHandler() = 0;
-  virtual upan::option<ARPHandler&> GetARPHandler() = 0;
-  virtual upan::option<IPV4Handler&> GetIPV4Handler() = 0;
-  virtual upan::option<UDP4Handler&> GetUDP4Handler() = 0;
   virtual const MACAddress& GetMACAddress() const = 0;
+
+  upan::option<PacketHandler&> getHandler(NetworkPacket::PacketType type);
+  EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
+  ARPHandler& getARPHandler() { return _arpHandler; }
+  IPV4Handler& getIPV4Handler() { return _ipv4Handler; }
+  UDP4Handler& getUDP4Handler() { return _udp4Handler; }
 
   // virtual int Configure() = 0;
   // virtual void Tx(SocketBuffer& socketBuffer) = 0;
@@ -106,4 +108,8 @@ public:
 
 protected:
   const PCIEntry& _pciEntry;
+  EthernetHandler _ethernetHandler;
+  IPV4Handler _ipv4Handler;
+  UDP4Handler _udp4Handler;
+  ARPHandler _arpHandler;
 };

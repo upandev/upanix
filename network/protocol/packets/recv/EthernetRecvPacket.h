@@ -23,7 +23,6 @@
 
 #include <NetworkPacketComponents.h>
 #include <RawNetPacket.h>
-#include <EtherType.h>
 #include <NetworkUtil.h>
 #include <MACAddress.h>
 
@@ -42,10 +41,6 @@ public:
 
   MACAddress SourceMAC() const {
     return _header._sourceMAC;
-  }
-
-  EtherType Type() const {
-    return static_cast<EtherType>(_header._type);
   }
 
   uint8_t* PacketData() const {

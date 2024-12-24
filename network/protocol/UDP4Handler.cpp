@@ -25,14 +25,13 @@
 #include <IPV4RecvPacket.h>
 #include <UDP4RecvPacket.h>
 
-UDP4Handler::UDP4Handler(IPV4Handler &ipv4Handler)
-  : PacketHandler<IPV4RecvPacket>(ipv4Handler.GetNetworkDevice()), _ipv4Handler(ipv4Handler) {
+UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void UDP4Handler::Process(const IPV4RecvPacket& packet) {
+void UDP4Handler::recv(const RawNetPacket& packet) {
   printf("\n Handling UDP Packet");
-  UDP4RecvPacket udpPacket(packet);
-  udpPacket.Print();
+  const auto& udpHeader = packet.getUDP4Header();
+  udpHeader.print();
 }
 
 void UDP4Handler::SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort) {

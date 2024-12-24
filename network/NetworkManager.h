@@ -26,7 +26,8 @@
 #include <bitset.h>
 #include <set.h>
 #include <map.h>
-#include <SocketBase.h>
+#include <uniq_ptr.h>
+#include <SocketDescriptor.h>
 
 class IRQ;
 
@@ -46,12 +47,14 @@ public:
 
   void Initialize();
   upan::list<NetworkDevice*>& Devices() { return _devices; }
-  upan::option<NetworkDevice&> GetDefaultDevice();
+  upan::option<NetworkDevice&> getDefaultDevice();
 
   uint16_t allocatePort();
   bool isPortAllocated(uint16_t port) const;
+  void releasePort(in_port_t port);
 
-  void bind(in_addr_t ip, in_port_t port, SocketBase& socket);
+  void bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket);
+  void send(const struct sockaddr_in& from, const struct sockaddr_in& to, const void* buf, socklen_t n);
 
 private:
   void Probe(const PCIEntry& pciEntry);
@@ -62,7 +65,7 @@ private:
   upan::mutex _nMutex;
   upan::bitset<UINT64_MAX + 1> _portPool;
 
-  typedef upan::map<in_port_t, SocketBase*> SOCKET_PORT_MAP;
+  typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
   typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
   typedef upan::set<in_port_t> SOCKET_BIND_SET;
 

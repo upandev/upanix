@@ -22,7 +22,6 @@
 #pragma once
 
 #include <NetworkPacketComponents.h>
-#include <EtherType.h>
 
 class DHCPSendPacket {
 private:

@@ -112,7 +112,7 @@ void AutonomousProcess::dispatchMouseData(const upanui::MouseData& mouseData) {
 
 void AutonomousProcess::setupAsTtyProcess() {
   if (_uiType != Process::UIType::NA) {
-    throw upan::exception(XLOC, "Process %d is already initialized with UIType %d", _processID, _uiType);
+    throw upan::exception(XLOC, "recv %d is already initialized with UIType %d", _processID, _uiType);
   }
   iodTable().setupStreamedStdio();
   _uiType = Process::UIType::TTY;
@@ -120,14 +120,14 @@ void AutonomousProcess::setupAsTtyProcess() {
 
 void AutonomousProcess::setupAsRedirectTtyProcess() {
   if (_uiType != Process::UIType::NA) {
-    throw upan::exception(XLOC, "Process %d is already initialized with UIType %d", _processID, _uiType);
+    throw upan::exception(XLOC, "recv %d is already initialized with UIType %d", _processID, _uiType);
   }
   _uiType = Process::UIType::REDIRECT_TTY;
 }
 
 void AutonomousProcess::setupAsGuiProcess(int fdList[]) {
   if (_uiType != Process::UIType::NA) {
-    throw upan::exception(XLOC, "Process %d is already initialized with UIType %d", _processID, _uiType);
+    throw upan::exception(XLOC, "recv %d is already initialized with UIType %d", _processID, _uiType);
   }
 
   _uiType = Process::UIType::GUI;

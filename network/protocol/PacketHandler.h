@@ -21,21 +21,17 @@
  */
 #pragma once
 
-#include <NetworkDevice.h>
+#include <map.h>
 
-template <typename T>
+class NetworkDevice;
+class RawNetPacket;
+
 class PacketHandler {
 public:
   explicit PacketHandler(NetworkDevice& networkDevice) : _networkDevice(networkDevice) {}
-  virtual void Process(const T& packet) = 0;
+  virtual void recv(const RawNetPacket& packet) = 0;
+  NetworkDevice& device() { return _networkDevice; }
 
-  NetworkDevice& GetNetworkDevice() {
-    return _networkDevice;
-  }
-
-  const MACAddress& GetMACAddress() const {
-    return _networkDevice.GetMACAddress();
-  }
 private:
   NetworkDevice& _networkDevice;
 };

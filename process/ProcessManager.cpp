@@ -51,7 +51,7 @@ ProcessManager::ProcessManager() {
 
   _processSchedulerIt = _processSchedulerList.end();
 
-  KC::MConsole().LoadMessage("Process Manager Initialization", Success);
+  KC::MConsole().LoadMessage("recv Manager Initialization", Success);
 }
 
 AutonomousProcess& ProcessManager::GetThreadParentProcess(int pid) {

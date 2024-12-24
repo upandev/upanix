@@ -45,17 +45,38 @@ RawNetPacket::~RawNetPacket() {
   }
 }
 
-RawNetPacket::RawNetPacket(const RawNetPacket&& o) {
-  assign(o);
+RawNetPacket::RawNetPacket(RawNetPacket&& o) noexcept : RawNetPacket() {
+  move(o);
 }
 
-RawNetPacket& RawNetPacket::operator=(const RawNetPacket&& o) {
-  assign(o);
+RawNetPacket& RawNetPacket::operator=(RawNetPacket&& o) noexcept {
+  move(o);
   return *this;
 }
 
-void RawNetPacket::assign(const RawNetPacket& o) {
+void RawNetPacket::move(RawNetPacket& o) {
   this->_buf = o._buf;
   this->_len = o._len;
-  const_cast<RawNetPacket&>(o)._buf = nullptr;
+  o._buf = nullptr;
 }
+
+const NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() const {
+  return *reinterpret_cast<NetworkPacket::UDP::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE + getIPV4Header()._ihl);
+}
+
+const NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() const {
+  return *reinterpret_cast<NetworkPacket::IPV4::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE);
+}
+
+const NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() const {
+  return *reinterpret_cast<NetworkPacket::ARP::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE);
+}
+
+const NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() const {
+  return *reinterpret_cast<NetworkPacket::ARP::IPV4*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE);
+}
+
+const NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() const {
+  return *reinterpret_cast<NetworkPacket::Ethernet::Header*>(_buf);
+}
+

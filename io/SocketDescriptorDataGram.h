@@ -21,10 +21,12 @@
  */
 #pragma once
 
-#include <SocketBase.h>
+#include <SocketDescriptor.h>
 
-class StreamSocket : public SocketBase {
+class SocketDescriptorDataGram : public SocketDescriptor {
 public:
-  int read(void* buffer, int len) override { return 0; }
-  int write(const void* buffer, int len) override { return 0; }
+  SocketDescriptorDataGram(int pid, int fd, IPPROTO_TYPE protocol);
+
+private:
+  void sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
 };

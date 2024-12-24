@@ -19,12 +19,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#include <DataGramSocket.h>
 
-int DataGramSocket::read(void* buffer, int len) {
-  return 0;
-}
+#include <SocketDescriptorStream.h>
 
-int DataGramSocket::write(const void* buffer, int len) {
-  return 0;
+SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
 }

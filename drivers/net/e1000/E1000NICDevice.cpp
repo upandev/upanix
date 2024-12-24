@@ -28,7 +28,7 @@
 #include <NetworkDevice.h>
 #include <MemManager.h>
 #include <ProcessManager.h>
-#include <NetworkManager.h>
+#include "network/NetworkManager.h"
 #include <E1000NICDevice.h>
 
 #define ICR_TRANSMIT    (1 << 0)
@@ -144,7 +144,7 @@ void E1000NICDevice::ProcessRxQueue() {
       break;
     }
     try {
-      _ethernetHandler.Process(packet.value());
+      _ethernetHandler.recv(packet.value());
     } catch(const upan::exception& e) {
       e.Print();
     }

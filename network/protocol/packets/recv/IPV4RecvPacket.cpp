@@ -51,7 +51,4 @@ void IPV4RecvPacket::Print() const {
 
   printf("\nChecksum: 0x%x", _ipv4Header._checksum);
 
-  printf("\nSource Addr: %d.%d.%d.%d, Dest Addr: %d.%d.%d.%d",
-         _ipv4Header._srcAddr[0], _ipv4Header._srcAddr[1], _ipv4Header._srcAddr[2], _ipv4Header._srcAddr[3],
-         _ipv4Header._destAddr[0], _ipv4Header._destAddr[1], _ipv4Header._destAddr[2], _ipv4Header._destAddr[3]);
 }

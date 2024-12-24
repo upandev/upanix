@@ -23,7 +23,6 @@
 
 #include <NetworkPacketComponents.h>
 #include <IPV4RecvPacket.h>
-#include <IPType.h>
 
 class IPV4RecvPacket;
 

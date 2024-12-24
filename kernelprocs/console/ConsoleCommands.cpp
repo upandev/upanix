@@ -47,7 +47,7 @@
 #include <PCSound.h>
 #include <Apic.h>
 #include <typeinfo.h>
-#include <NetworkManager.h>
+#include "network/NetworkManager.h"
 #include <ARPHandler.h>
 #include <GraphicsContext.h>
 #include <MouseEventHandler.h>
@@ -632,7 +632,7 @@ void ConsoleCommands_LoadExe() {
                                                                 ProcessManager::GetCurrentProcessID(), true,
                                                                 DERIVE_FROM_PARENT, 3, argv);
   if (iChildProcessID < 0) {
-    printf("\n Load User Process Failed: %d", iChildProcessID);
+    printf("\n Load User recv Failed: %d", iChildProcessID);
   } else if (!runInBG) {
     ProcessManager::Instance().WaitOnChild(iChildProcessID);
   }
@@ -770,7 +770,7 @@ void ConsoleCommands_ListNetworkDevices() {
 }
 
 void ConsoleCommands_ARPing() {
-  auto d = NetworkManager::Instance().GetDefaultDevice();
+  auto d = NetworkManager::Instance().getDefaultDevice();
   if (d.isEmpty()) {
     printf("\nno network device exists");
     return;
@@ -783,18 +783,60 @@ void ConsoleCommands_ARPing() {
   const upan::string param(CommandLineParser::Instance().GetParameterAt(0));
 
   if (param == "rarp") {
-    device.GetARPHandler().ifPresent([&](ARPHandler& arpHandler) {
-      arpHandler.SendRARP();
-    });
+    device.getARPHandler().SendRARP();
   } else {
-    device.GetARPHandler().ifPresent([&](ARPHandler& arpHandler) {
-      arpHandler.SendRequestForMAC({ inet_aton(param.c_str()) });
-    });
+    device.getARPHandler().SendRequestForMAC({ inet_aton(param.c_str()) });
   }
 }
 
+struct dhcp_message {
+  uint8_t op;
+  uint8_t htype;
+  uint8_t hlen;
+  uint8_t hops;
+  uint32_t xid;
+  uint16_t secs;
+  uint16_t flags;
+  uint32_t ciaddr;
+  uint32_t yiaddr;
+  uint32_t siaddr;
+  uint32_t giaddr;
+  unsigned char chaddr[16];
+  unsigned char sname[64];
+  unsigned char file[128];
+  unsigned char options[312];
+};
+
+static const int MAX_BUFFER_SIZE = 1024;
+
+void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid) {
+  static const int DHCP_DISCOVER = 1;
+  memset(msg, 0, sizeof(struct dhcp_message));
+  msg->op = 1; // BOOTREQUEST
+  msg->htype = 1; // Ethernet
+  msg->hlen = 6; // MAC address length
+  msg->xid = htonl(xid);
+  msg->flags = htons(0x8000); // Broadcast flag
+  // Add DHCP options
+  msg->options[0] = 0x63; // Magic cookie
+  msg->options[1] = 0x82;
+  msg->options[2] = 0x53;
+  msg->options[3] = 0x63;
+  msg->options[4] = 53; // Option: DHCP Message Type
+  msg->options[5] = 1;  // Length
+  msg->options[6] = DHCP_DISCOVER; // DHCP Discover
+  msg->options[7] = 255; // End Option
+}
+
+void print_dhcp_offer(const struct dhcp_message *msg) {
+  printf("Received DHCP Offer:\n");
+  printf("  Your IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->yiaddr));
+  printf("  Server IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->siaddr));
+  printf("  Gateway IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->giaddr));
+}
+
 void ConsoleCommands_ObtainIPAddress() {
-  auto d = NetworkManager::Instance().GetDefaultDevice();
+  auto d = NetworkManager::Instance().getDefaultDevice();
   if (d.isEmpty()) {
     printf("\nno network device exists");
     return;
@@ -802,11 +844,9 @@ void ConsoleCommands_ObtainIPAddress() {
   auto& device = d.value();
   //device.GetDHCPHandler().ifPresent([&](DHCPHandler& handler) { handler.ObtainIPAddress(); });
 
+  const int DHCP_SERVER_PORT = 67;
   const int DHCP_CLIENT_PORT = 68;
 
-  //struct dhcp_message dhcp_msg;
-  char buffer[1024];
-  ssize_t len;
 
   const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
   if (sd < 0) {
@@ -826,6 +866,48 @@ void ConsoleCommands_ObtainIPAddress() {
   }
 
   struct sockaddr_in server_addr;
+  // Configure the DHCP server address
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(DHCP_SERVER_PORT);
+  server_addr.sin_addr.s_addr = INADDR_BROADCAST;
+
+  // Allow socket to broadcast
+  int broadcast = 1;
+  if (setsockopt(sd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_BROADCAST");
+  }
+
+  // Create and send DHCP Discover
+
+  //struct dhcp_message dhcp_msg;
+  struct dhcp_message dhcp_msg;
+  char buffer[MAX_BUFFER_SIZE];
+  ssize_t len;
+
+  const auto xid = (uint32_t)rand(); // Transaction ID
+  create_dhcp_discover(&dhcp_msg, xid);
+
+  len = sendto(sd, &dhcp_msg, sizeof(dhcp_msg), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+  if (len < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to send DHCP Discover");
+  }
+
+  printf("DHCP Discover sent\n");
+
+  // Receive DHCP Offer
+  len = recvfrom(sd, buffer, MAX_BUFFER_SIZE, 0, nullptr, nullptr);
+  if (len < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to receive DHCP offer");
+  }
+
+  memcpy(&dhcp_msg, buffer, sizeof(dhcp_msg));
+  printf("DHCP Offer received\n");
+  print_dhcp_offer(&dhcp_msg);
+  close(sd);
 }
 
 void ConsoleCommands_SetXHCIEventMode()

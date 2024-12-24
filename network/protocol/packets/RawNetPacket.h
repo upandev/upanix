@@ -22,23 +22,32 @@
 #pragma once
 
 #include <stdlib.h>
+#include <NetworkPacketComponents.h>
 
 class RawNetPacket {
 public:
   RawNetPacket();
   RawNetPacket(uintptr_t addr, int len);
-  RawNetPacket(int len);
+  explicit RawNetPacket(int len);
   ~RawNetPacket();
+
   RawNetPacket(const RawNetPacket& o) = delete;
-  RawNetPacket(const RawNetPacket&& o);
+  RawNetPacket(RawNetPacket&& o) noexcept;
   RawNetPacket& operator=(const RawNetPacket& o) = delete;
-  RawNetPacket& operator=(const RawNetPacket&& o);
+  RawNetPacket& operator=(RawNetPacket&& o) noexcept;
 
   uint8_t* buf() const { return _buf; }
   int len() const { return _len; }
 
+  const NetworkPacket::UDP::Header& getUDP4Header() const;
+  const NetworkPacket::IPV4::Header& getIPV4Header() const;
+  const NetworkPacket::ARP::Header& getARPHeader() const;
+  const NetworkPacket::ARP::IPV4& getARPIPV4Header() const;
+  const NetworkPacket::Ethernet::Header& getEthernetHeader() const;
+
 private:
-  void assign(const RawNetPacket& o);
+  void move(RawNetPacket& o);
+
   uint8_t* _buf;
   int _len;
 };

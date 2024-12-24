@@ -29,6 +29,13 @@ namespace NetworkPacket {
   constexpr int MAC_ADDR_LEN = 6;
   constexpr int IPV4_ADDR_LEN = 4;
 
+  typedef enum {
+    ETHER_TYPE = 0x1,
+    IPV4_TYPE = 0x0800,
+    ARP_TYPE = 0x0806,
+    UDP4_TYPE = 0x11,
+  } PacketType;
+
   namespace ARP {
     struct Header {
       uint16_t _hType;
@@ -36,13 +43,38 @@ namespace NetworkPacket {
       uint8_t _hLen;
       uint8_t _pLen;
       uint16_t _opCode;
+
+      PacketType type() const {
+        return static_cast<PacketType>(_pType);
+      }
+
+      bool isRequest() const { return _opCode == 1; }
+      bool isResponse() const { return _opCode == 2; }
+
+      void print() const {
+        printf("\n HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
+      }
     } PACKED;
 
     struct IPV4 {
       uint8_t _senderHardwareAddress[MAC_ADDR_LEN];
-      struct in_addr _senderProtocolAddress;
+      in_addr_t _senderProtocolAddress;
       uint8_t _targetHardwareAddress[MAC_ADDR_LEN];
-      struct in_addr _targetProtocolAddress;
+      in_addr_t _targetProtocolAddress;
+
+      void print() const {
+        printf("\n SHA: ");
+        for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+          printf("%02x%s", _senderHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+        }
+        printf(", SPA: %s", inet_ntoa({_senderProtocolAddress}));
+
+        printf("\n THA: ");
+        for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
+          printf("%02x%s", _targetHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+        }
+        printf(", TPA: %s", inet_ntoa({_targetProtocolAddress}));
+      }
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
@@ -54,6 +86,10 @@ namespace NetworkPacket {
       uint8_t _destinationMAC[MAC_ADDR_LEN];
       uint8_t _sourceMAC[MAC_ADDR_LEN];
       uint16_t _type;
+
+      PacketType type() const {
+        return static_cast<PacketType>(_type);
+      }
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
@@ -71,8 +107,24 @@ namespace NetworkPacket {
       uint8_t _ttl; // Time to live
       uint8_t _protocol;
       uint16_t _checksum;
-      uint8_t _srcAddr[4];
-      uint8_t _destAddr[4];
+      in_addr_t _srcAddr;
+      in_addr_t _destAddr;
+
+      PacketType type() const {
+        return static_cast<PacketType>(_protocol);
+      }
+
+      void print() const {
+        printf("\n Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
+
+        printf("\nIdentification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
+               _identification, _flags, _fragmentOffset, _ttl, _protocol);
+
+        printf("\nChecksum: 0x%x", _checksum);
+
+        printf("\nSource Addr: %s", inet_ntoa({_srcAddr}));
+        printf("\nDest Addr: %s", inet_ntoa({_destAddr}));
+      }
     } PACKED;
 
     struct HeaderOptions {
@@ -90,6 +142,11 @@ namespace NetworkPacket {
       uint16_t _destPort;
       uint16_t _len;
       uint16_t _checksum;
+
+      void print() const {
+        printf("\n Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
+      }
+
     } PACKED;
 
     struct IPV4PseudoHeader {

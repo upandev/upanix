@@ -23,7 +23,7 @@
 
 sock_t SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, IPPROTO_TYPE protocol) {
   uint64_t retStatus;
-  SysCallNet_Handle(&retStatus, SYS_CALL_CREATE_SOCKET, false, (uint64_t)sa_family, (uint64_t)socket_type, (uint64_t)protocol, 4, 5);
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_CREATE, false, (uint64_t)sa_family, (uint64_t)socket_type, (uint64_t)protocol, 4, 5);
   return (sock_t)retStatus;
 }
 
@@ -31,4 +31,24 @@ int SysNet_Bind(sock_t fd, struct sockaddr* client_addr, socklen_t len) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_BIND, false, (uint64_t)fd, (uint64_t)client_addr, (uint64_t)len, 4, 5);
   return (int)retStatus;
+}
+
+int SysNet_SetSockOpt(sock_t fd, int level, SOCKET_OPTION option, const void* optval, socklen_t len) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_SET_OPT, false, (uint64_t)fd, (uint64_t)level, (uint64_t)option, (uint64_t)optval, (uint64_t)len);
+  return (int) retStatus;
+}
+
+int SysNet_SendTo(int fd, const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  uint64_t retStatus;
+  uint64_t ext_param[] = { (uint64_t)addr, (uint64_t)len };
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_SEND_TO, false, (uint64_t)fd, (uint64_t)buf, (uint64_t)n, (uint64_t)flags, (uint64_t)&ext_param);
+  return (int) retStatus;
+}
+
+int SysNet_RecvFrom(int fd, void *buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  uint64_t retStatus;
+  uint64_t ext_param[] = { (uint64_t)addr, (uint64_t)len };
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_RECV_FROM, false, (uint64_t)fd, (uint64_t)buf, (uint64_t)n, (uint64_t)flags, (uint64_t)&ext_param);
+  return (int) retStatus;
 }

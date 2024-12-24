@@ -30,9 +30,9 @@ ARPRecvPacket::ARPRecvPacket(const EthernetRecvPacket& ethernetPacket) :
   _arpHeader._pType = ntohs(_arpHeader._pType);
   _arpHeader._opCode = ntohs(_arpHeader._opCode);
 
-  if (ARPRecvPacket::Type() == EtherType::IPV4) {
-    _arpIPV4 = reinterpret_cast<NetworkPacket::ARP::IPV4*>(_ethernetPacket.PacketData() + sizeof(NetworkPacket::ARP::Header));
-  }
+//  if (ARPRecvPacket::Type() == EtherType::IPV4) {
+//    _arpIPV4 = reinterpret_cast<NetworkPacket::ARP::IPV4*>(_ethernetPacket.PacketData() + sizeof(NetworkPacket::ARP::Header));
+//  }
 }
 
 void ARPRecvPacket::Print() const {
@@ -44,12 +44,10 @@ void ARPRecvPacket::Print() const {
     for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
       printf("%02x%s", _arpIPV4->_senderHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
     }
-    printf(", SPA: %s", inet_ntoa(_arpIPV4->_senderProtocolAddress));
 
     printf("\n THA: ");
     for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
       printf("%02x%s", _arpIPV4->_targetHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
     }
-    printf(", TPA: %s", inet_ntoa(_arpIPV4->_targetProtocolAddress));
   }
 }

@@ -21,9 +21,11 @@
  */
 #pragma once
 
-class SocketBase {
+#include <SocketDescriptor.h>
+
+class SocketDescriptorStream : public SocketDescriptor {
 public:
-  virtual ~SocketBase() = default;
-  virtual int read(void* buffer, int len) = 0;
-  virtual int write(const void* buffer, int len) = 0;
+  SocketDescriptorStream(int pid, int fd, IPPROTO_TYPE protocol);
+private:
+  void sendTo(const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override {};
 };
