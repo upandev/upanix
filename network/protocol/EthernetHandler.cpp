@@ -24,20 +24,19 @@
 
 #include <RawNetPacket.h>
 #include <ARPHandler.h>
-#include <IPV4Handler.h>
 #include <EthernetHandler.h>
-#include <EthernetRecvPacket.h>
 #include <NetworkDevice.h>
 
 EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void EthernetHandler::recv(const RawNetPacket& packet) {
+void EthernetHandler::recv(RawNetPacket& packet) {
   if (packet.len() < MIN_ETHERNET_PACKET_LEN) {
     throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet.len(), MIN_ETHERNET_PACKET_LEN);
   }
 
-  const auto& ethernetHeader = packet.getEthernetHeader();
+  auto& ethernetHeader = packet.getEthernetHeader();
+  ethernetHeader.switchNetworkOrder();
   const MACAddress& destMAC = ethernetHeader._destinationMAC;
   if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
     return;

@@ -21,14 +21,12 @@
  */
 #pragma once
 
-#include <UDP4RecvPacket.h>
-
 class UDP4Handler;
 
 class DHCPHandler {
 public:
   explicit DHCPHandler(UDP4Handler& udp4Handler);
-  void Process(const UDP4RecvPacket& packet);
+  //void Process(const UDP4RecvPacket& packet);
   void ObtainIPAddress();
 private:
   UDP4Handler& _udpHandler;

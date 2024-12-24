@@ -20,20 +20,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
+
 #include <PacketHandler.h>
-#include <EthernetRecvPacket.h>
+#include <NetworkPacketComponents.h>
 
 class ARPHandler : public PacketHandler {
 public:
   explicit ARPHandler(NetworkDevice& networkDevice);
-  void recv(const RawNetPacket& packet) override;
+  void recv(RawNetPacket& packet) override;
 
   void SendRequestForMAC(const struct in_addr& ipAddress);
   void SendRARP();
-
-  static constexpr NetworkPacket::PacketType HandlerType() {
-    return NetworkPacket::PacketType::ARP_TYPE;
-  }
 
 private:
   RawNetPacket CreatePacket(uint16_t hType, NetworkPacket::PacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,

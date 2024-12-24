@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <DHCPHandler.h>
 #include <UDP4Handler.h>
-#include <UDP4RecvPacket.h>
 #include <DHCPRecvPacket.h>
 #include <DHCPSendPacket.h>
 #include <NetworkDevice.h>
@@ -30,11 +29,11 @@
 DHCPHandler::DHCPHandler(UDP4Handler &udpHandler) : _udpHandler(udpHandler) {
 }
 
-void DHCPHandler::Process(const UDP4RecvPacket& packet) {
-  printf("\n Handling DHCP Packet");
-  DHCPRecvPacket dhcpPacket(packet);
-  dhcpPacket.Print();
-}
+//void DHCPHandler::Process(const UDP4RecvPacket& packet) {
+//  printf("\n Handling DHCP Packet");
+//  DHCPRecvPacket dhcpPacket(packet);
+//  dhcpPacket.Print();
+//}
 
 void DHCPHandler::ObtainIPAddress() {
   uint8_t clientHardwareAddress[16];

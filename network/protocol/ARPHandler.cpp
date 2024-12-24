@@ -20,16 +20,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
-#include <EthernetRecvPacket.h>
 #include <ARPHandler.h>
-#include <ARPRecvPacket.h>
 #include <EthernetHandler.h>
 #include <NetworkDevice.h>
 
 ARPHandler::ARPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void ARPHandler::recv(const RawNetPacket& packet) {
+void ARPHandler::recv(RawNetPacket& packet) {
   const auto& arpHeader = packet.getARPHeader();
   if (arpHeader.isResponse()) {
     printf("\n Handling ARP packet");
@@ -46,21 +44,20 @@ RawNetPacket ARPHandler::CreatePacket(uint16_t hType, NetworkPacket::PacketType 
 
   RawNetPacket packet(NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE + NetworkPacket::ARP::IPV4_SIZE);
 
-  auto arpHeader = reinterpret_cast<NetworkPacket::ARP::Header*>(packet.buf() + NetworkPacket::Ethernet::HEADER_SIZE);
-  arpHeader->_hType = htons(hType);
-  arpHeader->_pType = htons((uint16_t) pType);
-  arpHeader->_hLen = hLen;
-  arpHeader->_pLen = pLen;
-  arpHeader->_opCode = htons(opCode);
+  auto& arpHeader = packet.getARPHeader();
+  arpHeader._hType = htons(hType);
+  arpHeader._pType = htons((uint16_t) pType);
+  arpHeader._hLen = hLen;
+  arpHeader._pLen = pLen;
+  arpHeader._opCode = htons(opCode);
 
-  auto _arpIPV4 = reinterpret_cast<NetworkPacket::ARP::IPV4*>(
-          packet.buf() + NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE);
+  auto& arpIPV4Header = packet.getARPIPV4Header();
 
-  memcpy(_arpIPV4->_senderHardwareAddress, sha, NetworkPacket::MAC_ADDR_LEN);
-  _arpIPV4->_senderProtocolAddress = spa.s_addr;
+  memcpy(arpIPV4Header._senderHardwareAddress, sha, NetworkPacket::MAC_ADDR_LEN);
+  arpIPV4Header._senderProtocolAddress = spa.s_addr;
 
-  memcpy(_arpIPV4->_targetHardwareAddress, tha, NetworkPacket::MAC_ADDR_LEN);
-  _arpIPV4->_targetProtocolAddress = tpa.s_addr;
+  memcpy(arpIPV4Header._targetHardwareAddress, tha, NetworkPacket::MAC_ADDR_LEN);
+  arpIPV4Header._targetProtocolAddress = tpa.s_addr;
 
   return packet;
 }

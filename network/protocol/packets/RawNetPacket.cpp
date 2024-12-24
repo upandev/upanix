@@ -60,23 +60,38 @@ void RawNetPacket::move(RawNetPacket& o) {
   o._buf = nullptr;
 }
 
-const NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() const {
-  return *reinterpret_cast<NetworkPacket::UDP::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE + getIPV4Header()._ihl);
-}
-
-const NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() const {
-  return *reinterpret_cast<NetworkPacket::IPV4::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE);
-}
-
-const NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() const {
-  return *reinterpret_cast<NetworkPacket::ARP::Header*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE);
-}
-
-const NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() const {
-  return *reinterpret_cast<NetworkPacket::ARP::IPV4*>(_buf + NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE);
-}
-
-const NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() const {
+NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() {
   return *reinterpret_cast<NetworkPacket::Ethernet::Header*>(_buf);
 }
 
+uint8_t* RawNetPacket::getEthernetData() {
+  return _buf + NetworkPacket::Ethernet::HEADER_SIZE;
+}
+
+NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() {
+  return *reinterpret_cast<NetworkPacket::IPV4::Header*>(getEthernetData());
+}
+
+uint8_t* RawNetPacket::getIPV4Data() {
+  return getEthernetData() + (sizeof(uint32_t) * getIPV4Header()._ihl);
+}
+
+NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() {
+  return *reinterpret_cast<NetworkPacket::ARP::Header*>(getEthernetData());
+}
+
+uint8_t* RawNetPacket::getARPData() {
+  return getEthernetData() + NetworkPacket::ARP::HEADER_SIZE;
+}
+
+NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() {
+  return *reinterpret_cast<NetworkPacket::ARP::IPV4*>(getARPData());
+}
+
+NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() {
+  return *reinterpret_cast<NetworkPacket::UDP::Header*>(getIPV4Data());
+}
+
+uint8_t* RawNetPacket::getUDP4Data() {
+  return getIPV4Data() + NetworkPacket::UDP::HEADER_SIZE;
+}

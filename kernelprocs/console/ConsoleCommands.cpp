@@ -776,7 +776,7 @@ void ConsoleCommands_ARPing() {
     return;
   }
   if(CommandLineParser::Instance().GetNoOfParameters() < 1) {
-    printf("missing parameter");
+    printf("\nmissing parameter");
     return;
   }
   auto& device = d.value();

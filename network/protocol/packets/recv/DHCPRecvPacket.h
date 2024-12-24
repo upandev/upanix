@@ -23,14 +23,12 @@
 
 #include <NetworkPacketComponents.h>
 
-class UDP4RecvPacket;
-
 class DHCPRecvPacket {
 public:
-  explicit DHCPRecvPacket(const UDP4RecvPacket& udp4RecvPacket);
+  DHCPRecvPacket();
   void Print() const;
 
 private:
-  const UDP4RecvPacket& _udp4RecvPacket;
-  NetworkPacket::DHCP::Header& _header;
+  //const UDP4RecvPacket& _udp4RecvPacket;
+  NetworkPacket::DHCP::Header _header;
 };

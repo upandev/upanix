@@ -20,17 +20,29 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
-#include <EthernetRecvPacket.h>
 #include <IPV4Handler.h>
 #include <NetworkDevice.h>
 
 IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void IPV4Handler::recv(const RawNetPacket& packet) {
+void IPV4Handler::recv(RawNetPacket& packet) {
   printf("\n Handling IPV4 Packet");
-  const auto& ipv4Header = packet.getIPV4Header();
+  verifyChecksum(packet);
+  auto& ipv4Header = packet.getIPV4Header();
+  ipv4Header.switchNetworkOrder();
   ipv4Header.print();
-
+  ipv4Header.switchNetworkOrder();
   device().getHandler(ipv4Header.type()).ifPresent([&packet](PacketHandler& handler) { handler.recv(packet); });
+}
+
+void IPV4Handler::verifyChecksum(RawNetPacket& packet) {
+  const auto& ipv4Header = packet.getIPV4Header();
+  const uint32_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *)(packet.getEthernetData()),
+                                                                     ipv4Header._ihl * sizeof(uint32_t),
+                                                                     0);
+  if (calculatedChecksum ^ (uint16_t)0xFFFF) {
+    ipv4Header.print();
+    throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
+  }
 }

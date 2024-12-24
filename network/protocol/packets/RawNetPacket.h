@@ -39,11 +39,19 @@ public:
   uint8_t* buf() const { return _buf; }
   int len() const { return _len; }
 
-  const NetworkPacket::UDP::Header& getUDP4Header() const;
-  const NetworkPacket::IPV4::Header& getIPV4Header() const;
-  const NetworkPacket::ARP::Header& getARPHeader() const;
-  const NetworkPacket::ARP::IPV4& getARPIPV4Header() const;
-  const NetworkPacket::Ethernet::Header& getEthernetHeader() const;
+  NetworkPacket::Ethernet::Header& getEthernetHeader();
+  uint8_t* getEthernetData();
+
+  NetworkPacket::IPV4::Header& getIPV4Header();
+  uint8_t* getIPV4Data();
+
+  NetworkPacket::ARP::Header& getARPHeader();
+  uint8_t* getARPData();
+
+  NetworkPacket::UDP::Header& getUDP4Header();
+  uint8_t* getUDP4Data();
+
+  NetworkPacket::ARP::IPV4& getARPIPV4Header();
 
 private:
   void move(RawNetPacket& o);

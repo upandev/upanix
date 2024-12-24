@@ -29,7 +29,7 @@ class RawNetPacket;
 class PacketHandler {
 public:
   explicit PacketHandler(NetworkDevice& networkDevice) : _networkDevice(networkDevice) {}
-  virtual void recv(const RawNetPacket& packet) = 0;
+  virtual void recv(RawNetPacket& packet) = 0;
   NetworkDevice& device() { return _networkDevice; }
 
 private:

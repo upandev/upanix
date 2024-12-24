@@ -22,25 +22,43 @@
 #include <stdio.h>
 #include <UDP4Handler.h>
 #include <IPV4Handler.h>
-#include <IPV4RecvPacket.h>
-#include <UDP4RecvPacket.h>
+#include <RawNetPacket.h>
+#include <NetworkUtil.h>
 
 UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void UDP4Handler::recv(const RawNetPacket& packet) {
+void UDP4Handler::recv(RawNetPacket& packet) {
   printf("\n Handling UDP Packet");
-  const auto& udpHeader = packet.getUDP4Header();
+  verifyChecksum(packet);
+  auto& udpHeader = packet.getUDP4Header();
+  udpHeader.switchNetworkOrder();
   udpHeader.print();
 }
 
 void UDP4Handler::SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort) {
 }
 
-//NetProtocolType UDP4Handler::Type(const UDP4RecvPacket& packet) const {
-//  const auto& header = packet.Header();
-//  if ((header._srcPort == 67 && header._destPort == 68) || (header._srcPort == 68 && header._destPort == 67)) {
-//    return NetProtocolType::DHCP;
-//  }
-//  return NetProtocolType::Unknown;
-//}
+void UDP4Handler::verifyChecksum(RawNetPacket& packet) {
+  const auto& udpHeader = packet.getUDP4Header();
+  const auto& ipv4Header = packet.getIPV4Header();
+  if (udpHeader._checksum) {
+    const NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader {
+      ipv4Header._srcAddr,
+      ipv4Header._destAddr,
+      0,
+      NetworkPacket::PacketType::UDP4_TYPE,
+      udpHeader._len
+    };
+
+    const uint32_t len = ntohs(udpHeader._len);
+    const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0);
+    const uint16_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *) packet.getIPV4Data(),len, partialChecksum);
+
+    const uint16_t r = calculatedChecksum ^ (uint16_t)0xFFFF;
+    if (r) {
+      udpHeader.print();
+      throw upan::exception(XLOC, "Invalid Checksum for UDP Packet, IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
+    }
+  }
+}

@@ -48,6 +48,12 @@ namespace NetworkPacket {
         return static_cast<PacketType>(_pType);
       }
 
+      void switchNetworkOrder() {
+        _hType = htons(_hType);
+        _pType = htons(_pType);
+        _opCode = htons(_opCode);
+      }
+
       bool isRequest() const { return _opCode == 1; }
       bool isResponse() const { return _opCode == 2; }
 
@@ -61,6 +67,11 @@ namespace NetworkPacket {
       in_addr_t _senderProtocolAddress;
       uint8_t _targetHardwareAddress[MAC_ADDR_LEN];
       in_addr_t _targetProtocolAddress;
+
+      void switchNetworkOrder() {
+        _senderProtocolAddress = htonl(_senderProtocolAddress);
+        _targetProtocolAddress = htonl(_targetProtocolAddress);
+      }
 
       void print() const {
         printf("\n SHA: ");
@@ -90,6 +101,10 @@ namespace NetworkPacket {
       PacketType type() const {
         return static_cast<PacketType>(_type);
       }
+
+      void switchNetworkOrder() {
+        _type = htons(_type);
+      }
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
@@ -112,6 +127,14 @@ namespace NetworkPacket {
 
       PacketType type() const {
         return static_cast<PacketType>(_protocol);
+      }
+
+      void switchNetworkOrder() {
+        _totalLen = htons(_totalLen);
+        _identification = htons(_identification);
+        _checksum = htons(_checksum);
+        _srcAddr = htonl(_srcAddr);
+        _destAddr = htonl(_destAddr);
       }
 
       void print() const {
@@ -147,11 +170,17 @@ namespace NetworkPacket {
         printf("\n Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
       }
 
+      void switchNetworkOrder() {
+        _srcPort = ntohs(_srcPort);
+        _destPort = ntohs(_destPort);
+        _len = ntohs(_len);
+        _checksum = ntohs(_checksum);
+      }
     } PACKED;
 
     struct IPV4PseudoHeader {
-      uint8_t _srcAddr[4];
-      uint8_t _destAddr[4];
+      in_addr_t _srcAddr;
+      in_addr_t _destAddr;
       uint8_t _zeros;
       uint8_t _protocol;
       uint16_t _udpLen;

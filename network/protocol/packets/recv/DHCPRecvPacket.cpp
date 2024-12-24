@@ -21,18 +21,17 @@
  */
 
 #include <stdio.h>
-#include <UDP4RecvPacket.h>
 #include <DHCPRecvPacket.h>
 
-DHCPRecvPacket::DHCPRecvPacket(const UDP4RecvPacket& udp4RecvPacket) :
-  _udp4RecvPacket(udp4RecvPacket),
-  _header(reinterpret_cast<NetworkPacket::DHCP::Header&>(*_udp4RecvPacket.PacketData())) {
-  if (_udp4RecvPacket.Header()._len < NetworkPacket::DHCP::HEADER_SIZE) {
-    throw upan::exception(XLOC, "Invalid DHCP Packet with len: %d", _udp4RecvPacket.Header()._len);
-  }
-  _header._xid = ntohs(_header._xid);
-  _header._secs = ntohs(_header._secs);
-  _header._flags = ntohs(_header._flags);
+DHCPRecvPacket::DHCPRecvPacket() {
+//  _udp4RecvPacket(udp4RecvPacket),
+//  _header(reinterpret_cast<NetworkPacket::DHCP::Header&>(*_udp4RecvPacket.PacketData())) {
+//  if (_udp4RecvPacket.Header()._len < NetworkPacket::DHCP::HEADER_SIZE) {
+//    throw upan::exception(XLOC, "Invalid DHCP Packet with len: %d", _udp4RecvPacket.Header()._len);
+//  }
+//  _header._xid = ntohs(_header._xid);
+//  _header._secs = ntohs(_header._secs);
+//  _header._flags = ntohs(_header._flags);
 }
 
 void DHCPRecvPacket::Print() const {
@@ -43,5 +42,5 @@ void DHCPRecvPacket::Print() const {
          inet_ntoa(_header._yiAddr),
          inet_ntoa(_header._siAddr),
          inet_ntoa(_header._giAddr));
-  printf("\n CHAddr: %s", MACAddress(_header._chAddr).str().c_str());
+  //printf("\n CHAddr: %s", MACAddress(_header._chAddr).str().c_str());
 }

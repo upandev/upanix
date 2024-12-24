@@ -24,7 +24,6 @@
 #include <map.h>
 #include <NetworkPacketComponents.h>
 #include <PacketHandler.h>
-#include <EthernetRecvPacket.h>
 #include <option.h>
 
 class RawNetPacket;
@@ -33,7 +32,7 @@ class NetworkDevice;
 class EthernetHandler : public PacketHandler {
 public:
   explicit EthernetHandler(NetworkDevice& networkDevice);
-  void recv(const RawNetPacket& packet) override;
+  void recv(RawNetPacket& packet) override;
 
   void SendPacket(RawNetPacket& packet, NetworkPacket::PacketType pType, const uint8_t* destMac);
 

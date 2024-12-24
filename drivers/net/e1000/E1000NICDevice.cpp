@@ -139,7 +139,7 @@ void E1000NICDevice::SendPacket(const RawNetPacket& packet) {
 
 void E1000NICDevice::ProcessRxQueue() {
   while(true) {
-    const auto& packet = regRx->GetNextPacket();
+    auto packet = regRx->GetNextPacket();
     if (packet.isEmpty()) {
       break;
     }
@@ -151,7 +151,7 @@ void E1000NICDevice::ProcessRxQueue() {
   }
 }
 
-constexpr volatile uint32_t* REG(const uint32_t base, const uint32_t offset) {
+volatile uint32_t* REG(const uint32_t base, const uint32_t offset) {
   return reinterpret_cast<volatile uint32_t*>(base + offset);
 }
 

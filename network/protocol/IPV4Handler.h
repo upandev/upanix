@@ -23,7 +23,6 @@
 
 #include <map.h>
 #include <PacketHandler.h>
-#include <IPV4RecvPacket.h>
 #include <option.h>
 
 class EthernetHandler;
@@ -31,9 +30,8 @@ class EthernetHandler;
 class IPV4Handler : public PacketHandler {
 public:
   explicit IPV4Handler(NetworkDevice& networkDevice);
-  void recv(const RawNetPacket& packet) override;
+  void recv(RawNetPacket& packet) override;
 
-  static constexpr NetworkPacket::PacketType HandlerType() {
-    return NetworkPacket::PacketType::IPV4_TYPE;
-  }
+private:
+  void verifyChecksum(RawNetPacket& packet);
 };

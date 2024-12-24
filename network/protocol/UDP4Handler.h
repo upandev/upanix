@@ -23,8 +23,6 @@
 
 #include <map.h>
 #include <PacketHandler.h>
-#include <IPV4RecvPacket.h>
-#include <UDP4RecvPacket.h>
 #include <option.h>
 
 class IPV4Handler;
@@ -32,11 +30,9 @@ class IPV4Handler;
 class UDP4Handler : public PacketHandler {
 public:
   explicit UDP4Handler(NetworkDevice& networkDevice);
-  void recv(const RawNetPacket& packet) override;
-
+  void recv(RawNetPacket& packet) override;
   void SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort);
 
-  static constexpr NetworkPacket::PacketType HandlerType() {
-    return NetworkPacket::PacketType::UDP4_TYPE;
-  }
+private:
+  void verifyChecksum(RawNetPacket& packet);
 };
