@@ -26,9 +26,9 @@
 IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void IPV4Handler::recv(RawNetPacket& packet) {
+void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   printf("\n Handling IPV4 Packet");
-  auto& ipv4Header = packet.getIPV4Header();
+  const auto& ipv4Header = packet->getIPV4Header();
   verifyChecksum(ipv4Header);
   ipv4Header.toHost().print();
   switch(ipv4Header.type()) {
@@ -58,7 +58,7 @@ void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct
 
   ipv4Header._checksum = calcChecksum(ipv4Header);
 
-  //device().getEthernetHandler().SendPacket()
+  device().getEthernetHandler().send(packet, NetworkPacket::EthernetPacketType::E_IPV4_T);
 }
 
 uint16_t IPV4Handler::calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {

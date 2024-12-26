@@ -30,11 +30,9 @@ namespace NetworkPacket {
   constexpr int IPV4_ADDR_LEN = 4;
 
   typedef enum {
-    ETHER_TYPE = 0x1,
-    IPV4_TYPE = 0x0800,
-    ARP_TYPE = 0x0806,
-    UDP4_TYPE = 0x11,
-  } PacketType;
+    E_IPV4_T = 0x0800,
+    E_ARP_T = 0x0806,
+  } EthernetPacketType;
 
   namespace ARP {
     struct Header {
@@ -44,8 +42,8 @@ namespace NetworkPacket {
       uint8_t _pLen;
       uint16_t _opCode;
 
-      PacketType type() const {
-        return static_cast<PacketType>(ntohs(_pType));
+      EthernetPacketType type() const {
+        return static_cast<EthernetPacketType>(ntohs(_pType));
       }
 
       Header toHost() const {
@@ -100,18 +98,13 @@ namespace NetworkPacket {
   }
 
   namespace Ethernet {
-    typedef enum {
-      E_IPV4_T = 0x0800,
-      E_ARP_T = 0x0806,
-    } PacketType;
-
     struct Header {
       uint8_t _destinationMAC[INADDR_MAC_LEN];
       uint8_t _sourceMAC[INADDR_MAC_LEN];
       uint16_t _type;
 
-      PacketType type() const {
-        return static_cast<PacketType>(ntohs(_type));
+      EthernetPacketType type() const {
+        return static_cast<EthernetPacketType>(ntohs(_type));
       }
 
       Header toHost() const {

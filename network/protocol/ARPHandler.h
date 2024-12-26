@@ -23,16 +23,17 @@
 
 #include <PacketHandler.h>
 #include <NetworkPacketComponents.h>
+#include "shared_ptr.h"
 
 class ARPHandler : public PacketHandler {
 public:
   explicit ARPHandler(NetworkDevice& networkDevice);
-  void recv(RawNetPacket& packet) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
 
   void SendRequestForMAC(const struct in_addr& ipAddress);
   void SendRARP();
 
 private:
-  RawNetPacket CreatePacket(uint16_t hType, NetworkPacket::Ethernet::PacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
+  RawNetPacket CreatePacket(uint16_t hType, NetworkPacket::EthernetPacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
                             const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa);
 };

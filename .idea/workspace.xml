@@ -33,9 +33,32 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="enhance network stack to support packet send and recv - still in progress - will continue after adding support for shared_ptr">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="console test code for shared and uniq ptrs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/PacketHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/PacketHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -538,7 +561,7 @@
       <workItem from="1735125490479" duration="10290000" />
       <workItem from="1735178522237" duration="3381000" />
       <workItem from="1735187055610" duration="7863000" />
-      <workItem from="1735205231245" duration="1780000" />
+      <workItem from="1735205231245" duration="9340000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -883,7 +906,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="130" />
+    <option name="localTasksCounter" value="131" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -917,7 +940,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="support for resizable windows" />
     <MESSAGE value="detect mouse double click" />
     <MESSAGE value="desktop double click icon" />
     <MESSAGE value="put all .text* sections into a single .text section" />
@@ -942,7 +964,8 @@
     <MESSAGE value="refactor network layer code to integrate with socket components" />
     <MESSAGE value="enhance dynamic linking/relocation for OBJECT COPY and GLOB_DAT relocation types" />
     <MESSAGE value="enhance network stack to support packet send and recv - still in progress - will continue after adding support for shared_ptr" />
-    <option name="LAST_COMMIT_MESSAGE" value="enhance network stack to support packet send and recv - still in progress - will continue after adding support for shared_ptr" />
+    <MESSAGE value="console test code for shared and uniq ptrs" />
+    <option name="LAST_COMMIT_MESSAGE" value="console test code for shared and uniq ptrs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

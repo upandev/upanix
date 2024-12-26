@@ -25,6 +25,7 @@
 #include <NetworkPacketComponents.h>
 #include <PacketHandler.h>
 #include <option.h>
+#include "shared_ptr.h"
 
 class RawNetPacket;
 class NetworkDevice;
@@ -32,8 +33,8 @@ class NetworkDevice;
 class EthernetHandler : public PacketHandler {
 public:
   explicit EthernetHandler(NetworkDevice& networkDevice);
-  void recv(RawNetPacket& packet) override;
-  void send(RawNetPacket& packet, NetworkPacket::Ethernet::PacketType eType);
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  void send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType);
 
   private:
     const static uint32_t MIN_ETHERNET_PACKET_LEN = INADDR_MAC_LEN /*dmac*/ + INADDR_MAC_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;

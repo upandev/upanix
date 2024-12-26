@@ -25,16 +25,17 @@
 #include <PacketHandler.h>
 #include <option.h>
 #include <NetworkPacketComponents.h>
+#include "shared_ptr.h"
 
 class IPV4Handler;
 
 class UDP4Handler : public PacketHandler {
 public:
   explicit UDP4Handler(NetworkDevice& networkDevice);
-  void recv(RawNetPacket& packet) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 
 private:
   void calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr);
-  void verifyChecksum(RawNetPacket& packet);
+  void verifyChecksum(const RawNetPacket& packet);
 };

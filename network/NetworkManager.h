@@ -55,7 +55,7 @@ public:
 
   void bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket);
   void send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
-  void recv(const RawNetPacket& packet, const struct sockaddr_in& destAddr);
+  void recv(const upan::shared_ptr<RawNetPacket>& packet, const struct sockaddr_in& destAddr);
 
 private:
   typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;

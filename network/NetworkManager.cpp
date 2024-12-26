@@ -132,22 +132,22 @@ void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, c
   }
 }
 
-void NetworkManager::recv(const RawNetPacket& packet, const struct sockaddr_in& destAddr) {
+void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, const struct sockaddr_in& destAddr) {
   if (destAddr.sin_addr.s_addr == INADDR_BROADCAST) {
     for(auto& e : _socketBindMap) {
       //there can be multiple network devices with different IP addresses and hence we can have multiple ip<->port mapping
       findBindingSocket(e.first, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
-        /*socket->recvNotify(packet);*/
+        socket->recvNotify(packet);
       });
     }
   } else {
     auto r = findBindingSocket(INADDR_ANY, destAddr.sin_port);
     if (r.isEmpty()) {
       findBindingSocket(destAddr.sin_addr.s_addr, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
-        /*socket->recvNotify(packet);*/
+        socket->recvNotify(packet);
       });
     } else {
-      //r.value()->recvPacket(packet);
+      r.value()->recvNotify(packet);
     }
   }
 }

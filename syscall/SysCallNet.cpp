@@ -63,11 +63,8 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     case SYS_CALL_SOCKET_SET_OPT:
       {
         *retVal = 0;
-        const auto fd = (sock_t)p1;
-        const auto& address = *(struct sockaddr*)p2;
-        const auto len = (socklen_t)p3;
         try {
-          NetworkOperations::Instance().setSockOpt((sock_t)fd, (int)p2, (SOCKET_OPTION)p3, (const void*)p4, (socklen_t)p5);
+          NetworkOperations::Instance().setSockOpt((sock_t)p1, (int)p2, (SOCKET_OPTION)p3, (const void*)p4, (socklen_t)p5);
         } catch(const upan::exception& e) {
           e.Print();
           *retVal = -1;
@@ -98,7 +95,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     {
       *retVal = 0;
       const auto fd = (sock_t)p1;
-      const auto buf = (void*)p2;
+      auto buf = (uint8_t *)p2;
       const auto n = (size_t)p3;
       const auto flags = (int)p4;
       auto ext_param = (uint64_t*)p5;

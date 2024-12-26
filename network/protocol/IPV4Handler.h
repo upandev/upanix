@@ -26,13 +26,14 @@
 #include <option.h>
 #include <net/socket.h>
 #include <NetworkPacketComponents.h>
+#include "shared_ptr.h"
 
 class EthernetHandler;
 
 class IPV4Handler : public PacketHandler {
 public:
   explicit IPV4Handler(NetworkDevice& networkDevice);
-  void recv(RawNetPacket& packet) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   void send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 
 private:

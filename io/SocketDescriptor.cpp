@@ -23,18 +23,28 @@
 #include <exception.h>
 #include <SocketDescriptor.h>
 #include <fs.h>
-#include "SocketDescriptorStream.h"
-#include "SocketDescriptorDataGram.h"
-#include "network/NetworkManager.h"
+#include <SocketDescriptorStream.h>
+#include <SocketDescriptorDataGram.h>
+#include <NetworkManager.h>
+#include <ProcessManager.h>
 
 SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
-  : IODescriptor(pid, fd, O_RDWR), _protocol(protocol) {
+  : IODescriptor(pid, fd, O_RDWR),
+    _protocol(protocol),
+    _bindAddress({ 0, 0, { 0 }, { 0 } }),
+    _allowBroadcast(false),
+    _packetQueue(1024) {
 }
 
 SocketDescriptor::~SocketDescriptor() {
   if (isBound()) {
     NetworkManager::Instance().releasePort(ntohs(_bindAddress.sin_port));
   }
+}
+
+bool SocketDescriptor::canRead() {
+  upan::mutex_guard g(_ioSync);
+  return !_packetQueue.empty();
 }
 
 void SocketDescriptor::validateSockAddrLen(socklen_t len) const {
@@ -61,6 +71,14 @@ void SocketDescriptor::validateSendToParams(const void* buf, int flags, const st
   validateBuf(buf);
 }
 
+void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t* len) {
+  if (addr && len) {
+    validateSockAddrLen(*len);
+  }
+  validateFlags(flags);
+  validateBuf(buf);
+}
+
 void SocketDescriptor::ensureBind() {
   if (!isBound()) {
     _bindAddress.sin_family = AF_INET;
@@ -78,7 +96,7 @@ int SocketDescriptor::write(const void* buffer, int len) {
 }
 
 void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
-  upan::mutex_guard g(_mutex);
+  upan::mutex_guard g(_ioSync);
 
   if (isBound()) {
     throw upan::exception(XLOC, "bind failed - socket %d is already bound to port %d", id(), _bindAddress.sin_port);
@@ -88,4 +106,32 @@ void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
 
   memcpy((void*)&_bindAddress, (void*)&address, len);
   NetworkManager::Instance().bind(_bindAddress.sin_addr.s_addr, _bindAddress.sin_port, *this);
+}
+
+upan::shared_ptr<RawNetPacket> SocketDescriptor::recvPacket() {
+  while(true) {
+    {
+      upan::mutex_guard g(_ioSync);
+      if (!_packetQueue.empty()) {
+        const auto& packet = _packetQueue.front();
+        _packetQueue.pop_front();
+        return packet;
+      }
+    }
+    if (getMode() & O_RD_NONBLOCK) {
+      return {};
+    }
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read);
+  }
+}
+
+void SocketDescriptor::recvNotify(const upan::shared_ptr<RawNetPacket>& packet) {
+  upan::mutex_guard g(_ioSync);
+
+  if (_packetQueue.full()) {
+    printf("\nsocket (%d) queue is full - dropping packet", id());
+    _packetQueue.pop_front();
+  }
+
+  _packetQueue.push_back(packet);
 }

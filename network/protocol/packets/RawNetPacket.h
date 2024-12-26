@@ -27,33 +27,41 @@
 class RawNetPacket {
 public:
   RawNetPacket();
-  RawNetPacket(uintptr_t addr, int len);
-  explicit RawNetPacket(uint32_t len);
+  RawNetPacket(const uint8_t* addr, int len);
+  explicit RawNetPacket(int len);
   ~RawNetPacket();
 
   RawNetPacket(const RawNetPacket& o) = delete;
-  RawNetPacket(RawNetPacket&& o) noexcept;
   RawNetPacket& operator=(const RawNetPacket& o) = delete;
+
+  RawNetPacket(RawNetPacket&& o) noexcept;
   RawNetPacket& operator=(RawNetPacket&& o) noexcept;
 
   uint8_t* buf() const { return _buf; }
   int len() const { return _len; }
 
-  RawNetPacket clone() const;
-
   NetworkPacket::Ethernet::Header& getEthernetHeader();
+  const NetworkPacket::Ethernet::Header& getEthernetHeader() const;
   uint8_t* getEthernetData();
+  const uint8_t* getEthernetData() const;
 
   NetworkPacket::IPV4::Header& getIPV4Header();
+  const NetworkPacket::IPV4::Header& getIPV4Header() const;
   uint8_t* getIPV4Data();
+  const uint8_t* getIPV4Data() const;
 
   NetworkPacket::ARP::Header& getARPHeader();
+  const NetworkPacket::ARP::Header& getARPHeader() const;
   uint8_t* getARPData();
+  const uint8_t* getARPData() const;
 
   NetworkPacket::UDP::Header& getUDP4Header();
+  const NetworkPacket::UDP::Header& getUDP4Header() const;
   uint8_t* getUDP4Data();
+  const uint8_t* getUDP4Data() const;
 
   NetworkPacket::ARP::IPV4& getARPIPV4Header();
+  const NetworkPacket::ARP::IPV4& getARPIPV4Header() const;
 
 private:
   void move(RawNetPacket& o);

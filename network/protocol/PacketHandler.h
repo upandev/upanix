@@ -22,6 +22,7 @@
 #pragma once
 
 #include <map.h>
+#include "shared_ptr.h"
 
 class NetworkDevice;
 class RawNetPacket;
@@ -29,7 +30,7 @@ class RawNetPacket;
 class PacketHandler {
 public:
   explicit PacketHandler(NetworkDevice& networkDevice) : _networkDevice(networkDevice) {}
-  virtual void recv(RawNetPacket& packet) = 0;
+  virtual void recv(const upan::shared_ptr<RawNetPacket>& packet) = 0;
   NetworkDevice& device() { return _networkDevice; }
 
 private:

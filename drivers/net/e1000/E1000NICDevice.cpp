@@ -28,8 +28,9 @@
 #include <NetworkDevice.h>
 #include <MemManager.h>
 #include <ProcessManager.h>
-#include "network/NetworkManager.h"
+#include <NetworkManager.h>
 #include <E1000NICDevice.h>
+#include <shared_ptr.h>
 
 #define ICR_TRANSMIT    (1 << 0)
 #define ICR_LINK_CHANGE (1 << 2)
@@ -144,7 +145,7 @@ void E1000NICDevice::ProcessRxQueue() {
       break;
     }
     try {
-      _ethernetHandler.recv(packet.value());
+      _ethernetHandler.recv(packet);
     } catch(const upan::exception& e) {
       e.Print();
     }
@@ -242,7 +243,7 @@ E1000NICDevice::RegControl::RegControl(const uint32_t memIOBase) :
 }
 
 E1000NICDevice::RXDescriptor::RXDescriptor() {
-  addr = KernelDMM::Instance().allocate(8 KB, 16);
+  addr = (uint8_t*)KernelDMM::Instance().allocate(8 KB, 16);
   length = 0;
   checksum = 0;
   status = 0;
@@ -272,7 +273,7 @@ E1000NICDevice::RegRXDescriptor::RegRXDescriptor(const uint32_t memIOBase) :
   //*_rxctrl = 0x04008006;
 }
 
-upan::option<RawNetPacket> E1000NICDevice::RegRXDescriptor::GetNextPacket() {
+upan::shared_ptr<RawNetPacket> E1000NICDevice::RegRXDescriptor::GetNextPacket() {
   auto& desc = _rxDescriptors[_index];
   bool hasData = false;
   if (desc.status & 0x1) {
@@ -287,14 +288,14 @@ upan::option<RawNetPacket> E1000NICDevice::RegRXDescriptor::GetNextPacket() {
   }
 
   if (hasData) {
-    return upan::option<RawNetPacket>(RawNetPacket(desc.addr, desc.length));
+    return { new RawNetPacket((uint8_t*)desc.addr, desc.length) };
   } else {
-    return upan::option<RawNetPacket>::empty();
+    return {};
   }
 }
 
 E1000NICDevice::TXDescriptor::TXDescriptor() {
-  addr = 0;
+  addr = (uint8_t*)KernelDMM::Instance().allocate(8 KB, 16);;
   length = 0;
   cso = 0;
   cmd = 0;
@@ -328,7 +329,7 @@ E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint32_t memIOBase) :
 }
 
 void E1000NICDevice::RegTXDescriptor::SendPacket(const uint8_t* data, uint32_t len) {
-  _txDescriptors[_index].addr = (uint64_t)data;
+  memcpy((uint8_t*)_txDescriptors[_index].addr, data, len);
   _txDescriptors[_index].length = len;
   _txDescriptors[_index].cmd = CMD_EOP | CMD_IFCS | CMD_RS;
   _txDescriptors[_index].status = 0;

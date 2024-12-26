@@ -33,6 +33,7 @@
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
 #include <DHCPHandler.h>
+#include "shared_ptr.h"
 
 class E1000NICDevice : public NetworkDevice {
 private:
@@ -115,7 +116,7 @@ private:
   class RXDescriptor {
   public:
     RXDescriptor();
-    volatile uint64_t addr;
+    volatile uint8_t* addr;
     volatile uint16_t length;
     volatile uint16_t checksum;
     volatile uint8_t status;
@@ -126,7 +127,7 @@ private:
   class RegRXDescriptor {
   public:
     RegRXDescriptor(const uint32_t memIOBase);
-    upan::option<RawNetPacket> GetNextPacket();
+    upan::shared_ptr<RawNetPacket> GetNextPacket();
 
   private:
     const static uint32_t REG_RDBAL = 0x2800; // RX Descriptor Base Address Low
@@ -151,7 +152,7 @@ private:
   class TXDescriptor {
   public:
     TXDescriptor();
-    volatile uint64_t addr;
+    volatile uint8_t* addr;
     volatile uint16_t length;
     volatile uint8_t cso;
     volatile uint8_t cmd;

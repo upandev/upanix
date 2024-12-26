@@ -30,22 +30,22 @@
 EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void EthernetHandler::recv(RawNetPacket& packet) {
-  if (packet.len() < MIN_ETHERNET_PACKET_LEN) {
-    throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet.len(), MIN_ETHERNET_PACKET_LEN);
+void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
+  if (packet->len() < MIN_ETHERNET_PACKET_LEN) {
+    throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet->len(), MIN_ETHERNET_PACKET_LEN);
   }
 
-  auto& ethernetHeader = packet.getEthernetHeader();
+  const auto& ethernetHeader = packet->getEthernetHeader();
   const MACAddress& destMAC = ethernetHeader._destinationMAC;
   if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
     return;
   }
 
   switch (ethernetHeader.type()) {
-    case NetworkPacket::Ethernet::PacketType::E_IPV4_T:
+    case NetworkPacket::EthernetPacketType::E_IPV4_T:
       device().getIPV4Handler().recv(packet);
       break;
-    case NetworkPacket::Ethernet::PacketType::E_ARP_T:
+    case NetworkPacket::EthernetPacketType::E_ARP_T:
       device().getARPHandler().recv(packet);
       break;
     default:
@@ -53,17 +53,17 @@ void EthernetHandler::recv(RawNetPacket& packet) {
   }
 }
 
-void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::Ethernet::PacketType eType) {
+void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType) {
   auto& ethernetHeader = packet.getEthernetHeader();
   memcpy(ethernetHeader._sourceMAC, device().GetMACAddress().get(), INADDR_MAC_LEN);
   ethernetHeader._type = htons(eType);
 
   bool isBroadcast = false;
   switch(eType) {
-    case NetworkPacket::Ethernet::PacketType::E_ARP_T:
+    case NetworkPacket::EthernetPacketType::E_ARP_T:
       isBroadcast = true;
       break;
-    case NetworkPacket::Ethernet::PacketType::E_IPV4_T:
+    case NetworkPacket::EthernetPacketType::E_IPV4_T:
       isBroadcast = packet.getIPV4Header()._destAddr == INADDR_BROADCAST;
       break;
     default:

@@ -27,6 +27,7 @@
 #include <mutex.h>
 #include <RawNetPacket.h>
 #include <queue.h>
+#include <shared_ptr.h>
 
 class NetworkDevice;
 
@@ -38,7 +39,7 @@ public:
   ~SocketDescriptor() override;
 
   int read(void* buffer, int len) override;
-  bool canRead() override { return true; }
+  bool canRead() override;
 
   int write(const void* buffer, int len) override;
   bool canWrite() override { return true; }
@@ -48,7 +49,7 @@ public:
 
   void bind(const struct sockaddr& address, socklen_t len);
   virtual void sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
-  //void recvNotify(RawNetPacket& packet);
+  virtual void recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
   bool canBroadcast() const { return _allowBroadcast; }
@@ -58,19 +59,23 @@ public:
 
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
+  void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);
   void ensureBind();
+  upan::shared_ptr<RawNetPacket> recvPacket();
 
 private:
   bool isBound() const { return _bindAddress.sin_port != 0; }
   void validateSockAddrLen(socklen_t len) const;
   void validateFlags(int flags) const;
   void validateBuf(const void* buf) const;
+  void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
 
 private:
+  upan::mutex _ioSync;
   const IPPROTO_TYPE _protocol;
   struct sockaddr_in _bindAddress;
-  upan::mutex _mutex;
-
-  //upan::queue<RawNetPacket> _packetQueue;
   bool _allowBroadcast;
+  upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;
+
+  friend class NetworkManager;
 };

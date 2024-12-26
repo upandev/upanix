@@ -29,13 +29,13 @@
 RawNetPacket::RawNetPacket() : _buf(nullptr), _len(0) {
 }
 
-RawNetPacket::RawNetPacket(const uintptr_t addr, const int len) :
+RawNetPacket::RawNetPacket(const uint8_t* addr, const int len) :
   _buf(new uint8_t[len]), _len(len) {
-  memcpy(_buf, (uint8_t*)addr, _len);
+  memcpy(_buf, addr, _len);
 }
 
-RawNetPacket::RawNetPacket(const uint32_t len) :
-  _buf(new ((void*)KernelDMM::Instance().allocate(len, 16))uint8_t[len]), _len(len) {
+RawNetPacket::RawNetPacket(const int len) :
+  _buf(new uint8_t[len]), _len(len) {
 }
 
 RawNetPacket::~RawNetPacket() {
@@ -64,40 +64,70 @@ NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() {
   return *reinterpret_cast<NetworkPacket::Ethernet::Header*>(_buf);
 }
 
-RawNetPacket RawNetPacket::clone() const {
-  RawNetPacket packet(_len);
-  memcpy(packet._buf, _buf, _len);
-  return packet;
+const NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() const {
+  return const_cast<RawNetPacket*>(this)->getEthernetHeader();
 }
 
 uint8_t* RawNetPacket::getEthernetData() {
   return _buf + NetworkPacket::Ethernet::HEADER_SIZE;
 }
 
+const uint8_t* RawNetPacket::getEthernetData() const {
+  return const_cast<RawNetPacket*>(this)->getEthernetData();
+}
+
 NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() {
   return *reinterpret_cast<NetworkPacket::IPV4::Header*>(getEthernetData());
+}
+
+const NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() const {
+  return const_cast<RawNetPacket*>(this)->getIPV4Header();
 }
 
 uint8_t* RawNetPacket::getIPV4Data() {
   return getEthernetData() + (sizeof(uint32_t) * getIPV4Header()._ihl);
 }
 
+const uint8_t* RawNetPacket::getIPV4Data() const {
+  return const_cast<RawNetPacket*>(this)->getIPV4Data();
+}
+
 NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() {
   return *reinterpret_cast<NetworkPacket::ARP::Header*>(getEthernetData());
+}
+
+const NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() const {
+  return const_cast<RawNetPacket*>(this)->getARPHeader();
 }
 
 uint8_t* RawNetPacket::getARPData() {
   return getEthernetData() + NetworkPacket::ARP::HEADER_SIZE;
 }
 
+const uint8_t* RawNetPacket::getARPData() const {
+  return const_cast<RawNetPacket*>(this)->getARPData();
+}
+
 NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() {
   return *reinterpret_cast<NetworkPacket::ARP::IPV4*>(getARPData());
+}
+
+const NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() const {
+  return const_cast<RawNetPacket*>(this)->getARPIPV4Header();
 }
 
 NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() {
   return *reinterpret_cast<NetworkPacket::UDP::Header*>(getIPV4Data());
 }
 
+const NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() const {
+  return const_cast<RawNetPacket*>(this)->getUDP4Header();
+}
+
 uint8_t* RawNetPacket::getUDP4Data() {
   return getIPV4Data() + NetworkPacket::UDP::HEADER_SIZE;
+}
+
+const uint8_t* RawNetPacket::getUDP4Data() const {
+  return const_cast<RawNetPacket*>(this)->getUDP4Data();
 }
