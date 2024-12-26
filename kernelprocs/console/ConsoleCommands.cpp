@@ -805,7 +805,7 @@ struct dhcp_message {
   unsigned char sname[64];
   unsigned char file[128];
   unsigned char options[312];
-};
+} PACKED;
 
 static const int MAX_BUFFER_SIZE = 1024;
 
@@ -2076,8 +2076,15 @@ void ConsoleCommands_Testv() {
 
 void ConsoleCommands_TestNet()
 {
-	IrqManager::Instance().DisplayIRQList() ;
+	//IrqManager::Instance().DisplayIRQList() ;
 	//KC::MNetworkManager() ;
+  printf("\n Broadcast MAC - %02x:%02x:%02x:%02x:%02x:%02x",
+         INADDR_MAC_BROADCAST[0],
+         INADDR_MAC_BROADCAST[1],
+         INADDR_MAC_BROADCAST[2],
+         INADDR_MAC_BROADCAST[3],
+         INADDR_MAC_BROADCAST[4],
+         INADDR_MAC_BROADCAST[5]);
 }
 
 class Global

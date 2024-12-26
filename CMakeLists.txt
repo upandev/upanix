@@ -99,6 +99,7 @@ include_directories(${UPANLIB_SOURCE_DIR}/libustd/algo)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/ds)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/mem)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/mthread)
+include_directories(${UPANLIB_SOURCE_DIR}/libustd/net)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/stream)
 
 include_directories(${UPANLIB_SOURCE_DIR}/libm/include)
