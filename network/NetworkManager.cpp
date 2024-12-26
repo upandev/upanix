@@ -25,6 +25,8 @@
 #include <ATH9KDevice.h>
 #include <E1000NICDevice.h>
 #include <NetworkManager.h>
+#include <unet.h>
+#include <vector.h>
 
 NetworkManager::NetworkManager() {
   //initialize();
@@ -78,13 +80,24 @@ void NetworkManager::releasePort(in_port_t port) {
 }
 
 bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
-  if (ip == INADDR_BROADCAST || ip == INADDR_LOOPBACK) {
+  if (ip == INADDR_ANY || ip == INADDR_LOOPBACK) {
     return _socketBindSet.exists(port);
   } else {
-    return _socketBindMap[INADDR_BROADCAST].exists(port)
+    return _socketBindMap[INADDR_ANY].exists(port)
     || _socketBindMap[INADDR_LOOPBACK].exists(port)
     || _socketBindMap[ip].exists(port);
   }
+}
+
+upan::option<SocketDescriptor*> NetworkManager::findBindingSocket(in_addr_t addr, in_port_t port) {
+  auto e = _socketBindMap.find(addr);
+  if (e != _socketBindMap.end()) {
+    auto i = e->second.find(port);
+    if (i != e->second.end()) {
+      return upan::option<SocketDescriptor*>(i->second);
+    }
+  }
+  return upan::option<SocketDescriptor*>::empty();
 }
 
 void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket) {
@@ -93,9 +106,48 @@ void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket
   if (isPortBounded(ip, port)) {
     throw upan::exception(XLOC, "port %d is already bound", port);
   }
+
+  if (ip != INADDR_ANY && ip != INADDR_LOOPBACK) {
+    const auto networkDeviceIP = getDefaultDevice().value().GetIPAddress();
+    if (networkDeviceIP == INADDR_NONE) {
+      throw upan::exception(XLOC, "network device doesn't have an IP address yet");
+    }
+    if (ip != networkDeviceIP) {
+      throw upan::exception(XLOC, "invalid IP %s to bind. Network device IP is %s",
+                            upan::net::inet_ntostr(ip).c_str(),
+                            upan::net::inet_ntostr(networkDeviceIP).c_str());
+    }
+  }
   _socketBindMap[ip][port] = &socket;
   _socketBindSet.insert(port);
 }
 
-void NetworkManager::send(const struct sockaddr_in& from, const struct sockaddr_in& to, const void* buf, socklen_t n) {
+void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+  switch (protocol) {
+    case IPPROTO_UDP:
+      getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, destAddr);
+      break;
+    default:
+      throw upan::exception(XLOC, "packet send failed - unsupported protocol: %d", protocol);
+  }
+}
+
+void NetworkManager::recv(const RawNetPacket& packet, const struct sockaddr_in& destAddr) {
+  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST) {
+    for(auto& e : _socketBindMap) {
+      //there can be multiple network devices with different IP addresses and hence we can have multiple ip<->port mapping
+      findBindingSocket(e.first, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
+        /*socket->recvNotify(packet);*/
+      });
+    }
+  } else {
+    auto r = findBindingSocket(INADDR_ANY, destAddr.sin_port);
+    if (r.isEmpty()) {
+      findBindingSocket(destAddr.sin_addr.s_addr, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
+        /*socket->recvNotify(packet);*/
+      });
+    } else {
+      //r.value()->recvPacket(packet);
+    }
+  }
 }

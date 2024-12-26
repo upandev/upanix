@@ -35,32 +35,36 @@
   <component name="ChangeListManager">
     <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor network layer code to integrate with socket components">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/PacketHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/PacketHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/MACAddress.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/MACAddress.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/MACAddress.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/MACAddress.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/ARPRecvPacket.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/ARPRecvPacket.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/recv/DHCPRecvPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/EthernetRecvPacket.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/EthernetRecvPacket.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/IPV4RecvPacket.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/IPV4RecvPacket.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/UDP4RecvPacket.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/recv/UDP4RecvPacket.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/network/service/DHCPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -556,7 +560,13 @@
       <workItem from="1735012032378" duration="367000" />
       <workItem from="1735015427615" duration="1977000" />
       <workItem from="1735017652549" duration="2851000" />
-      <workItem from="1735041125231" duration="2000" />
+      <workItem from="1735041125231" duration="3925000" />
+      <workItem from="1735045099416" duration="3397000" />
+      <workItem from="1735084360216" duration="6674000" />
+      <workItem from="1735097520685" duration="2069000" />
+      <workItem from="1735125490479" duration="10290000" />
+      <workItem from="1735178522237" duration="3381000" />
+      <workItem from="1735187055610" duration="2712000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -901,7 +911,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="127" />
+    <option name="localTasksCounter" value="128" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

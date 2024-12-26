@@ -28,7 +28,7 @@ class RawNetPacket {
 public:
   RawNetPacket();
   RawNetPacket(uintptr_t addr, int len);
-  explicit RawNetPacket(int len);
+  explicit RawNetPacket(uint32_t len);
   ~RawNetPacket();
 
   RawNetPacket(const RawNetPacket& o) = delete;
@@ -38,6 +38,8 @@ public:
 
   uint8_t* buf() const { return _buf; }
   int len() const { return _len; }
+
+  RawNetPacket clone() const;
 
   NetworkPacket::Ethernet::Header& getEthernetHeader();
   uint8_t* getEthernetData();

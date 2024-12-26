@@ -24,6 +24,8 @@
 #include <IPV4Handler.h>
 #include <RawNetPacket.h>
 #include <NetworkUtil.h>
+#include <NetworkDevice.h>
+#include <NetworkManager.h>
 
 UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
@@ -31,12 +33,44 @@ UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 void UDP4Handler::recv(RawNetPacket& packet) {
   printf("\n Handling UDP Packet");
   verifyChecksum(packet);
-  auto& udpHeader = packet.getUDP4Header();
-  udpHeader.switchNetworkOrder();
-  udpHeader.print();
+  const auto& udpHeader = packet.getUDP4Header();
+  const auto& ipv4Header = packet.getIPV4Header();
+  udpHeader.toHost().print();
+
+  struct sockaddr_in destAddr { AF_INET, udpHeader._destPort, { ipv4Header._destAddr }};
+
+  NetworkManager::Instance().recv(packet, destAddr);
 }
 
-void UDP4Handler::SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort) {
+void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+  const uint32_t packetLen = len + NetworkPacket::UDP::HEADER_SIZE + NetworkPacket::IPV4::HEADER_SIZE + NetworkPacket::Ethernet::HEADER_SIZE;
+
+  RawNetPacket packet(packetLen);
+  memcpy(packet.getUDP4Data(), buf, len);
+
+  auto& udpHeader = packet.getUDP4Header();
+  udpHeader._srcPort = srcAddr.sin_port;
+  udpHeader._destPort = destAddr.sin_port;
+  udpHeader._len = len + NetworkPacket::UDP::HEADER_SIZE;
+  udpHeader._checksum = 0;
+  calcChecksum(packet, srcAddr.sin_addr.s_addr, destAddr.sin_addr.s_addr);
+
+  device().getIPV4Handler().send(packet, IPPROTO_UDP, srcAddr, destAddr);
+}
+
+void UDP4Handler::calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr) {
+  auto& udpHeader = packet.getUDP4Header();
+  const NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader {
+          srcAddr,
+          destAddr,
+          0,
+          IPPROTO_UDP,
+          udpHeader._len
+  };
+
+  const uint32_t len = ntohs(udpHeader._len);
+  const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0);
+  udpHeader._checksum = NetworkUtil::CalculateChecksum((uint16_t *) packet.getIPV4Data(),len, partialChecksum);
 }
 
 void UDP4Handler::verifyChecksum(RawNetPacket& packet) {
@@ -47,7 +81,7 @@ void UDP4Handler::verifyChecksum(RawNetPacket& packet) {
       ipv4Header._srcAddr,
       ipv4Header._destAddr,
       0,
-      NetworkPacket::PacketType::UDP4_TYPE,
+      IPPROTO_UDP,
       udpHeader._len
     };
 

@@ -27,5 +27,5 @@ class SocketDescriptorStream : public SocketDescriptor {
 public:
   SocketDescriptorStream(int pid, int fd, IPPROTO_TYPE protocol);
 private:
-  void sendTo(const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override {};
+  void sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override {};
 };

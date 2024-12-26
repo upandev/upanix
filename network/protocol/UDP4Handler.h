@@ -24,6 +24,7 @@
 #include <map.h>
 #include <PacketHandler.h>
 #include <option.h>
+#include <NetworkPacketComponents.h>
 
 class IPV4Handler;
 
@@ -31,8 +32,9 @@ class UDP4Handler : public PacketHandler {
 public:
   explicit UDP4Handler(NetworkDevice& networkDevice);
   void recv(RawNetPacket& packet) override;
-  void SendPacket(uint8_t* buf, uint32_t len, uint16_t srcPort, uint16_t destPort);
+  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 
 private:
+  void calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr);
   void verifyChecksum(RawNetPacket& packet);
 };

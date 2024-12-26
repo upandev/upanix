@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <ustring.h>
 #include <net/socket.h>
+#include <unet.h>
 
 namespace NetworkPacket {
-  constexpr int MAC_ADDR_LEN = 6;
   constexpr int IPV4_ADDR_LEN = 4;
 
   typedef enum {
@@ -45,13 +45,16 @@ namespace NetworkPacket {
       uint16_t _opCode;
 
       PacketType type() const {
-        return static_cast<PacketType>(_pType);
+        return static_cast<PacketType>(ntohs(_pType));
       }
 
-      void switchNetworkOrder() {
-        _hType = htons(_hType);
-        _pType = htons(_pType);
-        _opCode = htons(_opCode);
+      Header toHost() const {
+        return Header {
+        ntohs(_hType),
+        ntohs(_pType),
+        _hLen,
+        _pLen,
+        ntohs(_opCode) };
       }
 
       bool isRequest() const { return _opCode == 1; }
@@ -63,26 +66,30 @@ namespace NetworkPacket {
     } PACKED;
 
     struct IPV4 {
-      uint8_t _senderHardwareAddress[MAC_ADDR_LEN];
+      uint8_t _senderHardwareAddress[INADDR_MAC_LEN];
       in_addr_t _senderProtocolAddress;
-      uint8_t _targetHardwareAddress[MAC_ADDR_LEN];
+      uint8_t _targetHardwareAddress[INADDR_MAC_LEN];
       in_addr_t _targetProtocolAddress;
 
-      void switchNetworkOrder() {
-        _senderProtocolAddress = htonl(_senderProtocolAddress);
-        _targetProtocolAddress = htonl(_targetProtocolAddress);
+      IPV4 toHost() const {
+        IPV4 h {};
+        memcpy(h._senderHardwareAddress, _senderHardwareAddress, INADDR_MAC_LEN);
+        memcpy(h._targetHardwareAddress, _targetHardwareAddress, INADDR_MAC_LEN);
+        h._senderProtocolAddress = ntohl(_senderProtocolAddress);
+        h._targetProtocolAddress = ntohl(_targetProtocolAddress);
+        return h;
       }
 
       void print() const {
         printf("\n SHA: ");
-        for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
-          printf("%02x%s", _senderHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+        for (int i = 0; i < INADDR_MAC_LEN; i++) {
+          printf("%02x%s", _senderHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
         }
         printf(", SPA: %s", inet_ntoa({_senderProtocolAddress}));
 
         printf("\n THA: ");
-        for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; i++) {
-          printf("%02x%s", _targetHardwareAddress[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+        for (int i = 0; i < INADDR_MAC_LEN; i++) {
+          printf("%02x%s", _targetHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
         }
         printf(", TPA: %s", inet_ntoa({_targetProtocolAddress}));
       }
@@ -93,17 +100,26 @@ namespace NetworkPacket {
   }
 
   namespace Ethernet {
+    typedef enum {
+      E_IPV4_T = 0x0800,
+      E_ARP_T = 0x0806,
+    } PacketType;
+
     struct Header {
-      uint8_t _destinationMAC[MAC_ADDR_LEN];
-      uint8_t _sourceMAC[MAC_ADDR_LEN];
+      uint8_t _destinationMAC[INADDR_MAC_LEN];
+      uint8_t _sourceMAC[INADDR_MAC_LEN];
       uint16_t _type;
 
       PacketType type() const {
-        return static_cast<PacketType>(_type);
+        return static_cast<PacketType>(ntohs(_type));
       }
 
-      void switchNetworkOrder() {
-        _type = htons(_type);
+      Header toHost() const {
+        Header h {};
+        memcpy(h._destinationMAC, _destinationMAC, INADDR_MAC_LEN);
+        memcpy(h._sourceMAC, _sourceMAC, INADDR_MAC_LEN);
+        h._type = ntohs(_type);
+        return h;
       }
     } PACKED;
 
@@ -112,29 +128,31 @@ namespace NetworkPacket {
 
   namespace IPV4 {
     struct Header {
-      uint32_t _ihl:4; // Internet Header Length
-      uint32_t _version:4;
+      uint8_t _ihl:4; // Internet Header Length
+      uint8_t _version:4;
       uint8_t _tos; // Type Of Service
       uint16_t _totalLen;
       uint16_t _identification;
-      uint32_t _flags:3;
-      uint32_t _fragmentOffset:13;
+      uint16_t _flags:3;
+      uint16_t _fragmentOffset:13;
       uint8_t _ttl; // Time to live
       uint8_t _protocol;
       uint16_t _checksum;
       in_addr_t _srcAddr;
       in_addr_t _destAddr;
 
-      PacketType type() const {
-        return static_cast<PacketType>(_protocol);
+      IPPROTO_TYPE type() const {
+        return static_cast<IPPROTO_TYPE>(_protocol);
       }
 
-      void switchNetworkOrder() {
-        _totalLen = htons(_totalLen);
-        _identification = htons(_identification);
-        _checksum = htons(_checksum);
-        _srcAddr = htonl(_srcAddr);
-        _destAddr = htonl(_destAddr);
+      Header toHost() const {
+        Header h = *this;
+        h._totalLen = ntohs(_totalLen);
+        h._identification = ntohs(_identification);
+        h._checksum = ntohs(_checksum);
+        h._srcAddr = ntohl(_srcAddr);
+        h._destAddr = ntohl(_destAddr);
+        return h;
       }
 
       void print() const {
@@ -145,8 +163,7 @@ namespace NetworkPacket {
 
         printf("\nChecksum: 0x%x", _checksum);
 
-        printf("\nSource Addr: %s", inet_ntoa({_srcAddr}));
-        printf("\nDest Addr: %s", inet_ntoa({_destAddr}));
+        printf("\nSource Addr: %s, Dest Addr: %s", upan::net::inet_ntostr(_srcAddr).c_str(), upan::net::inet_ntostr(_destAddr).c_str());
       }
     } PACKED;
 
@@ -170,11 +187,12 @@ namespace NetworkPacket {
         printf("\n Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
       }
 
-      void switchNetworkOrder() {
-        _srcPort = ntohs(_srcPort);
-        _destPort = ntohs(_destPort);
-        _len = ntohs(_len);
-        _checksum = ntohs(_checksum);
+      Header toHost() const {
+        return Header {
+        ntohs(_srcPort),
+        ntohs(_destPort),
+        ntohs(_len),
+        ntohs(_checksum) };
       }
     } PACKED;
 

@@ -36,19 +36,45 @@ void EthernetHandler::recv(RawNetPacket& packet) {
   }
 
   auto& ethernetHeader = packet.getEthernetHeader();
-  ethernetHeader.switchNetworkOrder();
   const MACAddress& destMAC = ethernetHeader._destinationMAC;
   if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
     return;
   }
 
-  device().getHandler(ethernetHeader.type()).ifPresent([&packet](PacketHandler& handler) { handler.recv(packet); });
+  switch (ethernetHeader.type()) {
+    case NetworkPacket::Ethernet::PacketType::E_IPV4_T:
+      device().getIPV4Handler().recv(packet);
+      break;
+    case NetworkPacket::Ethernet::PacketType::E_ARP_T:
+      device().getARPHandler().recv(packet);
+      break;
+    default:
+      throw upan::exception(XLOC, "unsupported ethernet packet type: %d", ethernetHeader.type());
+  }
 }
 
-void EthernetHandler::SendPacket(RawNetPacket& packet, NetworkPacket::PacketType pType, const uint8_t* destMac) {
-  auto header = reinterpret_cast<NetworkPacket::Ethernet::Header*>(packet.buf());
-  memcpy(header->_destinationMAC, destMac, NetworkPacket::MAC_ADDR_LEN);
-  memcpy(header->_sourceMAC, device().GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
-  header->_type = htons((uint16_t)pType);
+void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::Ethernet::PacketType eType) {
+  auto& ethernetHeader = packet.getEthernetHeader();
+  memcpy(ethernetHeader._sourceMAC, device().GetMACAddress().get(), INADDR_MAC_LEN);
+  ethernetHeader._type = htons(eType);
+
+  bool isBroadcast = false;
+  switch(eType) {
+    case NetworkPacket::Ethernet::PacketType::E_ARP_T:
+      isBroadcast = true;
+      break;
+    case NetworkPacket::Ethernet::PacketType::E_IPV4_T:
+      isBroadcast = packet.getIPV4Header()._destAddr == INADDR_BROADCAST;
+      break;
+    default:
+      throw upan::exception(XLOC, "unsupported ethernet packet type: %d", eType);
+  }
+
+  if (isBroadcast) {
+    memcpy(ethernetHeader._destinationMAC, INADDR_MAC_BROADCAST, INADDR_MAC_LEN);
+  } else {
+    throw upan::exception(XLOC, "unable to determine the target/destination MAC");
+  }
+
   device().SendPacket(packet);
 }

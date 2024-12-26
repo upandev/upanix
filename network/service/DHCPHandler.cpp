@@ -38,11 +38,11 @@ DHCPHandler::DHCPHandler(UDP4Handler &udpHandler) : _udpHandler(udpHandler) {
 void DHCPHandler::ObtainIPAddress() {
   uint8_t clientHardwareAddress[16];
   memset(clientHardwareAddress, 0, 16);
-  memcpy(clientHardwareAddress, _udpHandler.device().GetMACAddress().get(), NetworkPacket::MAC_ADDR_LEN);
+  memcpy(clientHardwareAddress, _udpHandler.device().GetMACAddress().get(), INADDR_MAC_LEN);
 
-  DHCPSendPacket dhcpSendPacket(1, 1, NetworkPacket::MAC_ADDR_LEN, 0,
+  DHCPSendPacket dhcpSendPacket(1, 1, INADDR_MAC_LEN, 0,
                                 0x3903F326, 0, 0,
                                 { INADDR_ANY }, { INADDR_ANY }, { INADDR_ANY }, { INADDR_ANY },
                                 clientHardwareAddress, nullptr, nullptr);
-  _udpHandler.SendPacket(dhcpSendPacket.buf(), dhcpSendPacket.len(), 68, 67);
+  //_udpHandler.send(dhcpSendPacket.buf(), IPPROTO_UDP, dhcpSendPacket.len(), 68, 67);
 }

@@ -39,7 +39,7 @@ void ARPHandler::recv(RawNetPacket& packet) {
   }
 }
 
-RawNetPacket ARPHandler::CreatePacket(uint16_t hType, NetworkPacket::PacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
+RawNetPacket ARPHandler::CreatePacket(uint16_t hType, NetworkPacket::Ethernet::PacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
                                       const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa) {
 
   RawNetPacket packet(NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE + NetworkPacket::ARP::IPV4_SIZE);
@@ -53,10 +53,10 @@ RawNetPacket ARPHandler::CreatePacket(uint16_t hType, NetworkPacket::PacketType 
 
   auto& arpIPV4Header = packet.getARPIPV4Header();
 
-  memcpy(arpIPV4Header._senderHardwareAddress, sha, NetworkPacket::MAC_ADDR_LEN);
+  memcpy(arpIPV4Header._senderHardwareAddress, sha, INADDR_MAC_LEN);
   arpIPV4Header._senderProtocolAddress = spa.s_addr;
 
-  memcpy(arpIPV4Header._targetHardwareAddress, tha, NetworkPacket::MAC_ADDR_LEN);
+  memcpy(arpIPV4Header._targetHardwareAddress, tha, INADDR_MAC_LEN);
   arpIPV4Header._targetProtocolAddress = tpa.s_addr;
 
   return packet;
@@ -64,22 +64,20 @@ RawNetPacket ARPHandler::CreatePacket(uint16_t hType, NetworkPacket::PacketType 
 
 void ARPHandler::SendRequestForMAC(const struct in_addr& ipAddress) {
   const struct in_addr spa = { INADDR_ANY };
-  const uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
   const uint8_t tha[] = { 0, 0, 0, 0, 0, 0 };
 
-  auto packet = CreatePacket(1, NetworkPacket::PacketType::IPV4_TYPE,
-                             NetworkPacket::MAC_ADDR_LEN, NetworkPacket::IPV4_ADDR_LEN, 1,
+  auto packet = CreatePacket(1, NetworkPacket::Ethernet::PacketType::E_IPV4_T,
+                             INADDR_MAC_LEN, NetworkPacket::IPV4_ADDR_LEN, 1,
                              device().GetMACAddress().get(), spa, tha, ipAddress);
-  device().getEthernetHandler().SendPacket(packet, NetworkPacket::PacketType::ARP_TYPE, broadcast);
+  device().getEthernetHandler().send(packet, NetworkPacket::Ethernet::PacketType::E_ARP_T);
 }
 
 void ARPHandler::SendRARP() {
   const struct in_addr spa = { INADDR_BROADCAST };
-  const uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
   const uint8_t* mac = device().GetMACAddress().get();
 
-  auto packet = CreatePacket(1, NetworkPacket::PacketType::IPV4_TYPE,
-                              NetworkPacket::MAC_ADDR_LEN, NetworkPacket::IPV4_ADDR_LEN, 3,
+  auto packet = CreatePacket(1, NetworkPacket::Ethernet::PacketType::E_IPV4_T,
+                              INADDR_MAC_LEN, NetworkPacket::IPV4_ADDR_LEN, 3,
                               mac, spa, mac, spa);
-  device().getEthernetHandler().SendPacket(packet, NetworkPacket::PacketType::ARP_TYPE, broadcast);
+  device().getEthernetHandler().send(packet, NetworkPacket::Ethernet::PacketType::E_ARP_T);
 }

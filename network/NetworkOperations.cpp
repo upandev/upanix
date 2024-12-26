@@ -113,7 +113,7 @@ void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, c
   }
 }
 
-void NetworkOperations::sendTo(int fd, const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+void NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   descriptor.sendTo(buf, n, flags, addr, len);
 }

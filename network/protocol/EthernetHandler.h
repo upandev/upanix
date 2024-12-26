@@ -33,9 +33,8 @@ class EthernetHandler : public PacketHandler {
 public:
   explicit EthernetHandler(NetworkDevice& networkDevice);
   void recv(RawNetPacket& packet) override;
-
-  void SendPacket(RawNetPacket& packet, NetworkPacket::PacketType pType, const uint8_t* destMac);
+  void send(RawNetPacket& packet, NetworkPacket::Ethernet::PacketType eType);
 
   private:
-    const static uint32_t MIN_ETHERNET_PACKET_LEN = NetworkPacket::MAC_ADDR_LEN /*dmac*/ + NetworkPacket::MAC_ADDR_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
+    const static uint32_t MIN_ETHERNET_PACKET_LEN = INADDR_MAC_LEN /*dmac*/ + INADDR_MAC_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
 };

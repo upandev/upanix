@@ -28,19 +28,45 @@ IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 
 void IPV4Handler::recv(RawNetPacket& packet) {
   printf("\n Handling IPV4 Packet");
-  verifyChecksum(packet);
   auto& ipv4Header = packet.getIPV4Header();
-  ipv4Header.switchNetworkOrder();
-  ipv4Header.print();
-  ipv4Header.switchNetworkOrder();
-  device().getHandler(ipv4Header.type()).ifPresent([&packet](PacketHandler& handler) { handler.recv(packet); });
+  verifyChecksum(ipv4Header);
+  ipv4Header.toHost().print();
+  switch(ipv4Header.type()) {
+    case IPPROTO_UDP:
+      device().getUDP4Handler().recv(packet);
+      break;
+    default:
+      throw upan::exception(XLOC, "unsupported IPV4 packet type: %d", ipv4Header.type());
+  }
 }
 
-void IPV4Handler::verifyChecksum(RawNetPacket& packet) {
-  const auto& ipv4Header = packet.getIPV4Header();
-  const uint32_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *)(packet.getEthernetData()),
-                                                                     ipv4Header._ihl * sizeof(uint32_t),
-                                                                     0);
+void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+  static const int IHL = 5;
+  auto& ipv4Header = packet.getIPV4Header();
+  ipv4Header._ihl = IHL;
+  ipv4Header._version = 4;
+  ipv4Header._tos = 0;
+  ipv4Header._totalLen = packet.getUDP4Header()._len + (IHL * sizeof(uint32_t));
+  ipv4Header._identification = rand();
+  ipv4Header._flags = 0;
+  ipv4Header._fragmentOffset = 0;
+  ipv4Header._ttl = 0;
+  ipv4Header._protocol = protocol;
+  ipv4Header._checksum = 0;
+  ipv4Header._srcAddr = srcAddr.sin_addr.s_addr;
+  ipv4Header._destAddr = destAddr.sin_addr.s_addr;
+
+  ipv4Header._checksum = calcChecksum(ipv4Header);
+
+  //device().getEthernetHandler().SendPacket()
+}
+
+uint16_t IPV4Handler::calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {
+  return NetworkUtil::CalculateChecksum((uint16_t *)&ipv4Header,ipv4Header._ihl * sizeof(uint32_t), 0);
+}
+
+void IPV4Handler::verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {
+  const auto calculatedChecksum = calcChecksum(ipv4Header);
   if (calculatedChecksum ^ (uint16_t)0xFFFF) {
     ipv4Header.print();
     throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);

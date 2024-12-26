@@ -25,7 +25,7 @@
 MACAddress::MACAddress(const upan::string &macAddr) : _macAddrStr(macAddr) {
   upan::vector<upan::string> tokens;
   macAddr.tokenize(":", false, tokens);
-  if (tokens.size() != NetworkPacket::MAC_ADDR_LEN) {
+  if (tokens.size() != INADDR_MAC_LEN) {
     throw upan::exception(XLOC, "Invalid MAC Address: %s", macAddr.c_str());
   }
   for(int i = 0; i < tokens.size(); ++i) {
@@ -34,7 +34,7 @@ MACAddress::MACAddress(const upan::string &macAddr) : _macAddrStr(macAddr) {
 }
 
 MACAddress::MACAddress(const upan::vector<uint8_t>& macAddr) {
-  if (macAddr.size() != NetworkPacket::MAC_ADDR_LEN) {
+  if (macAddr.size() != INADDR_MAC_LEN) {
     throw upan::exception(XLOC, "Invalid MAC Address Len: %d", macAddr.size());
   }
   convert(macAddr);
@@ -54,7 +54,7 @@ MACAddress& MACAddress::operator=(const MACAddress& r) {
 }
 
 bool MACAddress::operator==(const MACAddress& r) const {
-  for (int i = 0; i < NetworkPacket::MAC_ADDR_LEN; ++i) {
+  for (int i = 0; i < INADDR_MAC_LEN; ++i) {
     if (_macAddr[i] != r._macAddr[i]) {
       return false;
     }
@@ -73,6 +73,6 @@ bool MACAddress::isBroadcast() const {
 
 void MACAddress::copy(const MACAddress& r) {
   this->_macAddrStr = r._macAddrStr;
-  memcpy(this->_macAddr, r._macAddr, NetworkPacket::MAC_ADDR_LEN);
+  memcpy(this->_macAddr, r._macAddr, INADDR_MAC_LEN);
 }
 

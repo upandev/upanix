@@ -54,21 +54,21 @@ public:
   void releasePort(in_port_t port);
 
   void bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket);
-  void send(const struct sockaddr_in& from, const struct sockaddr_in& to, const void* buf, socklen_t n);
+  void send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  void recv(const RawNetPacket& packet, const struct sockaddr_in& destAddr);
 
 private:
-  void Probe(const PCIEntry& pciEntry);
-  bool isPortBounded(in_addr_t ip, in_port_t port);
-
-  upan::list<NetworkDevice*> _devices;
-
-  upan::mutex _nMutex;
-  upan::bitset<UINT64_MAX + 1> _portPool;
-
   typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
   typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
   typedef upan::set<in_port_t> SOCKET_BIND_SET;
 
+  void Probe(const PCIEntry& pciEntry);
+  bool isPortBounded(in_addr_t ip, in_port_t port);
+  upan::option<SocketDescriptor*> findBindingSocket(in_addr_t addr, in_port_t port);
+
+  upan::list<NetworkDevice*> _devices;
+  upan::mutex _nMutex;
+  upan::bitset<UINT64_MAX + 1> _portPool;
   SOCKET_BIND_SET _socketBindSet;
   SOCKET_BIND_MAP _socketBindMap;
 };

@@ -24,6 +24,8 @@
 #include <map.h>
 #include <PacketHandler.h>
 #include <option.h>
+#include <net/socket.h>
+#include <NetworkPacketComponents.h>
 
 class EthernetHandler;
 
@@ -31,7 +33,9 @@ class IPV4Handler : public PacketHandler {
 public:
   explicit IPV4Handler(NetworkDevice& networkDevice);
   void recv(RawNetPacket& packet) override;
+  void send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 
 private:
-  void verifyChecksum(RawNetPacket& packet);
+  uint16_t calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header);
+  void verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header);
 };

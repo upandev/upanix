@@ -48,9 +48,6 @@ public:
   void Initialize() override;
   void NotifyEvent() override;
   void SendPacket(const RawNetPacket& packet) override;
-  const MACAddress& GetMACAddress() const override {
-    return regEEPROM->getMACAddress();
-  }
 
 private:
 
@@ -59,14 +56,11 @@ private:
   class RegEEPROM {
   public:
     RegEEPROM(const uint32_t memIOBase);
-    const MACAddress& getMACAddress() const {
-      return _macAddress;
-    }
     void print() const;
+    MACAddress fetchMACAddress();
 
   private:
     uint16_t readEEPROM(int wordPos);
-    MACAddress fetchMACAddress();
 
   private:
     const uint32_t REG_EEPROM = 0x14;

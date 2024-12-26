@@ -30,10 +30,10 @@
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
 #include <ARPHandler.h>
+#include <uniq_ptr.h>
 
 class PCIEntry;
 class SocketBuffer;
-class EthernetHandler;
 
 class NetworkDevice {
 public:
@@ -43,9 +43,9 @@ public:
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
   virtual void SendPacket(const RawNetPacket& packet) = 0;
-  virtual const MACAddress& GetMACAddress() const = 0;
+  const MACAddress& GetMACAddress() const { return *_macAddress; }
+  in_addr_t GetIPAddress() const { return _ipAddress; }
 
-  upan::option<PacketHandler&> getHandler(NetworkPacket::PacketType type);
   EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
   ARPHandler& getARPHandler() { return _arpHandler; }
   IPV4Handler& getIPV4Handler() { return _ipv4Handler; }
@@ -108,6 +108,10 @@ public:
 
 protected:
   const PCIEntry& _pciEntry;
+
+  upan::uniq_ptr<MACAddress> _macAddress;
+  in_addr_t _ipAddress;
+
   EthernetHandler _ethernetHandler;
   IPV4Handler _ipv4Handler;
   UDP4Handler _udp4Handler;

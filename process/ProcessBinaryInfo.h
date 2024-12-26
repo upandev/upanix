@@ -149,6 +149,7 @@ public:
   uint64_t virtualLoadAddress() const { return _virtualLoadAddress; }
   uint32_t noOfPages() const { return _noOfPages; }
   ELFInfo& elfInfo() { return _elfInfo; }
+  const ELFInfo& elfInfo() const { return _elfInfo; }
   const TLSInfo& tlsInfo() const { return _tlsInfo; }
 
   void setTLSInfo(int module, uint64_t offset) {

@@ -47,8 +47,8 @@ private:
   template <typename MACAddr>
   void convert(const MACAddr& macAddr) {
     char c[5];
-    for(int i = 0; i < NetworkPacket::MAC_ADDR_LEN; ++i) {
-      sprintf(c, "%02x%s", macAddr[i], i < NetworkPacket::MAC_ADDR_LEN - 1 ? ":" : "");
+    for(int i = 0; i < INADDR_MAC_LEN; ++i) {
+      sprintf(c, "%02x%s", macAddr[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
       _macAddrStr += c;
       _macAddr[i] = macAddr[i];
     }
@@ -56,5 +56,5 @@ private:
   void copy(const MACAddress&);
 
   upan::string _macAddrStr;
-  uint8_t _macAddr[NetworkPacket::MAC_ADDR_LEN];
+  uint8_t _macAddr[INADDR_MAC_LEN];
 };

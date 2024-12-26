@@ -25,6 +25,8 @@
 #include <IODescriptor.h>
 #include <net/socket.h>
 #include <mutex.h>
+#include <RawNetPacket.h>
+#include <queue.h>
 
 class NetworkDevice;
 
@@ -45,10 +47,14 @@ public:
   uint32_t getOffset() const override { return 0; }
 
   void bind(const struct sockaddr& address, socklen_t len);
-  virtual void sendTo(const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+  virtual void sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+  //void recvNotify(RawNetPacket& packet);
 
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
   bool canBroadcast() const { return _allowBroadcast; }
+
+  IPPROTO_TYPE protocol() const { return _protocol; }
+  const struct sockaddr_in& bindAddress() const { return _bindAddress; }
 
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
@@ -61,10 +67,10 @@ private:
   void validateBuf(const void* buf) const;
 
 private:
-
   const IPPROTO_TYPE _protocol;
   struct sockaddr_in _bindAddress;
   upan::mutex _mutex;
 
+  //upan::queue<RawNetPacket> _packetQueue;
   bool _allowBroadcast;
 };

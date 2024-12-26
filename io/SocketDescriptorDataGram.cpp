@@ -26,21 +26,18 @@
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
 }
 
-void SocketDescriptorDataGram::sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "send/destination address is not specified");
   }
 
-  const auto& in_addr = reinterpret_cast<const struct sockaddr_in&>(addr);
-  if (in_addr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
+  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(addr);
+  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
     throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
   }
 
   ensureBind();
 
-  NetworkManager::Instance().getDefaultDevice().ifPresent([&](NetworkDevice& device) {
-    //device.getUDP4Handler().SendPacket()
-  });
-  //NetworkManager::Instance().send(_bindAddress, in_addr, buf, n);
+  NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
 }

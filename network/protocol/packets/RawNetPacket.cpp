@@ -34,7 +34,7 @@ RawNetPacket::RawNetPacket(const uintptr_t addr, const int len) :
   memcpy(_buf, (uint8_t*)addr, _len);
 }
 
-RawNetPacket::RawNetPacket(const int len) :
+RawNetPacket::RawNetPacket(const uint32_t len) :
   _buf(new ((void*)KernelDMM::Instance().allocate(len, 16))uint8_t[len]), _len(len) {
 }
 
@@ -62,6 +62,12 @@ void RawNetPacket::move(RawNetPacket& o) {
 
 NetworkPacket::Ethernet::Header& RawNetPacket::getEthernetHeader() {
   return *reinterpret_cast<NetworkPacket::Ethernet::Header*>(_buf);
+}
+
+RawNetPacket RawNetPacket::clone() const {
+  RawNetPacket packet(_len);
+  memcpy(packet._buf, _buf, _len);
+  return packet;
 }
 
 uint8_t* RawNetPacket::getEthernetData() {

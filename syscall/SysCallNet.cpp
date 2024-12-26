@@ -79,7 +79,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     {
       *retVal = 0;
       const auto fd = (sock_t)p1;
-      const auto buf = (void*)p2;
+      const auto buf = (uint8_t*)p2;
       const auto n = (size_t)p3;
       const auto flags = (int)p4;
       auto ext_param = (uint64_t*)p5;
