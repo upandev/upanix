@@ -74,6 +74,7 @@
 #include <KernelRootProcess.h>
 #include <math.h>
 #include <net/socket.h>
+#include <shared_ptr.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -2026,32 +2027,85 @@ class TLSDemo : public upan::thread {
   }
 };
 
+class shared_ptr_test {
+public:
+  shared_ptr_test() {
+    printf("\nshared_ptr_test - created");
+  }
+  ~shared_ptr_test() {
+    printf("\nshared_ptr_test - deleted");
+  }
+};
+
 void ConsoleCommands_Test() {
-  printf("\n %d", _t_local_var_data1);
-  printf("\n %d", (int)_t_local_var_data2);
-  printf("\n %d", (int)_t_local_var_data3);
-  printf("\n %d", (int)_t_local_var_global1);
-  printf("\n %d", (int)_t_local_var_global2);
+  upan::string test;
 
-  access_thread_local_test();
+  if (CommandLineParser::Instance().GetNoOfParameters() >= 1) {
+    test = CommandLineParser::Instance().GetParameterAt(0);
+  }
 
-  printf("\n Static Library Thread Local Data -> %d", _lib_data1_thread_local);
-  printf("\n Static Library Thread Local Global -> %d", _lib_global1_thread_local);
+  if (test == "tls") {
+    printf("\n %d", _t_local_var_data1);
+    printf("\n %d", (int) _t_local_var_data2);
+    printf("\n %d", (int) _t_local_var_data3);
+    printf("\n %d", (int) _t_local_var_global1);
+    printf("\n %d", (int) _t_local_var_global2);
 
-  tls_xlib_test();
-  printf("\n X Library Thread Local Data -> %d", _lib_data1_thread_local);
-  printf("\n X Library Thread Local Global -> %d", _lib_global1_thread_local);
+    access_thread_local_test();
 
-  TLSDemo t1, t2;
-  _t_local_var_global1 = getpid();
-  t1.start();
-  printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+    printf("\n Static Library Thread Local Data -> %d", _lib_data1_thread_local);
+    printf("\n Static Library Thread Local Global -> %d", _lib_global1_thread_local);
 
-  t2.start();
-  printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+    tls_xlib_test();
+    printf("\n X Library Thread Local Data -> %d", _lib_data1_thread_local);
+    printf("\n X Library Thread Local Global -> %d", _lib_global1_thread_local);
 
-  waitpid(t1.pid());
-  waitpid(t2.pid());
+    TLSDemo t1, t2;
+    _t_local_var_global1 = getpid();
+    t1.start();
+    printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+
+    t2.start();
+    printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
+
+    waitpid(t1.pid());
+    waitpid(t2.pid());
+  } else if (test == "smart_ptr") {
+    printf("\nshared ptr test....");
+    {
+      upan::shared_ptr<shared_ptr_test> s3;
+      upan::shared_ptr<shared_ptr_test[]> a3;
+      {
+        upan::shared_ptr<shared_ptr_test> s1(new shared_ptr_test());
+        upan::shared_ptr<shared_ptr_test> s2(s1);
+        s3 = s1;
+
+        auto a = new shared_ptr_test[2];
+        upan::shared_ptr<shared_ptr_test[]> a1(a);
+        upan::shared_ptr<shared_ptr_test[]> a2(a1);
+        a3 = a1;
+      }
+      printf("\n internal shared ptrs destroyed");
+    }
+    {
+      printf("\nuniq ptr test....");
+      upan::uniq_ptr<shared_ptr_test> u3;
+      upan::uniq_ptr<shared_ptr_test[]> ua3;
+      {
+        upan::uniq_ptr<shared_ptr_test> u1(new shared_ptr_test());
+        u3 = upan::move(u1);
+        upan::uniq_ptr<shared_ptr_test> u2(upan::move(u3));
+
+        auto a = new shared_ptr_test[2];
+        upan::uniq_ptr<shared_ptr_test[]> ua1(a);
+        ua3 = upan::move(ua1);
+        upan::uniq_ptr<shared_ptr_test[]> ua2(upan::move(ua3));
+      }
+      printf("\n internal uniq ptrs destroyed");
+    }
+  } else {
+
+  }
 
 //  for(auto& e : get_syscall_stats()) {
 //    printf("\n %lu", e.first);
@@ -2074,8 +2128,10 @@ void ConsoleCommands_Testv() {
   ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_photos, NO_PROCESS_ID, true, params);
 }
 
-void ConsoleCommands_TestNet()
-{
+void ConsoleCommands_TestNet() {
+  upan::atomic::integral<int> a(10);
+  printf("\n add atomic: %d", a.inc());
+  printf("\n sub atomic: %d", a.dec());
 	//IrqManager::Instance().DisplayIRQList() ;
 	//KC::MNetworkManager() ;
   printf("\n Broadcast MAC - %02x:%02x:%02x:%02x:%02x:%02x",
