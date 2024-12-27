@@ -23,8 +23,6 @@
 #include <exception.h>
 #include <SocketDescriptor.h>
 #include <fs.h>
-#include <SocketDescriptorStream.h>
-#include <SocketDescriptorDataGram.h>
 #include <NetworkManager.h>
 #include <ProcessManager.h>
 
@@ -39,6 +37,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
 SocketDescriptor::~SocketDescriptor() {
   if (isBound()) {
     NetworkManager::Instance().releasePort(ntohs(_bindAddress.sin_port));
+    NetworkManager::Instance().unbind(_bindAddress.sin_addr.s_addr, _bindAddress.sin_port);
   }
 }
 

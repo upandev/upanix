@@ -104,7 +104,7 @@ void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket
   upan::mutex_guard g(_nMutex);
 
   if (isPortBounded(ip, port)) {
-    throw upan::exception(XLOC, "port %d is already bound", port);
+    throw upan::exception(XLOC, "port %d is already bound", ntohs(port));
   }
 
   if (ip != INADDR_ANY && ip != INADDR_LOOPBACK) {
@@ -118,8 +118,30 @@ void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket
                             upan::net::inet_ntostr(networkDeviceIP).c_str());
     }
   }
+
   _socketBindMap[ip][port] = &socket;
-  _socketBindSet.insert(port);
+  ++_socketBindSet[port];
+}
+
+void NetworkManager::unbind(in_addr_t ip, in_port_t port) {
+  upan::mutex_guard g(_nMutex);
+
+  auto ipIt = _socketBindMap.find(ip);
+  if (ipIt != _socketBindMap.end()) {
+    ipIt->second.erase(port);
+    if (ipIt->second.empty()) {
+      _socketBindMap.erase(ipIt);
+    }
+  }
+
+  auto portIt = _socketBindSet.find(port);
+  if (portIt != _socketBindSet.end()) {
+    if (portIt->second > 1) {
+      --portIt->second;
+    } else {
+      _socketBindSet.erase(portIt);
+    }
+  }
 }
 
 void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
@@ -133,6 +155,7 @@ void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, c
 }
 
 void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, const struct sockaddr_in& destAddr) {
+  upan::mutex_guard g(_nMutex);
   if (destAddr.sin_addr.s_addr == INADDR_BROADCAST) {
     for(auto& e : _socketBindMap) {
       //there can be multiple network devices with different IP addresses and hence we can have multiple ip<->port mapping

@@ -23,7 +23,7 @@
 
 int SysIO_Close(int fd) {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_IO_CLOSE, false, fd, 2, 3, 4, 5);
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CLOSE, false, fd, 2, 3, 4, 5);
   return retStatus ;
 }
 

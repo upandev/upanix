@@ -20,7 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <SocketDescriptorDataGram.h>
-#include "network/NetworkManager.h"
+#include <NetworkManager.h>
 #include <UDP4Handler.h>
 
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
@@ -32,7 +32,7 @@ void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, c
     throw upan::exception(XLOC, "send/destination address is not specified");
   }
 
-  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(addr);
+  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
   if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
     throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
   }

@@ -837,17 +837,8 @@ void print_dhcp_offer(const struct dhcp_message *msg) {
 }
 
 void ConsoleCommands_ObtainIPAddress() {
-  auto d = NetworkManager::Instance().getDefaultDevice();
-  if (d.isEmpty()) {
-    printf("\nno network device exists");
-    return;
-  }
-  auto& device = d.value();
-  //device.GetDHCPHandler().ifPresent([&](DHCPHandler& handler) { handler.ObtainIPAddress(); });
-
   const int DHCP_SERVER_PORT = 67;
   const int DHCP_CLIENT_PORT = 68;
-
 
   const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
   if (sd < 0) {
@@ -896,7 +887,7 @@ void ConsoleCommands_ObtainIPAddress() {
     throw upan::exception(XLOC, "failed to send DHCP Discover");
   }
 
-  printf("DHCP Discover sent\n");
+  printf("\nDHCP Discover sent");
 
   // Receive DHCP Offer
   len = recvfrom(sd, buffer, MAX_BUFFER_SIZE, 0, nullptr, nullptr);
@@ -906,7 +897,7 @@ void ConsoleCommands_ObtainIPAddress() {
   }
 
   memcpy(&dhcp_msg, buffer, sizeof(dhcp_msg));
-  printf("DHCP Offer received\n");
+  printf("\nDHCP Offer received");
   print_dhcp_offer(&dhcp_msg);
   close(sd);
 }
