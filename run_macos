@@ -1,5 +1,6 @@
-# hdiutil attach -nomount USBImage/300MUSB.img
+#hdiutil attach USBImage/300MUSB.img
 diskutil mount /dev/disk4s1
 cp bin/upanix.elf /Volumes/C/efi/boot
 diskutil umount disk4s1
+#hdiutil detach disk4
 ./runqemu_uefi
