@@ -81,8 +81,8 @@ sudo qemu-system-x86_64 \
 -m 512 \
 -smp 1 \
 -usb \
--drive if=none,id=usbbootdrive,file=$BOOT_DRIVE \
--drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img \
+-drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off \
+-drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img,file.locking=off \
 -device usb-ehci,id=ehci \
 -device usb-storage,bus=ehci.0,drive=usbbootdrive \
 -device nec-usb-xhci,id=xhci \
