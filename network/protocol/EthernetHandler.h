@@ -34,6 +34,7 @@ class EthernetHandler : public PacketHandler {
 public:
   explicit EthernetHandler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  uint32_t headerLen() const override;
   void send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType);
 
   private:

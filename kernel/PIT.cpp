@@ -85,8 +85,7 @@ void PIT::Handler() {
   IrqManager::Instance().SendEOI(*_pitIrq);
 }
 
-uint32_t PIT::RoundSleepTime(__volatile__ uint32_t uiSleepTime)
-{
+time_t PIT::RoundSleepTime(__volatile__ time_t uiSleepTime) {
   return uiSleepTime;
 //	if((uiSleepTime % 10) >= 5)
 //		return uiSleepTime / 10 + 1 ;

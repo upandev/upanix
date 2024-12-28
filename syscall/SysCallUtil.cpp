@@ -59,7 +59,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         *retVal = 0 ;
         try
         {
-          tv->tSec = SystemUtil_GetTimeOfDay();
+          tv->tv_sec = SystemUtil_GetTimeOfDay();
         }
         catch(...)
         {

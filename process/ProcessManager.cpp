@@ -186,7 +186,14 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 	    const auto& result = process.iodTable().selectCheck(process.stateInfo().GetIODescriptors());
 	    if (!result.empty()) {
         process.stateInfo().SetIODescriptors(result);
+        process.stateInfo().setError(ProcessStateInfo::NO_ERROR);
         process.setStatus(RUN);
+      } else {
+        if (stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= stateInfo.SleepTime()) {
+          process.stateInfo().SleepTime(0);
+          process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
+          process.setStatus(RUN);
+        }
       }
 	  }
 	  break;
@@ -465,22 +472,28 @@ void ProcessManager::WaitOnResource(RESOURCE_KEYS resourceKey)
   p.yield();
 }
 
-void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType) {
+void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs) {
   upan::vector<io_descriptor> waitIODescriptors;
   io_descriptor waitIODescriptor;
   waitIODescriptor._fd = fd;
   waitIODescriptor._ioType = waitType;
   waitIODescriptors.push_back(waitIODescriptor);
-  WaitOnIODescriptors(waitIODescriptors);
+  WaitOnIODescriptors(waitIODescriptors, timeoutInMs);
 }
 
-void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors) {
+void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs) {
   if(GetCurProcId() < 0)
     return ;
   auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
     p.stateInfo().SetIODescriptors(waitIODescriptors);
+    p.stateInfo().setError(ProcessStateInfo::NO_ERROR);
+    if (timeoutInMs) {
+      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    } else {
+      p.stateInfo().SleepTime(0);
+    }
     p.setStatus(WAIT_IO_DESCRIPTORS);
   }
   p.yield();

@@ -108,6 +108,17 @@ void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, c
     }
     break;
 
+    case SO_RCVTIMEO:
+    {
+      if (len < sizeof(struct timeval)) {
+        throw upan::exception(XLOC, "invalid len(%d) for SO_RECVTIMEO option", len);
+      }
+
+      const auto timeout = reinterpret_cast<const struct timeval*>(optval);
+      descriptor.setRecvTimeout(timeout);
+    }
+    break;
+
     default:
       throw upan::exception(XLOC, "unsupported socket option: %d", option);
   }
@@ -118,7 +129,7 @@ void NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, 
   descriptor.sendTo(buf, n, flags, addr, len);
 }
 
-void NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+int NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
-  descriptor.recvFrom(buf, n, flags, addr, len);
+  return descriptor.recvFrom(buf, n, flags, addr, len);
 }

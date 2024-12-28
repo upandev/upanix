@@ -166,6 +166,7 @@ namespace NetworkPacket {
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
+    constexpr uint32_t DEFAULT_IHL = HEADER_SIZE / sizeof(uint32_t);
     constexpr uint32_t HEADER_OPT_SIZE = sizeof(HeaderOptions);
   }
 

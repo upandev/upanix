@@ -33,6 +33,7 @@ class UDP4Handler : public PacketHandler {
 public:
   explicit UDP4Handler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  uint32_t headerLen() const override;
   void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 
 private:

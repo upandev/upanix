@@ -74,7 +74,7 @@ public:
   void Handler();
 
   uint32_t GetClockCount() { return _clockCountForSleep.get(); }
-  uint32_t RoundSleepTime(__volatile__ unsigned uiSleepTime);
+  time_t RoundSleepTime(__volatile__ time_t uiSleepTime);
 
 private:
   upan::atomic::integral<uint32_t> _clockCountForSleep ;

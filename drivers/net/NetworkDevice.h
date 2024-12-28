@@ -47,9 +47,16 @@ public:
   in_addr_t GetIPAddress() const { return _ipAddress; }
 
   EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
+  const EthernetHandler& getEthernetHandler() const { return _ethernetHandler; }
+
   ARPHandler& getARPHandler() { return _arpHandler; }
+  const ARPHandler& getARPHandler() const { return _arpHandler; }
+
   IPV4Handler& getIPV4Handler() { return _ipv4Handler; }
+  const IPV4Handler& getIPV4Handler() const { return _ipv4Handler; }
+
   UDP4Handler& getUDP4Handler() { return _udp4Handler; }
+  const UDP4Handler& getUDP4Handler() const { return _udp4Handler; }
 
   // virtual int Configure() = 0;
   // virtual void Tx(SocketBuffer& socketBuffer) = 0;

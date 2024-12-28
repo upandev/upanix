@@ -382,9 +382,9 @@ struct stat FileSystem::stats(const FileNode& fileNode) {
   fileStat.st_mode = fileNode.Attribute() ;
   fileStat.st_uid = fileNode.UserID() ;
   fileStat.st_size = fileNode.Size() ;
-  fileStat.st_atime = fileNode.AccessedTime() ;
-  fileStat.st_mtime = fileNode.ModifiedTime() ;
-  fileStat.st_ctime = fileNode.CreatedTime() ;
+  fileStat.st_atime.tv_sec = fileNode.AccessedTime() ;
+  fileStat.st_mtime.tv_sec = fileNode.ModifiedTime() ;
+  fileStat.st_ctime.tv_sec = fileNode.CreatedTime() ;
 
   fileStat.st_blksize = 512 ;
   fileStat.st_blocks = (fileNode.Size() / 512) + ((fileNode.Size() % 512) ? 1 : 0 ) ;

@@ -40,17 +40,27 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   }
 }
 
+uint32_t IPV4Handler::headerLen() const {
+  //TODO: if IPV4 header has header-options then that must be factored here
+  return NetworkPacket::IPV4::HEADER_SIZE + device().getEthernetHandler().headerLen();
+}
+
+void IPV4Handler::initHeaderLen(RawNetPacket& packet) {
+  //TODO: if IPV4 header has header-options then that must be factored here
+  packet.getIPV4Header()._ihl = NetworkPacket::IPV4::HEADER_SIZE / sizeof(uint32_t);
+}
+
 void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
-  static const int IHL = 5;
   auto& ipv4Header = packet.getIPV4Header();
-  ipv4Header._ihl = IHL;
+  //This should be already done if we are sending a packet from a higher network layer like UDP
+  initHeaderLen(packet);
   ipv4Header._version = 4;
   ipv4Header._tos = 0;
-  ipv4Header._totalLen = packet.getUDP4Header()._len + (IHL * sizeof(uint32_t));
-  ipv4Header._identification = rand();
+  ipv4Header._totalLen = htons(ntohs(packet.getUDP4Header()._len) + (ipv4Header._ihl * sizeof(uint32_t)));
+  ipv4Header._identification = htons(rand());
   ipv4Header._flags = 0;
   ipv4Header._fragmentOffset = 0;
-  ipv4Header._ttl = 0;
+  ipv4Header._ttl = 255;
   ipv4Header._protocol = protocol;
   ipv4Header._checksum = 0;
   ipv4Header._srcAddr = srcAddr.sin_addr.s_addr;

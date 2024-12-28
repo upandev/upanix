@@ -129,7 +129,7 @@ void IODescriptorTable::dup2(int oldFD, int newFD) {
 upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_descriptor>& ioDescriptors) {
   const auto& result = selectCheck(ioDescriptors);
   if (result.empty()) {
-    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors);
+    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, 0);
     return ProcessManager::Instance().GetCurrentPAS().stateInfo().GetIODescriptors();
   } else {
     return result;

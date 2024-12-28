@@ -36,11 +36,11 @@ public:
   upan::string FullPath(StorageDrive &diskDrive);
 
   const char *Name() const { return (const char *) _name; }
-  const struct timeval &CreatedTime() const { return _createdTime; }
-  const struct timeval &AccessedTime() const { return _accessedTime; }
-  void AccessedTime(const uint32_t tSec) { _accessedTime.tSec = tSec; }
-  const struct timeval &ModifiedTime() const { return _modifiedTime; }
-  void ModifiedTime(const uint32_t tSec) { _modifiedTime.tSec = tSec; }
+  time_t CreatedTime() const { return _createdTime; }
+  time_t AccessedTime() const { return _accessedTime; }
+  void AccessedTime(const time_t tSec) { _accessedTime = tSec; }
+  time_t ModifiedTime() const { return _modifiedTime; }
+  void ModifiedTime(const time_t tSec) { _modifiedTime = tSec; }
   uint16_t ParentSectorPos() const { return _parentSectorPos; }
   uint16_t Attribute() const { return _attribute; }
   uint32_t ParentSectorID() const { return _parentSectorID; }
@@ -60,9 +60,9 @@ public:
 
 private:
   char            _name[33];
-  struct timeval  _createdTime;
-  struct timeval  _accessedTime;
-  struct timeval  _modifiedTime;
+  time_t          _createdTime;
+  time_t          _accessedTime;
+  time_t          _modifiedTime;
   uint8_t         _parentSectorPos;
   uint16_t        _attribute;
   uint32_t        _size;

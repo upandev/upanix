@@ -30,7 +30,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
   : IODescriptor(pid, fd, O_RDWR),
     _protocol(protocol),
     _bindAddress({ 0, 0, { 0 }, { 0 } }),
-    _allowBroadcast(false),
+    _allowBroadcast(false), _recvTimeoutInMs(0),
     _packetQueue(1024) {
 }
 
@@ -120,7 +120,10 @@ upan::shared_ptr<RawNetPacket> SocketDescriptor::recvPacket() {
     if (getMode() & O_RD_NONBLOCK) {
       return {};
     }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read);
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, _recvTimeoutInMs);
+    if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+      throw upan::exception(XLOC, "socket receive timed-out");
+    }
   }
 }
 

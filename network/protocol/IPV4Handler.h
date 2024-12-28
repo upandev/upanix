@@ -34,7 +34,9 @@ class IPV4Handler : public PacketHandler {
 public:
   explicit IPV4Handler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  uint32_t headerLen() const override;
   void send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  void initHeaderLen(RawNetPacket& packet);
 
 private:
   uint16_t calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header);

@@ -53,6 +53,10 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   }
 }
 
+uint32_t EthernetHandler::headerLen() const {
+  return NetworkPacket::Ethernet::HEADER_SIZE;
+}
+
 void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType) {
   auto& ethernetHeader = packet.getEthernetHeader();
   memcpy(ethernetHeader._sourceMAC, device().GetMACAddress().get(), INADDR_MAC_LEN);

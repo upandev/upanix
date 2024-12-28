@@ -28,6 +28,7 @@
 #include <RawNetPacket.h>
 #include <queue.h>
 #include <shared_ptr.h>
+#include <dtime.h>
 
 class NetworkDevice;
 
@@ -49,10 +50,18 @@ public:
 
   void bind(const struct sockaddr& address, socklen_t len);
   virtual void sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
-  virtual void recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
+  virtual int recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
+  //socket options
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
   bool canBroadcast() const { return _allowBroadcast; }
+
+  void setRecvTimeout(const struct timeval* timeout) {
+    _recvTimeoutInMs = 0;
+    if (timeout) {
+      _recvTimeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+    }
+  }
 
   IPPROTO_TYPE protocol() const { return _protocol; }
   const struct sockaddr_in& bindAddress() const { return _bindAddress; }
@@ -75,6 +84,7 @@ private:
   const IPPROTO_TYPE _protocol;
   struct sockaddr_in _bindAddress;
   bool _allowBroadcast;
+  time_t _recvTimeoutInMs;
   upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;
 
   friend class NetworkManager;

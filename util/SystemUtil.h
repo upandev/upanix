@@ -27,7 +27,7 @@
 #include <dtime.h>
 
 void SystemUtil_Reboot() ;
-uint32_t SystemUtil_GetTimeOfDay();
+time_t SystemUtil_GetTimeOfDay();
 void SystemUtil_GetRTCTimeFromTime(RTCDateTime* rtcDateTime, const struct timeval* tv) ;
 
 #endif

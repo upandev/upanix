@@ -29,9 +29,12 @@
 
 class IRQ;
 
-class ProcessStateInfo
-{
+class ProcessStateInfo {
 public:
+  typedef enum {
+    NO_ERROR,
+    TIMEOUT,
+  } Error;
   ProcessStateInfo();
 
   uint32_t SleepTime() const { return _sleepTime; }
@@ -68,8 +71,11 @@ public:
   void WaitOnLock(upan::atomic::integral<int>* lock, int oldVal, int newVal);
   bool IsWaitOnLockCompleted();
 
+  Error getError() const { return _error; }
+  void setError(Error error) { _error = error; }
+
 private:
-  unsigned       _sleepTime;
+  time_t         _sleepTime;
   const IRQ*     _irq;
   int            _waitChildProcId;
   int            _waitQueueId;
@@ -78,6 +84,7 @@ private:
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete ;
   upan::vector<io_descriptor> _ioDescriptors;
+  Error          _error;
 
   upan::atomic::integral<int>* _waitLock;
   int _newVal;

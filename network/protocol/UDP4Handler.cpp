@@ -42,16 +42,22 @@ void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   NetworkManager::Instance().recv(packet, destAddr);
 }
 
-void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
-  const int packetLen = len + NetworkPacket::UDP::HEADER_SIZE + NetworkPacket::IPV4::HEADER_SIZE + NetworkPacket::Ethernet::HEADER_SIZE;
+uint32_t UDP4Handler::headerLen() const {
+  return NetworkPacket::UDP::HEADER_SIZE + device().getIPV4Handler().headerLen();
+}
 
-  RawNetPacket packet(packetLen);
+void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+  RawNetPacket packet(len + headerLen());
+  //IPV4 header can potentially have varying length because of header-options
+  //therefore, we need to initialize the IPV4 header length at the very beginning before constructing the packet bottom up
+  device().getIPV4Handler().initHeaderLen(packet);
+
   memcpy(packet.getUDP4Data(), buf, len);
 
   auto& udpHeader = packet.getUDP4Header();
   udpHeader._srcPort = srcAddr.sin_port;
   udpHeader._destPort = destAddr.sin_port;
-  udpHeader._len = len + NetworkPacket::UDP::HEADER_SIZE;
+  udpHeader._len = htons(len + NetworkPacket::UDP::HEADER_SIZE);
   udpHeader._checksum = 0;
   calcChecksum(packet, srcAddr.sin_addr.s_addr, destAddr.sin_addr.s_addr);
 

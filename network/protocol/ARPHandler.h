@@ -29,7 +29,7 @@ class ARPHandler : public PacketHandler {
 public:
   explicit ARPHandler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-
+  uint32_t headerLen() const override;
   void SendRequestForMAC(const struct in_addr& ipAddress);
   void SendRARP();
 

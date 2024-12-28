@@ -871,6 +871,13 @@ void ConsoleCommands_ObtainIPAddress() {
     throw upan::exception(XLOC, "failed to set socket option: SO_BROADCAST");
   }
 
+  struct timeval timeout {};
+  timeout.tv_sec = 2;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
+  }
+
   // Create and send DHCP Discover
 
   //struct dhcp_message dhcp_msg;

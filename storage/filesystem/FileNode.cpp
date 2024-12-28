@@ -30,9 +30,9 @@ void FileNode::Init(const char* szDirName, unsigned short usDirAttribute, int iU
 
   _attribute = usDirAttribute ;
 
-  _createdTime.tSec = SystemUtil_GetTimeOfDay();
-  _accessedTime.tSec = _createdTime.tSec;
-  _modifiedTime.tSec = _createdTime.tSec;
+  _createdTime = SystemUtil_GetTimeOfDay();
+  _accessedTime = _createdTime;
+  _modifiedTime = _createdTime;
 
   _startSectorID = EOC ;
   _size = 0 ;

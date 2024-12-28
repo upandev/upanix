@@ -53,7 +53,7 @@ void SystemUtil_Reboot()
   PS2Controller::Instance().Reboot() ;
 }
 
-uint32_t SystemUtil_GetTimeOfDay()
+time_t SystemUtil_GetTimeOfDay()
 {
 	RTCDateTime rtcTime ;
 	RTC::GetDateTime(rtcTime) ;
@@ -74,7 +74,7 @@ void SystemUtil_GetRTCTimeFromTime(RTCDateTime* rtcDateTime, const struct timeva
 	mdate d1 ;
 	mdate_GetSeedDate(&d1) ;
 	
-	int days = tv->tSec / (HRS_IN_DAY) ;
+	time_t days = tv->tv_sec / (HRS_IN_DAY) ;
 	mdate_AddDays(&d1, days) ;
 
   rtcDateTime->_dayOfMonth = d1.dayOfMonth ;
@@ -82,10 +82,10 @@ void SystemUtil_GetRTCTimeFromTime(RTCDateTime* rtcDateTime, const struct timeva
   rtcDateTime->_year = d1.year % 100 ;
   rtcDateTime->_century = d1.year / 100 ;
 
-	int resi = tv->tSec % HRS_IN_DAY ;
+  time_t resi = tv->tv_sec % HRS_IN_DAY ;
   rtcDateTime->_hour = resi / 3600 ;
 
-	int resh = resi % 3600 ;
+  time_t resh = resi % 3600 ;
   rtcDateTime->_minute = resh / 60 ;
   rtcDateTime->_second = resh % 60 ;
 }

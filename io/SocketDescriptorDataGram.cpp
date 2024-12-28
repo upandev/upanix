@@ -42,7 +42,7 @@ void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, c
   NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
 }
 
-void SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+int SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getUDP4Data();
@@ -54,4 +54,6 @@ void SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struc
   if (addr && len) {
     reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDP4Header()._srcPort, {packet->getIPV4Header()._srcAddr }};
   }
+
+  return xferLen;
 }
