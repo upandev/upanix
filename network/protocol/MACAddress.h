@@ -40,7 +40,7 @@ public:
   }
 
   bool isBroadcast() const;
-  const upan::string str() const { return _macAddrStr; }
+  const upan::string& str() const { return _macAddrStr; }
   const uint8_t* get() const { return _macAddr; }
 
 private:

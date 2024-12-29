@@ -766,7 +766,7 @@ void ConsoleCommands_ProbeNetwork()
 
 void ConsoleCommands_ListNetworkDevices() {
   for(const auto d : NetworkManager::Instance().Devices()) {
-    printf("\n%s", d->GetMACAddress().str().c_str());
+    printf("\nIP: %d, MAC: %s", inet_ntoa( { d->GetIPAddress() }), d->GetMACAddress().str().c_str());
   }
 }
 
@@ -786,7 +786,9 @@ void ConsoleCommands_ARPing() {
   if (param == "rarp") {
     device.getARPHandler().SendRARP();
   } else {
-    device.getARPHandler().SendRequestForMAC({ inet_aton(param.c_str()) });
+    struct in_addr addr {};
+    inet_aton(param.c_str(), &addr);
+    device.getARPHandler().SendRequestForMAC(addr);
   }
 }
 
@@ -810,7 +812,7 @@ struct dhcp_message {
 
 static const int MAX_BUFFER_SIZE = 1024;
 
-void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid) {
+void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddress& macAddress) {
   static const int DHCP_DISCOVER = 1;
   memset(msg, 0, sizeof(struct dhcp_message));
   msg->op = 1; // BOOTREQUEST
@@ -827,6 +829,7 @@ void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid) {
   msg->options[5] = 1;  // Length
   msg->options[6] = DHCP_DISCOVER; // DHCP Discover
   msg->options[7] = 255; // End Option
+  memcpy(msg->chaddr, macAddress.get(), INADDR_MAC_LEN);
 }
 
 void print_dhcp_offer(const struct dhcp_message *msg) {
@@ -872,7 +875,7 @@ void ConsoleCommands_ObtainIPAddress() {
   }
 
   struct timeval timeout {};
-  timeout.tv_sec = 2;
+  timeout.tv_sec = 10;
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     close(sd);
     throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
@@ -885,8 +888,9 @@ void ConsoleCommands_ObtainIPAddress() {
   char buffer[MAX_BUFFER_SIZE];
   ssize_t len;
 
+  const auto& netDev = NetworkManager::Instance().getDefaultDevice().value();
   const auto xid = (uint32_t)rand(); // Transaction ID
-  create_dhcp_discover(&dhcp_msg, xid);
+  create_dhcp_discover(&dhcp_msg, xid, netDev.GetMACAddress());
 
   len = sendto(sd, &dhcp_msg, sizeof(dhcp_msg), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (len < 0) {
@@ -2130,8 +2134,10 @@ void ConsoleCommands_TestNet() {
   upan::atomic::integral<int> a(10);
   printf("\n add atomic: %d", a.inc());
   printf("\n sub atomic: %d", a.dec());
-	//IrqManager::Instance().DisplayIRQList() ;
-	//KC::MNetworkManager() ;
+
+  struct in_addr inp;
+  inet_aton("192.168.1.1", &inp);
+  printf("\n IP Address: %s", upan::net::inet_ntostr(inp.s_addr).c_str());
   printf("\n Broadcast MAC - %02x:%02x:%02x:%02x:%02x:%02x",
          INADDR_MAC_BROADCAST[0],
          INADDR_MAC_BROADCAST[1],

@@ -108,11 +108,24 @@ namespace NetworkPacket {
       }
 
       Header toHost() const {
-        Header h {};
+        Header h{};
         memcpy(h._destinationMAC, _destinationMAC, INADDR_MAC_LEN);
         memcpy(h._sourceMAC, _sourceMAC, INADDR_MAC_LEN);
         h._type = ntohs(_type);
         return h;
+      }
+
+      void print() const {
+        printf("\n Ethernet - Type: %d", ntohs(_type));
+        printf("\n Src MAC: ");
+        for (int i = 0; i < INADDR_MAC_LEN; i++) {
+          printf("%02x%s", _sourceMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        }
+
+        printf("\n Dest MAC: ");
+        for (int i = 0; i < INADDR_MAC_LEN; i++) {
+          printf("%02x%s", _destinationMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        }
       }
     } PACKED;
 
@@ -156,7 +169,9 @@ namespace NetworkPacket {
 
         printf("\nChecksum: 0x%x", _checksum);
 
-        printf("\nSource Addr: %s, Dest Addr: %s", upan::net::inet_ntostr(_srcAddr).c_str(), upan::net::inet_ntostr(_destAddr).c_str());
+        printf("\nSource Addr: %s, Dest Addr: %s",
+               upan::net::inet_ntostr(htonl(_srcAddr)).c_str(),
+               upan::net::inet_ntostr(htonl(_destAddr)).c_str());
       }
     } PACKED;
 

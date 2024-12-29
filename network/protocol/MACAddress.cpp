@@ -49,7 +49,9 @@ MACAddress::MACAddress(const MACAddress& r) {
 }
 
 MACAddress& MACAddress::operator=(const MACAddress& r) {
-  copy(r);
+  if (&r != this) {
+    copy(r);
+  }
   return *this;
 }
 
@@ -63,7 +65,7 @@ bool MACAddress::operator==(const MACAddress& r) const {
 }
 
 bool MACAddress::isBroadcast() const {
-  for(unsigned char i : _macAddr) {
+  for (uint8_t i : _macAddr) {
     if (i != 0xFF) {
       return false;
     }

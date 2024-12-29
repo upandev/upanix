@@ -88,5 +88,12 @@ sudo qemu-system-x86_64 \
 -device nec-usb-xhci,id=xhci \
 -device usb-storage,bus=xhci.0,port=1,drive=usbdrive1 \
 -device usb-hub,bus=xhci.0,port=3 \
--net nic,model=e1000 \
--net tap,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh
+-nic tap,model=e1000,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh
+
+#-nic option allows you to have guest directly connect to host backend without an intermediate hub valn
+#-nic tap,model=e1000,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh
+
+# setting up networking using below options will use an intermediate hub vlan -
+# where in the emulated NIC (front-end) on the guest is not directly connected to the host-backend
+#-net nic,model=e1000 \
+#-net tap,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh

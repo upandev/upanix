@@ -95,8 +95,7 @@ void UDP4Handler::verifyChecksum(const RawNetPacket& packet) {
     const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0);
     const uint16_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *) packet.getIPV4Data(),len, partialChecksum);
 
-    const uint16_t r = calculatedChecksum ^ (uint16_t)0xFFFF;
-    if (r) {
+    if (calculatedChecksum != 0) {
       udpHeader.print();
       throw upan::exception(XLOC, "Invalid Checksum for UDP Packet, IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
     }

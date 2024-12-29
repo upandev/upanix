@@ -43,7 +43,7 @@ public:
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
   virtual void SendPacket(const RawNetPacket& packet) = 0;
-  const MACAddress& GetMACAddress() const { return *_macAddress; }
+  const MACAddress& GetMACAddress() const { return _macAddress; }
   in_addr_t GetIPAddress() const { return _ipAddress; }
 
   EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
@@ -114,9 +114,18 @@ public:
 	// virtual void WakeTxQueue() = 0;
 
 protected:
+  void setMACAddress(const MACAddress& macAddress) {
+    _macAddress = macAddress;
+  }
+
+  void setIPAddress(in_addr_t ip) {
+    _ipAddress = ip;
+  }
+
+protected:
   const PCIEntry& _pciEntry;
 
-  upan::uniq_ptr<MACAddress> _macAddress;
+  MACAddress _macAddress;
   in_addr_t _ipAddress;
 
   EthernetHandler _ethernetHandler;

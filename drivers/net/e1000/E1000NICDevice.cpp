@@ -101,7 +101,8 @@ void E1000NICDevice::Initialize() {
   IrqManager::Instance().EnableIRQ(*_irq);
 
   regEEPROM = new RegEEPROM(_memIOBase);
-  regEEPROM->print();
+  setMACAddress(regEEPROM->fetchMACAddress());
+  printf("\n MAC address: %s", GetMACAddress().str().c_str());
 
   regIntControl = new RegIntControl(_memIOBase);
   regIntControl->disable();
@@ -157,15 +158,10 @@ volatile uint32_t* REG(const uint32_t base, const uint32_t offset) {
 }
 
 E1000NICDevice::RegEEPROM::RegEEPROM(const uint32_t memIOBase) :
-  _eeprom(REG(memIOBase, REG_EEPROM)),
-  _macAddress(fetchMACAddress()) {
+  _eeprom(REG(memIOBase, REG_EEPROM)) {
 }
 
-void E1000NICDevice::RegEEPROM::print() const {
-  printf("\n MAC ADDRESS: %s", _macAddress.str().c_str());
-}
-
-uint16_t E1000NICDevice::RegEEPROM::readEEPROM(const int wordPos) {
+uint16_t E1000NICDevice::RegEEPROM::readEEPROM(const int wordPos) const {
   *_eeprom = 0x001 | (wordPos << 8);
   ProcessManager::Instance().Sleep(10);
   uint32_t val = *_eeprom;
@@ -176,7 +172,7 @@ uint16_t E1000NICDevice::RegEEPROM::readEEPROM(const int wordPos) {
   throw upan::exception(XLOC, "E1000 NIC EEPROM register is not supported!");
 }
 
-MACAddress E1000NICDevice::RegEEPROM::fetchMACAddress() {
+MACAddress E1000NICDevice::RegEEPROM::fetchMACAddress() const {
   upan::vector<uint8_t> macAddr;
   for(int i = 0; i < 3; ++i) {
     uint16_t word = readEEPROM(i);

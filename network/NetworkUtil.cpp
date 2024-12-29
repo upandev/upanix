@@ -27,7 +27,7 @@ uint16_t NetworkUtil::CalculateChecksum(const uint16_t* buf, uint32_t lengthInBy
   while((sum >> 16)) {
     sum = (sum & 0xFFFF) + (sum >> 16);
   }
-  return sum & 0xFFFF;
+  return (uint16_t)~sum;
 }
 
 uint32_t NetworkUtil::CalculatePartialChecksum(const uint16_t* buf, uint32_t lengthInBytes, uint32_t initSum) {

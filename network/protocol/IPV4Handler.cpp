@@ -77,7 +77,7 @@ uint16_t IPV4Handler::calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header
 
 void IPV4Handler::verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {
   const auto calculatedChecksum = calcChecksum(ipv4Header);
-  if (calculatedChecksum ^ (uint16_t)0xFFFF) {
+  if (calculatedChecksum != 0) {
     ipv4Header.print();
     throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
   }

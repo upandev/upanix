@@ -56,22 +56,20 @@ private:
 
   class RegEEPROM {
   public:
-    RegEEPROM(const uint32_t memIOBase);
-    void print() const;
-    MACAddress fetchMACAddress();
+    explicit RegEEPROM(const uint32_t memIOBase);
+    MACAddress fetchMACAddress() const;
 
   private:
-    uint16_t readEEPROM(int wordPos);
+    uint16_t readEEPROM(int wordPos) const;
 
   private:
     const uint32_t REG_EEPROM = 0x14;
     volatile uint32_t* const _eeprom;
-    const MACAddress _macAddress;
   };
 
   class RegIntControl {
   public:
-    RegIntControl(const uint32_t memIOBase);
+    explicit RegIntControl(const uint32_t memIOBase);
     void disable();
     void enable();
     uint32_t readICR() {
