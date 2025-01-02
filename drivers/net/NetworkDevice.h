@@ -36,15 +36,28 @@ class PCIEntry;
 class SocketBuffer;
 
 class NetworkDevice {
+private:
+  static constexpr uint16_t DEFAULT_MTU = 1500;
+  static constexpr char DEFAULT_HOST_NAME[] = "Upanix";
+
 public:
-  NetworkDevice(const PCIEntry& pciEntry);
+
+  explicit NetworkDevice(const PCIEntry& pciEntry);
   virtual ~NetworkDevice() = 0;
   
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
   virtual void SendPacket(const RawNetPacket& packet) = 0;
+
+  virtual uint16_t mtu() const { return DEFAULT_MTU; }
+  virtual const char* hostName() const { return DEFAULT_HOST_NAME; }
+
   const MACAddress& GetMACAddress() const { return _macAddress; }
   in_addr_t GetIPAddress() const { return _ipAddress; }
+  in_addr_t GetGatewayAddress() const { return _gatewayAddress; }
+  in_addr_t GetSubnetMask() const { return _subnetMask; }
+  in_addr_t GetBroadcastAddress() const { return _broadcastAddress; }
+  in_addr_t GetDNSAddress() const { return _dnsAddress; }
 
   EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
   const EthernetHandler& getEthernetHandler() const { return _ethernetHandler; }
@@ -114,19 +127,23 @@ public:
 	// virtual void WakeTxQueue() = 0;
 
 protected:
-  void setMACAddress(const MACAddress& macAddress) {
-    _macAddress = macAddress;
-  }
+  void setMACAddress(const MACAddress& macAddress) { _macAddress = macAddress; }
+  void setIPAddress(in_addr_t ip) { _ipAddress = ip; }
+  void setGatewayAddress(in_addr_t ip) { _gatewayAddress = ip; }
+  void setSubnetMask(in_addr_t ip) { _subnetMask = ip; }
+  void setBroadcastAddress(in_addr_t ip) { _broadcastAddress = ip; }
+  void setDNSAddress(in_addr_t ip) { _dnsAddress = ip; }
 
-  void setIPAddress(in_addr_t ip) {
-    _ipAddress = ip;
-  }
-
+  friend class DHCPClient;
 protected:
   const PCIEntry& _pciEntry;
 
   MACAddress _macAddress;
   in_addr_t _ipAddress;
+  in_addr_t _gatewayAddress;
+  in_addr_t _subnetMask;
+  in_addr_t _broadcastAddress;
+  in_addr_t _dnsAddress;
 
   EthernetHandler _ethernetHandler;
   IPV4Handler _ipv4Handler;

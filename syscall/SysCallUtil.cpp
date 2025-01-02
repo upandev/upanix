@@ -47,7 +47,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 
     case SYS_CALL_UTIL_BTIME:
       {
-        *retVal = SysUtil_GetTimeSinceBoot();
+        *retVal = PIT::Instance().GetClockCount();
       }
       break;
 

@@ -804,15 +804,15 @@ struct dhcp_message {
   uint32_t yiaddr;
   uint32_t siaddr;
   uint32_t giaddr;
-  unsigned char chaddr[16];
-  unsigned char sname[64];
-  unsigned char file[128];
-  unsigned char options[312];
+  uint8_t chaddr[16];
+  uint8_t sname[64];
+  uint8_t file[128];
+  uint8_t options[312];
 } PACKED;
 
 static const int MAX_BUFFER_SIZE = 1024;
 
-void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddress& macAddress) {
+void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddress& macAddress, uint16_t mtu, const char* hostName) {
   static const int DHCP_DISCOVER = 1;
   memset(msg, 0, sizeof(struct dhcp_message));
   msg->op = 1; // BOOTREQUEST
@@ -820,16 +820,50 @@ void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddre
   msg->hlen = 6; // MAC address length
   msg->xid = htonl(xid);
   msg->flags = htons(0x8000); // Broadcast flag
-  // Add DHCP options
-  msg->options[0] = 0x63; // Magic cookie
-  msg->options[1] = 0x82;
-  msg->options[2] = 0x53;
-  msg->options[3] = 0x63;
-  msg->options[4] = 53; // Option: DHCP Message Type
-  msg->options[5] = 1;  // Length
-  msg->options[6] = DHCP_DISCOVER; // DHCP Discover
-  msg->options[7] = 255; // End Option
   memcpy(msg->chaddr, macAddress.get(), INADDR_MAC_LEN);
+
+  // Add DHCP options
+  int o = 0;
+  msg->options[o++] = 0x63; // Magic cookie
+  msg->options[o++] = 0x82;
+  msg->options[o++] = 0x53;
+  msg->options[o++] = 0x63;
+  msg->options[o++] = 53; // Option: DHCP Message Type
+  msg->options[o++] = 1;  // Length
+  msg->options[o++] = DHCP_DISCOVER; // DHCP Discover
+  msg->options[o++] = 55;
+  msg->options[o++] = 5;
+  msg->options[o++] = 1;
+  msg->options[o++] = 121;
+  msg->options[o++] = 3;
+  msg->options[o++] = 6;
+  msg->options[o++] = 15;
+
+  msg->options[o++] = 57;
+  msg->options[o++] = 2;
+  auto mtun = htons(mtu);
+  memcpy(msg->options + o, (void*)&mtun, sizeof(uint16_t));
+  o += 2;
+
+  msg->options[o++] = 61;
+  msg->options[o++] = 7;
+  msg->options[o++] = 1;
+  memcpy(msg->options + o, macAddress.get(), INADDR_MAC_LEN);
+  o += 6;
+
+  msg->options[o++] = 51;
+  msg->options[o++] = 4;
+  uint32_t leaseTime = ntohl(3600); //1hr
+  memcpy(msg->options + o, (void*)&leaseTime, sizeof(uint32_t));
+  o += 4;
+
+  msg->options[o++] = 12;
+  const int l = strlen(hostName);
+  msg->options[o++] = l;
+  memcpy(msg->options + o, hostName, l);
+  o += l;
+
+  msg->options[o++] = 255; // End Option
 }
 
 void print_dhcp_offer(const struct dhcp_message *msg) {
@@ -890,7 +924,7 @@ void ConsoleCommands_ObtainIPAddress() {
 
   const auto& netDev = NetworkManager::Instance().getDefaultDevice().value();
   const auto xid = (uint32_t)rand(); // Transaction ID
-  create_dhcp_discover(&dhcp_msg, xid, netDev.GetMACAddress());
+  create_dhcp_discover(&dhcp_msg, xid, netDev.GetMACAddress(), netDev.mtu(), netDev.hostName());
 
   len = sendto(sd, &dhcp_msg, sizeof(dhcp_msg), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (len < 0) {
@@ -2145,6 +2179,9 @@ void ConsoleCommands_TestNet() {
          INADDR_MAC_BROADCAST[3],
          INADDR_MAC_BROADCAST[4],
          INADDR_MAC_BROADCAST[5]);
+
+  printf("\n Time based on boot = %u", PIT::Instance().GetCurrentTimeFromBoot());
+  printf("\n Time based on RTC = %u", SystemUtil_GetTimeOfDay() * 1000);
 }
 
 class Global

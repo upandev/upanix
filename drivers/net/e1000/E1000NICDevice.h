@@ -32,7 +32,6 @@
 #include <ARPHandler.h>
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
-#include <DHCPHandler.h>
 #include "shared_ptr.h"
 
 class E1000NICDevice : public NetworkDevice {
@@ -56,7 +55,7 @@ private:
 
   class RegEEPROM {
   public:
-    explicit RegEEPROM(const uint32_t memIOBase);
+    explicit RegEEPROM(const uint64_t memIOBase);
     MACAddress fetchMACAddress() const;
 
   private:
@@ -69,7 +68,7 @@ private:
 
   class RegIntControl {
   public:
-    explicit RegIntControl(const uint32_t memIOBase);
+    explicit RegIntControl(const uint64_t memIOBase);
     void disable();
     void enable();
     uint32_t readICR() {
@@ -97,7 +96,7 @@ private:
 
   class RegControl {
   public:
-    RegControl(const uint32_t memIOBase);
+    RegControl(const uint64_t memIOBase);
     
   private:
     const static uint32_t REG_PBA = 0x1000; // Packet Buffer Allocation
@@ -124,7 +123,7 @@ private:
 
   class RegRXDescriptor {
   public:
-    RegRXDescriptor(const uint32_t memIOBase);
+    RegRXDescriptor(const uint64_t memIOBase);
     upan::shared_ptr<RawNetPacket> GetNextPacket();
 
   private:
@@ -166,7 +165,7 @@ private:
 
   class RegTXDescriptor {
   public:
-    RegTXDescriptor(const uint32_t memIOBase);
+    RegTXDescriptor(const uint64_t memIOBase);
     void SendPacket(const uint8_t* data, const uint32_t len);
 
   private:

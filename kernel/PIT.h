@@ -74,9 +74,11 @@ public:
   void Handler();
 
   uint32_t GetClockCount() { return _clockCountForSleep.get(); }
+  time_t GetCurrentTimeFromBoot() { return _bootTime + _clockCountForSleep.get(); }
   time_t RoundSleepTime(__volatile__ time_t uiSleepTime);
 
 private:
   upan::atomic::integral<uint32_t> _clockCountForSleep ;
+  time_t _bootTime;
   const IRQ* _pitIrq;
 };

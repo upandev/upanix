@@ -34,13 +34,14 @@ void SysUtil_Reboot()
   SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_REBOOT, false, 1, 2, 3, 4, 5);
 }
 
-int SysUtil_GetTimeOfDay(struct timeval* pTV)
-{
+int SysUtil_GetTimeOfDay(struct timeval* pTV) {
   uint64_t retStatus ;
   SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_TOD, false, (uint64_t) pTV, 2, 3, 4, 5);
 	return retStatus ;
 }
 
 uint32_t SysUtil_GetTimeSinceBoot() {
-  return PIT::Instance().GetClockCount();
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_BTIME, false, 1, 2, 3, 4, 5);
+  return retStatus ;
 }

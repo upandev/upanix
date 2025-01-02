@@ -28,6 +28,7 @@
 #include <atomicop.h>
 #include <ProcessManager.h>
 #include "Acpi.h"
+#include "SystemUtil.h"
 
 extern "C" {
   void _pit_timer_interrupt_handler();
@@ -81,6 +82,9 @@ void PIT::ContextSwitchHandler(TaskContext& taskContext) {
 
 void PIT::Handler() {
   // 1 Int --> 1ms
+  if (_clockCountForSleep.get() == 0) {
+    _bootTime = SystemUtil_GetTimeOfDay() * 1000;
+  }
   _clockCountForSleep.inc();
   IrqManager::Instance().SendEOI(*_pitIrq);
 }

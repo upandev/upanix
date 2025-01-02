@@ -75,6 +75,7 @@ sleep 1
 #
 #~/workspace/tools/qemu/build/qemu-system-x86_64 \
 # -s -S \ -> for debugging. -s is localhost:1234, -S is pause until lldb/gdb connection
+sudo -S echo "starting qemu" < .sudopass
 sudo qemu-system-x86_64 \
 -serial file:serial_debug.log \
 -pflash $UPANIX_TOOLS/OVMF.fd \

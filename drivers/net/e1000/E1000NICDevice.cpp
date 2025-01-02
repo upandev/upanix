@@ -110,11 +110,12 @@ void E1000NICDevice::Initialize() {
   regControl = new RegControl(_memIOBase);
   regRx = new RegRXDescriptor(_memIOBase);
   regTx = new RegTXDescriptor(_memIOBase);
-  
+
   printf("\n E1000 NIC initialization done, enabling interrupts");
   regIntControl->enable();
   printf("\n E1000 NIC interrupt enabled");
-  volatile uint32_t* rstat = (volatile uint32_t*)(_memIOBase + 0x8);
+
+  volatile auto rstat = (volatile uint32_t*)(_memIOBase + 0x8);
   printf("\n NIC Status: %x", *rstat);
 }
 
@@ -153,11 +154,11 @@ void E1000NICDevice::ProcessRxQueue() {
   }
 }
 
-volatile uint32_t* REG(const uint32_t base, const uint32_t offset) {
+volatile uint32_t* REG(const uint64_t base, const uint32_t offset) {
   return reinterpret_cast<volatile uint32_t*>(base + offset);
 }
 
-E1000NICDevice::RegEEPROM::RegEEPROM(const uint32_t memIOBase) :
+E1000NICDevice::RegEEPROM::RegEEPROM(const uint64_t memIOBase) :
   _eeprom(REG(memIOBase, REG_EEPROM)) {
 }
 
@@ -182,7 +183,7 @@ MACAddress E1000NICDevice::RegEEPROM::fetchMACAddress() const {
   return macAddr;
 }
 
-E1000NICDevice::RegIntControl::RegIntControl(const uint32_t memIOBase) :
+E1000NICDevice::RegIntControl::RegIntControl(const uint64_t memIOBase) :
   _icr(REG(memIOBase, REG_ICR)),
   _itr(REG(memIOBase, REG_ITR)),
   _ics(REG(memIOBase, REG_ICS)),
@@ -210,7 +211,7 @@ void E1000NICDevice::RegIntControl::enable() {
   //UNUSED volatile uint32_t x = *_icr;
 }
 
-E1000NICDevice::RegControl::RegControl(const uint32_t memIOBase) : 
+E1000NICDevice::RegControl::RegControl(const uint64_t memIOBase) :
   _pba(REG(memIOBase, REG_PBA)),
   _txcw(REG(memIOBase, REG_TXCW)),
   _ctrl(REG(memIOBase, REG_CTRL)),
@@ -247,7 +248,7 @@ E1000NICDevice::RXDescriptor::RXDescriptor() {
   special = 0;
 }
 
-E1000NICDevice::RegRXDescriptor::RegRXDescriptor(const uint32_t memIOBase) :
+E1000NICDevice::RegRXDescriptor::RegRXDescriptor(const uint64_t memIOBase) :
   _alow(REG(memIOBase, REG_RDBAL)),
   _ahigh(REG(memIOBase, REG_RDBAH)),
   _len(REG(memIOBase, REG_RDLEN)),
@@ -300,7 +301,7 @@ E1000NICDevice::TXDescriptor::TXDescriptor() {
   special = 0;
 }
 
-E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint32_t memIOBase) :
+E1000NICDevice::RegTXDescriptor::RegTXDescriptor(const uint64_t memIOBase) :
   _alow(REG(memIOBase, REG_TDBAL)),
   _ahigh(REG(memIOBase, REG_TDBAH)),
   _len(REG(memIOBase, REG_TDLEN)),
