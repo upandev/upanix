@@ -348,6 +348,7 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mo
     fileNode.Size(0);
     _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
     node.startSectorId(EOC);
+    node.size(0);
   }
   return fileNodeRef;
 }

@@ -33,12 +33,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix checksum calculation for UDP and IPV4 packets - this made DHCP Discover work">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use dhcpclient config file for dhcpclient">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -556,7 +553,8 @@
       <workItem from="1735911313361" duration="2262000" />
       <workItem from="1735945403369" duration="554000" />
       <workItem from="1735946069983" duration="2546000" />
-      <workItem from="1735964278000" duration="9313000" />
+      <workItem from="1735964278000" duration="10015000" />
+      <workItem from="1736003747372" duration="718000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -901,7 +899,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="137" />
+    <option name="localTasksCounter" value="138" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -935,7 +933,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="support for system call to open a stream descriptor (un-named FIFO stream/queue)" />
     <MESSAGE value="support visibility for UIObjects" />
     <MESSAGE value="support for menu" />
     <MESSAGE value="pass menu info as param to root" />
@@ -960,7 +957,8 @@
     <MESSAGE value="disable file locking so qemu can load/mount the disk image while the same remains still attached on the host (macOS)" />
     <MESSAGE value="support for timeout socket-option. enhance network packet header length calculation technique" />
     <MESSAGE value="fix checksum calculation for UDP and IPV4 packets - this made DHCP Discover work" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix checksum calculation for UDP and IPV4 packets - this made DHCP Discover work" />
+    <MESSAGE value="use dhcpclient config file for dhcpclient" />
+    <option name="LAST_COMMIT_MESSAGE" value="use dhcpclient config file for dhcpclient" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
