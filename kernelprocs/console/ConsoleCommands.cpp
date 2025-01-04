@@ -73,8 +73,7 @@
 #include <IconImageMap.h>
 #include <KernelRootProcess.h>
 #include <math.h>
-#include <net/socket.h>
-#include <shared_ptr.h>
+#include <ConfigFileDB.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -2080,7 +2079,45 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "tls") {
+  if (test == "config") {
+    upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
+
+    printf("\n **** Initial content");
+    for (const auto& i : configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+
+    configFileDb.set("Protocol", "DHCP", "");
+    configFileDb.set("LeaseTime", "1234", "This is lease time");
+    configFileDb.set("IP Address", "192.168.50.27", "This is the IP address");
+    configFileDb.set("Gateway", "192.168.255.255", "");
+    printf("\n **** First update");
+    for (const auto& i : configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+
+    {
+      upan::ConfigFileDB::BatchWriteGuard g(configFileDb);
+      configFileDb.set("Protocol", "DHCP", "This is the protocol type");
+      configFileDb.set("LeaseTime", "12345678", "This is lease time");
+      configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
+      configFileDb.set("Gateway", "192.168.255.255", "This is Gateway IP");
+    }
+    printf("\n **** Second update");
+    for (const auto& i : configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+
+    configFileDb.set("Protocol", "DHCP", "This is the protocol type");
+    configFileDb.set("LeaseTime", "12345678", "This is lease time");
+    configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
+    configFileDb.remove("Gateway");
+    configFileDb.set("Router", "192.168.255.255", "This is Gateway/Router IP");
+    printf("\n **** Third update");
+    for (const auto& i : configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+  } else if (test == "tls") {
     printf("\n %d", _t_local_var_data1);
     printf("\n %d", (int) _t_local_var_data2);
     printf("\n %d", (int) _t_local_var_data3);

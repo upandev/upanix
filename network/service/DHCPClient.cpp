@@ -24,31 +24,67 @@
 #include <NetworkManager.h>
 #include <NetworkDevice.h>
 #include <PIT.h>
-#include <exception.h>
 
 static constexpr int MAX_BUFFER_SIZE = 1024;
 
-DHCPClient::DHCPClient() :
+const upan::string DHCPClient::CFG_DHCP_LEASE_TIME("DHCP_LEASE_TIME");
+const upan::string DHCPClient::CFG_DHCP_LEASE_RENEWAL_TIME("DHCP_LEASE_RENEWAL_TIME");
+const upan::string DHCPClient::CFG_DHCP_LEASE_REBINDING_TIME("DHCP_LEASE_REBINDING_TIME");
+const upan::string DHCPClient::CFG_DHCP_SERVER_IP_ADDRESS("DHCP_SERVER_IP_ADDRESS");
+const upan::string DHCPClient::CFG_HOST_IP_ADDRESS("HOST_IP_ADDRESS");
+const upan::string DHCPClient::CFG_GATEWAY_IP_ADDRESS("GATEWAY_IP_ADDRESS");
+const upan::string DHCPClient::CFG_BROADCAST_IP_ADDRESS("BROADCAST_IP_ADDRESS");
+const upan::string DHCPClient::CFG_SUBNET_MASK("SUBNET_MASK");
+const upan::string DHCPClient::CFG_DNS_IP_ADDRESS("DNS_IP_ADDRESS");
+
+DHCPClient::DHCPClient(NetworkDevice& networkDevice) :
+  _networkDevice(networkDevice),
   _dhcpServerAddress(INADDR_NONE),
-  _leaseTime(0), _leaseRenewalTime(0), _leaseRebindingTime(0) {
+  _leaseTime(0), _leaseRenewalTime(0), _leaseRebindingTime(0),
+  _config("/var/db/dhcpclient.cfg", upan::ConfigFileDB::OpType::RDWR) {
+  loadFromConfig();
 }
 
-DHCPClient& DHCPClient::Instance() {
-  static DHCPClient instance;
-  return instance;
+void DHCPClient::loadFromConfig() {
+  _config.get(CFG_DHCP_LEASE_TIME).ifPresent([&](const upan::string& val) { _leaseTime = atol(val.c_str()); });
+  _config.get(CFG_DHCP_LEASE_RENEWAL_TIME).ifPresent([&](const upan::string& val) { _leaseRenewalTime = atol(val.c_str()); });
+  _config.get(CFG_DHCP_LEASE_REBINDING_TIME).ifPresent([&](const upan::string& val) { _leaseRebindingTime = atol(val.c_str()); });
+
+  _config.get(CFG_DHCP_SERVER_IP_ADDRESS).ifPresent([&](const upan::string& val) { _dhcpServerAddress = upan::net::inet_strton(val); });
+
+  _config.get(CFG_HOST_IP_ADDRESS).ifPresent([&](const upan::string& val) { _networkDevice.setIPAddress(upan::net::inet_strton(val)); });
+  _config.get(CFG_GATEWAY_IP_ADDRESS).ifPresent([&](const upan::string& val) { _networkDevice.setGatewayAddress(upan::net::inet_strton(val)); });
+  _config.get(CFG_BROADCAST_IP_ADDRESS).ifPresent([&](const upan::string& val) { _networkDevice.setBroadcastAddress(upan::net::inet_strton(val)); });
+  _config.get(CFG_SUBNET_MASK).ifPresent([&](const upan::string& val) { _networkDevice.setSubnetMask(upan::net::inet_strton(val)); });
+  _config.get(CFG_DNS_IP_ADDRESS).ifPresent([&](const upan::string& val) { _networkDevice.setDNSAddress(upan::net::inet_strton(val)); });
+
+  if (_dhcpServerAddress == INADDR_NONE) {
+    _dhcpServerAddress = _networkDevice.GetGatewayAddress();
+  }
+}
+
+void DHCPClient::updateFromDHCPResponse(const DHCPClient::Message& response) {
+  {
+    upan::ConfigFileDB::BatchWriteGuard g(_config);
+    _config.set(CFG_DHCP_LEASE_TIME, upan::string::to_string(response.getLeaseTime()), "");
+    _config.set(CFG_DHCP_LEASE_RENEWAL_TIME, upan::string::to_string(response.getLeaseRenewalTime()), "");
+    _config.set(CFG_DHCP_LEASE_REBINDING_TIME, upan::string::to_string(response.getLeaseRebindingTime()), "");
+
+    _config.set(CFG_HOST_IP_ADDRESS, upan::net::inet_ntostr(response._yiaddr), "");
+    _config.set(CFG_GATEWAY_IP_ADDRESS, upan::net::inet_ntostr(response.getRouterAddress()), "");
+    _config.set(CFG_BROADCAST_IP_ADDRESS, upan::net::inet_ntostr(response.getBroadcastAddress()), "");
+    _config.set(CFG_SUBNET_MASK, upan::net::inet_ntostr(response.getSubnetMask()), "");
+    _config.set(CFG_DNS_IP_ADDRESS, upan::net::inet_ntostr(response.getDNSAddress()), "");
+    _config.set(CFG_DHCP_SERVER_IP_ADDRESS, upan::net::inet_ntostr(response.getDHCPServerAddress()), "");
+  }
+
+  loadFromConfig();
 }
 
 void DHCPClient::run() {
   while(is_active()) {
     if (state() == running) {
       try {
-        auto hasDevice = NetworkManager::Instance().getDefaultDevice();
-        if (hasDevice.isEmpty()) {
-          throw upan::exception(XLOC, "no network device");
-        }
-
-        auto& device = hasDevice.value();
-
         //Load details from dhcp.info
         //If it is the first time after boot and IP Address is present from dhcp.info
           //send request
@@ -69,13 +105,13 @@ void DHCPClient::run() {
           //On ACK, update the IP details and go-to wait until renewal time
         //On ACK, update the IP details and go-to wait until renewal time
 
-        if (device.GetIPAddress() == INADDR_NONE) {
+        if (_networkDevice.GetIPAddress() == INADDR_NONE) {
           _leaseTime = 0;
         }
 
         const time_t currentTime = PIT::Instance().GetCurrentTimeFromBoot();
         if (currentTime >= _leaseTime) {
-          discover(device);
+          discover();
           const auto sleepDuration = _leaseRenewalTime - currentTime;
           if (sleepDuration > 0) {
             sleepms(sleepDuration);
@@ -160,7 +196,7 @@ void DHCPClient::Message::createDiscoverPacket(const NetworkDevice& networkDevic
   _options[oi] = DHCPOptionType::OptionEnd;
 }
 
-uint8_t* DHCPClient::Message::getOption(DHCPClient::DHCPOptionType optionType) {
+const uint8_t* DHCPClient::Message::getOption(DHCPClient::DHCPOptionType optionType) const {
   for(int i = 0; i < DHCP_MAX_OPTION_SIZE; ++i) {
     if (_options[i] == DHCPOptionType::OptionEnd) {
       return nullptr;
@@ -183,7 +219,7 @@ uint8_t* DHCPClient::Message::getOption(DHCPClient::DHCPOptionType optionType) {
   throw upan::exception(XLOC, "invalid option - no option-end found");
 }
 
-DHCPClient::DHCPMessageType DHCPClient::Message::getMessageType() {
+DHCPClient::DHCPMessageType DHCPClient::Message::getMessageType() const {
   auto option = getOption(DHCPOptionType::MessageType);
   if (!option) {
     throw upan::exception(XLOC, "DHCP Message Type option not found");
@@ -205,39 +241,63 @@ DHCPClient::DHCPMessageType DHCPClient::Message::getMessageType() {
   }
 }
 
-in_addr_t DHCPClient::Message::readIPAddress(DHCPClient::DHCPOptionType optionType) {
+in_addr_t DHCPClient::Message::readIPAddress(DHCPClient::DHCPOptionType optionType) const {
   auto option = getOption(optionType);
   if (option) {
     const auto len = option[0];
-    if (len != sizeof(in_addr_t )) {
+    if (len != sizeof(in_addr_t)) {
       throw upan::exception(XLOC, "invalid IP address len: %d", len);
     }
-    return *reinterpret_cast<in_addr_t*>(option + 1);
+    return *reinterpret_cast<const in_addr_t*>(option + 1);
   }
   return INADDR_NONE;
 }
 
-in_addr_t DHCPClient::Message::getSubnetMask() {
+in_addr_t DHCPClient::Message::getSubnetMask() const {
   return readIPAddress(DHCPOptionType::SubnetMask);
 }
 
-in_addr_t DHCPClient::Message::getBroadcastAddress() {
+in_addr_t DHCPClient::Message::getBroadcastAddress() const {
   return readIPAddress(DHCPOptionType::BroadcastAddress);
 }
 
-in_addr_t DHCPClient::Message::getDNSAddress() {
+in_addr_t DHCPClient::Message::getDNSAddress() const {
   return readIPAddress(DHCPOptionType::DNS);
 }
 
-in_addr_t DHCPClient::Message::getRouterAddress() {
+in_addr_t DHCPClient::Message::getRouterAddress() const {
   return readIPAddress(DHCPOptionType::Router);
 }
 
-in_addr_t DHCPClient::Message::getDHCPServerAddress() {
+in_addr_t DHCPClient::Message::getDHCPServerAddress() const {
   return readIPAddress(DHCPOptionType::DHCPServerIndentifier);
 }
 
-void DHCPClient::Message::processResponse(const DHCPClient::Message& request, NetworkDevice& networkDevice, DHCPClient& dhcpClient) {
+time_t DHCPClient::Message::readTime(DHCPClient::DHCPOptionType optionType) const {
+  auto option = getOption(optionType);
+  if (option) {
+    const auto len = option[0];
+    if (len != sizeof(uint32_t)) {
+      throw upan::exception(XLOC, "invalid time len: %d", len);
+    }
+    return ntohl(*reinterpret_cast<const uint32_t*>(option + 1));
+  }
+  return 0;
+}
+
+time_t DHCPClient::Message::getLeaseTime() const {
+  return readTime(DHCPOptionType::LeaseTime);
+}
+
+time_t DHCPClient::Message::getLeaseRenewalTime() const {
+  return readTime(DHCPOptionType::LeaseRenewalTime);
+}
+
+time_t DHCPClient::Message::getLeaseRebindingTime() const {
+  return readTime(DHCPOptionType::LeaseRebindingTime);
+}
+
+void DHCPClient::Message::processResponse(const DHCPClient::Message& request, DHCPClient& dhcpClient) {
   if (_op != DHCPOperationType::BootResponse) {
     throw upan::exception(XLOC, "unsupported DHCP message type: %d", _op);
   }
@@ -259,26 +319,17 @@ void DHCPClient::Message::processResponse(const DHCPClient::Message& request, Ne
   }
 
   const MACAddress clientMacAddress(_chaddr);
-  if (clientMacAddress != networkDevice.GetMACAddress()) {
+  if (clientMacAddress != dhcpClient._networkDevice.GetMACAddress()) {
     throw upan::exception(XLOC, "MAC address mismatch. Response: %s", clientMacAddress.str().c_str());
   }
 
   const auto messageType = getMessageType();
   if (messageType == DHCPMessageType::Offer) {
-    networkDevice.setIPAddress(_yiaddr);
-    networkDevice.setGatewayAddress(getRouterAddress());
-    networkDevice.setSubnetMask(getSubnetMask());
-    networkDevice.setBroadcastAddress(getBroadcastAddress());
-    networkDevice.setDNSAddress(getDNSAddress());
-
-    dhcpClient._dhcpServerAddress = getDHCPServerAddress();
-    if (dhcpClient._dhcpServerAddress == INADDR_NONE) {
-      dhcpClient._dhcpServerAddress = networkDevice.GetGatewayAddress();
-    }
+    dhcpClient.updateFromDHCPResponse(*this);
   }
 }
 
-void DHCPClient::discover(NetworkDevice& networkDevice) {
+void DHCPClient::discover() {
   const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
@@ -319,7 +370,7 @@ void DHCPClient::discover(NetworkDevice& networkDevice) {
 
   //create and send DHCP Discover
   DHCPClient::Message dhcpDiscover {};
-  dhcpDiscover.createDiscoverPacket(networkDevice);
+  dhcpDiscover.createDiscoverPacket(_networkDevice);
   ssize_t len;
 
   len = sendto(sd, &dhcpDiscover, sizeof(dhcpDiscover), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
@@ -341,5 +392,5 @@ void DHCPClient::discover(NetworkDevice& networkDevice) {
 
   DHCPClient::Message dhcpResponse {};
   memcpy(&dhcpResponse, buffer, sizeof(dhcpResponse));
-  dhcpResponse.processResponse(dhcpDiscover, networkDevice, *this);
+  dhcpResponse.processResponse(dhcpDiscover, *this);
 }

@@ -24,13 +24,12 @@
 #include <ithread.h>
 #include <net/socket.h>
 #include <dtime.h>
+#include <ConfigFileDB.h>
 
 class NetworkDevice;
 
 class DHCPClient : upan::thread {
 private:
-  DHCPClient();
-
   static constexpr int DHCP_SERVER_PORT = 67;
   static constexpr int DHCP_CLIENT_PORT = 68;
   static constexpr uint32_t DHCP_MAGIC_COOKIE = 0x63538263;
@@ -98,29 +97,51 @@ private:
     uint32_t _magicCookie;
     uint8_t _options[DHCP_MAX_OPTION_SIZE];
 
-    uint8_t* getOption(DHCPClient::DHCPOptionType optionType);
-    DHCPClient::DHCPMessageType getMessageType();
-    in_addr_t readIPAddress(DHCPClient::DHCPOptionType optionType);
-    in_addr_t getSubnetMask();
-    in_addr_t getBroadcastAddress();
-    in_addr_t getDNSAddress();
-    in_addr_t getRouterAddress();
-    in_addr_t getDHCPServerAddress();
+    const uint8_t* getOption(DHCPClient::DHCPOptionType optionType) const;
+    DHCPClient::DHCPMessageType getMessageType() const;
+
+    in_addr_t readIPAddress(DHCPClient::DHCPOptionType optionType) const;
+    in_addr_t getSubnetMask() const;
+    in_addr_t getBroadcastAddress() const;
+    in_addr_t getDNSAddress() const;
+    in_addr_t getRouterAddress() const;
+    in_addr_t getDHCPServerAddress() const;
+
+    time_t readTime(DHCPClient::DHCPOptionType optionType) const;
+    time_t getLeaseTime() const;
+    time_t getLeaseRenewalTime() const;
+    time_t getLeaseRebindingTime() const;
 
     void createDiscoverPacket(const NetworkDevice&);
-    void processResponse(const DHCPClient::Message& request, NetworkDevice&, DHCPClient&);
+    void processResponse(const DHCPClient::Message& request, DHCPClient&);
   } PACKED;
 
 public:
-  static DHCPClient& Instance();
+  explicit DHCPClient(NetworkDevice& networkDevice);
   void run() override;
 
 private:
-  void discover(NetworkDevice&);
+  void discover();
+  void loadFromConfig();
+  void updateFromDHCPResponse(const DHCPClient::Message& response);
 
 private:
+  static const upan::string CFG_DHCP_LEASE_TIME;
+  static const upan::string CFG_DHCP_LEASE_RENEWAL_TIME;
+  static const upan::string CFG_DHCP_LEASE_REBINDING_TIME;
+  static const upan::string CFG_DHCP_SERVER_IP_ADDRESS;
+  static const upan::string CFG_HOST_IP_ADDRESS;
+  static const upan::string CFG_GATEWAY_IP_ADDRESS;
+  static const upan::string CFG_BROADCAST_IP_ADDRESS;
+  static const upan::string CFG_SUBNET_MASK;
+  static const upan::string CFG_DNS_IP_ADDRESS;
+
+  NetworkDevice& _networkDevice;
+
   in_addr_t _dhcpServerAddress;
   time_t _leaseTime;
   time_t _leaseRenewalTime;
   time_t _leaseRebindingTime;
+
+  upan::ConfigFileDB _config;
 };

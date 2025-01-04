@@ -101,6 +101,7 @@ include_directories(${UPANLIB_SOURCE_DIR}/libustd/mem)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/mthread)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/net)
 include_directories(${UPANLIB_SOURCE_DIR}/libustd/stream)
+include_directories(${UPANLIB_SOURCE_DIR}/libustd/util)
 
 include_directories(${UPANLIB_SOURCE_DIR}/libm/include)
 include_directories(${UPANLIB_SOURCE_DIR}/libm/include/bits)
