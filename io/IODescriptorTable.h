@@ -37,7 +37,8 @@ public:
   typedef enum {
     STDIN = 0,
     STDOUT = 1,
-    STDERR = 2
+    STDERR = 2,
+    SYSLOG = 3
   } STD_DESCRIPTORS;
 
   typedef upan::map<int, IODescriptor*> IODMap;

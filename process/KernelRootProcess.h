@@ -31,16 +31,14 @@
 
 class KernelRootProcess : public Process {
 private:
-  KernelRootProcess() : _iodTable(NO_PROCESS_ID, NO_PROCESS_ID) {
-  }
+  KernelRootProcess();
 
 public:
-  static KernelRootProcess& Instance() {
-    static KernelRootProcess instance;
-    return instance;
-  }
+  static KernelRootProcess& Instance();
 
   void createScheduleRunner();
+  void openSysLoggerFile(const upan::string& driveName);
+  void closeSysLoggerFile();
   void initTLS();
 
   bool isKernelProcess() const override {

@@ -24,6 +24,9 @@
 #include <GraphicsVideo.h>
 #include <ProcessManager.h>
 #include <Cpu.h>
+#include <logger.h>
+#include <RedirectDescriptor.h>
+#include <typeinfo.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -34,9 +37,58 @@ extern uintptr_t __tbss_start, __tbss_end;
   }
 }
 
+KernelRootProcess& KernelRootProcess::Instance() {
+  static KernelRootProcess instance;
+  return instance;
+}
+
+KernelRootProcess::KernelRootProcess() : _iodTable(NO_PROCESS_ID, NO_PROCESS_ID) {
+  upan::logger::create(IODescriptorTable::SYSLOG);
+}
+
 void KernelRootProcess::createScheduleRunner() {
   ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+}
+
+void KernelRootProcess::openSysLoggerFile(const upan::string& driveName) {
+  ProcessSwitchLock pLock;
+  KERNEL_MODE = true;
+
+  try {
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
+    if (typeid(ioDescriptor.getParentDescriptor().value()) != typeid(FileDescriptor)) {
+      int fileFD = open((driveName + "@" + "/var/log/sys.log").c_str(), O_RDWR | O_APPEND);
+      auto& fileDescriptor = _iodTable.get(fileFD);
+      ioDescriptor.changeRedirection(fileDescriptor);
+    }
+  } catch(const upan::exception& e) {
+    e.Print();
+  } catch(...) {
+    printf("\n unknown error while opening syslog file");
+  }
+
+  KERNEL_MODE = false;
+}
+
+void KernelRootProcess::closeSysLoggerFile() {
+  ProcessSwitchLock pLock;
+  KERNEL_MODE = true;
+
+  try {
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
+    auto& parentDescriptor = ioDescriptor.getParentDescriptor().value();
+    if (typeid(parentDescriptor) == typeid(FileDescriptor)) {
+      ioDescriptor.changeRedirection(_iodTable.get(IODescriptorTable::STDOUT));
+      close(parentDescriptor.id());
+    }
+  } catch(const upan::exception& e) {
+    e.Print();
+  } catch(...) {
+    printf("\n unknown error while closing syslog file");
+  }
+
+  KERNEL_MODE = false;
 }
 
 void KernelRootProcess::initTLS() {

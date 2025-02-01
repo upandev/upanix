@@ -35,11 +35,13 @@ IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descI
     allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     auto& stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
+    allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
   } else {
     auto& parentProcess = ProcessManager::Instance().GetProcess(parentPid).value();
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDIN)); });
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDOUT)); });
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDERR)); });
+    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(SYSLOG)); });
   }
 }
 

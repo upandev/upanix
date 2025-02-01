@@ -58,7 +58,14 @@ public:
     return const_cast<RedirectDescriptor&>(*this).getParentDescriptor().value().getOffset();
   }
 
+  void changeRedirection(IODescriptor& ioDescriptor) {
+    getParentDescriptor().value().decrementRefCount();
+    _parentPid = ioDescriptor.getPid();
+    _parentDescId = ioDescriptor.id();
+    getParentDescriptor().value().incrementRefCount();
+  }
+
 private:
-  const int _parentPid;
-  const int _parentDescId;
+  int _parentPid;
+  int _parentDescId;
 };
