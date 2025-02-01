@@ -79,6 +79,24 @@ void NetworkManager::releasePort(in_port_t port) {
   return _portPool.set(port);
 }
 
+void NetworkManager::updateIPMACTable(const RawNetPacket& packet) {
+  const auto& ip = packet.getIPV4Header()._srcAddr;
+  if (ip != INADDR_BROADCAST) {
+    const MACAddress mac = packet.getEthernetHeader()._sourceMAC;
+    if (mac != INADDR_MAC_BROADCAST) {
+      _ipMACTable.insert(IP_MAP_TABLE::value_type(ip, mac));
+    }
+  }
+}
+
+upan::option<MACAddress> NetworkManager::lookupMAC(in_addr_t ip) {
+  auto i = _ipMACTable.find(ip);
+  if (i == _ipMACTable.end()) {
+    return upan::option<MACAddress>::empty();
+  }
+  return upan::option<MACAddress>(i->second);
+}
+
 bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
   if (ip == INADDR_ANY || ip == INADDR_LOOPBACK) {
     return _socketBindSet.exists(port);

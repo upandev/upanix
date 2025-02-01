@@ -26,6 +26,7 @@
 #include <ARPHandler.h>
 #include <EthernetHandler.h>
 #include <NetworkDevice.h>
+#include <NetworkManager.h>
 
 EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
@@ -77,7 +78,12 @@ void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketTy
   if (isBroadcast) {
     memcpy(ethernetHeader._destinationMAC, INADDR_MAC_BROADCAST, INADDR_MAC_LEN);
   } else {
-    throw upan::exception(XLOC, "unable to determine the target/destination MAC");
+    const auto& mac = NetworkManager::Instance().lookupMAC(packet.getIPV4Header()._destAddr);
+    if (mac.isEmpty()) {
+      throw upan::exception(XLOC, "unable to determine the target/destination MAC");
+    } else {
+      memcpy(ethernetHeader._destinationMAC, mac.value().get(), INADDR_MAC_LEN);
+    }
   }
 
   device().SendPacket(packet);

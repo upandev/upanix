@@ -52,16 +52,18 @@ public:
   uint16_t allocatePort();
   bool isPortAllocated(uint16_t port) const;
   void releasePort(in_port_t port);
+  void updateIPMACTable(const RawNetPacket&);
+  upan::option<MACAddress> lookupMAC(in_addr_t ip);
 
   void bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket);
   void unbind(in_addr_t ip, in_port_t);
   void send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
   void recv(const upan::shared_ptr<RawNetPacket>& packet, const struct sockaddr_in& destAddr);
-
 private:
   typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
   typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
   typedef upan::map<in_port_t, int> SOCKET_BIND_SET;
+  typedef upan::map<in_port_t, MACAddress> IP_MAP_TABLE;
 
   void Probe(const PCIEntry& pciEntry);
   bool isPortBounded(in_addr_t ip, in_port_t port);
@@ -72,4 +74,5 @@ private:
   upan::bitset<UINT16_MAX + 1> _portPool;
   SOCKET_BIND_SET _socketBindSet;
   SOCKET_BIND_MAP _socketBindMap;
+  IP_MAP_TABLE _ipMACTable;
 };

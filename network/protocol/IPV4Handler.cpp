@@ -22,14 +22,16 @@
 #include <stdio.h>
 #include <IPV4Handler.h>
 #include <NetworkDevice.h>
+#include <NetworkManager.h>
 
 IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
 void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  printf("\n Handling IPV4 Packet");
+  klog_debug("Handling IPV4 Packet");
   const auto& ipv4Header = packet->getIPV4Header();
   verifyChecksum(ipv4Header);
+  NetworkManager::Instance().updateIPMACTable(*packet);
   ipv4Header.toHost().print();
   switch(ipv4Header.type()) {
     case IPPROTO_UDP:
