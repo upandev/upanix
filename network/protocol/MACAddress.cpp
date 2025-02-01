@@ -22,6 +22,10 @@
 
 #include <MACAddress.h>
 
+MACAddress::MACAddress() {
+  memset(_macAddr, 0, INADDR_MAC_LEN);
+}
+
 MACAddress::MACAddress(const upan::string &macAddr) : _macAddrStr(macAddr) {
   upan::vector<upan::string> tokens;
   macAddr.tokenize(":", false, tokens);

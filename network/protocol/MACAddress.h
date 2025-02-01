@@ -28,6 +28,7 @@
 
 class MACAddress {
 public:
+  MACAddress();
   MACAddress(const upan::string& macAddr);
   MACAddress(const upan::vector<uint8_t>& macAddr);
   MACAddress(const uint8_t* macAddr);
