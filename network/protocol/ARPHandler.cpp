@@ -30,7 +30,7 @@ ARPHandler::ARPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevi
 void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& arpHeader = packet->getARPHeader();
   if (arpHeader.isResponse()) {
-    printf("\n Handling ARP packet");
+    klog_debug("Handling ARP packet");
     arpHeader.print();
     if (arpHeader.type() == NetworkPacket::EthernetPacketType::E_IPV4_T) {
       const auto& arpIPV4Header = packet->getARPIPV4Header();

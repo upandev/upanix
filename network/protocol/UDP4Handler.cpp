@@ -26,12 +26,13 @@
 #include <NetworkUtil.h>
 #include <NetworkDevice.h>
 #include <NetworkManager.h>
+#include <Global.h>
 
 UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
 void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  printf("\n Handling UDP Packet");
+  klog_debug("Handling UDP Packet");
   verifyChecksum(*packet);
   const auto& udpHeader = packet->getUDP4Header();
   const auto& ipv4Header = packet->getIPV4Header();

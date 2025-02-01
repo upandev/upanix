@@ -241,9 +241,30 @@ bool UpanixMain_IsKernelDebugOn() {
 	return false ;
 }
 
-void klog(const char* __restrict fmsg, ...) {
+void klog_debug(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);
-  upan::logger::logarg(fmsg, arg);
+  upan::logger::instance().logarg(upan::logger::LOG_DEBUG, fmsg, arg);
+  va_end(arg);
+}
+
+void klog_info(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_INFO, fmsg, arg);
+  va_end(arg);
+}
+
+void klog_warn(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_WARN, fmsg, arg);
+  va_end(arg);
+}
+
+void klog_error(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_ERROR, fmsg, arg);
   va_end(arg);
 }

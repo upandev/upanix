@@ -124,20 +124,20 @@ void E1000NICDevice::NotifyEvent() {
   if (icrVal & ICR_RECEIVE) {
     ProcessRxQueue();
   } else if (icrVal & ICR_LINK_CHANGE) {
-    klog("\n Link status changed");
+    klog_info("Link status changed");
   } else if (icrVal & ICR_TRANSMIT) {
-    klog("\n Packet Transmitted");
+    klog_debug("Packet Transmitted");
   } else if (icrVal & STATUS_LINK_UP) {
-    klog("\n Status link-up");
+    klog_info("Status link-up");
   } else {
-    klog("\n Int for other Reason: %x", icrVal);
+    klog_warn("Int for other Reason: %x", icrVal);
   }
   IrqManager::Instance().SendEOI(*_irq);
 }
 
 void E1000NICDevice::SendPacket(const RawNetPacket& packet) {
   regTx->SendPacket(packet.buf(), packet.len());
-  klog("\n Packet sent with len: %d", packet.len());
+  klog_debug("Packet sent with len: %d", packet.len());
 }
 
 void E1000NICDevice::ProcessRxQueue() {

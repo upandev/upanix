@@ -67,4 +67,7 @@ extern byte SPECIAL_TASK ;
 #define MAX( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
 
 bool UpanixMain_IsKernelDebugOn() ;
-void klog(const char* __restrict fmsg, ...);
+void klog_debug(const char* __restrict fmsg, ...);
+void klog_info(const char* __restrict fmsg, ...);
+void klog_warn(const char* __restrict fmsg, ...);
+void klog_error(const char* __restrict fmsg, ...);

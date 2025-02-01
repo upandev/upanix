@@ -25,6 +25,7 @@
 #include <ustring.h>
 #include <net/socket.h>
 #include <unet.h>
+#include <Global.h>
 
 namespace NetworkPacket {
   constexpr int IPV4_ADDR_LEN = 4;
@@ -59,7 +60,7 @@ namespace NetworkPacket {
       bool isResponse() const { return _opCode == 2; }
 
       void print() const {
-        printf("\n HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
+        klog_debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
       }
     } PACKED;
 
@@ -79,17 +80,23 @@ namespace NetworkPacket {
       }
 
       void print() const {
-        printf("\n SHA: ");
+        char buf[1024];
+        upan::string msg("SHA: ");
         for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          printf("%02x%s", _senderHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          sprintf(buf, "%02x%s", _senderHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          msg += buf;
         }
-        printf(", SPA: %s", inet_ntoa({_senderProtocolAddress}));
+        sprintf(buf, ", SPA: %s", inet_ntoa({_senderProtocolAddress}));
+        msg += buf;
 
-        printf("\n THA: ");
+        msg += "\n THA: ";
         for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          printf("%02x%s", _targetHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          sprintf(buf, "%02x%s", _targetHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          msg += buf;
         }
-        printf(", TPA: %s", inet_ntoa({_targetProtocolAddress}));
+        sprintf(buf, ", TPA: %s", inet_ntoa({_targetProtocolAddress}));
+        msg += buf;
+        klog_debug(msg.c_str());
       }
     } PACKED;
 
@@ -116,16 +123,20 @@ namespace NetworkPacket {
       }
 
       void print() const {
-        printf("\n Ethernet - Type: %d", ntohs(_type));
-        printf("\n Src MAC: ");
+        char buf[1024];
+        upan::string msg("Ethernet - Type: %d", ntohs(_type));
+        msg += "\n Src MAC: ";
         for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          printf("%02x%s", _sourceMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          sprintf(buf, "%02x%s", _sourceMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          msg += buf;
         }
 
-        printf("\n Dest MAC: ");
+        msg += "\n Dest MAC: ";
         for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          printf("%02x%s", _destinationMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          sprintf(buf, "%02x%s", _destinationMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+          msg += buf;
         }
+        klog_debug(msg.c_str());
       }
     } PACKED;
 
@@ -162,14 +173,14 @@ namespace NetworkPacket {
       }
 
       void print() const {
-        printf("\n Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
+        klog_debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
 
-        printf("\nIdentification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
+        klog_debug("Identification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
                _identification, _flags, _fragmentOffset, _ttl, _protocol);
 
-        printf("\nChecksum: 0x%x", _checksum);
+        klog_debug("Checksum: 0x%x", _checksum);
 
-        printf("\nSource Addr: %s, Dest Addr: %s",
+        klog_debug("Source Addr: %s, Dest Addr: %s",
                upan::net::inet_ntostr(htonl(_srcAddr)).c_str(),
                upan::net::inet_ntostr(htonl(_destAddr)).c_str());
       }
@@ -193,7 +204,7 @@ namespace NetworkPacket {
       uint16_t _checksum;
 
       void print() const {
-        printf("\n Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
+        klog_debug("Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
       }
 
       Header toHost() const {
