@@ -75,7 +75,6 @@ include_directories(${PROJECT_SOURCE_DIR}/network/protocol)
 include_directories(${PROJECT_SOURCE_DIR}/network/socket)
 include_directories(${PROJECT_SOURCE_DIR}/network/service)
 include_directories(${PROJECT_SOURCE_DIR}/network/protocol/packets)
-include_directories(${PROJECT_SOURCE_DIR}/network/protocol/packets/recv)
 include_directories(${PROJECT_SOURCE_DIR}/drivers/)
 
 include_directories(${PROJECT_SOURCE_DIR}/util)

@@ -39,8 +39,9 @@ const upan::string DHCPClient::CFG_DNS_IP_ADDRESS("DNS_IP_ADDRESS");
 
 DHCPClient::DHCPClient(NetworkDevice& networkDevice) :
   _networkDevice(networkDevice),
+  _flowState(FlowState_Discover),
   _dhcpServerAddress(INADDR_NONE),
-  _leaseTime(0), _leaseRenewalTime(0), _leaseRebindingTime(0),
+  _leaseTime(0), _leaseRenewalTime(0), _leaseRebindingTime(0), _leaseExpiry(0), _leaseRenewalExpiry(0),
   _config("/var/db/dhcpclient.cfg", upan::ConfigFileDB::OpType::RDWR) {
   loadFromConfig();
 }
@@ -61,16 +62,17 @@ void DHCPClient::loadFromConfig() {
   if (_dhcpServerAddress == INADDR_NONE) {
     _dhcpServerAddress = _networkDevice.GetGatewayAddress();
   }
+  klog_info("DHCP config loaded");
 }
 
-void DHCPClient::updateFromDHCPResponse(const DHCPClient::Message& response) {
+void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
   {
     upan::ConfigFileDB::BatchWriteGuard g(_config);
     _config.set(CFG_DHCP_LEASE_TIME, upan::string::to_string(response.getLeaseTime()), "");
     _config.set(CFG_DHCP_LEASE_RENEWAL_TIME, upan::string::to_string(response.getLeaseRenewalTime()), "");
     _config.set(CFG_DHCP_LEASE_REBINDING_TIME, upan::string::to_string(response.getLeaseRebindingTime()), "");
 
-    _config.set(CFG_HOST_IP_ADDRESS, upan::net::inet_ntostr(response._yiaddr), "");
+    _config.set(CFG_HOST_IP_ADDRESS, upan::net::inet_ntostr(response.getYourIPAddress()), "");
     _config.set(CFG_GATEWAY_IP_ADDRESS, upan::net::inet_ntostr(response.getRouterAddress()), "");
     _config.set(CFG_BROADCAST_IP_ADDRESS, upan::net::inet_ntostr(response.getBroadcastAddress()), "");
     _config.set(CFG_SUBNET_MASK, upan::net::inet_ntostr(response.getSubnetMask()), "");
@@ -78,258 +80,136 @@ void DHCPClient::updateFromDHCPResponse(const DHCPClient::Message& response) {
     _config.set(CFG_DHCP_SERVER_IP_ADDRESS, upan::net::inet_ntostr(response.getDHCPServerAddress()), "");
   }
 
+  klog_info("DHCP config updated");
   loadFromConfig();
+
+  const time_t curTime = btime() / 1000;
+  _leaseExpiry = curTime + _leaseTime;
+  _leaseRenewalExpiry = curTime + _leaseRebindingTime;
 }
 
 void DHCPClient::run() {
-  while(is_active()) {
+  klog_info("DHCP service started");
+  if (_networkDevice.GetIPAddress() == INADDR_NONE) {
+    _flowState = FlowState_Discover;
+  } else {
+    _flowState = FlowState_Request;
+  }
+
+  while (is_active()) {
     if (state() == running) {
-      try {
-        //Load details from dhcp.info
-        //If it is the first time after boot and IP Address is present from dhcp.info
-          //send request
-          //On failure of no response, re-try once every minute
-          //On NAK, go-to discover loop
-          //On ACK, update the IP details and go-to wait until renewal time
-        //If there is no IP then
-          //send discover
-          //On failure of no response, re-try once every minute
-          //On NAK, re-try once every minute
-          //On Offer, update the IP details and go-to wait until renewal time
-        //** wait until renewal time
-        //after this wait, send request
-        //On failure of no response, re-try 1/10th the (time of rebind - renewal)
-        //On NAK, re-try 1/10th the time of (rebind - renewal)
-          //If breach the rebind time, then send broadcast
-          //On failure or NAK, re-try every minute
-          //On ACK, update the IP details and go-to wait until renewal time
-        //On ACK, update the IP details and go-to wait until renewal time
+      klog_debug("processing flow-state: %d", _flowState);
+      switch (_flowState) {
+        case FlowState_Discover:
+          dhcpDiscover();
+          break;
 
-        if (_networkDevice.GetIPAddress() == INADDR_NONE) {
-          _leaseTime = 0;
-        }
+        case FlowState_Request:
+          dhcpRequest();
+          break;
 
-        const time_t currentTime = PIT::Instance().GetCurrentTimeFromBoot();
-        if (currentTime >= _leaseTime) {
-          discover();
-          const auto sleepDuration = _leaseRenewalTime - currentTime;
-          if (sleepDuration > 0) {
-            sleepms(sleepDuration);
-          }
-        } else if (currentTime >= _leaseRenewalTime) {
-          //request to extend with DHCP server
-        } else if (currentTime >= _leaseRebindingTime) {
-          //request to extend with broadcast
-        } else {
-          const auto sleepDuration = _leaseRenewalTime - currentTime;
-          if (sleepDuration > 0) {
-            sleep(sleepDuration);
-          }
-          sleep(60);
-        }
-        //Last known IP
-        //Request specific IP
-        //Update records
-        //Track Lease
-        //Extend Lease
+        case FlowState_Renew:
+          dhcpRenew();
+          break;
 
-      } catch (const upan::exception& e) {
-        e.Print();
-        sleep(60);
+        case FlowState_Rebind:
+          dhcpRebind();
+          break;
       }
     }
   }
-
-  //Release IP on Shutdown
 }
 
-void DHCPClient::Message::createDiscoverPacket(const NetworkDevice& networkDevice) {
-  memset(this, 0, sizeof(DHCPClient::Message));
-
-  _op = DHCPOperationType::BootRequest;
-  _htype = HardwareType::Ethernet;
-  _hlen = INADDR_MAC_LEN;
-  _xid = htonl(rand());
-  _flags = DHCPFlags::Broadcast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
-
-  // Add DHCP options
-  _magicCookie = DHCP_MAGIC_COOKIE;
-
-  int oi = 0;
-  _options[oi++] = DHCPOptionType::MessageType; // Option: DHCP Message Type
-  _options[oi++] = 1;  // Length
-  _options[oi++] = DHCPMessageType::Discover; // DHCP Discover
-
-  _options[oi++] = DHCPOptionType::ParameterRequestList;
-  _options[oi++] = 5;
-  _options[oi++] = ParameterRequestListItem::Param_SubnetMask;
-  _options[oi++] = ParameterRequestListItem::Param_Router;
-  _options[oi++] = ParameterRequestListItem::Param_DNS;
-  _options[oi++] = ParameterRequestListItem::Param_DomainName;
-  _options[oi++] = ParameterRequestListItem::Param_ClasslessStaticRoute;
-
-  _options[oi++] = DHCPOptionType::MaxMessageSize;
-  _options[oi++] = 2;
-  auto mtu = htons(networkDevice.mtu());
-  memcpy(_options + oi, (void*)&mtu, sizeof(uint16_t));
-  oi += 2;
-
-  _options[oi++] = DHCPOptionType::ClientIdentifier;
-  _options[oi++] = 7;
-  _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
-  oi += 6;
-
-  _options[oi++] = DHCPOptionType::LeaseTime;
-  _options[oi++] = 4;
-  uint32_t leaseTime = ntohl(3600); //1hr
-  memcpy(_options + oi, (void*)&leaseTime, sizeof(uint32_t));
-  oi += 4;
-
-  _options[oi++] = DHCPOptionType::HostName;
-  const int l = strlen(networkDevice.hostName());
-  _options[oi++] = l;
-  memcpy(_options + oi, networkDevice.hostName(), l);
-  oi += l;
-
-  _options[oi] = DHCPOptionType::OptionEnd;
+//send discover
+//On failure of no response, re-try once every minute
+//On NAK, re-try once every minute
+//On Offer, update the IP details and go-to wait until renewal time
+void DHCPClient::dhcpDiscover() {
+  klog_info("sending DHCP discover");
+  const auto& result = sendDiscover();
+  if (result.isBad()) {
+    klog_error(result.badValue().Msg().c_str());
+    sleep(60); //re-try every minute
+    _flowState = FlowState_Discover;
+  } else {
+    klog_info("DHCP discover completed");
+    updateFromDHCPResponse(result.goodValue());
+    sleep(_leaseRenewalTime); //sleep for renewal time
+    _flowState = FlowState_Renew;
+  }
 }
 
-const uint8_t* DHCPClient::Message::getOption(DHCPClient::DHCPOptionType optionType) const {
-  for(int i = 0; i < DHCP_MAX_OPTION_SIZE; ++i) {
-    if (_options[i] == DHCPOptionType::OptionEnd) {
-      return nullptr;
+//send request
+//On failure of no response, re-try once every minute
+//On NAK, go-to discover loop
+//On ACK, update the IP details and go-to wait until renewal time
+void DHCPClient::dhcpRequest() {
+  klog_info("sending DHCP request");
+  const auto& result = sendRequest();
+  if (result.isBad()) {
+    klog_error(result.badValue().Msg().c_str());
+    if (result.badValue().Val() == DHCPResponseErrorCode::REJECTED) {
+      _flowState = FlowState_Discover;
+    } else {
+      sleep(60); //re-try every minute
+      _flowState = FlowState_Request;
     }
+  } else {
+    klog_info("DHCP request completed");
+    updateFromDHCPResponse(result.goodValue());
+    sleep(_leaseRenewalTime); //sleep for renewal time
+    _flowState = FlowState_Renew;
+  }
+}
 
-    if (_options[i] == optionType) {
-      if (i + 1 >= DHCP_MAX_OPTION_SIZE) {
-        throw upan::exception(XLOC, "incomplete option: %d, missing len", optionType);
-      }
-
-      const auto len = _options[i+1];
-      if (i + 1 + len >= DHCP_MAX_OPTION_SIZE) {
-        throw upan::exception(XLOC, "incomplete option: %d", optionType);
-      }
-
-      return _options + i + 1;
+//send request
+//On failure of no response, re-try 1/10th the (time of rebind - renewal)
+//On NAK, re-try 1/10th the time of (rebind - renewal)
+//On ACK, update the IP details and go-to wait until renewal time
+void DHCPClient::dhcpRenew() {
+  klog_info("sending DHCP renew");
+  const auto& result = sendRenew();
+  if (result.isBad()) {
+    klog_error(result.badValue().Msg().c_str());
+    time_t sleepTime = (_leaseRebindingTime - _leaseRenewalTime) / 10;
+    sleepTime = sleepTime > 0 ? sleepTime : 60;
+    sleep(sleepTime); //sleep for 1/10th the time interval between rebind - renewal lease time
+    if (btime() < _leaseRenewalExpiry) { //still before rebind but after renewal
+      _flowState = FlowState_Renew;
+    } else { //if rebind period
+      _flowState = FlowState_Rebind;
     }
-  }
-
-  throw upan::exception(XLOC, "invalid option - no option-end found");
-}
-
-DHCPClient::DHCPMessageType DHCPClient::Message::getMessageType() const {
-  auto option = getOption(DHCPOptionType::MessageType);
-  if (!option) {
-    throw upan::exception(XLOC, "DHCP Message Type option not found");
-  }
-
-  const auto len = option[0];
-  if (len != 1) {
-    throw upan::exception(XLOC, "invalid DHCP message type option length: %d (expected 1)", len);
-  }
-
-  const auto messageType = option[1];
-  switch(messageType) {
-    case DHCPMessageType::Discover:
-    case DHCPMessageType::Offer:
-      return (DHCPMessageType)messageType;
-
-    default:
-      throw upan::exception(XLOC, "unsupported DHCP message type %d", messageType);
+  } else {
+    klog_info("DHCP renew completed");
+    updateFromDHCPResponse(result.goodValue());
+    sleep(_leaseRenewalTime); //sleep for renewal time
+    _flowState = FlowState_Renew;
   }
 }
 
-in_addr_t DHCPClient::Message::readIPAddress(DHCPClient::DHCPOptionType optionType) const {
-  auto option = getOption(optionType);
-  if (option) {
-    const auto len = option[0];
-    if (len != sizeof(in_addr_t)) {
-      throw upan::exception(XLOC, "invalid IP address len: %d", len);
+//If breach the rebind time, then send broadcast
+//On failure or NAK, re-try every minute
+//On ACK, update the IP details and go-to wait until renewal time
+void DHCPClient::dhcpRebind() {
+  klog_info("sending DHCP rebind");
+  const auto& result = sendRequest();
+  if (result.isBad()) {
+    klog_error(result.badValue().Msg().c_str());
+    sleep(60); //re-try every minute
+    if (btime() > _leaseExpiry) { //still before expiry
+      _flowState = FlowState_Rebind;
+    } else {
+      _flowState = FlowState_Discover;
     }
-    return *reinterpret_cast<const in_addr_t*>(option + 1);
-  }
-  return INADDR_NONE;
-}
-
-in_addr_t DHCPClient::Message::getSubnetMask() const {
-  return readIPAddress(DHCPOptionType::SubnetMask);
-}
-
-in_addr_t DHCPClient::Message::getBroadcastAddress() const {
-  return readIPAddress(DHCPOptionType::BroadcastAddress);
-}
-
-in_addr_t DHCPClient::Message::getDNSAddress() const {
-  return readIPAddress(DHCPOptionType::DNS);
-}
-
-in_addr_t DHCPClient::Message::getRouterAddress() const {
-  return readIPAddress(DHCPOptionType::Router);
-}
-
-in_addr_t DHCPClient::Message::getDHCPServerAddress() const {
-  return readIPAddress(DHCPOptionType::DHCPServerIndentifier);
-}
-
-time_t DHCPClient::Message::readTime(DHCPClient::DHCPOptionType optionType) const {
-  auto option = getOption(optionType);
-  if (option) {
-    const auto len = option[0];
-    if (len != sizeof(uint32_t)) {
-      throw upan::exception(XLOC, "invalid time len: %d", len);
-    }
-    return ntohl(*reinterpret_cast<const uint32_t*>(option + 1));
-  }
-  return 0;
-}
-
-time_t DHCPClient::Message::getLeaseTime() const {
-  return readTime(DHCPOptionType::LeaseTime);
-}
-
-time_t DHCPClient::Message::getLeaseRenewalTime() const {
-  return readTime(DHCPOptionType::LeaseRenewalTime);
-}
-
-time_t DHCPClient::Message::getLeaseRebindingTime() const {
-  return readTime(DHCPOptionType::LeaseRebindingTime);
-}
-
-void DHCPClient::Message::processResponse(const DHCPClient::Message& request, DHCPClient& dhcpClient) {
-  if (_op != DHCPOperationType::BootResponse) {
-    throw upan::exception(XLOC, "unsupported DHCP message type: %d", _op);
-  }
-
-  if (_htype != HardwareType::Ethernet) {
-    throw upan::exception(XLOC, "unsupported hardware type: %d", _htype);
-  }
-
-  if (_hlen != INADDR_MAC_LEN) {
-    throw upan::exception(XLOC, "unsupported hardware address length: %d", _hlen);
-  }
-
-  if (_xid != request._xid) {
-    throw upan::exception(XLOC, "transaction-id mismatch. Response xid: 0x%x, Request xid: 0x%x", _xid, request._xid);
-  }
-
-  if (_magicCookie != DHCP_MAGIC_COOKIE) {
-    throw upan::exception(XLOC, "invalid DHCP magic cookie - 0x%x", _magicCookie);
-  }
-
-  const MACAddress clientMacAddress(_chaddr);
-  if (clientMacAddress != dhcpClient._networkDevice.GetMACAddress()) {
-    throw upan::exception(XLOC, "MAC address mismatch. Response: %s", clientMacAddress.str().c_str());
-  }
-
-  const auto messageType = getMessageType();
-  if (messageType == DHCPMessageType::Offer) {
-    dhcpClient.updateFromDHCPResponse(*this);
+  } else {
+    klog_info("DHCP rebind completed");
+    updateFromDHCPResponse(result.goodValue());
+    sleep(_leaseRenewalTime); //sleep for renewal time
+    _flowState = FlowState_Renew;
   }
 }
 
-void DHCPClient::discover() {
+upan::result<DHCPMessage> DHCPClient::sendDiscover() {
   const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
@@ -369,7 +249,7 @@ void DHCPClient::discover() {
   }
 
   //create and send DHCP Discover
-  DHCPClient::Message dhcpDiscover {};
+  DHCPMessage dhcpDiscover {};
   dhcpDiscover.createDiscoverPacket(_networkDevice);
   ssize_t len;
 
@@ -379,18 +259,188 @@ void DHCPClient::discover() {
     throw upan::exception(XLOC, "failed to send DHCP Discover");
   }
 
-  printf("\nDHCP Discover sent");
   char buffer[MAX_BUFFER_SIZE];
   // Receive DHCP Offer
   len = recvfrom(sd, buffer, MAX_BUFFER_SIZE, 0, nullptr, nullptr);
   if (len < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to receive DHCP offer");
+    return { upan::error(DHCPResponseErrorCode::TIMEOUT, "failed to receive DHCP offer") };
   }
 
   close(sd);
 
-  DHCPClient::Message dhcpResponse {};
+  DHCPMessage dhcpResponse {};
   memcpy(&dhcpResponse, buffer, sizeof(dhcpResponse));
-  dhcpResponse.processResponse(dhcpDiscover, *this);
+  switch(dhcpResponse.getMessageType()) {
+    case DHCPMessage::DHCPMessageType::Offer: {
+      try {
+        dhcpResponse.validateResponse(dhcpDiscover, _networkDevice);
+        return {dhcpResponse};
+      } catch (const upan::exception& e) {
+        return { upan::error(DHCPResponseErrorCode::INVALID, e.ErrorMsg()) };
+      }
+    }
+
+    case DHCPMessage::DHCPMessageType::NAK:
+    case DHCPMessage::DHCPMessageType::Decline:
+      return { upan::error(DHCPResponseErrorCode::REJECTED, dhcpResponse.getMessageText() )};
+
+    default:
+      return { upan::error(DHCPResponseErrorCode::INVALID, "invalid DHCP response - of message-type: %d", dhcpResponse.getMessageType()) };
+  }
+}
+
+upan::result<DHCPMessage> DHCPClient::sendRequest() {
+  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket creation failed");
+  }
+
+  // Bind the socket to the DHCP client port
+  struct sockaddr_in client_addr {};
+  memset(&client_addr, 0, sizeof(client_addr));
+  client_addr.sin_family = AF_INET;
+  client_addr.sin_port = htons(DHCP_CLIENT_PORT);
+  client_addr.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to bind socket");
+  }
+
+  struct sockaddr_in server_addr {};
+  // Configure the DHCP server address
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(DHCP_SERVER_PORT);
+  server_addr.sin_addr.s_addr = INADDR_BROADCAST;
+
+  //allow socket to broadcast
+  int broadcast = 1;
+  if (setsockopt(sd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_BROADCAST");
+  }
+
+  struct timeval timeout {};
+  timeout.tv_sec = 10;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
+  }
+
+  //create and send DHCP Discover
+  DHCPMessage dhcpRequest {};
+  dhcpRequest.createRequestPacket(_networkDevice);
+  ssize_t len;
+
+  len = sendto(sd, &dhcpRequest, sizeof(dhcpRequest), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+  if (len < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to send DHCP Discover");
+  }
+
+  char buffer[MAX_BUFFER_SIZE];
+  // Receive DHCP Offer
+  len = recvfrom(sd, buffer, MAX_BUFFER_SIZE, 0, nullptr, nullptr);
+  if (len < 0) {
+    close(sd);
+    return { upan::error(DHCPResponseErrorCode::TIMEOUT, "failed to receive DHCP ACK") };
+  }
+
+  close(sd);
+
+  DHCPMessage dhcpResponse {};
+  memcpy(&dhcpResponse, buffer, sizeof(dhcpResponse));
+  switch(dhcpResponse.getMessageType()) {
+    case DHCPMessage::DHCPMessageType::ACK: {
+      try {
+        dhcpResponse.validateResponse(dhcpRequest, _networkDevice);
+        return {dhcpResponse};
+      } catch (const upan::exception& e) {
+        return { upan::error(DHCPResponseErrorCode::INVALID, e.ErrorMsg()) };
+      }
+    }
+
+    case DHCPMessage::DHCPMessageType::NAK:
+    case DHCPMessage::DHCPMessageType::Decline:
+      return { upan::error(DHCPResponseErrorCode::REJECTED, dhcpResponse.getMessageText() )};
+
+    default:
+      return { upan::error(DHCPResponseErrorCode::INVALID, "invalid DHCP response - of message-type: %d", dhcpResponse.getMessageType()) };
+  }
+}
+
+upan::result<DHCPMessage> DHCPClient::sendRenew() {
+  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket creation failed");
+  }
+
+  // Bind the socket to the DHCP client port
+  struct sockaddr_in client_addr {};
+  memset(&client_addr, 0, sizeof(client_addr));
+  client_addr.sin_family = AF_INET;
+  client_addr.sin_port = htons(DHCP_CLIENT_PORT);
+  client_addr.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to bind socket");
+  }
+
+  struct sockaddr_in server_addr {};
+  // Configure the DHCP server address
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(DHCP_SERVER_PORT);
+  server_addr.sin_addr.s_addr = _dhcpServerAddress;
+
+  struct timeval timeout {};
+  timeout.tv_sec = 10;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
+  }
+
+  //create and send DHCP Discover
+  DHCPMessage dhcpRequest {};
+  dhcpRequest.createRenewPacket(_networkDevice, _dhcpServerAddress);
+  ssize_t len;
+
+  len = sendto(sd, &dhcpRequest, sizeof(dhcpRequest), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+  if (len < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to send DHCP Discover");
+  }
+
+  char buffer[MAX_BUFFER_SIZE];
+  // Receive DHCP Offer
+  len = recvfrom(sd, buffer, MAX_BUFFER_SIZE, 0, nullptr, nullptr);
+  if (len < 0) {
+    close(sd);
+    return { upan::error(DHCPResponseErrorCode::TIMEOUT, "failed to receive DHCP ACK") };
+  }
+
+  close(sd);
+
+  DHCPMessage dhcpResponse {};
+  memcpy(&dhcpResponse, buffer, sizeof(dhcpResponse));
+  switch(dhcpResponse.getMessageType()) {
+    case DHCPMessage::DHCPMessageType::ACK: {
+      try {
+        dhcpResponse.validateResponse(dhcpRequest, _networkDevice);
+        return {dhcpResponse};
+      } catch (const upan::exception& e) {
+        return { upan::error(DHCPResponseErrorCode::INVALID, e.ErrorMsg()) };
+      }
+    }
+
+    case DHCPMessage::DHCPMessageType::NAK:
+    case DHCPMessage::DHCPMessageType::Decline:
+      return { upan::error(DHCPResponseErrorCode::REJECTED, dhcpResponse.getMessageText() )};
+
+    default:
+      return { upan::error(DHCPResponseErrorCode::INVALID, "invalid DHCP response - of message-type: %d", dhcpResponse.getMessageType()) };
+  }
 }
