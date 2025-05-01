@@ -60,7 +60,7 @@ namespace NetworkPacket {
       bool isResponse() const { return _opCode == 2; }
 
       void print() const {
-        klog_debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
+        KLog::debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
       }
     } PACKED;
 
@@ -96,7 +96,7 @@ namespace NetworkPacket {
         }
         sprintf(buf, ", TPA: %s", inet_ntoa({_targetProtocolAddress}));
         msg += buf;
-        klog_debug(msg.c_str());
+        KLog::debug(msg.c_str());
       }
     } PACKED;
 
@@ -136,7 +136,7 @@ namespace NetworkPacket {
           sprintf(buf, "%02x%s", _destinationMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
           msg += buf;
         }
-        klog_debug(msg.c_str());
+        KLog::debug(msg.c_str());
       }
     } PACKED;
 
@@ -173,14 +173,14 @@ namespace NetworkPacket {
       }
 
       void print() const {
-        klog_debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
+        KLog::debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
 
-        klog_debug("Identification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
+        KLog::debug("Identification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
                _identification, _flags, _fragmentOffset, _ttl, _protocol);
 
-        klog_debug("Checksum: 0x%x", _checksum);
+        KLog::debug("Checksum: 0x%x", _checksum);
 
-        klog_debug("Source Addr: %s, Dest Addr: %s",
+        KLog::debug("Source Addr: %s, Dest Addr: %s",
                upan::net::inet_ntostr(htonl(_srcAddr)).c_str(),
                upan::net::inet_ntostr(htonl(_destAddr)).c_str());
       }
@@ -204,7 +204,7 @@ namespace NetworkPacket {
       uint16_t _checksum;
 
       void print() const {
-        klog_debug("Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
+        KLog::debug("Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
       }
 
       Header toHost() const {

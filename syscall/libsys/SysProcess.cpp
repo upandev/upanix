@@ -152,5 +152,5 @@ int SysProcess_IsChildAlive(int iProcessID) {
 }
 
 int SysProcess_IsKernel() {
-  return IS_KERNEL() ? 1 : 0;
+  return IsKernel() ? 1 : 0;
 }

@@ -123,15 +123,14 @@ static void ConsoleCommands_Export() ;
 static void ConsoleCommands_PerformECHIHandoff() ;
 static void ConsoleCommands_ProbeEHCIUSB() ;
 static void ConsoleCommands_ProbeXHCIUSB() ;
-static void ConsoleCommands_ProbeNetwork() ;
 static void ConsoleCommands_ListNetworkDevices() ;
 static void ConsoleCommands_ARPing() ;
-static void ConsoleCommands_ObtainIPAddress() ;
 static void ConsoleCommands_SetXHCIEventMode();
 static void ConsoleCommands_ShowRawDiskList() ;
 static void ConsoleCommands_InitFloppyController() ;
 static void ConsoleCommands_InitATAController() ;
 static void ConsoleCommands_InitMountManager() ;
+static void ConsoleCommands_InitNetwork();
 static void ConsoleCommands_PrintKPIs();
 static void ConsoleCommands_Test() ;
 static void ConsoleCommands_Testv() ;
@@ -142,6 +141,7 @@ static void ConsoleCommands_Beep();
 static void ConsoleCommands_Sleep();
 static void ConsoleCommands_Kill();
 static void ConsoleCommands_ResetMouse();
+static void ConsoleCommands_MemStats();
 
 /*****************************************/
 
@@ -197,10 +197,9 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "eusbprobe",	&ConsoleCommands_ProbeEHCIUSB },
 	{ "xusbprobe",	&ConsoleCommands_ProbeXHCIUSB },
   { "xhciemode", &ConsoleCommands_SetXHCIEventMode },
-  { "netprobe", &ConsoleCommands_ProbeNetwork },
+  { "initnet", &ConsoleCommands_InitNetwork },
   { "lsnet", &ConsoleCommands_ListNetworkDevices },
   { "arping", &ConsoleCommands_ARPing },
-  { "dhcpinit", &ConsoleCommands_ObtainIPAddress },
 	{ "showdisk",	&ConsoleCommands_ShowRawDiskList },
 	{ "initfdc",	&ConsoleCommands_InitFloppyController },
 	{ "initata",	&ConsoleCommands_InitATAController },
@@ -215,6 +214,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "sleep", &ConsoleCommands_Sleep },
 	{ "kill", &ConsoleCommands_Kill },
 	{ "resetmouse", &ConsoleCommands_ResetMouse },
+  { "memstats", &ConsoleCommands_MemStats },
 	{ "\0",			NULL }
 } ;
 
@@ -758,11 +758,6 @@ void ConsoleCommands_ProbeXHCIUSB()
 	XHCIManager::Instance().ProbeDevice() ;
 }
 
-void ConsoleCommands_ProbeNetwork()
-{
-  NetworkManager::Instance().Initialize();
-}
-
 void ConsoleCommands_ListNetworkDevices() {
   for(const auto d : NetworkManager::Instance().Devices()) {
     printf("\nIP: %d, MAC: %s", inet_ntoa( { d->GetIPAddress() }), d->GetMACAddress().str().c_str());
@@ -870,6 +865,10 @@ void print_dhcp_offer(const struct dhcp_message *msg) {
   printf("  Your IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->yiaddr));
   printf("  Server IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->siaddr));
   printf("  Gateway IP Address: %s\n", inet_ntoa(*(struct in_addr *)&msg->giaddr));
+}
+
+void ConsoleCommands_InitNetwork() {
+  NetworkManager::Instance().Initialize();
 }
 
 void ConsoleCommands_ObtainIPAddress() {
@@ -2282,4 +2281,9 @@ void ConsoleCommands_Kill() {
 
 void ConsoleCommands_ResetMouse() {
   PS2MouseDriver::Instance().ResetMousePosition();
+}
+
+void ConsoleCommands_MemStats() {
+  MemManager::Instance().DisplayPageAllocationStats();
+  printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }

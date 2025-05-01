@@ -28,6 +28,7 @@
 #include <map.h>
 #include <uniq_ptr.h>
 #include <SocketDescriptor.h>
+#include <DHCPClient.h>
 
 class IRQ;
 
@@ -72,6 +73,7 @@ private:
   upan::list<NetworkDevice*> _devices;
   upan::mutex _nMutex;
   upan::bitset<UINT16_MAX + 1> _portPool;
+  upan::uniq_ptr<DHCPClient> _dhcpClient;
   SOCKET_BIND_SET _socketBindSet;
   SOCKET_BIND_MAP _socketBindMap;
   IP_MAP_TABLE _ipMACTable;

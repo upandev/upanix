@@ -244,15 +244,15 @@ protected:
 class WaitedEventResult : public EventResult
 {
 public:
-  WaitedEventResult(int pid) : EventResult(pid) { }
-  void Consume(const EventTRB& r);
+  explicit WaitedEventResult(int pid) : EventResult(pid) { }
+  void Consume(const EventTRB& r) override;
 };
 
 class InterruptEventResult : public EventResult
 {
 public:
   InterruptEventResult(InputContext& context, int pid, uint64_t dataAddress) : EventResult(pid), _context(context), _dataAddress(dataAddress) { }
-  void Consume(const EventTRB &r);
+  void Consume(const EventTRB &r) override;
   uint64_t InterruptDataAddress() const { return _dataAddress; }
 
 private:

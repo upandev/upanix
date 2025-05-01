@@ -85,5 +85,8 @@ private:
   time_t _leaseExpiry;
   time_t _leaseRenewalExpiry;
 
+  int _testRenewalCount;
+  int _testRebindCount;
+
   upan::ConfigFileDB _config;
 };

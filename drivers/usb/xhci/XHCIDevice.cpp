@@ -167,7 +167,7 @@ void XHCIDevice::GetDeviceStringDesc(upan::string& desc, int descIndex)
   if(iLen == 0)
     return;
 
-  delete buffer;
+  delete[] buffer;
   buffer = new char[iLen];
   GetDescriptor(usDescValue | descIndex, _usLangID, iLen, buffer);
 

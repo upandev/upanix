@@ -222,7 +222,7 @@ void StorageDriveManager::MountDrive(const upan::string& szDriveName)
 void StorageDriveManager::UnMountDrive(const upan::string& szDriveName) {
   StorageDrive& storageDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
-	bool bKernel = IS_KERNEL() ? true : IS_KERNEL_PROCESS(ProcessManager::GetCurrentProcessID()) ;
+	bool bKernel = IsKernel() ? true : IsKernelProcess(ProcessManager::GetCurrentProcessID()) ;
 	if(!bKernel) {
 		if(storageDrive.Id() == ProcessManager::Instance().GetCurrentPAS().driveID()) {
       throw upan::exception(XLOC, "can't unmount current drive: %s", szDriveName.c_str());

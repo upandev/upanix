@@ -80,6 +80,7 @@ sudo qemu-system-x86_64 \
 -serial file:serial_debug.log \
 -pflash $UPANIX_TOOLS/OVMF.fd \
 -m 512 \
+-s \
 -smp 1 \
 -usb \
 -drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off \

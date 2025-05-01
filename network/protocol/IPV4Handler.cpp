@@ -28,7 +28,7 @@ IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 }
 
 void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  klog_debug("Handling IPV4 Packet");
+  KLog::debug("Handling IPV4 Packet");
   const auto& ipv4Header = packet->getIPV4Header();
   verifyChecksum(ipv4Header);
   NetworkManager::Instance().updateIPMACTable(*packet);

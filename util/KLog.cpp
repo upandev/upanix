@@ -19,50 +19,47 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
-
-#define SUCCESS 1
-#define FAILURE 0
-
-# include <ctype.h>
-# include <dtime.h>
-# include <stdlib.h>
-# include <KernelComponents.h>
-# include <ReturnHandler.h>
-# include <MemConstants.h>
 # include <KLog.h>
+# include <logger.h>
 
-typedef unsigned long long	DDWORD ;
-typedef unsigned			DWORD ;
+upan::atomic::integral<uint32_t> KLog::_logLevel { upan::logger::LOG_INFO | upan::logger::LOG_WARN | upan::logger::LOG_ERROR };
 
-bool IsKernel();
-bool IsKernelProcess(int pid);
-void SetKernelMode(bool);
-void SetKernelRootMode(bool);
+void KLog::init() {
+  _logLevel.bit_or(upan::logger::LOG_INFO | upan::logger::LOG_WARN | upan::logger::LOG_ERROR);
+}
 
-#define IS_FG_PROCESS_GROUP() (ProcessManager::Instance().GetCurrentPAS().isFGProcessGroup())
+void KLog::enable(uint32_t levels) {
+  _logLevel.bit_or(levels);
+}
 
-#define RETURN_IF_NOT(RetVal, Func, CheckVal) \
-RetVal = Func ;\
-if(RetVal != CheckVal) \
-return RetVal ;
+void KLog::disable(uint32_t levels) {
+  _logLevel.bit_and(~levels);
+}
 
-#define RETURN_X_IF_NOT(Func, CheckVal, X) \
-if(Func != CheckVal) \
-return X ;
+void KLog::debug(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_DEBUG, fmsg, arg);
+  va_end(arg);
+}
 
-#define TRACE_LINE printf("\n TRACE: %d", __LINE__)
+void KLog::info(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_INFO, fmsg, arg);
+  va_end(arg);
+}
 
-#define BCD_TO_DECIMAL(no)	((((no & 0xF0) >> 4) * 10) + (no & 0x0F))
+void KLog::warn(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_WARN, fmsg, arg);
+  va_end(arg);
+}
 
-#define ROOT_DRIVE_ID MountManager_GetRootDriveID()
-#define ROOT_DRIVE_SYN "ROOT"
-
-#define LIB_PATH ":ROOT@/lib:ROOT@/usr/lib:"
-#define BIN_PATH "ROOT@/bin/"
-#define OSIN_PATH "ROOT@/osin/"
-
-#define MIN( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
-#define MAX( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
-
-bool UpanixMain_IsKernelDebugOn() ;
+void KLog::error(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  upan::logger::instance().logarg(upan::logger::LOG_ERROR, fmsg, arg);
+  va_end(arg);
+}

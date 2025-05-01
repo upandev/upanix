@@ -47,12 +47,14 @@
 # include <PS2MouseDriver.h>
 # include <metrics.h>
 # include <StorageDriveManager.h>
-# include <logger.h>
 # include <NetworkOperations.h>
+# include <KLog.h>
 
 /**** Global Variable declaration/definition *****/
-byte KERNEL_MODE ;
-byte SPECIAL_TASK ;
+bool KERNEL_MODE;
+bool KERNEL_ROOT;
+bool SPECIAL_TASK;
+
 /***********************************************/
 
 [[noreturn]] void UpanixMain_KernelProcess() {
@@ -132,14 +134,31 @@ public:
 
 static const TG x;
 
+bool IsKernel() {
+  return KERNEL_MODE == true || KERNEL_ROOT == true || ProcessManager::GetCurrentProcessID() == NO_PROCESS_ID;
+}
+
+bool IsKernelProcess(int pid) {
+  return SPECIAL_TASK || ProcessManager::Instance().IsKernelProcess(pid);
+}
+void SetKernelMode(bool val) {
+  KERNEL_MODE = val;
+}
+
+void SetKernelRootMode(bool val) {
+  KERNEL_ROOT = val;
+}
+
 void Initialize() {
-	KERNEL_MODE = true ;
+  SetKernelMode(true);
+  SetKernelRootMode(false);
 	SPECIAL_TASK = false ;
 
 	MultiBoot::Instance();
 	RootConsole::Create();
   MemManager::Instance();
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
+  KLog::init();
 
   ProcessManager::Instance();
 
@@ -228,7 +247,7 @@ void UpanixMain() {
   KernelRootProcess::Instance().initTLS();
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
 //	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
-  KERNEL_MODE = false;
+  SetKernelMode(false);
 	ProcessManager::Instance().EnableTaskSwitch();
 	while(1) ;
 }
@@ -239,32 +258,4 @@ bool UpanixMain_IsKernelDebugOn() {
     return strcmp(szVal, "1") == 0;
   }
 	return false ;
-}
-
-void klog_debug(const char* __restrict fmsg, ...) {
-  va_list arg;
-  va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_DEBUG, fmsg, arg);
-  va_end(arg);
-}
-
-void klog_info(const char* __restrict fmsg, ...) {
-  va_list arg;
-  va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_INFO, fmsg, arg);
-  va_end(arg);
-}
-
-void klog_warn(const char* __restrict fmsg, ...) {
-  va_list arg;
-  va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_WARN, fmsg, arg);
-  va_end(arg);
-}
-
-void klog_error(const char* __restrict fmsg, ...) {
-  va_list arg;
-  va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_ERROR, fmsg, arg);
-  va_end(arg);
 }

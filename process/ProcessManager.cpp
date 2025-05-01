@@ -92,7 +92,7 @@ upan::option<SchedulableProcess&> ProcessManager::GetSchedulableProcess(int pid)
 
 Process& ProcessManager::GetCurrentPAS() {
   ProcessSwitchLock switchLock;
-  if (IS_KERNEL()) {
+  if (IsKernel()) {
     return KernelRootProcess::Instance();
   }
   //This function is a utility that assumes that a ProcessAddressSpace entry always exists for current (active) process
@@ -628,7 +628,7 @@ bool ProcessManager::IsKernelProcess(int iProcessID) {
 }
 
 void ProcessManager_Exit() {
-  if (IS_KERNEL()) {
+  if (IsKernel()) {
     __asm__ __volatile__("HLT");
   }
   auto& p = ProcessManager::Instance().GetCurrentPAS();
@@ -648,7 +648,7 @@ void ProcessManager::SetResourceBusy(RESOURCE_KEYS uiType, bool bVal)
 
 int ProcessManager::GetCurProcId()
 {
-	return KERNEL_MODE ? NO_PROCESS_ID : ProcessManager::GetCurrentProcessID();
+	return IsKernel() ? NO_PROCESS_ID : ProcessManager::GetCurrentProcessID();
 }
 
 void ProcessManager::Kill(int iProcessID) {
@@ -696,7 +696,7 @@ bool ProcessManager::WakeupProcessOnInterrupt(SchedulableProcess& p)
 }
 
 bool ProcessManager::DoPollWait() {
-	return (KERNEL_MODE || !IsTaskSwitchEnabled()) ;
+	return (IsKernel() || !IsTaskSwitchEnabled()) ;
 }
 
 bool ProcessManager::ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor)

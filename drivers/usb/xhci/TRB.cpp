@@ -180,5 +180,5 @@ TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, Dat
     if(ioc)
       lastTRB = &trb;
   }
-  return TRB::Result((uint64_t)lastTRB);
+  return { (uint64_t)lastTRB };
 }

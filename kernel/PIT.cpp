@@ -74,9 +74,9 @@ void PIT::Initialize() {
 }
 
 void PIT::ContextSwitchHandler(TaskContext& taskContext) {
-  KERNEL_MODE = true;
+  SetKernelMode(true);
   ProcessManager::Instance().ContextSwitch(taskContext);
-  KERNEL_MODE = false;
+  SetKernelMode(false);
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 }
 

@@ -223,7 +223,7 @@ uint64_t DMM::_availableHeapSize() {
 	for(auto aut = _rootAut; aut != nullptr; aut = aut->nextAUTAddress)	{
     size += aut->size;
     ++total_chunks;
-    sprintf(buf, "\n Chunk: %u, %u, %u", aut->allocatedAddress, aut->size, (uint64_t)aut->allocatedAddress + aut->size);
+    sprintf(buf, "\n Chunk: %x, %x, %u, %x", aut->allocatedAddress, aut->returnAddress, aut->size, (uint64_t)aut->allocatedAddress + aut->size);
     //COM1::Instance().Write(buf);
     printf("%s", buf);
 	}

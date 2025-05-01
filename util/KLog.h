@@ -21,48 +21,18 @@
  */
 #pragma once
 
-#define SUCCESS 1
-#define FAILURE 0
+#include <atomicop.h>
 
-# include <ctype.h>
-# include <dtime.h>
-# include <stdlib.h>
-# include <KernelComponents.h>
-# include <ReturnHandler.h>
-# include <MemConstants.h>
-# include <KLog.h>
+class KLog {
+public:
+  static void init();
+  static void enable(uint32_t levels);
+  static void disable(uint32_t levels);
+  static void debug(const char* __restrict fmsg, ...);
+  static void info(const char* __restrict fmsg, ...);
+  static void warn(const char* __restrict fmsg, ...);
+  static void error(const char* __restrict fmsg, ...);
 
-typedef unsigned long long	DDWORD ;
-typedef unsigned			DWORD ;
-
-bool IsKernel();
-bool IsKernelProcess(int pid);
-void SetKernelMode(bool);
-void SetKernelRootMode(bool);
-
-#define IS_FG_PROCESS_GROUP() (ProcessManager::Instance().GetCurrentPAS().isFGProcessGroup())
-
-#define RETURN_IF_NOT(RetVal, Func, CheckVal) \
-RetVal = Func ;\
-if(RetVal != CheckVal) \
-return RetVal ;
-
-#define RETURN_X_IF_NOT(Func, CheckVal, X) \
-if(Func != CheckVal) \
-return X ;
-
-#define TRACE_LINE printf("\n TRACE: %d", __LINE__)
-
-#define BCD_TO_DECIMAL(no)	((((no & 0xF0) >> 4) * 10) + (no & 0x0F))
-
-#define ROOT_DRIVE_ID MountManager_GetRootDriveID()
-#define ROOT_DRIVE_SYN "ROOT"
-
-#define LIB_PATH ":ROOT@/lib:ROOT@/usr/lib:"
-#define BIN_PATH "ROOT@/bin/"
-#define OSIN_PATH "ROOT@/osin/"
-
-#define MIN( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
-#define MAX( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
-
-bool UpanixMain_IsKernelDebugOn() ;
+private:
+  static upan::atomic::integral<uint32_t> _logLevel;
+};

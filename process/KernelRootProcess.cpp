@@ -53,7 +53,7 @@ void KernelRootProcess::createScheduleRunner() {
 
 void KernelRootProcess::openSysLoggerFile(const upan::string& driveName) {
   ProcessSwitchLock pLock;
-  KERNEL_MODE = true;
+  SetKernelRootMode(true);
 
   try {
     auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
@@ -68,12 +68,12 @@ void KernelRootProcess::openSysLoggerFile(const upan::string& driveName) {
     printf("\n unknown error while opening syslog file");
   }
 
-  KERNEL_MODE = false;
+  SetKernelRootMode(false);
 }
 
 void KernelRootProcess::closeSysLoggerFile() {
   ProcessSwitchLock pLock;
-  KERNEL_MODE = true;
+  SetKernelRootMode(true);
 
   try {
     auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
@@ -88,7 +88,7 @@ void KernelRootProcess::closeSysLoggerFile() {
     printf("\n unknown error while closing syslog file");
   }
 
-  KERNEL_MODE = false;
+  SetKernelRootMode(false);
 }
 
 void KernelRootProcess::initTLS() {

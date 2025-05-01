@@ -143,7 +143,7 @@ byte ATAPortOperation_StartDMA(ATAPort* pPort)
 	ATA_READ_DMA_REG(pPort, ATA_REG_DMA_CONTROL, bControl) ;
 	ATA_WRITE_DMA_REG(pPort, ATA_REG_DMA_CONTROL, bControl | ATA_DMA_CONTROL_START) ;
 
-	if(KERNEL_MODE)
+	if(IsKernel())
 		KernelUtil::WaitOnInterrupt(ATADeviceController_GetHDInterruptNo(pPort)) ;
 	else
 		ProcessManager::Instance().WaitOnInterrupt(ATADeviceController_GetHDInterruptNo(pPort)) ;

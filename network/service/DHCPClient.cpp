@@ -42,6 +42,7 @@ DHCPClient::DHCPClient(NetworkDevice& networkDevice) :
   _flowState(FlowState_Discover),
   _dhcpServerAddress(INADDR_NONE),
   _leaseTime(0), _leaseRenewalTime(0), _leaseRebindingTime(0), _leaseExpiry(0), _leaseRenewalExpiry(0),
+  _testRenewalCount(0), _testRebindCount(0),
   _config("/var/db/dhcpclient.cfg", upan::ConfigFileDB::OpType::RDWR) {
   loadFromConfig();
 }
@@ -62,7 +63,15 @@ void DHCPClient::loadFromConfig() {
   if (_dhcpServerAddress == INADDR_NONE) {
     _dhcpServerAddress = _networkDevice.GetGatewayAddress();
   }
-  klog_info("DHCP config loaded");
+  KLog::info("DHCP config loaded");
+  KLog::info("Lease Time: %u, Renewal Time: %u, Rebinding Time: %u", _leaseTime, _leaseRenewalTime, _leaseRebindingTime);
+  KLog::info("IP: %s, Gateway: %s, Subnet Mask: %s",
+             upan::net::inet_ntostr(_networkDevice.GetIPAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.GetGatewayAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.GetSubnetMask()).c_str());
+  KLog::info("Broadcast: %s, DNS: %s",
+             upan::net::inet_ntostr(_networkDevice.GetBroadcastAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.GetDNSAddress()).c_str());
 }
 
 void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
@@ -80,7 +89,7 @@ void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
     _config.set(CFG_DHCP_SERVER_IP_ADDRESS, upan::net::inet_ntostr(response.getDHCPServerAddress()), "");
   }
 
-  klog_info("DHCP config updated");
+  KLog::info("DHCP config updated");
   loadFromConfig();
 
   const time_t curTime = btime() / 1000;
@@ -89,7 +98,7 @@ void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
 }
 
 void DHCPClient::run() {
-  klog_info("DHCP service started");
+  KLog::info("DHCP service started");
   if (_networkDevice.GetIPAddress() == INADDR_NONE) {
     _flowState = FlowState_Discover;
   } else {
@@ -98,7 +107,7 @@ void DHCPClient::run() {
 
   while (is_active()) {
     if (state() == running) {
-      klog_debug("processing flow-state: %d", _flowState);
+      KLog::debug("processing flow-state: %d", _flowState);
       switch (_flowState) {
         case FlowState_Discover:
           dhcpDiscover();
@@ -125,14 +134,14 @@ void DHCPClient::run() {
 //On NAK, re-try once every minute
 //On Offer, update the IP details and go-to wait until renewal time
 void DHCPClient::dhcpDiscover() {
-  klog_info("sending DHCP discover");
+  KLog::info("sending DHCP discover");
   const auto& result = sendDiscover();
   if (result.isBad()) {
-    klog_error(result.badValue().Msg().c_str());
+    KLog::error(result.badValue().Msg().c_str());
     sleep(60); //re-try every minute
     _flowState = FlowState_Discover;
   } else {
-    klog_info("DHCP discover completed");
+    KLog::info("DHCP discover completed");
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
@@ -144,10 +153,10 @@ void DHCPClient::dhcpDiscover() {
 //On NAK, go-to discover loop
 //On ACK, update the IP details and go-to wait until renewal time
 void DHCPClient::dhcpRequest() {
-  klog_info("sending DHCP request");
+  KLog::info("sending DHCP request");
   const auto& result = sendRequest();
   if (result.isBad()) {
-    klog_error(result.badValue().Msg().c_str());
+    KLog::error(result.badValue().Msg().c_str());
     if (result.badValue().Val() == DHCPResponseErrorCode::REJECTED) {
       _flowState = FlowState_Discover;
     } else {
@@ -155,7 +164,7 @@ void DHCPClient::dhcpRequest() {
       _flowState = FlowState_Request;
     }
   } else {
-    klog_info("DHCP request completed");
+    KLog::info("DHCP request completed");
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
@@ -167,10 +176,10 @@ void DHCPClient::dhcpRequest() {
 //On NAK, re-try 1/10th the time of (rebind - renewal)
 //On ACK, update the IP details and go-to wait until renewal time
 void DHCPClient::dhcpRenew() {
-  klog_info("sending DHCP renew");
-  const auto& result = sendRenew();
+  KLog::info("sending DHCP renew");
+  const auto& result = _testRenewalCount >= 1 ? upan::error("force renewal failure") : sendRenew();
   if (result.isBad()) {
-    klog_error(result.badValue().Msg().c_str());
+    KLog::error(result.badValue().Msg().c_str());
     time_t sleepTime = (_leaseRebindingTime - _leaseRenewalTime) / 10;
     sleepTime = sleepTime > 0 ? sleepTime : 60;
     sleep(sleepTime); //sleep for 1/10th the time interval between rebind - renewal lease time
@@ -180,7 +189,7 @@ void DHCPClient::dhcpRenew() {
       _flowState = FlowState_Rebind;
     }
   } else {
-    klog_info("DHCP renew completed");
+    KLog::info("DHCP renew completed");
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
@@ -191,10 +200,10 @@ void DHCPClient::dhcpRenew() {
 //On failure or NAK, re-try every minute
 //On ACK, update the IP details and go-to wait until renewal time
 void DHCPClient::dhcpRebind() {
-  klog_info("sending DHCP rebind");
-  const auto& result = sendRequest();
+  KLog::info("sending DHCP rebind");
+  const auto& result = _testRebindCount >= 1 ? upan::error("force renewal failure") : sendRequest();
   if (result.isBad()) {
-    klog_error(result.badValue().Msg().c_str());
+    KLog::error(result.badValue().Msg().c_str());
     sleep(60); //re-try every minute
     if (btime() > _leaseExpiry) { //still before expiry
       _flowState = FlowState_Rebind;
@@ -202,7 +211,7 @@ void DHCPClient::dhcpRebind() {
       _flowState = FlowState_Discover;
     }
   } else {
-    klog_info("DHCP rebind completed");
+    KLog::info("DHCP rebind completed");
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
