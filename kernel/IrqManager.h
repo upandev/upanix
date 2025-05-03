@@ -91,6 +91,7 @@ class IrqManager
 		const IRQ* GetIRQ(const IRQ& irq);
 		const IRQ* GetIRQ(const int& iIRQNo);
 		void DisplayIRQList();
+    static bool IsInterruptEnabled();
 
 		virtual void SendEOI(const IRQ&) = 0;
 		virtual void EnableIRQ(const IRQ&) = 0;

@@ -144,3 +144,10 @@ void IrqManager::DisplayIRQList()
 	for(auto i : _irqs)
 		printf("\n IRQ = %d", i->GetIRQNo()) ;
 }
+
+bool IrqManager::IsInterruptEnabled() {
+  uint64_t flag;
+  __asm__ __volatile__("pushfq;"
+                       "popq %0;" : "=m"(flag) : : "memory");
+  return flag & 0x200;
+}
