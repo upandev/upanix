@@ -88,3 +88,9 @@ void PIC::DisableIRQ(const IRQ& irq)
 	PortCom_SendByte(MASTER_PORTB, (m_IRQMask & 0xFF)) ;
 	PortCom_SendByte(SLAVE_PORTB, ((m_IRQMask >> 8) & 0xFF)) ;
 }
+
+bool PIC::IsIRQEnabled(const IRQ& irq) {
+  IrqGuard g;
+  int iIRQNo = irq.GetIRQNo();
+  return (m_IRQMask & (1 << iIRQNo)) == 0;
+}

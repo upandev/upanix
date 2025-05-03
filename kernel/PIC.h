@@ -31,11 +31,11 @@ class PIC : public IrqManager
 		PIC();
 
 	private:
-    static void Instance();
     void DisableForAPIC();
-		void SendEOI(const IRQ&);
-		void EnableIRQ(const IRQ&);
-		void DisableIRQ(const IRQ&);
+		void SendEOI(const IRQ&) override;
+		void EnableIRQ(const IRQ&) override;
+		void DisableIRQ(const IRQ&) override;
+    bool IsIRQEnabled(const IRQ&) override;
 
 		static const int SLAVE_IRQNO_START = 8;
 

@@ -290,3 +290,9 @@ void Apic::DisableIRQ(const IRQ& irq)
   ivalue |= APIC_INTERRUPTDISABLED;
   IoApicWrite(entry, ivalue);
 }
+
+bool Apic::IsIRQEnabled(const IRQ& irq) {
+  IrqGuard g;
+  uint32_t entry = 0x10 + irq.GetIRQNo() * 2;
+  return (IoApicRead(entry) & APIC_INTERRUPTDISABLED) == 0;
+}

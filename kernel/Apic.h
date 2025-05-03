@@ -57,7 +57,6 @@ class Apic : public IrqManager
     Apic();
     Apic(const Apic&);
     void Initialize();
-    static void Instance();
 
   public:
     static bool IsAvailable();
@@ -71,9 +70,10 @@ class Apic : public IrqManager
     void IoApicWrite(uint8_t index, uint32_t val);
     void RemapVector(uint8_t vector, uint32_t mapped, bool level /*f:edge t:level*/, bool low /*f:high t:low*/, bool disabled);
 
-    void SendEOI(const IRQ&);
-    void EnableIRQ(const IRQ&);
-    void DisableIRQ(const IRQ&);
+    void SendEOI(const IRQ&) override;
+    void EnableIRQ(const IRQ&) override;
+    void DisableIRQ(const IRQ&) override;
+    bool IsIRQEnabled(const IRQ&) override;
 
   private:
     uint64_t _phyApicBase;

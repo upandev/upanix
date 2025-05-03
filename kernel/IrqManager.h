@@ -95,6 +95,7 @@ class IrqManager
 		virtual void SendEOI(const IRQ&) = 0;
 		virtual void EnableIRQ(const IRQ&) = 0;
 		virtual void DisableIRQ(const IRQ&) = 0;
+    virtual bool IsIRQEnabled(const IRQ&) = 0;
 
   private:
 		upan::list<const IRQ*> _irqs;
