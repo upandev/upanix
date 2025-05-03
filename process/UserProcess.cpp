@@ -312,13 +312,13 @@ void UserProcess::AllocateAddressSpace() {
   //Allocate process space
   MemManager::Instance().AllocateAddressSpace(_pml4Table, 0x7, _processBase, _processSpaceSize);
 
-  _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
+  _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace(_rsp0StackPages);
 }
 
 void UserProcess::DeallocateResources() {
   DeallocateGUIFramebuffer();
 
-  SchedulableProcess::Common::DeAllocateStackSpace(_stackPDAddress);
+  SchedulableProcess::Common::DeAllocateStackSpace(_stackPDAddress, _rsp0StackPages);
   MemManager::Instance().DeAllocatePhysicalPage(_stackPDAddress / PAGE_SIZE);
 
   SchedulableProcess::Common::SetStackPDTable(pml4Table(), 0);
@@ -358,7 +358,7 @@ upan::option<DLLInfo&> UserProcess::getDLLInfo(int id) {
 }
 
 void UserProcess::onLoad() {
-  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
+  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress, _rsp0StackPages);
 }
 
 void UserProcess::allocateGUIFramebuffer() {

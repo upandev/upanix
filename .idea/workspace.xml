@@ -33,33 +33,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="creating a shared kernel logger instance that can be used across all processes and threads. It points to either STDOUT or a file on disk">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="kernel should be compiled with -mno-red-zone compiler flag to ensure the compiler doesn't access the red-zone stack area while executing interrupt code because they use run time stack switch from ring3 to ring0 and there is no reserved red-zone in this case">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ide/ATAPortOperation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +94,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
@@ -607,7 +592,11 @@
       <workItem from="1746064259327" duration="3462000" />
       <workItem from="1746069154253" duration="2026000" />
       <workItem from="1746072759565" duration="1623000" />
-      <workItem from="1746093440012" duration="1000" />
+      <workItem from="1746093440012" duration="1296000" />
+      <workItem from="1746095430676" duration="2335000" />
+      <workItem from="1746103931069" duration="5155000" />
+      <workItem from="1746189972231" duration="1212000" />
+      <workItem from="1746191560528" duration="19392000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -952,7 +941,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="144" />
+    <option name="localTasksCounter" value="146" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -986,8 +975,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor network protocol code" />
-    <MESSAGE value="refactor packet structure and send packet logic" />
     <MESSAGE value="TLS implemented for Kernel Process and Thread, supporting the basic scenario of thread locals defined within the kernel code." />
     <MESSAGE value="refactor structs to store process binary info such as TLSInfo, ELFInfo, DLLInfo. Support of relocating TLS variables defined and used within a shared library. Added the foundation support to relocate necessary dynamic symbols primarily TLS variables after the program is loaded and before entering main, at the very start of the program by means of a system call - this will allow us to relocate variables used and referred across different shared libraries - by easily accessing the process linear address space while running using the user-process's PML (page-tables) inside a system call" />
     <MESSAGE value="moved relocation of TLS variables that are accessed across shared libraries and the main executable into dllInitRelocate() method that is called once at program start-up" />
@@ -1011,7 +998,9 @@
     <MESSAGE value="build IP vs MAC address table" />
     <MESSAGE value="use klog with proper levels" />
     <MESSAGE value="creating a shared kernel logger instance that can be used across all processes and threads. It points to either STDOUT or a file on disk" />
-    <option name="LAST_COMMIT_MESSAGE" value="creating a shared kernel logger instance that can be used across all processes and threads. It points to either STDOUT or a file on disk" />
+    <MESSAGE value="added KLog utility. Introduced a new kernel mode called KERNEL_ROOT to be used while initializing syslog that ensures there is no race condition with setting KERNEL_MODE during timer interrupt" />
+    <MESSAGE value="kernel should be compiled with -mno-red-zone compiler flag to ensure the compiler doesn't access the red-zone stack area while executing interrupt code because they use run time stack switch from ring3 to ring0 and there is no reserved red-zone in this case" />
+    <option name="LAST_COMMIT_MESSAGE" value="kernel should be compiled with -mno-red-zone compiler flag to ensure the compiler doesn't access the red-zone stack area while executing interrupt code because they use run time stack switch from ring3 to ring0 and there is no reserved red-zone in this case" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

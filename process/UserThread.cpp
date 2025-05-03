@@ -27,7 +27,7 @@
 //thread must have a parent
 UserThread::UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
   : Thread(parent) {
-  _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
+  _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace(_rsp0StackPages);
   //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
   //but a thread function - unlike a typical c function, should exit() instead of return
   const auto stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - sizeof(uint64_t);
@@ -46,10 +46,10 @@ UserThread::UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t en
 }
 
 void UserThread::DeallocateResources() {
-  SchedulableProcess::Common::DeAllocateStackSpace(_stackPDAddress);
+  SchedulableProcess::Common::DeAllocateStackSpace(_stackPDAddress, _rsp0StackPages);
   MemManager::Instance().DeAllocatePhysicalPage(_stackPDAddress / PAGE_SIZE);
 }
 
 void UserThread::onLoad() {
-  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
+  SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress, _rsp0StackPages);
 }

@@ -428,7 +428,7 @@ EventTRB XHCIController::WaitForEvent(uint64_t trbId)
   {
     EventTRB result;
     if(!_eventManager->WaitForEvent(trbId, result))
-      throw upan::exception(XLOC, "Timedout while waiting for Command Completion");
+      throw upan::exception(XLOC, "Timed-out while waiting for Command Completion");
     return result;
   }
   else

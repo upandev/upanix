@@ -67,4 +67,5 @@ private:
 
 private:
   uint32_t _stackPDAddress;
+  upan::vector<uintptr_t> _rsp0StackPages;
 };

@@ -200,23 +200,41 @@ void SchedulableProcess::Common::SetStackPDTable(uint64_t *pml4Table, uint64_t v
   pdpTable[pdpIndex] = value;
 }
 
-void SchedulableProcess::Common::SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress) {
+void SchedulableProcess::Common::SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress, const upan::vector<uintptr_t>& rsp0StackPages) {
   SetStackPDTable(pml4Table, (stackPDAddress & PAGE_MASK) | 0x7);
+
+  uintptr_t rsp0VirtualAddress = MEM_KERNEL_RING0_STACK_TOP - rsp0StackPages.size() * PAGE_SIZE;
+  for(auto rsp0RealAddress : rsp0StackPages) {
+    MemManager::Instance().MapAddressSpace(pml4Table, 0x7, rsp0VirtualAddress, rsp0RealAddress, PAGE_SIZE);
+    rsp0VirtualAddress += PAGE_SIZE;
+  }
 }
 
-uint64_t SchedulableProcess::Common::AllocateStackSpace() {
+uint64_t SchedulableProcess::Common::AllocateStackSpace(upan::vector<uintptr_t>& rsp0StackPages) {
   //pre-allocate process stack - user (the initial space for start-args) + call-gate
   //further expansion of user stack beyond initial space for start-args will happen as part of regular page fault handling flow
-  uint64_t stackPDAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
+  const uint64_t stackPDAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
   const uint64_t processSysCallStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE;
   const uint64_t processStackBase = processSysCallStackBase - PROCESS_INIT_STACK_SIZE;
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processSysCallStackBase, PROCESS_SYSCALL_STACK_SIZE);
+
+  //Allocate stack space for RSP0, which is used by any ring3 -> ring0 stack switch - particularly interrupts/exceptions.
+  //Not used by syscall because syscall has its own stack management
+  const int MEM_USER_RING0_STACK_PAGE_COUNT = 8; // 32 KB
+  for(int i = 0; i < MEM_USER_RING0_STACK_PAGE_COUNT; ++i) {
+    rsp0StackPages.push_back(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+  }
+
   return stackPDAddress;
 }
 
-void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress) {
+void SchedulableProcess::Common::DeAllocateStackSpace(uint64_t stackPDAddress, upan::vector<uintptr_t>& rsp0StackPages) {
   MemManager::Instance().DeallocatePDAddressSpace((uint64_t*)stackPDAddress);
+  for(auto pageAddress : rsp0StackPages) {
+    MemManager::Instance().DeAllocatePhysicalPage(pageAddress / PAGE_SIZE);
+  }
+  rsp0StackPages.clear();
 }
 
 uint64_t SchedulableProcess::Common::KernelVirtualStackBase(int stackBlockId) {

@@ -118,9 +118,9 @@ protected:
   class Common {
   public:
     static void SetStackPDTable(uint64_t* pml4Table, uint64_t value);
-    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress);
-    static uint64_t AllocateStackSpace();
-    static void DeAllocateStackSpace(uint64_t stackPDAddress);
+    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress, const upan::vector<uintptr_t>& rsp0StackPages);
+    static uint64_t AllocateStackSpace(upan::vector<uintptr_t>& rsp0StackPages);
+    static void DeAllocateStackSpace(uint64_t stackPDAddress, upan::vector<uintptr_t>& rsp0StackPages);
 
     static uint64_t KernelVirtualStackBase(int stackBlockId);
     static int AllocateKernelStackSpace();
