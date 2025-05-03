@@ -95,6 +95,6 @@ void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t
 	}	else if (offset == (uintptr_t)&_page_fault_interrupt_handler) {
     idtEntry->_ist = 2;
 	} else {
-    idtEntry->_ist = 3;
+    idtEntry->_ist = 0;
 	}
 }
