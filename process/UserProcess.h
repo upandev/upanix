@@ -107,5 +107,4 @@ private:
   UserDMM _dmm;
   uint64_t* _pml4Table;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
-  upan::vector<uintptr_t> _rsp0StackPages;
 };

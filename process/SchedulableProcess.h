@@ -48,8 +48,6 @@ public:
     return _processID != _mainThreadID;
   }
 
-  virtual void onLoad() = 0;
-
   //thread synchronization mutex
   virtual upan::option<upan::mutex&> pageAllocMutex() {
     return upan::option<upan::mutex&>::empty();
@@ -110,17 +108,23 @@ public:
 private:
   static int _nextPid;
 
+private:
+  void Deallocate();
+  void AllocateInterruptStackSpace();
+  void SwitchInterruptStack();
+  void DeAllocateInterruptStackSpace();
+
 protected:
+  virtual void onLoad() = 0;
   virtual void DeallocateResources() = 0;
-  virtual void DestroyThreads() {
-  }
+  virtual void DestroyThreads() {}
 
   class Common {
   public:
     static void SetStackPDTable(uint64_t* pml4Table, uint64_t value);
-    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress, const upan::vector<uintptr_t>& rsp0StackPages);
-    static uint64_t AllocateStackSpace(upan::vector<uintptr_t>& rsp0StackPages);
-    static void DeAllocateStackSpace(uint64_t stackPDAddress, upan::vector<uintptr_t>& rsp0StackPages);
+    static void SwitchStack(uint64_t* pml4Table, uint64_t stackPDAddress);
+    static uint64_t AllocateStackSpace();
+    static void DeAllocateStackSpace(uint64_t stackPDAddress);
 
     static uint64_t KernelVirtualStackBase(int stackBlockId);
     static int AllocateKernelStackSpace();
@@ -145,4 +149,5 @@ protected:
 
   ProcessIDs _childProcessIDs;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
+  upan::vector<uintptr_t> _istStackPages;
 };
