@@ -135,7 +135,8 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 
   	case WAIT_SLEEP:
 		{
-      if(PIT::Instance().GetClockCount() >= stateInfo.SleepTime())
+      if(PIT::Instance().GetClockCount() >= stateInfo.SleepTime()
+        || process.processID() == KernelRootProcess::Instance().scheduleRunnerPid())
 			{
         stateInfo.SleepTime(0) ;
 				process.setStatus(RUN);

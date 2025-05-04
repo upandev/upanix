@@ -33,17 +33,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="if interrupt is disabled (i.e. cli) then do a tight loop for 100000 times in poll wait - this is possibly happening because the poll wait is being called from inside an interrupt handler">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,11 +128,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -661,7 +652,8 @@
       <workItem from="1746258523006" duration="10843000" />
       <workItem from="1746280978839" duration="1755000" />
       <workItem from="1746314844791" duration="4780000" />
-      <workItem from="1746324481806" duration="3073000" />
+      <workItem from="1746324481806" duration="6234000" />
+      <workItem from="1746334803878" duration="5323000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1006,7 +998,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="149" />
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1040,9 +1032,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="while doing dynamic relocation, fall back to resolving the symbol using libc.so - this is particularly necessary when shared libs are accessing auto-generated functions like __tls_get_adr() which is defined in libc.so" />
-    <MESSAGE value="refactor managing ELF tables and sections while resolving dynamic symbols" />
-    <MESSAGE value="more changes for network/socket support" />
     <MESSAGE value="refactor to use net/socket.h util functions and remove those util methods in kernel NetworkUtil" />
     <MESSAGE value="refactor network layer code to integrate with socket components" />
     <MESSAGE value="enhance dynamic linking/relocation for OBJECT COPY and GLOB_DAT relocation types" />
@@ -1065,7 +1054,10 @@
     <MESSAGE value="set ist flag to 0 for regular interrupts - so they use RSP0 when switching from ring3 to ring0 and continue to use existing RSP when not switching rings" />
     <MESSAGE value="a util method added to IrqManager to check if an interrupt is enabled" />
     <MESSAGE value="if interrupt is disabled (i.e. cli) then do a tight loop for 100000 times in poll wait - this is possibly happening because the poll wait is being called from inside an interrupt handler" />
-    <option name="LAST_COMMIT_MESSAGE" value="if interrupt is disabled (i.e. cli) then do a tight loop for 100000 times in poll wait - this is possibly happening because the poll wait is being called from inside an interrupt handler" />
+    <MESSAGE value="Revert the logic to use IST specific stack frame instead of RSP0 - this will ensure that all interrupts whether they trigger ring3-&gt;ring0 switch, will use an interrupt stack that is 16 byte aligned and each process/thread will have its own stack space mapped to the same IST stack top - so, interrupts that trigger across process switch are using different stack space without overwriting each other's stack." />
+    <MESSAGE value="E1000 NIC interrupt handler is decoupled from main processing by writing the event to an async queue" />
+    <MESSAGE value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

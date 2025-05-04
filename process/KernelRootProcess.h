@@ -37,6 +37,7 @@ public:
   static KernelRootProcess& Instance();
 
   void createScheduleRunner();
+  int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void openSysLoggerFile(const upan::string& driveName);
   void closeSysLoggerFile();
   void initTLS();
@@ -162,4 +163,5 @@ private:
   IODescriptorTable _iodTable;
   ProcessEnvMap _envMap;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
+  int _scheduleRunnerPid;
 };

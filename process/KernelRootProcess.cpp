@@ -47,7 +47,7 @@ KernelRootProcess::KernelRootProcess() : _iodTable(NO_PROCESS_ID, NO_PROCESS_ID)
 }
 
 void KernelRootProcess::createScheduleRunner() {
-  ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
+  _scheduleRunnerPid = ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }
 
