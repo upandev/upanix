@@ -154,7 +154,7 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 
 	  case WAIT_INT:
 		{
-			if (!WakeupProcessOnInterrupt(process)) {
+			if (WakeupProcessOnInterrupt(process)) {
 			  process.setStatus(RUN);
 			}
 		}
