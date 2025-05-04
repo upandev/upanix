@@ -66,7 +66,8 @@ void E1000NICDevice::InterruptHandler()
 
 E1000NICDevice::E1000NICDevice(const PCIEntry& pciEntry) : NetworkDevice(pciEntry),
   _irq(nullptr),
-  _ethernetHandler(*this) {
+  _ethernetHandler(*this),
+  _eventBuffer(1024) {
 }
 
 E1000NICDevice::~E1000NICDevice() {
@@ -98,6 +99,8 @@ void E1000NICDevice::Initialize() {
   printf("\n Enabled PCI bus master for NIC");
 
   _irq = IrqManager::Instance().RegisterIRQ(_pciEntry.BusEntity.NonBridge.bInterruptLine, (uintptr_t)_e1000_nic_interrupt_handler);
+  StartEventHandler();
+
   IrqManager::Instance().EnableIRQ(*_irq);
 
   regEEPROM = new RegEEPROM(_memIOBase);
@@ -120,38 +123,32 @@ void E1000NICDevice::Initialize() {
 }
 
 void E1000NICDevice::NotifyEvent() {
-  const uint32_t icrVal = regIntControl->readICR();
-  if (icrVal & ICR_RECEIVE) {
-    ProcessRxQueue();
-  } else if (icrVal & ICR_LINK_CHANGE) {
-    KLog::info("Link status changed");
-  } else if (icrVal & ICR_TRANSMIT) {
-    KLog::debug("Packet Transmitted");
-  } else if (icrVal & STATUS_LINK_UP) {
-    KLog::info("Status link-up");
+  InterruptData data;
+
+  data._icrVal = regIntControl->readICR();
+  data._packet = upan::shared_ptr<RawNetPacket>();
+
+  if (data._icrVal & ICR_RECEIVE) {
+    while(true) {
+      data._packet = regRx->GetNextPacket();
+      if (data._packet.isEmpty()) {
+        break;
+      } else {
+        if (!_eventBuffer.push_back(data)) {
+          printf("\n E1000 NIC event buffer is full!!\n");
+        }
+      }
+    }
   } else {
-    KLog::warn("Int for other Reason: %x", icrVal);
+    _eventBuffer.push_back(data);
   }
+  _irq->Signal();
   IrqManager::Instance().SendEOI(*_irq);
 }
 
 void E1000NICDevice::SendPacket(const RawNetPacket& packet) {
   regTx->SendPacket(packet.buf(), packet.len());
   KLog::debug("Packet sent with len: %d", packet.len());
-}
-
-void E1000NICDevice::ProcessRxQueue() {
-  while(true) {
-    auto packet = regRx->GetNextPacket();
-    if (packet.isEmpty()) {
-      break;
-    }
-    try {
-      _ethernetHandler.recv(packet);
-    } catch(const upan::exception& e) {
-      e.Print();
-    }
-  }
 }
 
 volatile uint32_t* REG(const uint64_t base, const uint32_t offset) {
@@ -337,4 +334,46 @@ void E1000NICDevice::RegTXDescriptor::SendPacket(const uint8_t* data, uint32_t l
 
   //TODO: need to do this asynchronously
   while(!(_txDescriptors[cur].status & 0xFF));
+}
+
+void E1000NICDevice::HandleEvent() {
+  if(_eventBuffer.empty()) {
+    ProcessManager::Instance().WaitOnInterrupt(*_irq);
+  } else {
+    const auto& data = _eventBuffer.front();
+    _eventBuffer.pop_front();
+
+    if (data._icrVal & ICR_RECEIVE) {
+      _ethernetHandler.recv(data._packet);
+    } else if (data._icrVal & ICR_LINK_CHANGE) {
+      KLog::info("Link status changed");
+    } else if (data._icrVal & ICR_TRANSMIT) {
+      KLog::debug("Packet Transmitted");
+    } else if (data._icrVal & STATUS_LINK_UP) {
+      KLog::info("Status link-up");
+    } else {
+      KLog::warn("Int for other Reason: %x", data._icrVal);
+    }
+  }
+}
+
+void E1000NICDevice::EventHandler() {
+  while(true) {
+    try {
+      E1000NICDevice::Instance().HandleEvent();
+    } catch (upan::exception& e) {
+      printf("\n Error in E1000 NIC event handler: %s", e.Error().Msg().c_str());
+    }
+  }
+  ProcessManager_Exit();
+}
+
+void E1000NICDevice::StartEventHandler() {
+  static bool started = false;
+  if (started) {
+    return;
+  }
+  started = true;
+  ProcessManager::Instance().CreateKernelProcess("e1000niceh", (uintptr_t) &E1000NICDevice::EventHandler,
+                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

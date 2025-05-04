@@ -32,12 +32,13 @@
 #include <ARPHandler.h>
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
-#include "shared_ptr.h"
+#include <shared_ptr.h>
+#include <queue.h>
 
 class E1000NICDevice : public NetworkDevice {
 private:
   static E1000NICDevice* _instance;
-  E1000NICDevice(const PCIEntry&);
+  explicit E1000NICDevice(const PCIEntry&);
   ~E1000NICDevice();
 
 public:
@@ -50,7 +51,9 @@ public:
   void SendPacket(const RawNetPacket& packet) override;
 
 private:
-
+  static void EventHandler();
+  void StartEventHandler();
+  void HandleEvent();
   void ProcessRxQueue();
 
   class RegEEPROM {
@@ -194,6 +197,11 @@ private:
     uint32_t _index;
   };
 
+  struct InterruptData {
+    uint32_t _icrVal;
+    upan::shared_ptr<RawNetPacket> _packet;
+  };
+
   private:
     uint64_t _memIOBase;
     const IRQ* _irq;
@@ -203,4 +211,5 @@ private:
     RegRXDescriptor* regRx;
     RegTXDescriptor* regTx;
     EthernetHandler _ethernetHandler;
+    upan::queue<InterruptData> _eventBuffer;
 };
