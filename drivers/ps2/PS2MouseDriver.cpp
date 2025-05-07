@@ -198,6 +198,6 @@ void PS2MouseDriver::StartDispatcher() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("moed", (uintptr_t) &Mouse_Event_Dispatcher,
+  ProcessManager::Instance().CreateKernelProcess("mo.eh", (uintptr_t) &Mouse_Event_Dispatcher,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

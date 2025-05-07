@@ -211,5 +211,5 @@ private:
     RegRXDescriptor* regRx;
     RegTXDescriptor* regTx;
     EthernetHandler _ethernetHandler;
-    upan::queue<InterruptData> _eventBuffer;
+    upan::queue<InterruptData> _eventQueue;
 };

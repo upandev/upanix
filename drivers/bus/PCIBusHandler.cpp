@@ -530,7 +530,7 @@ bool PCIEntry::SetupMsiInterrupt(const PCI_IRQ irqNo) const
      Bits 31-20 <97> These bits contain a fixed value for interrupt messages (0FEEH).
      This value locates interrupts at the 1-MByte area with a base address of 4G <96> 18M.
      All accesses to this region are directed as interrupt messages.
-     Care must to be taken to ensure that no other device claims the region as I/O space. */
+     Care must be taken to ensure that no other device claims the region as I/O space. */
   const Apic& apic = dynamic_cast<const Apic&>(IrqManager::Instance());
   const uint32_t address = apic.PhyApicBase() | apic.GetLocalApicID() << 12;
 

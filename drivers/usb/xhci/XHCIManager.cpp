@@ -27,25 +27,24 @@
 #include <KeyboardHandler.h>
 #include <InterruptHandlers.h>
 
-static const IRQ* XHCI_IRQ = nullptr;
-
 void XHCIManager::Handler() {
   //printf("\n XHCI IRQ");
-  if(XHCIManager::Instance().Initialized() && XHCIManager::Instance().GetEventMode() == XHCIManager::Interrupt)
+  auto& xhciManager = XHCIManager::Instance();
+  if(xhciManager.Initialized() && xhciManager.GetEventMode() == XHCIManager::Interrupt)
   {
-    for(auto c : XHCIManager::Instance().Controllers())
+    for(auto c : xhciManager.Controllers())
       c->NotifyEvent();
   }
 
-  IrqManager::Instance().SendEOI(*XHCI_IRQ);
+  xhciManager.irq()->Signal();
+  IrqManager::Instance().SendEOI(*xhciManager.irq());
 }
 
 extern "C" {
   void _xhci_interrupt_handler();
 }
 
-XHCIManager::XHCIManager() : _initialized(false)
-{
+XHCIManager::XHCIManager() : _initialized(false), XHCI_IRQ(nullptr) {
   XHCI_IRQ = IrqManager::Instance().RegisterIRQ(XHCI_IRQ_NO, (uintptr_t)_xhci_interrupt_handler);
   if(XHCI_IRQ) {
     _eventMode = EventMode::Interrupt;
@@ -78,7 +77,11 @@ void XHCIManager::Initialize()
       printf("\n Interface = %u, Class = %u, SubClass = %u", pPCIEntry->bInterface, pPCIEntry->bClassCode, pPCIEntry->bSubClass);
       try
       {
-        _controllers.push_back(new XHCIController(pPCIEntry));
+        if (_controllers.empty()) {
+          _controllers.push_back(new XHCIController(pPCIEntry));
+        } else {
+          throw upan::exception(XLOC, "multiple XHCI controllers are not supported!");
+        }
       }
       catch(const upan::exception& ex)
       {
@@ -87,10 +90,10 @@ void XHCIManager::Initialize()
     }
   }
 
-	if(_controllers.size())
-    KC::MConsole().LoadMessage("USB XHCI Controller Found", Success);
-	else
+	if(_controllers.empty())
     KC::MConsole().LoadMessage("No USB XHCI Controller Found", Failure);
+	else
+    KC::MConsole().LoadMessage("USB XHCI Controller Found", Success);
 
   if(_eventMode == EventMode::Interrupt)
     IrqManager::Instance().EnableIRQ(*XHCI_IRQ);

@@ -34,7 +34,7 @@ uint64_t XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
 
 XHCIController::XHCIController(PCIEntry* pPCIEntry)
   : _pPCIEntry(pPCIEntry), _capReg(nullptr), _opReg(nullptr),
-    _legSupXCap(nullptr), _doorBellRegs(nullptr) {
+    _legSupXCap(nullptr), _doorBellRegs(nullptr), _eventQueue(1024) {
   const uint64_t ioAddress = pPCIEntry->GetIOMapAddress();
   const uint32_t ioSize = pPCIEntry->GetPCIMemSize(0);
 	printf(", Raw MMIO BaseAddr: %lx, IOSize: %d, KernelPageTableMmap Address: %lx", ioAddress, ioSize, _memMapBaseAddress);
@@ -131,6 +131,8 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
 
 void XHCIController::Start()
 {
+  StartEventHandler();
+
   if(_opReg->IsHCRunning())
     return;
   _opReg->DisableHCInterrupt();
@@ -143,48 +145,45 @@ void XHCIController::Start()
 }
 
 //Should be called from IRQ handler - so no need for any synchronization constructs
-void XHCIController::NotifyEvent()
-{
+void XHCIController::NotifyEvent() {
   if(!_opReg->StatusChanged())
     return;
 
-  try
-  {
-    if(_opReg->IsHCHalted())
-    {
-      printf("\n XHCI host controller halted!!");
+  try {
+    InterruptData data;
+    if(_opReg->IsHCHalted()) {
+      _eventQueue.push_back({InterruptResultType::HCHalted });
     }
-    if(_opReg->IsHSError())
-    {
-      printf("\n XHCI host system error!!");
+
+    if(_opReg->IsHSError()) {
+      _eventQueue.push_back({InterruptResultType::HCError });
     }
-    if(_opReg->IsAnyEventPending())
-    {
+
+    if(_opReg->IsSRError()) {
+      _eventQueue.push_back({InterruptResultType::SRError });
+    }
+
+    if(_opReg->IsHCNotReady()) {
+      _eventQueue.push_back({InterruptResultType::HCNotReady });
+    }
+
+    if(_opReg->IsHCError()) {
+      _eventQueue.push_back({InterruptResultType::HCError });
+    }
+
+    if(_opReg->Saving()) {
+      _eventQueue.push_back({InterruptResultType::Saving });
+    }
+
+    if(_opReg->Restoring()) {
+      _eventQueue.push_back({InterruptResultType::Restoring });
+    }
+
+    if(_opReg->IsAnyEventPending()) {
       _eventManager->NotifyEvents();
     }
-    if(_opReg->Saving())
-    {
-      printf("\n Saving XHCI internal state");
-    }
-    if(_opReg->Restoring())
-    {
-      printf("\n Restoring XHCI internal state");
-    }
-    if(_opReg->IsSRError())
-    {
-      printf("\n XHCI Save/Restore error!!");
-    }
-    if(_opReg->IsHCNotReady())
-    {
-      printf("\n XHCI host controller is not ready!!");
-    }
-    if(_opReg->IsHCError())
-    {
-      printf("\n XHCI host controller error!!");
-    }
   }
-  catch(const upan::exception& e)
-  {
+  catch(const upan::exception& e) {
     printf("\n Exception while handling XHCI event - %s", e.ErrorMsg().c_str());
   }
 
@@ -374,8 +373,7 @@ EventTRB XHCIController::InitiateTransfer(uint64_t trbId, uint32_t slotID, uint3
 void XHCIController::InitiateInterruptTransfer(InputContext& context, uint64_t trbId, uint32_t slotID, uint32_t ep, uint64_t interruptDataAddress)
 {
   {
-    //TODO: Find an efficient way w/o disabling interrupts
-    IrqGuard g;
+    upan::mutex_guard g(_eventMutex);
     _eventResults[trbId] = new InterruptEventResult(context, ProcessManager::Instance().GetCurProcId(), interruptDataAddress);
   }
   RingDoorBell(slotID, ep);
@@ -443,16 +441,13 @@ EventTRB XHCIController::WaitForEvent(uint64_t trbId)
 
 void XHCIController::RegisterForWaitedEventResult(uint64_t trbId)
 {
-  //TODO: Find an efficient way w/o disabling interrupts
-  IrqGuard g;
+  upan::mutex_guard g(_eventMutex);
   //printf("\n Registering for TRB event: %x, Process: %d", trbId, ProcessManager::Instance().GetCurProcId());
   _eventResults[trbId] = new WaitedEventResult(ProcessManager::Instance().GetCurProcId());
 }
 
-EventResult& XHCIController::ConsumeEventResult(uint64_t trbId)
-{
-  //TODO: Find an efficient way w/o disabling interrupts
-  IrqGuard g;
+EventResult& XHCIController::ConsumeEventResult(uint64_t trbId) {
+  upan::mutex_guard g(_eventMutex);
   auto it = _eventResults.find(trbId);
   if(it == _eventResults.end())
     throw upan::exception(XLOC, "Can't find TRB ID: %x in EventResults", trbId);
@@ -461,10 +456,9 @@ EventResult& XHCIController::ConsumeEventResult(uint64_t trbId)
   return *result;
 }
 
-//This function is called from XHCI IRQ handler, hence doesn't need any
-//synchronization construct i.e. IrqGuard/ProcessSwitchLock/Mutex
-void XHCIController::PublishEventResult(const EventTRB& result)
-{
+void XHCIController::PublishEventResult(const EventTRB& result) {
+  upan::mutex_guard g(_eventMutex);
+
   auto it = _eventResults.find(result.TRBPointer());
   if(it == _eventResults.end())
   {
@@ -607,7 +601,7 @@ void EventManager::NotifyEvents()
     if(_iregs[0].IsLastDQPtr())
       _eventCycleBit = !_eventCycleBit;
 
-    _controller.PublishEventResult(*_iregs[0].DQEvent());
+    _controller._eventQueue.push_back( { XHCIController::InterruptResultType::PendingEvent, *_iregs[0].DQEvent() });
 
     _iregs[0].IncrementDQPtr();
 
@@ -641,4 +635,70 @@ void InterruptEventResult::Consume(const EventTRB &r)
   {
     e.Print();
   }
+}
+
+void XHCIController::HandleEvent() {
+  if (_eventQueue.empty()) {
+    ProcessManager::Instance().WaitOnInterrupt(*XHCIManager::Instance().irq());
+  } else {
+    while(!_eventQueue.empty()) {
+      const auto& data = _eventQueue.front();
+      _eventQueue.pop_front();
+
+      switch (data._resultType) {
+        case InterruptResultType::HCHalted:
+          printf("\n XHCI host controller halted!!");
+          break;
+
+        case InterruptResultType::HSError:
+          printf("\n XHCI host system error!!");
+          break;
+
+        case InterruptResultType::SRError:
+          printf("\n XHCI Save/Restore error!!");
+          break;
+
+        case InterruptResultType::HCNotReady:
+          printf("\n XHCI host controller is not ready!!");
+          break;
+
+        case InterruptResultType::HCError:
+          printf("\n XHCI host controller error!!");
+          break;
+
+        case InterruptResultType::Saving:
+          printf("\n Saving XHCI internal state");
+          break;
+
+        case InterruptResultType::Restoring:
+          printf("\n Restoring XHCI internal state");
+          break;
+
+        case InterruptResultType::PendingEvent:
+          PublishEventResult(data._trb);
+          break;
+      }
+    }
+  }
+}
+
+void XHCIController::EventHandler() {
+  while(true) {
+    try {
+      XHCIManager::Instance().Controllers().begin()->HandleEvent();
+    } catch (upan::exception& e) {
+      printf("\n Error in KB event dispatcher: %s", e.Error().Msg().c_str());
+    }
+  }
+  ProcessManager_Exit();
+}
+
+void XHCIController::StartEventHandler() {
+  static bool started = false;
+  if (started) {
+    return;
+  }
+  started = true;
+  ProcessManager::Instance().CreateKernelProcess("xhci0.eh", (uintptr_t) &XHCIController::EventHandler,
+                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

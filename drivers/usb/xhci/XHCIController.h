@@ -72,6 +72,27 @@ class XHCIController
     EventResult& ConsumeEventResult(uint64_t trbId);
     void PublishEventResult(const EventTRB& result);
 
+    enum InterruptResultType {
+      HCHalted,
+      HSError,
+      SRError,
+      HCNotReady,
+      HCError,
+      Saving,
+      Restoring,
+      PendingEvent,
+    };
+
+    struct InterruptData {
+      InterruptResultType _resultType;
+      EventTRB _trb;
+    };
+
+    static void EventHandler();
+    void StartEventHandler();
+    void HandleEvent();
+
+private:
     static uint64_t  _memMapBaseAddress;
     PCIEntry*        _pPCIEntry;
     uint64_t*        _deviceContextAddrArray;
@@ -82,8 +103,10 @@ class XHCIController
     LegSupXCap*      _legSupXCap;
     volatile unsigned* _doorBellRegs;
     upan::list<SupProtocolXCap*> _supProtoXCaps;
-    upan::map<uint64_t, EventResult*> _eventResults;
 		upan::map<uint32_t, XHCIDevice*> _devices;
+    upan::mutex _eventMutex;
+    upan::map<uint64_t, EventResult*> _eventResults;
+    upan::queue<InterruptData> _eventQueue;
 
     friend class XHCIManager;
     friend class EventManager;

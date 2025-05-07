@@ -46,9 +46,12 @@ class XHCIManager
     bool Initialized() const { return _initialized; }
     void ProbeDevice();
     const upan::list<XHCIController*>& Controllers() { return _controllers; }
+    const IRQ* irq() { return XHCI_IRQ; }
+
   private:
     bool _initialized;
     EventMode _eventMode;
+    const IRQ* XHCI_IRQ;
     upan::list<XHCIController*> _controllers;    
 };
 

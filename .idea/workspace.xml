@@ -33,13 +33,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/bus/PCIBusHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/PCIBusHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -653,7 +657,10 @@
       <workItem from="1746280978839" duration="1755000" />
       <workItem from="1746314844791" duration="4780000" />
       <workItem from="1746324481806" duration="6234000" />
-      <workItem from="1746334803878" duration="5323000" />
+      <workItem from="1746334803878" duration="6359000" />
+      <workItem from="1746345229403" duration="924000" />
+      <workItem from="1746402161492" duration="4900000" />
+      <workItem from="1746621239873" duration="2000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -998,7 +1005,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="152" />
+    <option name="localTasksCounter" value="153" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1032,7 +1039,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor to use net/socket.h util functions and remove those util methods in kernel NetworkUtil" />
     <MESSAGE value="refactor network layer code to integrate with socket components" />
     <MESSAGE value="enhance dynamic linking/relocation for OBJECT COPY and GLOB_DAT relocation types" />
     <MESSAGE value="enhance network stack to support packet send and recv - still in progress - will continue after adding support for shared_ptr" />
@@ -1057,7 +1063,8 @@
     <MESSAGE value="Revert the logic to use IST specific stack frame instead of RSP0 - this will ensure that all interrupts whether they trigger ring3-&gt;ring0 switch, will use an interrupt stack that is 16 byte aligned and each process/thread will have its own stack space mapped to the same IST stack top - so, interrupts that trigger across process switch are using different stack space without overwriting each other's stack." />
     <MESSAGE value="E1000 NIC interrupt handler is decoupled from main processing by writing the event to an async queue" />
     <MESSAGE value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
+    <MESSAGE value="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active" />
+    <option name="LAST_COMMIT_MESSAGE" value="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -65,9 +65,9 @@ void E1000NICDevice::InterruptHandler()
 }
 
 E1000NICDevice::E1000NICDevice(const PCIEntry& pciEntry) : NetworkDevice(pciEntry),
-  _irq(nullptr),
-  _ethernetHandler(*this),
-  _eventBuffer(1024) {
+                                                           _irq(nullptr),
+                                                           _ethernetHandler(*this),
+                                                           _eventQueue(1024) {
 }
 
 E1000NICDevice::~E1000NICDevice() {
@@ -134,13 +134,13 @@ void E1000NICDevice::NotifyEvent() {
       if (data._packet.isEmpty()) {
         break;
       } else {
-        if (!_eventBuffer.push_back(data)) {
+        if (!_eventQueue.push_back(data)) {
           printf("\n E1000 NIC event buffer is full!!\n");
         }
       }
     }
   } else {
-    _eventBuffer.push_back(data);
+    _eventQueue.push_back(data);
   }
   _irq->Signal();
   IrqManager::Instance().SendEOI(*_irq);
@@ -337,11 +337,11 @@ void E1000NICDevice::RegTXDescriptor::SendPacket(const uint8_t* data, uint32_t l
 }
 
 void E1000NICDevice::HandleEvent() {
-  if(_eventBuffer.empty()) {
+  if(_eventQueue.empty()) {
     ProcessManager::Instance().WaitOnInterrupt(*_irq);
   } else {
-    const auto& data = _eventBuffer.front();
-    _eventBuffer.pop_front();
+    const auto& data = _eventQueue.front();
+    _eventQueue.pop_front();
 
     if (data._icrVal & ICR_RECEIVE) {
       _ethernetHandler.recv(data._packet);
@@ -374,6 +374,6 @@ void E1000NICDevice::StartEventHandler() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("e1000niceh", (uintptr_t) &E1000NICDevice::EventHandler,
+  ProcessManager::Instance().CreateKernelProcess("e1000nic.eh", (uintptr_t) &E1000NICDevice::EventHandler,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 }

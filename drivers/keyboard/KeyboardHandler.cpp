@@ -128,7 +128,7 @@ void KeyboardHandler::StartDispatcher() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("kbed", (uintptr_t) &Keyboard_Event_Dispatcher,
+  ProcessManager::Instance().CreateKernelProcess("kb.eh", (uintptr_t) &Keyboard_Event_Dispatcher,
                                                  ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
 
 }
