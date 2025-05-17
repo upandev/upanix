@@ -105,27 +105,31 @@ void DHCPClient::run() {
     _flowState = FlowState_Request;
   }
 
-  while (is_active()) {
-    if (state() == running) {
-      KLog::debug("processing flow-state: %d", _flowState);
-      switch (_flowState) {
-        case FlowState_Discover:
-          dhcpDiscover();
-          break;
+  try {
+    while (is_active()) {
+      if (state() == running) {
+        KLog::debug("processing flow-state: %d", _flowState);
+        switch (_flowState) {
+          case FlowState_Discover:
+            dhcpDiscover();
+            break;
 
-        case FlowState_Request:
-          dhcpRequest();
-          break;
+          case FlowState_Request:
+            dhcpRequest();
+            break;
 
-        case FlowState_Renew:
-          dhcpRenew();
-          break;
+          case FlowState_Renew:
+            dhcpRenew();
+            break;
 
-        case FlowState_Rebind:
-          dhcpRebind();
-          break;
+          case FlowState_Rebind:
+            dhcpRebind();
+            break;
+        }
       }
     }
+  } catch(const upan::exception& e) {
+    KLog::error("DHCP ERROR: %s", e.ErrorMsg().c_str());
   }
 }
 
@@ -193,6 +197,7 @@ void DHCPClient::dhcpRenew() {
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
+    //_testRenewalCount++;
   }
 }
 
@@ -201,11 +206,11 @@ void DHCPClient::dhcpRenew() {
 //On ACK, update the IP details and go-to wait until renewal time
 void DHCPClient::dhcpRebind() {
   KLog::info("sending DHCP rebind");
-  const auto& result = _testRebindCount >= 1 ? upan::error("force renewal failure") : sendRequest();
+  const auto& result = _testRebindCount >= 1 ? upan::error("force rebind failure") : sendRequest();
   if (result.isBad()) {
     KLog::error(result.badValue().Msg().c_str());
     sleep(60); //re-try every minute
-    if (btime() > _leaseExpiry) { //still before expiry
+    if (btime() < _leaseExpiry) { //still before expiry
       _flowState = FlowState_Rebind;
     } else {
       _flowState = FlowState_Discover;
@@ -215,6 +220,7 @@ void DHCPClient::dhcpRebind() {
     updateFromDHCPResponse(result.goodValue());
     sleep(_leaseRenewalTime); //sleep for renewal time
     _flowState = FlowState_Renew;
+    //_testRebindCount++;
   }
 }
 

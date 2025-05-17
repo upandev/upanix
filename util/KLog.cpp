@@ -63,3 +63,7 @@ void KLog::error(const char* __restrict fmsg, ...) {
   upan::logger::instance().logarg(upan::logger::LOG_ERROR, fmsg, arg);
   va_end(arg);
 }
+
+void KLog::exception(const upan::exception& e) {
+  KLog::error("%s", e.ErrorMsg().c_str());
+}

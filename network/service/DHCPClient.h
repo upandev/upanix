@@ -30,7 +30,7 @@
 
 class NetworkDevice;
 
-class DHCPClient : upan::thread {
+class DHCPClient : public upan::thread {
 private:
   static constexpr int DHCP_SERVER_PORT = 67;
   static constexpr int DHCP_CLIENT_PORT = 68;

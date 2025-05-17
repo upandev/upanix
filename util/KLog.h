@@ -22,6 +22,7 @@
 #pragma once
 
 #include <atomicop.h>
+#include <exception.h>
 
 class KLog {
 public:
@@ -32,6 +33,7 @@ public:
   static void info(const char* __restrict fmsg, ...);
   static void warn(const char* __restrict fmsg, ...);
   static void error(const char* __restrict fmsg, ...);
+  static void exception(const upan::exception&);
 
 private:
   static upan::atomic::integral<uint32_t> _logLevel;

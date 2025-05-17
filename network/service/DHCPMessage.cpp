@@ -209,17 +209,20 @@ const uint8_t* DHCPMessage::getOption(DHCPOptionType optionType) const {
       return nullptr;
     }
 
+    if (i + 1 >= DHCP_MAX_OPTION_SIZE) {
+      throw upan::exception(XLOC, "incomplete option: %d, missing len", optionType);
+    }
+
+    const auto len = _options[i+1];
+    const auto nexti = i + 1 + len;
+    if (nexti >= DHCP_MAX_OPTION_SIZE) {
+      throw upan::exception(XLOC, "incomplete option: %d", optionType);
+    }
+
     if (_options[i] == optionType) {
-      if (i + 1 >= DHCP_MAX_OPTION_SIZE) {
-        throw upan::exception(XLOC, "incomplete option: %d, missing len", optionType);
-      }
-
-      const auto len = _options[i+1];
-      if (i + 1 + len >= DHCP_MAX_OPTION_SIZE) {
-        throw upan::exception(XLOC, "incomplete option: %d", optionType);
-      }
-
       return _options + i + 1;
+    } else {
+      i = nexti;
     }
   }
 
@@ -241,6 +244,9 @@ DHCPMessage::DHCPMessageType DHCPMessage::getMessageType() const {
   switch(messageType) {
     case DHCPMessageType::Discover:
     case DHCPMessageType::Offer:
+    case DHCPMessageType::ACK:
+    case DHCPMessageType::NAK:
+    case DHCPMessageType::Decline:
       return (DHCPMessageType)messageType;
 
     default:

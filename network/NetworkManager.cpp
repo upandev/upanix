@@ -39,10 +39,11 @@ void NetworkManager::Initialize() {
     }
     Probe(*pPCIEntry);
   }
-//  getDefaultDevice().ifPresent([this](NetworkDevice& networkDevice) {
-//    _dhcpClient.reset(new DHCPClient(networkDevice));
-//    _dhcpClient->run();
-//  });
+
+  getDefaultDevice().ifPresent([this](NetworkDevice& networkDevice) {
+    _dhcpClient.reset(new DHCPClient(networkDevice));
+    _dhcpClient->start();
+  });
 }
 
 upan::option<NetworkDevice&> NetworkManager::getDefaultDevice() {

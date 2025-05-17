@@ -135,12 +135,14 @@ void E1000NICDevice::NotifyEvent() {
         break;
       } else {
         if (!_eventQueue.push_back(data)) {
-          printf("\n E1000 NIC event buffer is full!!\n");
+          printf("\n (%d) E1000 NIC event buffer is full!!\n", __LINE__);
         }
       }
     }
   } else {
-    _eventQueue.push_back(data);
+    if (!_eventQueue.push_back(data)) {
+      printf("\n (%d) E1000 NIC event buffer is full!!\n", __LINE__);
+    }
   }
   _irq->Signal();
   IrqManager::Instance().SendEOI(*_irq);

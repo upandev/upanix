@@ -39,7 +39,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
         try {
           *retVal = NetworkOperations::Instance().createSocket(family, type, protocol);
         } catch(const upan::exception& e) {
-          e.Print();
+          KLog::exception(e);
           *retVal = -1;
         }
 			}
@@ -54,7 +54,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
         try {
           NetworkOperations::Instance().bind(fd, address, len);
         } catch(const upan::exception& e) {
-          e.Print();
+          KLog::exception(e);
           *retVal = -1;
         }
       }
@@ -66,7 +66,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
         try {
           NetworkOperations::Instance().setSockOpt((sock_t)p1, (int)p2, (SOCKET_OPTION)p3, (const void*)p4, (socklen_t)p5);
         } catch(const upan::exception& e) {
-          e.Print();
+          KLog::exception(e);
           *retVal = -1;
         }
       }
@@ -85,7 +85,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       try {
         NetworkOperations::Instance().sendTo(fd, buf, n, flags, address, len);
       } catch(const upan::exception& e) {
-        e.Print();
+        KLog::exception(e);
         *retVal = -1;
       }
     }
@@ -104,7 +104,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       try {
         *retVal = NetworkOperations::Instance().recvFrom(fd, buf, n, flags, address, len);
       } catch(const upan::exception& e) {
-        e.Print();
+        KLog::exception(e);
         *retVal = -1;
       }
     }
