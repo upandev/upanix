@@ -364,7 +364,7 @@ void E1000NICDevice::EventHandler() {
     try {
       E1000NICDevice::Instance().HandleEvent();
     } catch (upan::exception& e) {
-      printf("\n Error in E1000 NIC event handler: %s", e.Error().Msg().c_str());
+      KLog::exception(e);
     }
   }
   ProcessManager_Exit();

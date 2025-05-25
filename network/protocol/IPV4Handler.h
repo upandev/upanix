@@ -27,6 +27,8 @@
 #include <net/socket.h>
 #include <NetworkPacketComponents.h>
 #include "shared_ptr.h"
+#include <mutex.h>
+#include <vector.h>
 
 class EthernetHandler;
 
@@ -41,4 +43,25 @@ public:
 private:
   uint16_t calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header);
   void verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header);
+
+  struct FragmentKey {
+    uint16_t _identification;
+    uint8_t _protocol;
+    in_addr_t _srcAddr;
+    in_addr_t _destAddr;
+
+    bool operator<(const FragmentKey& r) const {
+      if (_identification != r._identification) return _identification < r._identification;
+      if (_protocol != r._protocol) return _protocol < r._protocol;
+      if (_srcAddr != r._srcAddr) return _srcAddr < r._srcAddr;
+      return _destAddr < r._destAddr;
+    }
+  };
+
+  void addFragment(const IPV4Handler::FragmentKey& fragmentKey, const upan::shared_ptr<RawNetPacket>& packet);
+  upan::shared_ptr<RawNetPacket> assemblePacket(const IPV4Handler::FragmentKey& fragmentKey, const upan::shared_ptr<RawNetPacket>& lastFragment);
+
+private:
+  upan::mutex _fragmentMutex;
+  upan::map<FragmentKey, upan::vector<upan::shared_ptr<RawNetPacket>>> _fragments;
 };

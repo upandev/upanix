@@ -33,12 +33,21 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   verifyChecksum(ipv4Header);
   NetworkManager::Instance().updateIPMACTable(*packet);
   ipv4Header.toHost().print();
-  switch(ipv4Header.type()) {
-    case IPPROTO_UDP:
-      device().getUDP4Handler().recv(packet);
-      break;
-    default:
-      throw upan::exception(XLOC, "unsupported IPV4 packet type: %d", ipv4Header.type());
+
+  const FragmentKey fragmentKey = { ipv4Header._identification, ipv4Header._protocol, ipv4Header._srcAddr, ipv4Header._destAddr };
+
+  if (ipv4Header.hasMoreFragments()) {
+    addFragment(fragmentKey, packet);
+  } else {
+    upan::shared_ptr<RawNetPacket> assembledPacket(assemblePacket(fragmentKey, packet));
+
+    switch(ipv4Header.type()) {
+      case IPPROTO_UDP:
+        device().getUDP4Handler().recv(assembledPacket);
+        break;
+      default:
+        throw upan::exception(XLOC, "unsupported IPV4 packet type: %d", ipv4Header.type());
+    }
   }
 }
 
@@ -54,33 +63,116 @@ void IPV4Handler::initHeaderLen(RawNetPacket& packet) {
 
 void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
   auto& ipv4Header = packet.getIPV4Header();
+
   //This should be already done if we are sending a packet from a higher network layer like UDP
   initHeaderLen(packet);
-  ipv4Header._version = 4;
-  ipv4Header._tos = 0;
-  ipv4Header._totalLen = htons(ntohs(packet.getUDP4Header()._len) + (ipv4Header._ihl * sizeof(uint32_t)));
-  ipv4Header._identification = htons(rand());
-  ipv4Header._flags = 0;
-  ipv4Header._fragmentOffset = 0;
-  ipv4Header._ttl = 255;
-  ipv4Header._protocol = protocol;
-  ipv4Header._checksum = 0;
-  ipv4Header._srcAddr = srcAddr.sin_addr.s_addr;
-  ipv4Header._destAddr = destAddr.sin_addr.s_addr;
 
-  ipv4Header._checksum = calcChecksum(ipv4Header);
+  const auto ipv4HeaderLen = ipv4Header.headerLen();
+  const auto maxPayload = device().mtu() - ipv4HeaderLen;
 
-  device().getEthernetHandler().send(packet, NetworkPacket::EthernetPacketType::E_IPV4_T);
+  const auto packetHeaderLen = NetworkPacket::Ethernet::HEADER_SIZE + ipv4HeaderLen;
+  const auto totalPayloadSize = packet.len() - packetHeaderLen;
+
+  const auto packetId = (uint16_t)rand();
+
+  size_t offset = 0;
+  while (offset < totalPayloadSize) {
+    // 8 byte aligned fragments, not applicable for last one
+    const auto fragmentLen = (totalPayloadSize - offset) > maxPayload ? maxPayload & 0x7 : (totalPayloadSize - offset);
+
+    ipv4Header._version = 4;
+    ipv4Header._tos = 0;
+    ipv4Header._totalLen = htons(fragmentLen + ipv4HeaderLen);
+    ipv4Header._identification = htons(packetId);
+    // set MF flag if there are more fragments
+    ipv4Header._flags_fragmentOffset = htons(((offset + fragmentLen) < totalPayloadSize ? 0x2000 : 0x0) | (offset >> 3));
+    ipv4Header._ttl = 255;
+    ipv4Header._protocol = protocol;
+    ipv4Header._checksum = 0;
+    ipv4Header._srcAddr = srcAddr.sin_addr.s_addr;
+    ipv4Header._destAddr = destAddr.sin_addr.s_addr;
+
+    ipv4Header._checksum = calcChecksum(ipv4Header);
+
+    if (totalPayloadSize <= maxPayload) { //there is only one fragment - use the main packet
+      device().getEthernetHandler().send(packet, NetworkPacket::EthernetPacketType::E_IPV4_T);
+    } else {
+      RawNetPacket fragmentPacket(packetHeaderLen + fragmentLen);
+      fragmentPacket.getIPV4Header() = ipv4Header;
+      memcpy(fragmentPacket.getIPV4Data(), packet.getIPV4Data() + offset, fragmentLen);
+      device().getEthernetHandler().send(fragmentPacket, NetworkPacket::EthernetPacketType::E_IPV4_T);
+    }
+
+    offset += fragmentLen;
+  }
 }
 
 uint16_t IPV4Handler::calcChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {
-  return NetworkUtil::CalculateChecksum((uint16_t *)&ipv4Header,ipv4Header._ihl * sizeof(uint32_t), 0);
+  return NetworkUtil::CalculateChecksum((uint16_t *)&ipv4Header,ipv4Header.headerLen(), 0);
 }
 
 void IPV4Handler::verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header) {
   const auto calculatedChecksum = calcChecksum(ipv4Header);
   if (calculatedChecksum != 0) {
-    ipv4Header.print();
+    ipv4Header.toHost().print();
     throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
+  }
+}
+
+void IPV4Handler::addFragment(const IPV4Handler::FragmentKey& fragmentKey, const upan::shared_ptr<RawNetPacket>& packet) {
+  upan::mutex_guard g(_fragmentMutex);
+  const NetworkPacket::IPV4::Header& ipv4Header = packet->getIPV4Header();
+  _fragments[fragmentKey].push_back(packet);
+}
+
+upan::shared_ptr<RawNetPacket> IPV4Handler::assemblePacket(const IPV4Handler::FragmentKey& fragmentKey, const upan::shared_ptr<RawNetPacket>& lastFragment) {
+  upan::mutex_guard g(_fragmentMutex);
+
+  auto it = _fragments.find(fragmentKey);
+  if (it == _fragments.end()) {
+    return lastFragment;
+  }
+
+  auto& packets = it->second;
+  packets.push_back(lastFragment);
+
+  auto firstPacket = packets.begin();
+  const int headerLen = NetworkPacket::Ethernet::HEADER_SIZE + firstPacket->getIPV4Header().headerLen();
+
+  int dataLen = 0;
+  for (auto p : packets) {
+    dataLen += p->getIPV4Header().dataLen();
+  }
+
+  //validate the total bytes received vs the len data on the inbound packet
+  upan::shared_ptr<RawNetPacket> finalPacket(new RawNetPacket(headerLen + dataLen));
+  finalPacket->getEthernetHeader() = firstPacket->getEthernetHeader();
+  auto& finalIPV4Header = finalPacket->getIPV4Header();
+  finalIPV4Header = firstPacket->getIPV4Header();
+
+  int dataPos = 0;
+  for (auto p : packets) {
+    memcpy(finalPacket->getIPV4Data() + dataPos, p->getIPV4Data(), p->getIPV4Header().dataLen());
+    dataPos += p->getIPV4Header().dataLen();
+  }
+
+  finalIPV4Header._totalLen = firstPacket->getIPV4Header().headerLen() + dataLen;
+  finalIPV4Header._flags_fragmentOffset = 0;
+  finalIPV4Header._checksum = 0;
+  finalIPV4Header._checksum = calcChecksum(finalIPV4Header);
+
+  _fragments.erase(fragmentKey);
+
+  //TODO: cleanup expired entries
+
+  const int calculatedLen = lastFragment->getIPV4Header().fragmentOffset() + lastFragment->getIPV4Header().dataLen();
+  if (dataLen != calculatedLen) {
+    throw upan::exception("fragment len mismatch for packet-id: %d, src ip: %s, dest ip: %s, received len: %d, calculated len: %d",
+                ntohs(fragmentKey._identification),
+                upan::net::inet_ntostr(htonl(fragmentKey._srcAddr)).c_str(),
+                upan::net::inet_ntostr(htonl(fragmentKey._destAddr)).c_str(),
+                dataLen, calculatedLen);
+  } else {
+    return finalPacket;
   }
 }

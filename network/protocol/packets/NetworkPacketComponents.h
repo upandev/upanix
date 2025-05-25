@@ -150,8 +150,7 @@ namespace NetworkPacket {
       uint8_t _tos; // Type Of Service
       uint16_t _totalLen;
       uint16_t _identification;
-      uint16_t _flags:3;
-      uint16_t _fragmentOffset:13;
+      uint16_t _flags_fragmentOffset;
       uint8_t _ttl; // Time to live
       uint8_t _protocol;
       uint16_t _checksum;
@@ -162,10 +161,27 @@ namespace NetworkPacket {
         return static_cast<IPPROTO_TYPE>(_protocol);
       }
 
+      int headerLen() const {
+        return _ihl * sizeof(uint32_t);
+      }
+
+      int dataLen() const {
+        return _totalLen - _ihl;
+      }
+
+      uint16_t fragmentOffset() const {
+        return (ntohs(_flags_fragmentOffset) & 0x1FFF) << 3;
+      }
+
+      bool hasMoreFragments() const {
+        return (ntohs(_flags_fragmentOffset) & 0x2000) != 0;
+      }
+
       Header toHost() const {
         Header h = *this;
         h._totalLen = ntohs(_totalLen);
         h._identification = ntohs(_identification);
+        h._flags_fragmentOffset = htons(_flags_fragmentOffset);
         h._checksum = ntohs(_checksum);
         h._srcAddr = ntohl(_srcAddr);
         h._destAddr = ntohl(_destAddr);
@@ -176,7 +192,7 @@ namespace NetworkPacket {
         KLog::debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
 
         KLog::debug("Identification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
-               _identification, _flags, _fragmentOffset, _ttl, _protocol);
+               _identification, _flags_fragmentOffset >> 13, _flags_fragmentOffset << 3, _ttl, _protocol);
 
         KLog::debug("Checksum: 0x%x", _checksum);
 
