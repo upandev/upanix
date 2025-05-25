@@ -44,6 +44,8 @@ public:
   }
 
   void seek(int seekType, int offset) override;
+  void truncate();
+
   struct stat getStat();
   uint32_t getOffset() const override {
     return _offset;

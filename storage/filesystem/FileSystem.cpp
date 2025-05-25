@@ -353,6 +353,32 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mo
   return fileNodeRef;
 }
 
+void FileSystem::truncate(FileNodeRef fileNodeRef) {
+  FileNodeRef::WriteGuard g1(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  if (node.isDirectory()) {
+    throw upan::exception(XLOC, "%s is a directory", node.name().c_str());
+  }
+
+  FileNodeRef parentNodeRef(node.parent());
+  FileNodeRef::WriteGuard g2(parentNodeRef);
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  auto curSectorId = node.startSectorId();
+  while(curSectorId != EOC) {
+    curSectorId = deallocateSector(curSectorId);
+  }
+  fileNode.StartSectorID(EOC);
+  fileNode.Size(0);
+  _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
+  node.startSectorId(EOC);
+  node.size(0);
+}
+
 FileNodeRef FileSystem::exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd) {
   return _fileTree.getFileNodeRef(fileTokens, cwd);
 }

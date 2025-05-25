@@ -69,6 +69,7 @@ public:
   void remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd,
               Process& process);
   FileNodeRef open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process);
+  void truncate(FileNodeRef fileNodeRef);
   FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   struct stat stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   struct stat stats(FileNodeRef fileNodeRef);

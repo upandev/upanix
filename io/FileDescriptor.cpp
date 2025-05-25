@@ -87,6 +87,15 @@ void FileDescriptor::seek(int seekType, int offset) {
   _offset = offset;
 }
 
+void FileDescriptor::truncate() {
+  if( !(getMode() & O_WRONLY || getMode() & O_RDWR || getMode() & O_APPEND) ) {
+    throw upan::exception(XLOC, "insufficient permission to truncate file fd: %d", id());
+  }
+
+  _diskDrive.fileSystem().truncate(_fileNodeRef);
+  _offset = 0;
+}
+
 struct stat FileDescriptor::getStat() {
   return _diskDrive.fileSystem().stats(_fileNodeRef);
 }
