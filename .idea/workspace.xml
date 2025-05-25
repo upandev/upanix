@@ -33,16 +33,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implement truncate file capability in the filesystem">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPMessage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPMessage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KLog.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -666,7 +667,16 @@
       <workItem from="1747097949047" duration="1302000" />
       <workItem from="1747124066221" duration="564000" />
       <workItem from="1747138783263" duration="2242000" />
-      <workItem from="1747455338999" duration="475000" />
+      <workItem from="1747455338999" duration="2855000" />
+      <workItem from="1747493434950" duration="7038000" />
+      <workItem from="1747561440129" duration="147000" />
+      <workItem from="1747567518579" duration="438000" />
+      <workItem from="1747572912975" duration="599000" />
+      <workItem from="1747611639424" duration="1660000" />
+      <workItem from="1748084004461" duration="3933000" />
+      <workItem from="1748088027921" duration="2300000" />
+      <workItem from="1748096358053" duration="2590000" />
+      <workItem from="1748136801037" duration="345000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1011,7 +1021,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="153" />
+    <option name="localTasksCounter" value="156" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1045,9 +1055,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor network layer code to integrate with socket components" />
-    <MESSAGE value="enhance dynamic linking/relocation for OBJECT COPY and GLOB_DAT relocation types" />
-    <MESSAGE value="enhance network stack to support packet send and recv - still in progress - will continue after adding support for shared_ptr" />
     <MESSAGE value="console test code for shared and uniq ptrs" />
     <MESSAGE value="use shared_ptr for RawNetPacket while receiving packets" />
     <MESSAGE value="fixed issues with socket send" />
@@ -1070,7 +1077,10 @@
     <MESSAGE value="E1000 NIC interrupt handler is decoupled from main processing by writing the event to an async queue" />
     <MESSAGE value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
     <MESSAGE value="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active" />
-    <option name="LAST_COMMIT_MESSAGE" value="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active" />
+    <MESSAGE value="implemented and tested DHCP client" />
+    <MESSAGE value="if there is no renewal/rebind time then set it to half of least time - this is to prevent a loop of renewal requests" />
+    <MESSAGE value="implement truncate file capability in the filesystem" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement truncate file capability in the filesystem" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

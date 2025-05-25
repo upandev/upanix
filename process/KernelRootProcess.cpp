@@ -91,6 +91,25 @@ void KernelRootProcess::closeSysLoggerFile() {
   SetKernelRootMode(false);
 }
 
+void KernelRootProcess::resetSysLoggerFile() {
+  ProcessSwitchLock pLock;
+  SetKernelRootMode(true);
+
+  try {
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
+    auto& parentDescriptor = ioDescriptor.getParentDescriptor().value();
+    if (typeid(parentDescriptor) == typeid(FileDescriptor)) {
+      dynamic_cast<FileDescriptor&>(parentDescriptor).truncate();
+    }
+  } catch(const upan::exception& e) {
+    e.Print();
+  } catch(...) {
+    printf("\n unknown error while closing syslog file");
+  }
+
+  SetKernelRootMode(false);
+}
+
 void KernelRootProcess::initTLS() {
   _tlsp.reset(new ThreadLocalSpace());
   //As per kernel.ld script, the .tbss section comes after .tdata

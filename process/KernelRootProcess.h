@@ -40,6 +40,7 @@ public:
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void openSysLoggerFile(const upan::string& driveName);
   void closeSysLoggerFile();
+  void resetSysLoggerFile();
   void initTLS();
 
   bool isKernelProcess() const override {

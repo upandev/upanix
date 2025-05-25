@@ -142,6 +142,7 @@ static void ConsoleCommands_Sleep();
 static void ConsoleCommands_Kill();
 static void ConsoleCommands_ResetMouse();
 static void ConsoleCommands_MemStats();
+static void ConsoleCommands_ResetSysLog();
 
 /*****************************************/
 
@@ -215,6 +216,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "kill", &ConsoleCommands_Kill },
 	{ "resetmouse", &ConsoleCommands_ResetMouse },
   { "memstats", &ConsoleCommands_MemStats },
+  { "resetsyslog", &ConsoleCommands_ResetSysLog },
 	{ "\0",			NULL }
 } ;
 
@@ -2286,4 +2288,9 @@ void ConsoleCommands_ResetMouse() {
 void ConsoleCommands_MemStats() {
   MemManager::Instance().DisplayPageAllocationStats();
   printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
+}
+
+void ConsoleCommands_ResetSysLog() {
+  KernelRootProcess::Instance().resetSysLoggerFile();
+  printf("\n syslog cleared");
 }
