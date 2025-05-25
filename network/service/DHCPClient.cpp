@@ -63,6 +63,12 @@ void DHCPClient::loadFromConfig() {
   if (_dhcpServerAddress == INADDR_NONE) {
     _dhcpServerAddress = _networkDevice.GetGatewayAddress();
   }
+
+  if (_leaseRenewalTime == 0) {
+    _leaseRenewalTime = _leaseTime / 2;
+    _leaseRebindingTime = _leaseTime / 2;
+  }
+
   KLog::info("DHCP config loaded");
   KLog::info("Lease Time: %u, Renewal Time: %u, Rebinding Time: %u", _leaseTime, _leaseRenewalTime, _leaseRebindingTime);
   KLog::info("IP: %s, Gateway: %s, Subnet Mask: %s",

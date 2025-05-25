@@ -23,7 +23,7 @@
 #include <DHCPMessage.h>
 #include <NetworkDevice.h>
 
-static constexpr int DHCP_REQUEST_IP_RENEWAL_TIME = 60; // 1 min
+static constexpr int DHCP_REQUEST_IP_RENEWAL_TIME = 3600; // 1 min
 
 void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
   memset(this, 0, sizeof(DHCPMessage));
