@@ -25,6 +25,7 @@
 #include <ProcessManager.h>
 #include <SocketDescriptorStream.h>
 #include <SocketDescriptorDataGram.h>
+#include <SocketDescriptorRaw.h>
 
 NetworkOperations::NetworkOperations() {
 }
@@ -64,6 +65,17 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
     }
     break;
 
+    case SOCK_RAW:
+    {
+      if (protocol == IPPROTO_IP) {
+        protocol = IPPROTO_ICMP;
+      }
+
+      if (protocol != IPPROTO_ICMP) {
+        throw upan::exception(XLOC, "invalid IPPROTO_TYPE %d for raw-socket", protocol);
+      }
+    }
+
     default:
       throw upan::exception(XLOC, "unsupported socket type: %d", socketType);
   }
@@ -73,10 +85,10 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
     switch (socketType) {
       case SOCK_STREAM:
         return new SocketDescriptorStream(process.processID(), fd, protocol);
-        break;
       case SOCK_DGRAM:
         return new SocketDescriptorDataGram(process.processID(), fd, protocol);
-        break;
+      case SOCK_RAW:
+        return new SocketDescriptorRaw(process.processID(), fd, protocol);
       default:
         throw upan::exception(XLOC, "unsupport socket-type: %d", socketType);
     }

@@ -35,10 +35,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
 }
 
 SocketDescriptor::~SocketDescriptor() {
-  if (isBound()) {
-    NetworkManager::Instance().releasePort(ntohs(_bindAddress.sin_port));
-    NetworkManager::Instance().unbind(_bindAddress.sin_addr.s_addr, _bindAddress.sin_port);
-  }
+  NetworkManager::Instance().unbind(*this);
 }
 
 bool SocketDescriptor::canRead() {
@@ -78,14 +75,6 @@ void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct
   validateBuf(buf);
 }
 
-void SocketDescriptor::ensureBind() {
-  if (!isBound()) {
-    _bindAddress.sin_family = AF_INET;
-    _bindAddress.sin_addr.s_addr = INADDR_ANY;
-    _bindAddress.sin_port = htons(NetworkManager::Instance().allocatePort());
-  }
-}
-
 int SocketDescriptor::read(void* buffer, int len) {
   return len;
 }
@@ -97,14 +86,14 @@ int SocketDescriptor::write(const void* buffer, int len) {
 void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
   upan::mutex_guard g(_ioSync);
 
-  if (isBound()) {
+  if (_bindAddress.sin_port != 0) {
     throw upan::exception(XLOC, "bind failed - socket %d is already bound to port %d", id(), _bindAddress.sin_port);
   }
 
   validateSockAddrLen(len);
 
   memcpy((void*)&_bindAddress, (void*)&address, len);
-  NetworkManager::Instance().bind(_bindAddress.sin_addr.s_addr, _bindAddress.sin_port, *this);
+  NetworkManager::Instance().bind(*this, nullptr, 0);
 }
 
 upan::shared_ptr<RawNetPacket> SocketDescriptor::recvPacket() {

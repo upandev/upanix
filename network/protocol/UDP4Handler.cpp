@@ -35,12 +35,9 @@ void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   KLog::debug("Handling UDP Packet");
   verifyChecksum(*packet);
   const auto& udpHeader = packet->getUDP4Header();
-  const auto& ipv4Header = packet->getIPV4Header();
   udpHeader.toHost().print();
 
-  struct sockaddr_in destAddr { AF_INET, udpHeader._destPort, { ipv4Header._destAddr }};
-
-  NetworkManager::Instance().recv(packet, destAddr);
+  NetworkManager::Instance().recv(packet, AF_INET);
 }
 
 uint32_t UDP4Handler::headerLen() const {

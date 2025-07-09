@@ -21,52 +21,32 @@
  */
 #pragma once
 
-#include <list.h>
-#include <NetworkDevice.h>
-#include <bitset.h>
-#include <set.h>
+#include <option.h>
 #include <map.h>
-#include <uniq_ptr.h>
+#include <bitset.h>
 #include <SocketDescriptor.h>
-#include <DHCPClient.h>
 #include <SocketResolver.h>
 
-class IRQ;
-
-class NetworkManager
-{
+class UDPSocketResolver : public SocketResolver {
 public:
-  NetworkManager(const NetworkManager&) = delete;
-  NetworkManager& operator=(const NetworkManager&) = delete;
+  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
+  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override;
+  void unbind(SocketDescriptor& socket) override;
 
 private:
-  NetworkManager() = default;
+  uint16_t allocatePort();
+  void releasePort(in_port_t port);
+  bool isPortAllocated(in_port_t port) const;
 
-public:
-  static NetworkManager& Instance();
-
-  void Initialize();
-  upan::list<NetworkDevice*>& Devices() { return _devices; }
-  upan::option<NetworkDevice&> getDefaultDevice();
-
-  void updateIPMACTable(const RawNetPacket&);
-  upan::option<MACAddress> lookupMAC(in_addr_t ip);
-
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len);
-  void unbind(SocketDescriptor& socket);
-
-  void send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
-  void recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType);
+  bool isPortBounded(in_addr_t ip, in_port_t port);
+  upan::option<SocketDescriptor&> findBindingSocket(in_addr_t addr, in_port_t port);
 
 private:
-  typedef upan::map<in_addr_t, MACAddress> IP_MAP_TABLE;
-  typedef upan::map<IPPROTO_TYPE, SocketResolver*> SOCKET_RESOLVER_MAP;
+  typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
+  typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
+  typedef upan::map<in_port_t, int> SOCKET_BIND_SET;
 
-  void Probe(const PCIEntry& pciEntry);
-
-  upan::mutex _nMutex;
-  IP_MAP_TABLE _ipMACTable;
-  upan::list<NetworkDevice*> _devices;
-  upan::uniq_ptr<DHCPClient> _dhcpClient;
-  SOCKET_RESOLVER_MAP _socketResolvers;
+  upan::bitset<UINT16_MAX + 1> _portPool;
+  SOCKET_BIND_SET _socketBindSet;
+  SOCKET_BIND_MAP _socketBindMap;
 };

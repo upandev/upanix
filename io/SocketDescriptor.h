@@ -65,15 +65,14 @@ public:
 
   IPPROTO_TYPE protocol() const { return _protocol; }
   const struct sockaddr_in& bindAddress() const { return _bindAddress; }
+  void setBindAddress(const struct sockaddr_in& addr) { _bindAddress = addr; }
 
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
   void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);
-  void ensureBind();
   upan::shared_ptr<RawNetPacket> recvPacket();
 
 private:
-  bool isBound() const { return _bindAddress.sin_port != 0; }
   void validateSockAddrLen(socklen_t len) const;
   void validateFlags(int flags) const;
   void validateBuf(const void* buf) const;

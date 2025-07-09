@@ -25,11 +25,11 @@
 #include <ATH9KDevice.h>
 #include <E1000NICDevice.h>
 #include <NetworkManager.h>
-#include <unet.h>
-#include <vector.h>
+#include <UDPSocketResolver.h>
 
-NetworkManager::NetworkManager() {
-  //initialize();
+NetworkManager& NetworkManager::Instance() {
+  static NetworkManager instance;
+  return instance;
 }
 
 void NetworkManager::Initialize() {
@@ -39,6 +39,10 @@ void NetworkManager::Initialize() {
     }
     Probe(*pPCIEntry);
   }
+
+  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_TCP, new TCPSocketResolver()));
+  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_UDP, new UDPSocketResolver()));
+  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_ICMP, new ICMPSocketResolver()));
 
   getDefaultDevice().ifPresent([this](NetworkDevice& networkDevice) {
     _dhcpClient.reset(new DHCPClient(networkDevice));
@@ -69,21 +73,6 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
   }
 }
 
-uint16_t NetworkManager::allocatePort() {
-  upan::mutex_guard g(_nMutex);
-  return _portPool.allocate(49152, 65535);
-}
-
-bool NetworkManager::isPortAllocated(in_port_t port) const {
-  upan::mutex_guard g(_nMutex);
-  return _portPool.test(port);
-}
-
-void NetworkManager::releasePort(in_port_t port) {
-  upan::mutex_guard g(_nMutex);
-  return _portPool.set(port);
-}
-
 void NetworkManager::updateIPMACTable(const RawNetPacket& packet) {
   const auto& ip = packet.getIPV4Header()._srcAddr;
   if (ip != INADDR_BROADCAST) {
@@ -102,68 +91,21 @@ upan::option<MACAddress> NetworkManager::lookupMAC(in_addr_t ip) {
   return upan::option<MACAddress>(i->second);
 }
 
-bool NetworkManager::isPortBounded(in_addr_t ip, in_port_t port) {
-  if (ip == INADDR_ANY || ip == INADDR_LOOPBACK) {
-    return _socketBindSet.exists(port);
-  } else {
-    return _socketBindMap[INADDR_ANY].exists(port)
-    || _socketBindMap[INADDR_LOOPBACK].exists(port)
-    || _socketBindMap[ip].exists(port);
-  }
-}
-
-upan::option<SocketDescriptor*> NetworkManager::findBindingSocket(in_addr_t addr, in_port_t port) {
-  auto e = _socketBindMap.find(addr);
-  if (e != _socketBindMap.end()) {
-    auto i = e->second.find(port);
-    if (i != e->second.end()) {
-      return upan::option<SocketDescriptor*>(i->second);
-    }
-  }
-  return upan::option<SocketDescriptor*>::empty();
-}
-
-void NetworkManager::bind(in_addr_t ip, in_port_t port, SocketDescriptor& socket) {
+void NetworkManager::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
   upan::mutex_guard g(_nMutex);
 
-  if (isPortBounded(ip, port)) {
-    throw upan::exception(XLOC, "port %d is already bound", ntohs(port));
+  auto it = _socketResolvers.find(socket.protocol());
+  if (it != _socketResolvers.end()) {
+    it->second->bind(socket, buf, len);
   }
-
-  if (ip != INADDR_ANY && ip != INADDR_LOOPBACK) {
-    const auto networkDeviceIP = getDefaultDevice().value().GetIPAddress();
-    if (networkDeviceIP == INADDR_NONE) {
-      throw upan::exception(XLOC, "network device doesn't have an IP address yet");
-    }
-    if (ip != networkDeviceIP) {
-      throw upan::exception(XLOC, "invalid IP %s to bind. Network device IP is %s",
-                            upan::net::inet_ntostr(ip).c_str(),
-                            upan::net::inet_ntostr(networkDeviceIP).c_str());
-    }
-  }
-
-  _socketBindMap[ip][port] = &socket;
-  ++_socketBindSet[port];
 }
 
-void NetworkManager::unbind(in_addr_t ip, in_port_t port) {
+void NetworkManager::unbind(SocketDescriptor& socket) {
   upan::mutex_guard g(_nMutex);
 
-  auto ipIt = _socketBindMap.find(ip);
-  if (ipIt != _socketBindMap.end()) {
-    ipIt->second.erase(port);
-    if (ipIt->second.empty()) {
-      _socketBindMap.erase(ipIt);
-    }
-  }
-
-  auto portIt = _socketBindSet.find(port);
-  if (portIt != _socketBindSet.end()) {
-    if (portIt->second > 1) {
-      --portIt->second;
-    } else {
-      _socketBindSet.erase(portIt);
-    }
+  auto it = _socketResolvers.find(socket.protocol());
+  if (it != _socketResolvers.end()) {
+    it->second->unbind(socket);
   }
 }
 
@@ -177,23 +119,13 @@ void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, c
   }
 }
 
-void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, const struct sockaddr_in& destAddr) {
-  upan::mutex_guard g(_nMutex);
-  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST) {
-    for(auto& e : _socketBindMap) {
-      //there can be multiple network devices with different IP addresses and hence we can have multiple ip<->port mapping
-      findBindingSocket(e.first, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
-        socket->recvNotify(packet);
+void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType) {
+  if (familyType == AF_INET) {
+    auto it = _socketResolvers.find((IPPROTO_TYPE)packet->getIPV4Header()._protocol);
+    if (it != _socketResolvers.end()) {
+      it->second->resolve(packet).ifPresent([&packet](SocketDescriptor& socket) {
+        socket.recvNotify(packet);
       });
-    }
-  } else {
-    auto r = findBindingSocket(INADDR_ANY, destAddr.sin_port);
-    if (r.isEmpty()) {
-      findBindingSocket(destAddr.sin_addr.s_addr, destAddr.sin_port).ifPresent([&packet](SocketDescriptor* socket) {
-        socket->recvNotify(packet);
-      });
-    } else {
-      r.value()->recvNotify(packet);
     }
   }
 }

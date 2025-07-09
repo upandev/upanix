@@ -19,14 +19,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#include <SocketDescriptorDataGram.h>
+#include <SocketDescriptorRaw.h>
 #include <NetworkManager.h>
 #include <UDP4Handler.h>
 
-SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
+SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
 }
 
-void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+void SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "send/destination address is not specified");
@@ -41,7 +41,7 @@ void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, c
   NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
 }
 
-int SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+int SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getUDP4Data();
