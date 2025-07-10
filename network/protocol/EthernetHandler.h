@@ -38,5 +38,5 @@ public:
   void send(RawNetPacket& packet, ETH_PROTO_TYPE eType);
 
   private:
-    const static uint32_t MIN_ETHERNET_PACKET_LEN = INADDR_MAC_LEN /*dmac*/ + INADDR_MAC_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
+    const static uint32_t MIN_ETHERNET_PACKET_LEN = ETH_ALEN /*dmac*/ + ETH_ALEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
 };

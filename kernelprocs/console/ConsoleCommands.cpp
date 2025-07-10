@@ -19,9 +19,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include <ConsoleCommands.h>
-# include <CommandLineParser.h>
 
+#include <net/ip_icmp.h>
+#include <ConsoleCommands.h>
+#include <CommandLineParser.h>
 #include <Floppy.h>
 #include <ProcessManager.h>
 #include <FileSystem.h>
@@ -818,7 +819,7 @@ void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddre
   msg->hlen = 6; // MAC address length
   msg->xid = htonl(xid);
   msg->flags = htons(0x8000); // Broadcast flag
-  memcpy(msg->chaddr, macAddress.get(), INADDR_MAC_LEN);
+  memcpy(msg->chaddr, macAddress.get(), ETH_ALEN);
 
   // Add DHCP options
   int o = 0;
@@ -846,7 +847,7 @@ void create_dhcp_discover(struct dhcp_message *msg, uint32_t xid, const MACAddre
   msg->options[o++] = 61;
   msg->options[o++] = 7;
   msg->options[o++] = 1;
-  memcpy(msg->options + o, macAddress.get(), INADDR_MAC_LEN);
+  memcpy(msg->options + o, macAddress.get(), ETH_ALEN);
   o += 6;
 
   msg->options[o++] = 51;

@@ -30,10 +30,10 @@ void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
 
   _op = DHCPOperationType::BootRequest;
   _htype = HardwareType::Ethernet;
-  _hlen = INADDR_MAC_LEN;
+  _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Broadcast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
 
   // Add DHCP options
   _magicCookie = DHCP_MAGIC_COOKIE;
@@ -60,7 +60,7 @@ void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::LeaseTime;
@@ -83,10 +83,10 @@ void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
 
   _op = DHCPOperationType::BootRequest;
   _htype = HardwareType::Ethernet;
-  _hlen = INADDR_MAC_LEN;
+  _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Unicast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
 
   // Add DHCP options
   _magicCookie = DHCP_MAGIC_COOKIE;
@@ -113,7 +113,7 @@ void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::RequestedIPAddress;
@@ -142,10 +142,10 @@ void DHCPMessage::createRenewPacket(const NetworkDevice& networkDevice, in_addr_
 
   _op = DHCPOperationType::BootRequest;
   _htype = HardwareType::Ethernet;
-  _hlen = INADDR_MAC_LEN;
+  _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Unicast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
   _ciaddr = networkDevice.GetIPAddress();
   _siaddr = dhcpServerIP;
 
@@ -174,7 +174,7 @@ void DHCPMessage::createRenewPacket(const NetworkDevice& networkDevice, in_addr_
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), INADDR_MAC_LEN);
+  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::RequestedIPAddress;
@@ -332,7 +332,7 @@ void DHCPMessage::validateResponse(const DHCPMessage& request, const NetworkDevi
     throw upan::exception(XLOC, "unsupported hardware type: %d", _htype);
   }
 
-  if (_hlen != INADDR_MAC_LEN) {
+  if (_hlen != ETH_ALEN) {
     throw upan::exception(XLOC, "unsupported hardware address length: %d", _hlen);
   }
 

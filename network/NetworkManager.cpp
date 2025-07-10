@@ -104,7 +104,7 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
 void NetworkManager::updateIPMACTable(const RawNetPacket& packet) {
   const auto& ip = packet.getIPV4Header()._header.ip_dst.s_addr;
   if (ip != INADDR_BROADCAST) {
-    const MACAddress mac = packet.getEthernetHeader()._sourceMAC;
+    const MACAddress mac = packet.getEthernetHeader()._header.h_source;
     if (mac != INADDR_MAC_BROADCAST) {
       _ipMACTable.insert(IP_MAP_TABLE::value_type(ip, mac));
     }

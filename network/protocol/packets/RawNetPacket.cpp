@@ -100,22 +100,6 @@ const NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() const {
   return const_cast<RawNetPacket*>(this)->getARPHeader();
 }
 
-uint8_t* RawNetPacket::getARPData() {
-  return getEthernetData() + NetworkPacket::ARP::HEADER_SIZE;
-}
-
-const uint8_t* RawNetPacket::getARPData() const {
-  return const_cast<RawNetPacket*>(this)->getARPData();
-}
-
-NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() {
-  return *reinterpret_cast<NetworkPacket::ARP::IPV4*>(getARPData());
-}
-
-const NetworkPacket::ARP::IPV4& RawNetPacket::getARPIPV4Header() const {
-  return const_cast<RawNetPacket*>(this)->getARPIPV4Header();
-}
-
 NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() {
   return *reinterpret_cast<NetworkPacket::UDP::Header*>(getIPV4Data());
 }

@@ -37,7 +37,7 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   }
 
   const auto& ethernetHeader = packet->getEthernetHeader();
-  const MACAddress& destMAC = ethernetHeader._destinationMAC;
+  const MACAddress& destMAC = ethernetHeader._header.h_dest;
   if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
     return;
   }
@@ -60,8 +60,8 @@ uint32_t EthernetHandler::headerLen() const {
 
 void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
   auto& ethernetHeader = packet.getEthernetHeader();
-  memcpy(ethernetHeader._sourceMAC, device().GetMACAddress().get(), INADDR_MAC_LEN);
-  ethernetHeader._type = htons(eType);
+  memcpy(ethernetHeader._header.h_source, device().GetMACAddress().get(), ETH_ALEN);
+  ethernetHeader._header.h_proto = htons(eType);
 
   bool isBroadcast = false;
   switch(eType) {
@@ -76,13 +76,13 @@ void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
   }
 
   if (isBroadcast) {
-    memcpy(ethernetHeader._destinationMAC, INADDR_MAC_BROADCAST, INADDR_MAC_LEN);
+    memcpy(ethernetHeader._header.h_dest, INADDR_MAC_BROADCAST, ETH_ALEN);
   } else {
     const auto& mac = NetworkManager::Instance().lookupMAC(packet.getIPV4Header()._header.ip_dst.s_addr);
     if (mac.isEmpty()) {
       throw upan::exception(XLOC, "unable to determine the target/destination MAC");
     } else {
-      memcpy(ethernetHeader._destinationMAC, mac.value().get(), INADDR_MAC_LEN);
+      memcpy(ethernetHeader._header.h_dest, mac.value().get(), ETH_ALEN);
     }
   }
 

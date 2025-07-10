@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <ustring.h>
 #include <net/socket.h>
+#include <net/ip.h>
+#include <net/if_ether.h>
+#include <net/if_arp.h>
 #include <unet.h>
 #include <Global.h>
 
@@ -32,103 +35,88 @@ namespace NetworkPacket {
 
   namespace ARP {
     struct Header {
-      uint16_t _hType;
-      uint16_t _pType;
-      uint8_t _hLen;
-      uint8_t _pLen;
-      uint16_t _opCode;
+      struct ether_arp _header;
 
       ETH_PROTO_TYPE type() const {
-        return static_cast<ETH_PROTO_TYPE>(ntohs(_pType));
+        return static_cast<ETH_PROTO_TYPE>(ntohs(_header.ea_hdr.ar_pro));
       }
 
       Header toHost() const {
-        return Header {
-        ntohs(_hType),
-        ntohs(_pType),
-        _hLen,
-        _pLen,
-        ntohs(_opCode) };
-      }
-
-      bool isRequest() const { return _opCode == 1; }
-      bool isResponse() const { return _opCode == 2; }
-
-      void print() const {
-        KLog::debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _hType, _pType, _hLen, _pLen, _opCode);
-      }
-    } PACKED;
-
-    struct IPV4 {
-      uint8_t _senderHardwareAddress[INADDR_MAC_LEN];
-      in_addr_t _senderProtocolAddress;
-      uint8_t _targetHardwareAddress[INADDR_MAC_LEN];
-      in_addr_t _targetProtocolAddress;
-
-      IPV4 toHost() const {
-        IPV4 h {};
-        memcpy(h._senderHardwareAddress, _senderHardwareAddress, INADDR_MAC_LEN);
-        memcpy(h._targetHardwareAddress, _targetHardwareAddress, INADDR_MAC_LEN);
-        h._senderProtocolAddress = ntohl(_senderProtocolAddress);
-        h._targetProtocolAddress = ntohl(_targetProtocolAddress);
+        Header h {};
+        h._header.ea_hdr.ar_hrd = ntohs(_header.ea_hdr.ar_hrd);
+        h._header.ea_hdr.ar_pro = ntohs(_header.ea_hdr.ar_pro);
+        h._header.ea_hdr.ar_hln = _header.ea_hdr.ar_hln;
+        h._header.ea_hdr.ar_pln = _header.ea_hdr.ar_pln;
+        h._header.ea_hdr.ar_op = ntohs(_header.ea_hdr.ar_op);
+        memcpy(h._header.arp_sha, _header.arp_sha, ETH_ALEN);
+        memcpy(h._header.arp_tha, _header.arp_tha, ETH_ALEN);
+        h._header.arp_spa = ntohl(_header.arp_spa);
+        h._header.arp_tpa = ntohl(_header.arp_tpa);
         return h;
       }
 
+      bool isRequest() const { return _header.ea_hdr.ar_op == 1; }
+      bool isResponse() const { return _header.ea_hdr.ar_op == 2; }
+
       void print() const {
+        KLog::debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _header.ea_hdr.ar_hrd,
+                    _header.ea_hdr.ar_pro,
+                    _header.ea_hdr.ar_hln,
+                    _header.ea_hdr.ar_pln,
+                    _header.ea_hdr.ar_op);
+
         char buf[1024];
         upan::string msg("SHA: ");
-        for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          sprintf(buf, "%02x%s", _senderHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.arp_sha[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
-        sprintf(buf, ", SPA: %s", inet_ntoa({_senderProtocolAddress}));
+        sprintf(buf, ", SPA: %s", inet_ntoa( { _header.arp_spa}));
         msg += buf;
 
         msg += "\n THA: ";
-        for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          sprintf(buf, "%02x%s", _targetHardwareAddress[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.arp_tha[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
-        sprintf(buf, ", TPA: %s", inet_ntoa({_targetProtocolAddress}));
+        sprintf(buf, ", TPA: %s", inet_ntoa( { _header.arp_tpa }));
         msg += buf;
+
         KLog::debug(msg.c_str());
       }
     } PACKED;
 
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
-    constexpr uint32_t IPV4_SIZE = sizeof(IPV4);
   }
 
   namespace Ethernet {
     struct Header {
-      uint8_t _destinationMAC[INADDR_MAC_LEN];
-      uint8_t _sourceMAC[INADDR_MAC_LEN];
-      uint16_t _type;
+      struct ethhdr _header;
 
       ETH_PROTO_TYPE type() const {
-        return static_cast<ETH_PROTO_TYPE>(ntohs(_type));
+        return static_cast<ETH_PROTO_TYPE>(ntohs(_header.h_proto));
       }
 
       Header toHost() const {
-        Header h{};
-        memcpy(h._destinationMAC, _destinationMAC, INADDR_MAC_LEN);
-        memcpy(h._sourceMAC, _sourceMAC, INADDR_MAC_LEN);
-        h._type = ntohs(_type);
+        Header h {};
+        memcpy(h._header.h_dest, _header.h_dest, ETH_ALEN);
+        memcpy(h._header.h_source, _header.h_source, ETH_ALEN);
+        h._header.h_proto = ntohs(_header.h_proto);
         return h;
       }
 
       void print() const {
         char buf[1024];
-        upan::string msg("Ethernet - Type: %d", ntohs(_type));
+        upan::string msg("Ethernet - Type: %d", ntohs(_header.h_proto));
         msg += "\n Src MAC: ";
-        for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          sprintf(buf, "%02x%s", _sourceMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.h_source[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
 
         msg += "\n Dest MAC: ";
-        for (int i = 0; i < INADDR_MAC_LEN; i++) {
-          sprintf(buf, "%02x%s", _destinationMAC[i], i < INADDR_MAC_LEN - 1 ? ":" : "");
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.h_dest[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
         KLog::debug(msg.c_str());

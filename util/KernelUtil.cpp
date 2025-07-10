@@ -100,7 +100,7 @@ void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
       auto req = (struct ifreq*)arg;
       auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
       auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
-      memcpy(req->ifr_hwaddr.sa_data, device.GetMACAddress().get(), INADDR_MAC_LEN);
+      memcpy(req->ifr_hwaddr.sa_data, device.GetMACAddress().get(), ETH_ALEN);
     }
     break;
 

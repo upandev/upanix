@@ -52,16 +52,11 @@ public:
 
   NetworkPacket::ARP::Header& getARPHeader();
   const NetworkPacket::ARP::Header& getARPHeader() const;
-  uint8_t* getARPData();
-  const uint8_t* getARPData() const;
 
   NetworkPacket::UDP::Header& getUDP4Header();
   const NetworkPacket::UDP::Header& getUDP4Header() const;
   uint8_t* getUDP4Data();
   const uint8_t* getUDP4Data() const;
-
-  NetworkPacket::ARP::IPV4& getARPIPV4Header();
-  const NetworkPacket::ARP::IPV4& getARPIPV4Header() const;
 
 private:
   void move(RawNetPacket& o);

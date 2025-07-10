@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
+#include <net/ip_icmp.h>
 #include <ICMPHandler.h>
 #include <IPV4Handler.h>
 #include <RawNetPacket.h>

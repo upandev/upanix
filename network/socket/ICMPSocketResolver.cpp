@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <net/ip_icmp.h>
 #include <ICMPSocketResolver.h>
 
 void ICMPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
