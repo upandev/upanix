@@ -34,7 +34,10 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   NetworkManager::Instance().updateIPMACTable(*packet);
   ipv4Header.toHost().print();
 
-  const FragmentKey fragmentKey = { ipv4Header._identification, ipv4Header._protocol, ipv4Header._srcAddr, ipv4Header._destAddr };
+  const FragmentKey fragmentKey = { ipv4Header._header.ip_id,
+                                    ipv4Header._header.ip_p,
+                                    ipv4Header._header.ip_src.s_addr,
+                                    ipv4Header._header.ip_dst.s_addr };
 
   if (ipv4Header.hasMoreFragments()) {
     addFragment(fragmentKey, packet);
@@ -61,7 +64,7 @@ uint32_t IPV4Handler::headerLen() const {
 
 void IPV4Handler::initHeaderLen(RawNetPacket& packet) {
   //TODO: if IPV4 header has header-options then that must be factored here
-  packet.getIPV4Header()._ihl = NetworkPacket::IPV4::HEADER_SIZE / sizeof(uint32_t);
+  packet.getIPV4Header()._header.ip_hl = NetworkPacket::IPV4::HEADER_SIZE / sizeof(uint32_t);
 }
 
 void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
@@ -83,19 +86,19 @@ void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct
     // 8 byte aligned fragments, not applicable for last one
     const auto fragmentLen = (totalPayloadSize - offset) > maxPayload ? maxPayload & 0x7 : (totalPayloadSize - offset);
 
-    ipv4Header._version = 4;
-    ipv4Header._tos = 0;
-    ipv4Header._totalLen = htons(fragmentLen + ipv4HeaderLen);
-    ipv4Header._identification = htons(packetId);
+    ipv4Header._header.ip_v = 4;
+    ipv4Header._header.ip_tos = 0;
+    ipv4Header._header.ip_len = htons(fragmentLen + ipv4HeaderLen);
+    ipv4Header._header.ip_id = htons(packetId);
     // set MF flag if there are more fragments
-    ipv4Header._flags_fragmentOffset = htons(((offset + fragmentLen) < totalPayloadSize ? 0x2000 : 0x0) | (offset >> 3));
-    ipv4Header._ttl = 255;
-    ipv4Header._protocol = protocol;
-    ipv4Header._checksum = 0;
-    ipv4Header._srcAddr = srcAddr.sin_addr.s_addr;
-    ipv4Header._destAddr = destAddr.sin_addr.s_addr;
+    ipv4Header._header.ip_off = htons(((offset + fragmentLen) < totalPayloadSize ? 0x2000 : 0x0) | (offset >> 3));
+    ipv4Header._header.ip_ttl = 255;
+    ipv4Header._header.ip_p = protocol;
+    ipv4Header._header.ip_sum = 0;
+    ipv4Header._header.ip_src = srcAddr.sin_addr;
+    ipv4Header._header.ip_dst = destAddr.sin_addr;
 
-    ipv4Header._checksum = calcChecksum(ipv4Header);
+    ipv4Header._header.ip_sum = calcChecksum(ipv4Header);
 
     if (totalPayloadSize <= maxPayload) { //there is only one fragment - use the main packet
       device().getEthernetHandler().send(packet, NetworkPacket::EthernetPacketType::E_IPV4_T);
@@ -118,7 +121,7 @@ void IPV4Handler::verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header) 
   const auto calculatedChecksum = calcChecksum(ipv4Header);
   if (calculatedChecksum != 0) {
     ipv4Header.toHost().print();
-    throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
+    throw upan::exception(XLOC, "Invalid Checksum for IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._header.ip_id), calculatedChecksum);
   }
 }
 
@@ -158,10 +161,10 @@ upan::shared_ptr<RawNetPacket> IPV4Handler::assemblePacket(const IPV4Handler::Fr
     dataPos += p->getIPV4Header().dataLen();
   }
 
-  finalIPV4Header._totalLen = firstPacket->getIPV4Header().headerLen() + dataLen;
-  finalIPV4Header._flags_fragmentOffset = 0;
-  finalIPV4Header._checksum = 0;
-  finalIPV4Header._checksum = calcChecksum(finalIPV4Header);
+  finalIPV4Header._header.ip_len = firstPacket->getIPV4Header().headerLen() + dataLen;
+  finalIPV4Header._header.ip_off = 0;
+  finalIPV4Header._header.ip_sum = 0;
+  finalIPV4Header._header.ip_sum = calcChecksum(finalIPV4Header);
 
   _fragments.erase(fragmentKey);
 

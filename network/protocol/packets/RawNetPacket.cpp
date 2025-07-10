@@ -85,7 +85,7 @@ const NetworkPacket::IPV4::Header& RawNetPacket::getIPV4Header() const {
 }
 
 uint8_t* RawNetPacket::getIPV4Data() {
-  return getEthernetData() + (sizeof(uint32_t) * getIPV4Header()._ihl);
+  return getEthernetData() + getIPV4Header().headerLen();
 }
 
 const uint8_t* RawNetPacket::getIPV4Data() const {

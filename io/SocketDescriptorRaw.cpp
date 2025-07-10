@@ -51,7 +51,8 @@ ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct 
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, 0, {packet->getIPV4Header()._srcAddr }};
+    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, 0, packet->getIPV4Header()._header.ip_src };
+    *len = sizeof(sockaddr_in);
   }
 
   return xferLen;

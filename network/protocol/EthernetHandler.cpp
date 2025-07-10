@@ -69,7 +69,7 @@ void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketTy
       isBroadcast = true;
       break;
     case NetworkPacket::EthernetPacketType::E_IPV4_T:
-      isBroadcast = packet.getIPV4Header()._destAddr == INADDR_BROADCAST;
+      isBroadcast = packet.getIPV4Header()._header.ip_dst.s_addr == INADDR_BROADCAST;
       break;
     default:
       throw upan::exception(XLOC, "unsupported ethernet packet type: %d", eType);
@@ -78,7 +78,7 @@ void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketTy
   if (isBroadcast) {
     memcpy(ethernetHeader._destinationMAC, INADDR_MAC_BROADCAST, INADDR_MAC_LEN);
   } else {
-    const auto& mac = NetworkManager::Instance().lookupMAC(packet.getIPV4Header()._destAddr);
+    const auto& mac = NetworkManager::Instance().lookupMAC(packet.getIPV4Header()._header.ip_dst.s_addr);
     if (mac.isEmpty()) {
       throw upan::exception(XLOC, "unable to determine the target/destination MAC");
     } else {

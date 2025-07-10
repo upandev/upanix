@@ -82,8 +82,8 @@ void UDP4Handler::verifyChecksum(const RawNetPacket& packet) {
   const auto& ipv4Header = packet.getIPV4Header();
   if (udpHeader._checksum) {
     const NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader {
-      ipv4Header._srcAddr,
-      ipv4Header._destAddr,
+      ipv4Header._header.ip_src.s_addr,
+      ipv4Header._header.ip_dst.s_addr,
       0,
       IPPROTO_UDP,
       udpHeader._len
@@ -95,7 +95,7 @@ void UDP4Handler::verifyChecksum(const RawNetPacket& packet) {
 
     if (calculatedChecksum != 0) {
       udpHeader.print();
-      throw upan::exception(XLOC, "Invalid Checksum for UDP Packet, IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._identification), calculatedChecksum);
+      throw upan::exception(XLOC, "Invalid Checksum for UDP Packet, IP Packet ID: %d (calc. checksum: 0x%x)", ntohs(ipv4Header._header.ip_id), calculatedChecksum);
     }
   }
 }

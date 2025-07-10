@@ -75,7 +75,7 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
 }
 
 void NetworkManager::updateIPMACTable(const RawNetPacket& packet) {
-  const auto& ip = packet.getIPV4Header()._srcAddr;
+  const auto& ip = packet.getIPV4Header()._header.ip_dst.s_addr;
   if (ip != INADDR_BROADCAST) {
     const MACAddress mac = packet.getEthernetHeader()._sourceMAC;
     if (mac != INADDR_MAC_BROADCAST) {
@@ -127,7 +127,7 @@ ssize_t NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol
 
 void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType) {
   if (familyType == AF_INET) {
-    auto it = _socketResolvers.find((IPPROTO_TYPE)packet->getIPV4Header()._protocol);
+    auto it = _socketResolvers.find((IPPROTO_TYPE)packet->getIPV4Header()._header.ip_p);
     if (it != _socketResolvers.end()) {
       it->second->resolve(packet).ifPresent([&packet](SocketDescriptor& socket) {
         socket.recvNotify(packet);

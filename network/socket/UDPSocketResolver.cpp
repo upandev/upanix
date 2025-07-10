@@ -113,7 +113,7 @@ void UDPSocketResolver::unbind(SocketDescriptor& socket) {
 }
 upan::option<SocketDescriptor&> UDPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
-  const in_addr_t destIP = packet->getIPV4Header()._destAddr;
+  const in_addr_t destIP = packet->getIPV4Header()._header.ip_dst.s_addr;
   const in_port_t destPort = packet->getUDP4Header()._destPort;
 
   if (destIP == INADDR_BROADCAST) {

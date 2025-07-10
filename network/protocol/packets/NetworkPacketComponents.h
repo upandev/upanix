@@ -145,60 +145,50 @@ namespace NetworkPacket {
 
   namespace IPV4 {
     struct Header {
-      uint8_t _ihl:4; // Internet Header Length
-      uint8_t _version:4;
-      uint8_t _tos; // Type Of Service
-      uint16_t _totalLen;
-      uint16_t _identification;
-      uint16_t _flags_fragmentOffset;
-      uint8_t _ttl; // Time to live
-      uint8_t _protocol;
-      uint16_t _checksum;
-      in_addr_t _srcAddr;
-      in_addr_t _destAddr;
+      struct ip _header;
 
       IPPROTO_TYPE type() const {
-        return static_cast<IPPROTO_TYPE>(_protocol);
+        return static_cast<IPPROTO_TYPE>(_header.ip_p);
       }
 
       int headerLen() const {
-        return _ihl * sizeof(uint32_t);
+        return _header.ip_hl * sizeof(uint32_t);
       }
 
       int dataLen() const {
-        return ntohs(_totalLen) - _ihl;
+        return ntohs(_header.ip_len) - headerLen();
       }
 
       uint16_t fragmentOffset() const {
-        return (ntohs(_flags_fragmentOffset) & 0x1FFF) << 3;
+        return (ntohs(_header.ip_off) & 0x1FFF) << 3;
       }
 
       bool hasMoreFragments() const {
-        return (ntohs(_flags_fragmentOffset) & 0x2000) != 0;
+        return (ntohs(_header.ip_off) & 0x2000) != 0;
       }
 
       Header toHost() const {
         Header h = *this;
-        h._totalLen = ntohs(_totalLen);
-        h._identification = ntohs(_identification);
-        h._flags_fragmentOffset = htons(_flags_fragmentOffset);
-        h._checksum = ntohs(_checksum);
-        h._srcAddr = ntohl(_srcAddr);
-        h._destAddr = ntohl(_destAddr);
+        h._header.ip_len = ntohs(_header.ip_len);
+        h._header.ip_id = ntohs(_header.ip_id);
+        h._header.ip_off = htons(_header.ip_off);
+        h._header.ip_sum = ntohs(_header.ip_sum);
+        h._header.ip_src = { ntohl(_header.ip_src.s_addr) };
+        h._header.ip_dst = { ntohl(_header.ip_dst.s_addr) };;
         return h;
       }
 
       void print() const {
-        KLog::debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _version, _ihl, _tos, _totalLen);
+        KLog::debug("Version: %d, IHL: %d, TOS: %d, TotalLen: %d", _header.ip_v, _header.ip_hl, _header.ip_tos, _header.ip_len);
 
         KLog::debug("Identification: %d, Flags: 0x%x, FragmentOffset: 0x%x, TTL: %d, Protocol: 0x%x",
-               _identification, _flags_fragmentOffset >> 13, _flags_fragmentOffset << 3, _ttl, _protocol);
+               _header.ip_id, _header.ip_off >> 13, _header.ip_off << 3, _header.ip_ttl, _header.ip_p);
 
-        KLog::debug("Checksum: 0x%x", _checksum);
+        KLog::debug("Checksum: 0x%x", _header.ip_sum);
 
         KLog::debug("Source Addr: %s, Dest Addr: %s",
-               upan::net::inet_ntostr(htonl(_srcAddr)).c_str(),
-               upan::net::inet_ntostr(htonl(_destAddr)).c_str());
+               upan::net::inet_ntostr(htonl(_header.ip_src.s_addr)).c_str(),
+               upan::net::inet_ntostr(htonl(_header.ip_dst.s_addr)).c_str());
       }
     } PACKED;
 

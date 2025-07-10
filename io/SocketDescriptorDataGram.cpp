@@ -54,7 +54,8 @@ ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, st
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDP4Header()._srcPort, {packet->getIPV4Header()._srcAddr }};
+    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDP4Header()._srcPort, packet->getIPV4Header()._header.ip_src };
+    *len = sizeof(sockaddr_in);
   }
 
   return xferLen;
