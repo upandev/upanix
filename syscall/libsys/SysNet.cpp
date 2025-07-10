@@ -21,7 +21,7 @@
  */
 # include <SysCall.h>
 
-sock_t SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, IPPROTO_TYPE protocol) {
+sock_t SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, int protocol) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_CREATE, false, (uint64_t)sa_family, (uint64_t)socket_type, (uint64_t)protocol, 4, 5);
   return (sock_t)retStatus;

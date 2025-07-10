@@ -22,5 +22,5 @@
 
 #include <SocketDescriptorStream.h>
 
-SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
+SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, int protocol) : SocketDescriptor(pid, fd, protocol) {
 }

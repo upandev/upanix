@@ -25,7 +25,7 @@
 
 class SocketDescriptorRaw : public SocketDescriptor {
 public:
-  SocketDescriptorRaw(int pid, int fd, IPPROTO_TYPE protocol);
+  SocketDescriptorRaw(int pid, int fd, int protocol);
 
 private:
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;

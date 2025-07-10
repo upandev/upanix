@@ -33,6 +33,10 @@ NetworkManager& NetworkManager::Instance() {
   return instance;
 }
 
+NetworkManager::NetworkManager() : _interfaceId(0) {
+
+}
+
 void NetworkManager::Initialize() {
   for(auto pPCIEntry : PCIBusHandler::Instance().PCIEntries())   {
     if(pPCIEntry->bHeaderType & PCI_HEADER_BRIDGE) {
@@ -58,6 +62,24 @@ upan::option<NetworkDevice&> NetworkManager::getDefaultDevice() {
   return upan::option<NetworkDevice&>(*_devices.front());
 }
 
+upan::option<NetworkDevice&> NetworkManager::getDeviceById(int id) {
+  for(auto d : _devices) {
+    if (d->id() == id) {
+      return upan::option<NetworkDevice&>(*d);
+    }
+  }
+  return upan::option<NetworkDevice&>::empty();
+}
+
+upan::option<NetworkDevice&> NetworkManager::getDeviceByName(const upan::string& name) {
+  for(auto d : _devices) {
+    if (d->name() == name) {
+      return upan::option<NetworkDevice&>(*d);
+    }
+  }
+  return upan::option<NetworkDevice&>::empty();
+}
+
 void NetworkManager::Probe(const PCIEntry& pciEntry) {
   try {
     if(pciEntry.usVendorID == 0x168C && pciEntry.usDeviceID == 0x36) {
@@ -65,7 +87,12 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
       //return new ATH9KDevice(pciEntry);
     } else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x100E) {
       E1000NICDevice::Create(pciEntry);
-      _devices.push_back(&E1000NICDevice::Instance());
+
+      auto& device = E1000NICDevice::Instance();
+      device.setName("eth0");
+      device.setId(++_interfaceId);
+
+      _devices.push_back(&device);
     } else if(pciEntry.usVendorID == INTEL_VENDOR_ID && pciEntry.usDeviceID == 0x153A) {
       printf("Ethernet i217-v network-card detected");
     }
@@ -110,7 +137,7 @@ void NetworkManager::unbind(SocketDescriptor& socket) {
   }
 }
 
-ssize_t NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+ssize_t NetworkManager::send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
   switch (protocol) {
     case IPPROTO_UDP:
       getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, destAddr);
@@ -125,13 +152,11 @@ ssize_t NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol
   return n;
 }
 
-void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType) {
-  if (familyType == AF_INET) {
-    auto it = _socketResolvers.find((IPPROTO_TYPE)packet->getIPV4Header()._header.ip_p);
-    if (it != _socketResolvers.end()) {
-      it->second->resolve(packet).ifPresent([&packet](SocketDescriptor& socket) {
-        socket.recvNotify(packet);
-      });
-    }
+void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol) {
+  auto it = _socketResolvers.find(protocol);
+  if (it != _socketResolvers.end()) {
+    it->second->resolve(packet).ifPresent([&packet](SocketDescriptor& socket) {
+      socket.recvNotify(packet);
+    });
   }
 }

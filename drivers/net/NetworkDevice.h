@@ -45,7 +45,10 @@ public:
 
   explicit NetworkDevice(const PCIEntry& pciEntry);
   virtual ~NetworkDevice() = 0;
-  
+
+  const upan::string& name() const { return _name; }
+  int id() const { return _id; }
+
   virtual void Initialize() = 0;
   virtual void NotifyEvent() = 0;
   virtual void SendPacket(const RawNetPacket& packet) = 0;
@@ -131,6 +134,9 @@ public:
 	// virtual void WakeTxQueue() = 0;
 
 protected:
+  void setName(const upan::string& name) { _name = name; }
+  void setId(int id) { _id = id; }
+
   void setMACAddress(const MACAddress& macAddress) { _macAddress = macAddress; }
   void setIPAddress(in_addr_t ip) { _ipAddress = ip; }
   void setGatewayAddress(in_addr_t ip) { _gatewayAddress = ip; }
@@ -139,9 +145,12 @@ protected:
   void setDNSAddress(in_addr_t ip) { _dnsAddress = ip; }
 
   friend class DHCPClient;
+  friend class NetworkManager;
 protected:
   const PCIEntry& _pciEntry;
 
+  upan::string _name;
+  int _id;
   MACAddress _macAddress;
   in_addr_t _ipAddress;
   in_addr_t _gatewayAddress;

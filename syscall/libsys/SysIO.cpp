@@ -27,3 +27,8 @@ int SysIO_Close(int fd) {
   return retStatus ;
 }
 
+int SysIO_Ctl(int fd, uint64_t cmd, uint64_t arg) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CTL, false, fd, cmd, arg, 4, 5);
+  return retStatus;
+}

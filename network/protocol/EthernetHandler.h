@@ -35,7 +35,7 @@ public:
   explicit EthernetHandler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   uint32_t headerLen() const override;
-  void send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType);
+  void send(RawNetPacket& packet, ETH_PROTO_TYPE eType);
 
   private:
     const static uint32_t MIN_ETHERNET_PACKET_LEN = INADDR_MAC_LEN /*dmac*/ + INADDR_MAC_LEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;

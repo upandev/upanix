@@ -26,7 +26,7 @@
 #include <NetworkManager.h>
 #include <ProcessManager.h>
 
-SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
+SocketDescriptor::SocketDescriptor(int pid, int fd, int protocol)
   : IODescriptor(pid, fd, O_RDWR),
     _protocol(protocol),
     _bindAddress({ AF_INET, 0, { INADDR_ANY }, { 0 } }),

@@ -35,7 +35,7 @@ NetworkOperations& NetworkOperations::Instance() {
   return instance;
 }
 
-int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, IPPROTO_TYPE protocol) {
+int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol) {
   if (family != AF_INET) {
     throw upan::exception(XLOC, "only AF_INET socket family type is supported");
   }

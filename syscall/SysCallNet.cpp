@@ -34,7 +34,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
 			{
         const auto family = (SA_FAMILY_TYPE)p1;
         const auto type = (SOCKET_TYPE)p2;
-        const auto protocol = (IPPROTO_TYPE)p3;
+        const auto protocol = (int)p3;
 
         try {
           *retVal = NetworkOperations::Instance().createSocket(family, type, protocol);

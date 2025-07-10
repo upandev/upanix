@@ -37,6 +37,7 @@ class KernelUtil
       virtual bool TimerTrigger() = 0;
     };
     static void ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask&) ;
+    static void IOCtl(int fd, uint64_t cmd, uint64_t arg);
 
 	private:
     static void SystemTimer(unsigned timeInMilliSec, TimerTask* task) ;

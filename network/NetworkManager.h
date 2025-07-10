@@ -40,7 +40,7 @@ public:
   NetworkManager& operator=(const NetworkManager&) = delete;
 
 private:
-  NetworkManager() = default;
+  NetworkManager();
 
 public:
   static NetworkManager& Instance();
@@ -48,6 +48,8 @@ public:
   void Initialize();
   upan::list<NetworkDevice*>& Devices() { return _devices; }
   upan::option<NetworkDevice&> getDefaultDevice();
+  upan::option<NetworkDevice&> getDeviceById(int);
+  upan::option<NetworkDevice&> getDeviceByName(const upan::string&);
 
   void updateIPMACTable(const RawNetPacket&);
   upan::option<MACAddress> lookupMAC(in_addr_t ip);
@@ -55,16 +57,17 @@ public:
   void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len);
   void unbind(SocketDescriptor& socket);
 
-  ssize_t send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
-  void recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType);
+  ssize_t send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  void recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol);
 
 private:
   typedef upan::map<in_addr_t, MACAddress> IP_MAP_TABLE;
-  typedef upan::map<IPPROTO_TYPE, SocketResolver*> SOCKET_RESOLVER_MAP;
+  typedef upan::map<int, SocketResolver*> SOCKET_RESOLVER_MAP;
 
   void Probe(const PCIEntry& pciEntry);
 
   upan::mutex _nMutex;
+  int _interfaceId;
   IP_MAP_TABLE _ipMACTable;
   upan::list<NetworkDevice*> _devices;
   upan::uniq_ptr<DHCPClient> _dhcpClient;

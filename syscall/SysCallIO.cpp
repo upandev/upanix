@@ -25,6 +25,7 @@
 # include <try.h>
 # include <FileDescriptor.h>
 # include <StreamBufferDescriptor.h>
+# include <KernelUtil.h>
 
 bool SysCallIO_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_IO_START && sysCallId < SYS_CALL_IO_END) ;
@@ -44,5 +45,17 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
         }
 			}
 			break;
+
+    case SYS_CALL_IO_CTL:
+      {
+        *retVal = 0;
+        try {
+          KernelUtil::IOCtl((int)p1, p2, p3);
+        } catch(upan::exception& e) {
+          e.Print();
+          *retVal = -1;
+        }
+      }
+      break;
 	}
 }

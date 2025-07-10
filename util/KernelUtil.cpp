@@ -23,6 +23,9 @@
 #include <IrqManager.h>
 #include <ProcessManager.h>
 #include <KernelUtil.h>
+#include <NetworkManager.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 void KernelUtil::Wait(__volatile__ unsigned uiTimeInMilliSec)
 {
@@ -81,3 +84,35 @@ void KernelUtil::SystemTimer(unsigned timeInMilliSec, TimerTask* task)
 	ProcessManager_Exit();
 }
 
+void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
+  switch (cmd) {
+    case SIOCGIFADDR:
+    {
+      auto req = (struct ifreq*)arg;
+      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
+      reinterpret_cast<struct sockaddr_in&>(req->ifr_addr).sin_addr.s_addr = device.GetIPAddress();
+    }
+    break;
+
+    case SIOCGIFHWADDR:
+    {
+      auto req = (struct ifreq*)arg;
+      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
+      memcpy(req->ifr_hwaddr.sa_data, device.GetMACAddress().get(), INADDR_MAC_LEN);
+    }
+    break;
+
+    case SIOCGIFINDEX:
+    {
+      auto req = (struct ifreq*)arg;
+      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
+      req->ifr_ifindex = device.id();
+    }
+    break;
+  }
+
+  throw upan::exception(XLOC, "unsupported IOCTL cmd: %ul", cmd);
+}

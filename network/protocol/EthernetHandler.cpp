@@ -43,10 +43,10 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   }
 
   switch (ethernetHeader.type()) {
-    case NetworkPacket::EthernetPacketType::E_IPV4_T:
+    case ETH_PROTO_TYPE::ETH_P_IP:
       device().getIPV4Handler().recv(packet);
       break;
-    case NetworkPacket::EthernetPacketType::E_ARP_T:
+    case ETH_PROTO_TYPE::ETH_P_ARP:
       device().getARPHandler().recv(packet);
       break;
     default:
@@ -58,17 +58,17 @@ uint32_t EthernetHandler::headerLen() const {
   return NetworkPacket::Ethernet::HEADER_SIZE;
 }
 
-void EthernetHandler::send(RawNetPacket& packet, NetworkPacket::EthernetPacketType eType) {
+void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
   auto& ethernetHeader = packet.getEthernetHeader();
   memcpy(ethernetHeader._sourceMAC, device().GetMACAddress().get(), INADDR_MAC_LEN);
   ethernetHeader._type = htons(eType);
 
   bool isBroadcast = false;
   switch(eType) {
-    case NetworkPacket::EthernetPacketType::E_ARP_T:
+    case ETH_PROTO_TYPE::ETH_P_ARP:
       isBroadcast = true;
       break;
-    case NetworkPacket::EthernetPacketType::E_IPV4_T:
+    case ETH_PROTO_TYPE::ETH_P_IP:
       isBroadcast = packet.getIPV4Header()._header.ip_dst.s_addr == INADDR_BROADCAST;
       break;
     default:

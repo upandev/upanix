@@ -37,7 +37,7 @@ void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& udpHeader = packet->getUDP4Header();
   udpHeader.toHost().print();
 
-  NetworkManager::Instance().recv(packet, AF_INET);
+  NetworkManager::Instance().recv(packet, IPPROTO_UDP);
 }
 
 uint32_t UDP4Handler::headerLen() const {

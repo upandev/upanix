@@ -34,7 +34,7 @@ ICMPHandler::ICMPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 void ICMPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   KLog::debug("Handling ICMP Packet");
   verifyChecksum(*packet);
-  NetworkManager::Instance().recv(packet, AF_INET);
+  NetworkManager::Instance().recv(packet, IPPROTO_ICMP);
 }
 
 void ICMPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {

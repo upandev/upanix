@@ -101,12 +101,12 @@ void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct
     ipv4Header._header.ip_sum = calcChecksum(ipv4Header);
 
     if (totalPayloadSize <= maxPayload) { //there is only one fragment - use the main packet
-      device().getEthernetHandler().send(packet, NetworkPacket::EthernetPacketType::E_IPV4_T);
+      device().getEthernetHandler().send(packet, ETH_PROTO_TYPE::ETH_P_IP);
     } else {
       RawNetPacket fragmentPacket(packetHeaderLen + fragmentLen);
       fragmentPacket.getIPV4Header() = ipv4Header;
       memcpy(fragmentPacket.getIPV4Data(), packet.getIPV4Data() + offset, fragmentLen);
-      device().getEthernetHandler().send(fragmentPacket, NetworkPacket::EthernetPacketType::E_IPV4_T);
+      device().getEthernetHandler().send(fragmentPacket, ETH_PROTO_TYPE::ETH_P_IP);
     }
 
     offset += fragmentLen;

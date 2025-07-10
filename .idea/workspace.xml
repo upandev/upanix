@@ -33,17 +33,35 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implementing ICMP, starting with ping">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use ip header as defined in libc socket.h">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/RawNetPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -692,7 +710,7 @@
       <workItem from="1750256388766" duration="2278000" />
       <workItem from="1751725084166" duration="1683000" />
       <workItem from="1752024625810" duration="21064000" />
-      <workItem from="1752106041895" duration="2606000" />
+      <workItem from="1752106041895" duration="8140000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1037,7 +1055,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="158" />
+    <option name="localTasksCounter" value="159" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1071,7 +1089,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed issues with socket send" />
     <MESSAGE value="start-up script edits" />
     <MESSAGE value="disable file locking so qemu can load/mount the disk image while the same remains still attached on the host (macOS)" />
     <MESSAGE value="support for timeout socket-option. enhance network packet header length calculation technique" />
@@ -1096,7 +1113,8 @@
     <MESSAGE value="implement truncate file capability in the filesystem" />
     <MESSAGE value="implemented SocketResolver per IP protocol - that will take care of binding/mapping socket to unique identifiers to match and route the response packets" />
     <MESSAGE value="implementing ICMP, starting with ping" />
-    <option name="LAST_COMMIT_MESSAGE" value="implementing ICMP, starting with ping" />
+    <MESSAGE value="use ip header as defined in libc socket.h" />
+    <option name="LAST_COMMIT_MESSAGE" value="use ip header as defined in libc socket.h" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

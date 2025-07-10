@@ -34,6 +34,6 @@ public:
   void SendRARP();
 
 private:
-  RawNetPacket CreatePacket(uint16_t hType, NetworkPacket::EthernetPacketType pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
+  RawNetPacket CreatePacket(uint16_t hType, ETH_PROTO_TYPE pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
                             const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa);
 };

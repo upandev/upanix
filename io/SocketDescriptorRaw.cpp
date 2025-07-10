@@ -23,7 +23,7 @@
 #include <NetworkManager.h>
 #include <UDP4Handler.h>
 
-SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
+SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, int protocol) : SocketDescriptor(pid, fd, protocol) {
 }
 
 ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
