@@ -32,7 +32,7 @@ EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(n
 }
 
 void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  if (packet->len() < MIN_ETHERNET_PACKET_LEN) {
+  if (packet->len() < (int)MIN_ETHERNET_PACKET_LEN) {
     throw upan::exception(XLOC, "Invalid packet: Len %d < min ethernet-packet len %d", packet->len(), MIN_ETHERNET_PACKET_LEN);
   }
 

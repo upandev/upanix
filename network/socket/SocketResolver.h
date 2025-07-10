@@ -40,10 +40,3 @@ public:
   void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override {}
   void unbind(SocketDescriptor& socket) override {}
 };
-
-class ICMPSocketResolver : public SocketResolver {
-public:
-  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override { return upan::option<SocketDescriptor&>::empty(); }
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override {}
-  void unbind(SocketDescriptor& socket) override {}
-};

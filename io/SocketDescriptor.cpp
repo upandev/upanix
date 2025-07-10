@@ -29,7 +29,7 @@
 SocketDescriptor::SocketDescriptor(int pid, int fd, IPPROTO_TYPE protocol)
   : IODescriptor(pid, fd, O_RDWR),
     _protocol(protocol),
-    _bindAddress({ 0, 0, { 0 }, { 0 } }),
+    _bindAddress({ AF_INET, 0, { INADDR_ANY }, { 0 } }),
     _allowBroadcast(false), _recvTimeoutInMs(0),
     _packetQueue(1024) {
 }

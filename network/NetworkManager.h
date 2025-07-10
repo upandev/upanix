@@ -55,7 +55,7 @@ public:
   void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len);
   void unbind(SocketDescriptor& socket);
 
-  void send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  ssize_t send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
   void recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType);
 
 private:

@@ -49,8 +49,8 @@ public:
   uint32_t getOffset() const override { return 0; }
 
   void bind(const struct sockaddr& address, socklen_t len);
-  virtual void sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
-  virtual int recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
+  virtual ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+  virtual ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
   //socket options
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }

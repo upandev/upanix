@@ -143,6 +143,7 @@ static void ConsoleCommands_Kill();
 static void ConsoleCommands_ResetMouse();
 static void ConsoleCommands_MemStats();
 static void ConsoleCommands_ResetSysLog();
+static void ConsoleCommands_Ping();
 
 /*****************************************/
 
@@ -201,6 +202,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
   { "initnet", &ConsoleCommands_InitNetwork },
   { "lsnet", &ConsoleCommands_ListNetworkDevices },
   { "arping", &ConsoleCommands_ARPing },
+  { "ping", &ConsoleCommands_Ping },
 	{ "showdisk",	&ConsoleCommands_ShowRawDiskList },
 	{ "initfdc",	&ConsoleCommands_InitFloppyController },
 	{ "initata",	&ConsoleCommands_InitATAController },
@@ -2293,4 +2295,69 @@ void ConsoleCommands_MemStats() {
 void ConsoleCommands_ResetSysLog() {
   KernelRootProcess::Instance().resetSysLoggerFile();
   printf("\n syslog cleared");
+}
+
+#define PACKET_SIZE 64
+void ConsoleCommands_Ping() {
+  if (CommandLineParser::Instance().GetNoOfParameters() != 1) {
+    throw upan::exception(XLOC, "required parameter: <ip address>");
+  }
+  const char* ip = CommandLineParser::Instance().GetParameterAt(0);
+
+  struct sockaddr_in addr;
+//struct hostent *h = gethostbyname(host);
+//    if (!h) {
+//      perror("gethostbyname");
+//      return 1;
+//    }
+
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = upan::net::inet_strton(ip);
+
+  int sd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "failed to create raw socket");
+  }
+
+  char packet[PACKET_SIZE];
+  auto icmp_hdr = (struct icmp*) packet;
+  memset(packet, 0, sizeof(packet));
+
+  icmp_hdr->icmp_type = ICMP_ECHO;
+  icmp_hdr->icmp_code = 0;
+  icmp_hdr->icmp_id = htons(getpid() & 0xFFFF);
+  icmp_hdr->icmp_seq = htons(1);
+  memset(icmp_hdr->icmp_data, 0xA5, PACKET_SIZE - sizeof(struct icmp));
+  icmp_hdr->icmp_cksum = 0;
+  icmp_hdr->icmp_cksum = NetworkUtil::CalculateChecksum((uint16_t*) packet, PACKET_SIZE, 0);
+
+  struct timeval start, end;
+  gettimeofday(&start);
+  if (sendto(sd, packet, PACKET_SIZE, 0, (struct sockaddr*) &addr, sizeof(addr)) <= 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to send packet");
+  }
+
+  socklen_t len = sizeof(addr);
+  if (recvfrom(sd, packet, sizeof(packet), 0, (struct sockaddr*) &addr, &len) <= 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to receive packet");
+  }
+
+  gettimeofday(&end);
+
+  auto ip_hdr = (struct ip*) packet;
+  int ip_hdr_len = ip_hdr->ip_hl << 2;
+  auto reply_icmp = (struct icmp*) (packet + ip_hdr_len);
+
+  if (reply_icmp->icmp_type == ICMP_ECHOREPLY && ntohs(reply_icmp->icmp_id) == (getpid() & 0xFFFF)) {
+    double rtt = (end.tv_sec - start.tv_sec) * 1000.0 +
+                 (end.tv_usec - start.tv_usec) / 1000.0;
+    printf("Reply from %s: seq=%d time=%.2f ms\n", inet_ntoa(addr.sin_addr), ntohs(reply_icmp->icmp_seq), rtt);
+  } else {
+    printf("Received ICMP packet, but it's not an echo reply.\n");
+  }
+
+  close(sd);
 }

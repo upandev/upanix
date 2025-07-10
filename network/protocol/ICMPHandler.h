@@ -5,28 +5,37 @@
  *  I am making my contributions/submissions to this project solely in
  *  my personal capacity and am not conveying any rights to any
  *  intellectual property of any third parties.
- *
+ *                                                                          
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ *                                                                          
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ *                                                                          
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
 
-#include <SocketDescriptor.h>
+#include <map.h>
+#include <PacketHandler.h>
+#include <option.h>
+#include <NetworkPacketComponents.h>
+#include <shared_ptr.h>
 
-class SocketDescriptorStream : public SocketDescriptor {
+class IPV4Handler;
+
+class ICMPHandler : public PacketHandler {
 public:
-  SocketDescriptorStream(int pid, int fd, IPPROTO_TYPE protocol);
+  explicit ICMPHandler(NetworkDevice& networkDevice);
+  uint32_t headerLen() const override { return 0; }
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+
 private:
-  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override { return 0; };
-  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override { return 0; }
+  void verifyChecksum(const RawNetPacket& packet);
 };

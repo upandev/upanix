@@ -75,6 +75,7 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
         throw upan::exception(XLOC, "invalid IPPROTO_TYPE %d for raw-socket", protocol);
       }
     }
+    break;
 
     default:
       throw upan::exception(XLOC, "unsupported socket type: %d", socketType);
@@ -136,12 +137,12 @@ void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, c
   }
 }
 
-void NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
-  descriptor.sendTo(buf, n, flags, addr, len);
+  return descriptor.sendTo(buf, n, flags, addr, len);
 }
 
-int NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.recvFrom(buf, n, flags, addr, len);
 }

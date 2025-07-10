@@ -45,6 +45,9 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
       case IPPROTO_UDP:
         device().getUDP4Handler().recv(assembledPacket);
         break;
+      case IPPROTO_ICMP:
+        device().getICMPHandler().recv(assembledPacket);
+        break;
       default:
         throw upan::exception(XLOC, "unsupported IPV4 packet type: %d", ipv4Header.type());
     }
@@ -121,7 +124,6 @@ void IPV4Handler::verifyChecksum(const NetworkPacket::IPV4::Header& ipv4Header) 
 
 void IPV4Handler::addFragment(const IPV4Handler::FragmentKey& fragmentKey, const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_fragmentMutex);
-  const NetworkPacket::IPV4::Header& ipv4Header = packet->getIPV4Header();
   _fragments[fragmentKey].push_back(packet);
 }
 

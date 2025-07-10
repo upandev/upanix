@@ -1,3 +1,9 @@
+9 Jul 2025
+- ARP to get gateway MAC
+- Ethernet to use correct MAC of IP in same subnet or gateway MAC
+- DNS nameserver /etc/resolv.conf from DHCP response
+- DNS method like gethostbyname()
+
 10 Mar 2024
 - Cleanup terminated proccesses in a separate background kernel process and
   not in the main timer/scheduler loop

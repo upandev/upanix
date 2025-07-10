@@ -168,7 +168,7 @@ void EHCIController::SetupPeriodicFrameList()
 {
 	unsigned uiFreePageNo = MemManager::Instance().AllocatePhysicalPage();
 
-	unsigned* pFrameList = (unsigned*)(uiFreePageNo * PAGE_SIZE) ;
+	auto pFrameList = (unsigned*)(uiFreePageNo * PAGE_SIZE) ;
 	
 	int i ;
 	for(i = 0; i < 1024; i++)

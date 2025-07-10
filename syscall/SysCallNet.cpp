@@ -83,7 +83,7 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       const auto address = (struct sockaddr*)ext_param[0];
       const auto len = (socklen_t)ext_param[1];
       try {
-        NetworkOperations::Instance().sendTo(fd, buf, n, flags, address, len);
+        *retVal = NetworkOperations::Instance().sendTo(fd, buf, n, flags, address, len);
       } catch(const upan::exception& e) {
         KLog::exception(e);
         *retVal = -1;

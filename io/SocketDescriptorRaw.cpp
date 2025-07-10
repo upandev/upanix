@@ -26,7 +26,7 @@
 SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
 }
 
-void SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "send/destination address is not specified");
@@ -38,20 +38,20 @@ void SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const 
   }
 
   NetworkManager::Instance().bind(*this, buf, n);
-  NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
+  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
 }
 
-int SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
-  const void* srcBuf = packet->getUDP4Data();
-  const size_t dataLen = packet->getUDP4Header()._len - NetworkPacket::UDP::HEADER_SIZE;
+  const void* srcBuf = packet->getEthernetData();
+  const size_t dataLen = packet->len() - NetworkPacket::Ethernet::HEADER_SIZE;
   const auto xferLen = upan::min(n, dataLen);
 
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDP4Header()._srcPort, {packet->getIPV4Header()._srcAddr }};
+    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, 0, {packet->getIPV4Header()._srcAddr }};
   }
 
   return xferLen;

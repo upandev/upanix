@@ -30,6 +30,7 @@
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
 #include <ARPHandler.h>
+#include <ICMPHandler.h>
 #include <uniq_ptr.h>
 
 class PCIEntry;
@@ -70,6 +71,9 @@ public:
 
   UDP4Handler& getUDP4Handler() { return _udp4Handler; }
   const UDP4Handler& getUDP4Handler() const { return _udp4Handler; }
+
+  ICMPHandler& getICMPHandler() { return _icmpHandler; }
+  const ICMPHandler& getICMPHandler() const { return _icmpHandler; }
 
   // virtual int Configure() = 0;
   // virtual void Tx(SocketBuffer& socketBuffer) = 0;
@@ -148,5 +152,6 @@ protected:
   EthernetHandler _ethernetHandler;
   IPV4Handler _ipv4Handler;
   UDP4Handler _udp4Handler;
+  ICMPHandler _icmpHandler;
   ARPHandler _arpHandler;
 };

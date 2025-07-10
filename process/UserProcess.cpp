@@ -266,7 +266,7 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
     for(Elf64_Xword i = 0; i < dllInfo.elfInfo().getDynSymTableSize(); ++i) {
       const auto& dynSym = dynSymTable[i];
       const auto symType = ELF64_ST_TYPE(dynSym.st_info);
-      //at first, only STT_TLS and STT_OBJECT symbol types were added. Now, everything is added
+      //At first, only STT_TLS and STT_OBJECT symbol types were added. Now, everything is added
       //this includes symbol type STT_FUNC. This is required because function pointers can be used
       //in executable or other shared libraries, which will then appear in their relocation table
       //as GLOB_DAT entries, which needs to be relocated at program start-up in relocateDLLs()

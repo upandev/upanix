@@ -26,7 +26,7 @@
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, IPPROTO_TYPE protocol) : SocketDescriptor(pid, fd, protocol) {
 }
 
-void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "send/destination address is not specified");
@@ -37,11 +37,14 @@ void SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, c
     throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
   }
 
-  NetworkManager::Instance().bind(*this, buf, n);
-  NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
+  if (bindAddress().sin_port == 0) {
+    NetworkManager::Instance().bind(*this, buf, n);
+  }
+
+  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
 }
 
-int SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getUDP4Data();

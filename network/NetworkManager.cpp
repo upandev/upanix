@@ -26,6 +26,7 @@
 #include <E1000NICDevice.h>
 #include <NetworkManager.h>
 #include <UDPSocketResolver.h>
+#include <ICMPSocketResolver.h>
 
 NetworkManager& NetworkManager::Instance() {
   static NetworkManager instance;
@@ -109,14 +110,19 @@ void NetworkManager::unbind(SocketDescriptor& socket) {
   }
 }
 
-void NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+ssize_t NetworkManager::send(const uint8_t* buf, size_t n, IPPROTO_TYPE protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
   switch (protocol) {
     case IPPROTO_UDP:
       getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, destAddr);
       break;
+    case IPPROTO_ICMP:
+      getDefaultDevice().value().getICMPHandler().send(buf, n, srcAddr, destAddr);
+      break;
     default:
       throw upan::exception(XLOC, "packet send failed - unsupported protocol: %d", protocol);
   }
+  //todo: handle partial send?
+  return n;
 }
 
 void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, SA_FAMILY_TYPE familyType) {

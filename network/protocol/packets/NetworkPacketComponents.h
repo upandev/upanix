@@ -166,7 +166,7 @@ namespace NetworkPacket {
       }
 
       int dataLen() const {
-        return _totalLen - _ihl;
+        return ntohs(_totalLen) - _ihl;
       }
 
       uint16_t fragmentOffset() const {

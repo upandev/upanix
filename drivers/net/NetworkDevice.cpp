@@ -26,7 +26,7 @@ constexpr char NetworkDevice::DEFAULT_HOST_NAME[];
 
 NetworkDevice::NetworkDevice(const PCIEntry& pciEntry)
   : _pciEntry(pciEntry), _macAddress(nullptr), _ipAddress(INADDR_NONE),
-    _ethernetHandler(*this), _ipv4Handler(*this), _udp4Handler(*this), _arpHandler(*this) {
+    _ethernetHandler(*this), _ipv4Handler(*this), _udp4Handler(*this), _icmpHandler(*this), _arpHandler(*this) {
 }
 
 NetworkDevice::~NetworkDevice() {
