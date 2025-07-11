@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
+
 #include <IrqManager.h>
 #include <PCIBusHandler.h>
 #include <ATH9KDevice.h>
@@ -27,6 +28,7 @@
 #include <NetworkManager.h>
 #include <UDPSocketResolver.h>
 #include <ICMPSocketResolver.h>
+#include "ARPSocketResolver.h"
 
 NetworkManager& NetworkManager::Instance() {
   static NetworkManager instance;
@@ -48,10 +50,10 @@ void NetworkManager::Initialize() {
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_TCP, new TCPSocketResolver()));
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_UDP, new UDPSocketResolver()));
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_ICMP, new ICMPSocketResolver()));
+  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(ETH_PROTO_TYPE::ETH_P_ARP, new ARPSocketResolver()));
 
-  getDefaultDevice().ifPresent([this](NetworkDevice& networkDevice) {
-    _dhcpClient.reset(new DHCPClient(networkDevice));
-    _dhcpClient->start();
+  getDefaultDevice().ifPresent([](NetworkDevice& networkDevice) {
+    networkDevice.connectToNetwork();
   });
 }
 
@@ -101,22 +103,18 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
   }
 }
 
-void NetworkManager::updateIPMACTable(const RawNetPacket& packet) {
-  const auto& ip = packet.getIPV4Header()._header.ip_dst.s_addr;
-  if (ip != INADDR_BROADCAST) {
-    const MACAddress mac = packet.getEthernetHeader()._header.h_source;
-    if (mac != INADDR_MAC_BROADCAST) {
-      _ipMACTable.insert(IP_MAP_TABLE::value_type(ip, mac));
-    }
+void NetworkManager::updateIPMACTable(in_addr_t ip, const MACAddress& mac) {
+  if (ip != INADDR_BROADCAST && mac != INADDR_MAC_BROADCAST) {
+    _ipMACTable.insert(IP_MAP_TABLE::value_type(ip, mac));
   }
 }
 
-upan::option<MACAddress> NetworkManager::lookupMAC(in_addr_t ip) {
+upan::option<const MACAddress&> NetworkManager::lookupMAC(in_addr_t ip) {
   auto i = _ipMACTable.find(ip);
   if (i == _ipMACTable.end()) {
-    return upan::option<MACAddress>::empty();
+    return upan::option<const MACAddress&>::empty();
   }
-  return upan::option<MACAddress>(i->second);
+  return upan::option<const MACAddress&>(i->second);
 }
 
 void NetworkManager::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
@@ -137,13 +135,16 @@ void NetworkManager::unbind(SocketDescriptor& socket) {
   }
 }
 
-ssize_t NetworkManager::send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+ssize_t NetworkManager::send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr) {
   switch (protocol) {
     case IPPROTO_UDP:
-      getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, destAddr);
+      getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, reinterpret_cast<const struct sockaddr_in&>(destAddr));
       break;
     case IPPROTO_ICMP:
-      getDefaultDevice().value().getICMPHandler().send(buf, n, srcAddr, destAddr);
+      getDefaultDevice().value().getICMPHandler().send(buf, n, srcAddr, reinterpret_cast<const struct sockaddr_in&>(destAddr));
+      break;
+    case ETH_P_ARP:
+      getDefaultDevice().value().getARPHandler().send(buf, n, srcAddr, destAddr);
       break;
     default:
       throw upan::exception(XLOC, "packet send failed - unsupported protocol: %d", protocol);

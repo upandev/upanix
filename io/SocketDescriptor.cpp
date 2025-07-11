@@ -26,10 +26,11 @@
 #include <NetworkManager.h>
 #include <ProcessManager.h>
 
-SocketDescriptor::SocketDescriptor(int pid, int fd, int protocol)
+SocketDescriptor::SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
   : IODescriptor(pid, fd, O_RDWR),
+    _family(family),
     _protocol(protocol),
-    _bindAddress({ AF_INET, 0, { INADDR_ANY }, { 0 } }),
+    _bindAddress({ (sa_family_t)family, 0, { INADDR_ANY }, { 0 } }),
     _allowBroadcast(false), _recvTimeoutInMs(0),
     _packetQueue(1024) {
 }
@@ -44,7 +45,7 @@ bool SocketDescriptor::canRead() {
 }
 
 void SocketDescriptor::validateSockAddrLen(socklen_t len) const {
-  if (len != sizeof(struct sockaddr_in)) {
+  if (len != sizeof(struct sockaddr_in) && len != sizeof(struct sockaddr_ll)) {
     throw upan::exception(XLOC, "invalid socket len: %d", len);
   }
 }

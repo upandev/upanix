@@ -34,7 +34,7 @@ class NetworkDevice;
 
 class SocketDescriptor : public IODescriptor {
 protected:
-  SocketDescriptor(int pid, int fd, int protocol);
+  SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 public:
   ~SocketDescriptor() override;
@@ -63,6 +63,7 @@ public:
     }
   }
 
+  SA_FAMILY_TYPE family() const { return _family; }
   int protocol() const { return _protocol; }
   const struct sockaddr_in& bindAddress() const { return _bindAddress; }
   void setBindAddress(const struct sockaddr_in& addr) { _bindAddress = addr; }
@@ -80,6 +81,7 @@ private:
 
 private:
   upan::mutex _ioSync;
+  const SA_FAMILY_TYPE _family;
   const int _protocol;
   struct sockaddr_in _bindAddress;
   bool _allowBroadcast;

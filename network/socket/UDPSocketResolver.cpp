@@ -70,7 +70,7 @@ void UDPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_
 
   if (ip != INADDR_ANY && ip != INADDR_LOOPBACK) {
     const auto networkDeviceIP = NetworkManager::Instance().getDefaultDevice().value().GetIPAddress();
-    if (networkDeviceIP == INADDR_NONE) {
+    if (networkDeviceIP == INADDR_ANY) {
       throw upan::exception(XLOC, "network device doesn't have an IP address yet");
     }
     if (ip != networkDeviceIP) {

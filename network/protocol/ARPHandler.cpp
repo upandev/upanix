@@ -21,61 +21,52 @@
  */
 #include <stdio.h>
 #include <ARPHandler.h>
-#include <EthernetHandler.h>
+#include <NetworkManager.h>
 #include <NetworkDevice.h>
 
 ARPHandler::ARPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
+uint32_t ARPHandler::headerLen() const {
+  return device().getEthernetHandler().headerLen();
+}
+
 void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& arpHeader = packet->getARPHeader();
   if (arpHeader.isResponse()) {
-    KLog::debug("Handling ARP packet");
-    arpHeader.print();
+    KLog::debug("Handling ARP packet reply");
+    arpHeader.toHost().print();
+    NetworkManager::Instance().recv(packet, ETH_PROTO_TYPE::ETH_P_ARP);
+  } else if (arpHeader.isRequest()) {
+    if (device().isConnected()) {
+      if (arpHeader._header.arp_tpa == device().GetIPAddress()) {
+        KLog::debug("Handling ARP packet request");
+        struct ether_arp arp_reply {};
+        arp_reply.ea_hdr.ar_op = htons(ARPOP_REPLY);
+
+        memcpy(arp_reply.arp_sha, device().GetMACAddress().get(), ETH_ALEN);
+        arp_reply.arp_spa = device().GetIPAddress();
+
+        memcpy(arp_reply.arp_tha, arpHeader._header.arp_sha, ETH_ALEN);
+        arp_reply.arp_tpa = arpHeader._header.arp_spa;
+        send((uint8_t*)&arp_reply, sizeof(arp_reply), sockaddr_in{}, sockaddr {});
+      }
+    }
+  } else {
+    //KLog::debug("Ignoring ARP packet : %s", inet_ntoa( { arpHeader._header.arp_spa }));
   }
 }
 
-uint32_t ARPHandler::headerLen() const {
-  return NetworkPacket::ARP::HEADER_SIZE + device().getEthernetHandler().headerLen();
-}
+void ARPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr) {
+  RawNetPacket packet(len + headerLen());
 
-RawNetPacket ARPHandler::CreatePacket(uint16_t hType, ETH_PROTO_TYPE pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
-                                      const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa) {
-
-  RawNetPacket packet(NetworkPacket::Ethernet::HEADER_SIZE + NetworkPacket::ARP::HEADER_SIZE);
+  memcpy(packet.getEthernetData(), buf, len);
 
   auto& arpHeader = packet.getARPHeader();
-  arpHeader._header.ea_hdr.ar_hrd = htons(hType);
-  arpHeader._header.ea_hdr.ar_pro = htons((uint16_t) pType);
-  arpHeader._header.ea_hdr.ar_hln = hLen;
-  arpHeader._header.ea_hdr.ar_pln = pLen;
-  arpHeader._header.ea_hdr.ar_op = htons(opCode);
+  arpHeader._header.ea_hdr.ar_hrd = htons(ARPHRD_ETHER);
+  arpHeader._header.ea_hdr.ar_pro = htons(ETH_PROTO_TYPE::ETH_P_IP);
+  arpHeader._header.ea_hdr.ar_hln = ETH_ALEN;
+  arpHeader._header.ea_hdr.ar_pln = NetworkPacket::IPV4_ADDR_LEN;
 
-  memcpy(arpHeader._header.arp_sha, sha, ETH_ALEN);
-  arpHeader._header.arp_spa = spa.s_addr;
-
-  memcpy(arpHeader._header.arp_tha, tha, ETH_ALEN);
-  arpHeader._header.arp_tpa = tpa.s_addr;
-
-  return packet;
-}
-
-void ARPHandler::SendRequestForMAC(const struct in_addr& ipAddress) {
-  const struct in_addr spa = { INADDR_ANY };
-  const uint8_t tha[] = { 0, 0, 0, 0, 0, 0 };
-
-  auto packet = CreatePacket(1, ETH_PROTO_TYPE::ETH_P_IP,
-                             ETH_ALEN, NetworkPacket::IPV4_ADDR_LEN, 1,
-                             device().GetMACAddress().get(), spa, tha, ipAddress);
-  device().getEthernetHandler().send(packet, ETH_PROTO_TYPE::ETH_P_ARP);
-}
-
-void ARPHandler::SendRARP() {
-  const struct in_addr spa = { INADDR_BROADCAST };
-  const uint8_t* mac = device().GetMACAddress().get();
-
-  auto packet = CreatePacket(1, ETH_PROTO_TYPE::ETH_P_IP,
-                              ETH_ALEN, NetworkPacket::IPV4_ADDR_LEN, 3,
-                              mac, spa, mac, spa);
   device().getEthernetHandler().send(packet, ETH_PROTO_TYPE::ETH_P_ARP);
 }

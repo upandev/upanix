@@ -25,7 +25,7 @@
 
 class SocketDescriptorStream : public SocketDescriptor {
 public:
-  SocketDescriptorStream(int pid, int fd, int protocol);
+  SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 private:
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override { return 0; };
   ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override { return 0; }

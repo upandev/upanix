@@ -32,6 +32,10 @@
 ICMPHandler::ICMPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
+uint32_t ICMPHandler::headerLen() const {
+  return device().getIPV4Handler().headerLen();
+}
+
 void ICMPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   KLog::debug("Handling ICMP Packet");
   verifyChecksum(*packet);
@@ -39,7 +43,7 @@ void ICMPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
 }
 
 void ICMPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
-  RawNetPacket packet(len + device().getIPV4Handler().headerLen());
+  RawNetPacket packet(len + headerLen());
   //IPV4 header can potentially have varying length because of header-options
   //therefore, we need to initialize the IPV4 header length at the very beginning before constructing the packet bottom up
   device().getIPV4Handler().initHeaderLen(packet);

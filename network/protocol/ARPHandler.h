@@ -28,12 +28,7 @@
 class ARPHandler : public PacketHandler {
 public:
   explicit ARPHandler(NetworkDevice& networkDevice);
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   uint32_t headerLen() const override;
-  void SendRequestForMAC(const struct in_addr& ipAddress);
-  void SendRARP();
-
-private:
-  RawNetPacket CreatePacket(uint16_t hType, ETH_PROTO_TYPE pType, uint8_t hLen, uint8_t pLen, uint16_t opCode,
-                            const uint8_t* sha, const struct in_addr& spa, const uint8_t* tha, const struct in_addr& tpa);
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr);
 };

@@ -32,7 +32,7 @@ class IPV4Handler;
 class ICMPHandler : public PacketHandler {
 public:
   explicit ICMPHandler(NetworkDevice& networkDevice);
-  uint32_t headerLen() const override { return 0; }
+  uint32_t headerLen() const override;
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
 

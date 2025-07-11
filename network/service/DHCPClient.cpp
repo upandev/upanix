@@ -97,6 +97,7 @@ void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
 
   KLog::info("DHCP config updated");
   loadFromConfig();
+  _networkDevice.onConnected();
 
   const time_t curTime = btime() / 1000;
   _leaseExpiry = curTime + _leaseTime;
@@ -105,7 +106,7 @@ void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
 
 void DHCPClient::run() {
   KLog::info("DHCP service started");
-  if (_networkDevice.GetIPAddress() == INADDR_NONE) {
+  if (_networkDevice.GetIPAddress() == INADDR_ANY) {
     _flowState = FlowState_Discover;
   } else {
     _flowState = FlowState_Request;

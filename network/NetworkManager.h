@@ -28,7 +28,6 @@
 #include <map.h>
 #include <uniq_ptr.h>
 #include <SocketDescriptor.h>
-#include <DHCPClient.h>
 #include <SocketResolver.h>
 
 class IRQ;
@@ -51,13 +50,13 @@ public:
   upan::option<NetworkDevice&> getDeviceById(int);
   upan::option<NetworkDevice&> getDeviceByName(const upan::string&);
 
-  void updateIPMACTable(const RawNetPacket&);
-  upan::option<MACAddress> lookupMAC(in_addr_t ip);
+  void updateIPMACTable(in_addr_t ip, const MACAddress& mac);
+  upan::option<const MACAddress&> lookupMAC(in_addr_t ip);
 
   void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len);
   void unbind(SocketDescriptor& socket);
 
-  ssize_t send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  ssize_t send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr);
   void recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol);
 
 private:
@@ -70,6 +69,5 @@ private:
   int _interfaceId;
   IP_MAP_TABLE _ipMACTable;
   upan::list<NetworkDevice*> _devices;
-  upan::uniq_ptr<DHCPClient> _dhcpClient;
   SOCKET_RESOLVER_MAP _socketResolvers;
 };

@@ -31,7 +31,11 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   KLog::debug("Handling IPV4 Packet");
   const auto& ipv4Header = packet->getIPV4Header();
   verifyChecksum(ipv4Header);
-  NetworkManager::Instance().updateIPMACTable(*packet);
+
+  if (device().isSameSubnet(ipv4Header._header.ip_src.s_addr)) {
+    NetworkManager::Instance().updateIPMACTable(ipv4Header._header.ip_src.s_addr, packet->getEthernetHeader()._header.h_source);
+  }
+
   ipv4Header.toHost().print();
 
   const FragmentKey fragmentKey = { ipv4Header._header.ip_id,
@@ -95,7 +99,7 @@ void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct
     ipv4Header._header.ip_ttl = 255;
     ipv4Header._header.ip_p = protocol;
     ipv4Header._header.ip_sum = 0;
-    ipv4Header._header.ip_src = srcAddr.sin_addr;
+    ipv4Header._header.ip_src = { device().isConnected() ? device().GetIPAddress() : INADDR_ANY };
     ipv4Header._header.ip_dst = destAddr.sin_addr;
 
     ipv4Header._header.ip_sum = calcChecksum(ipv4Header);

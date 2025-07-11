@@ -23,7 +23,7 @@
 #include <NetworkManager.h>
 #include <UDP4Handler.h>
 
-SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, int protocol) : SocketDescriptor(pid, fd, protocol) {
+SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol) : SocketDescriptor(pid, fd, family, protocol) {
 }
 
 ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -41,7 +41,7 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
     NetworkManager::Instance().bind(*this, buf, n);
   }
 
-  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
+  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), *addr);
 }
 
 ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {

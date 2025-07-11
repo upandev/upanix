@@ -36,10 +36,6 @@ NetworkOperations& NetworkOperations::Instance() {
 }
 
 int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol) {
-  if (family != AF_INET) {
-    throw upan::exception(XLOC, "only AF_INET socket family type is supported");
-  }
-
   switch(socketType) {
     case SOCK_STREAM:
     {
@@ -48,7 +44,7 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
       }
 
       if (protocol != IPPROTO_TCP) {
-        throw upan::exception(XLOC, "invalid IPPROTO_TYPE %d for stream-socket", protocol);
+        throw upan::exception(XLOC, "invalid protocol %d for stream-socket", protocol);
       }
     }
     break;
@@ -60,7 +56,7 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
       }
 
       if (protocol != IPPROTO_UDP) {
-        throw upan::exception(XLOC, "invalid IPPROTO_TYPE %d for dgram-socket", protocol);
+        throw upan::exception(XLOC, "invalid protocol %d for dgram-socket", protocol);
       }
     }
     break;
@@ -71,8 +67,8 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
         protocol = IPPROTO_ICMP;
       }
 
-      if (protocol != IPPROTO_ICMP) {
-        throw upan::exception(XLOC, "invalid IPPROTO_TYPE %d for raw-socket", protocol);
+      if (protocol != IPPROTO_ICMP && protocol != ETH_P_ARP) {
+        throw upan::exception(XLOC, "invalid protocol %d for raw-socket", protocol);
       }
     }
     break;
@@ -85,11 +81,11 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
   auto& sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
     switch (socketType) {
       case SOCK_STREAM:
-        return new SocketDescriptorStream(process.processID(), fd, protocol);
+        return new SocketDescriptorStream(process.processID(), fd, family, protocol);
       case SOCK_DGRAM:
-        return new SocketDescriptorDataGram(process.processID(), fd, protocol);
+        return new SocketDescriptorDataGram(process.processID(), fd, family, protocol);
       case SOCK_RAW:
-        return new SocketDescriptorRaw(process.processID(), fd, protocol);
+        return new SocketDescriptorRaw(process.processID(), fd, family, protocol);
       default:
         throw upan::exception(XLOC, "unsupport socket-type: %d", socketType);
     }

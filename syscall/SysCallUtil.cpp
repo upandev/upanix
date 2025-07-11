@@ -61,7 +61,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         {
           auto ms = PIT::Instance().GetCurrentTimeFromBoot();
           tv->tv_sec = ms / 1000;
-          tv->tv_usec = ms * 1000;
+          tv->tv_usec = (ms % 1000) * 1000;
         }
         catch(...)
         {

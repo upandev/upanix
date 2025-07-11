@@ -55,8 +55,8 @@ namespace NetworkPacket {
         return h;
       }
 
-      bool isRequest() const { return _header.ea_hdr.ar_op == 1; }
-      bool isResponse() const { return _header.ea_hdr.ar_op == 2; }
+      bool isRequest() const { return ntohs(_header.ea_hdr.ar_op) == ARPOP_REQUEST; }
+      bool isResponse() const { return ntohs(_header.ea_hdr.ar_op) == ARPOP_REPLY; }
 
       void print() const {
         KLog::debug("HType: %x, PType: %x, HLen: %d, PLen: %d, OpCode: %d", _header.ea_hdr.ar_hrd,
@@ -74,7 +74,9 @@ namespace NetworkPacket {
         sprintf(buf, ", SPA: %s", inet_ntoa( { _header.arp_spa}));
         msg += buf;
 
-        msg += "\n THA: ";
+        KLog::debug(msg.c_str());
+
+        msg = "THA: ";
         for (int i = 0; i < ETH_ALEN; i++) {
           sprintf(buf, "%02x%s", _header.arp_tha[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;

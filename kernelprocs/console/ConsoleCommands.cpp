@@ -775,20 +775,19 @@ void ConsoleCommands_ARPing() {
     printf("\nno network device exists");
     return;
   }
+
   if(CommandLineParser::Instance().GetNoOfParameters() < 1) {
     printf("\nmissing parameter");
     return;
   }
+
   auto& device = d.value();
   const upan::string param(CommandLineParser::Instance().GetParameterAt(0));
 
-  if (param == "rarp") {
-    device.getARPHandler().SendRARP();
-  } else {
-    struct in_addr addr {};
-    inet_aton(param.c_str(), &addr);
-    device.getARPHandler().SendRequestForMAC(addr);
-  }
+  struct in_addr addr {};
+  inet_aton(param.c_str(), &addr);
+  const MACAddress mac = device.getARPClient().resolveMacAddress(addr.s_addr);
+  printf("\nMAC: %s", mac.str().c_str());
 }
 
 struct dhcp_message {
@@ -2299,6 +2298,8 @@ void ConsoleCommands_ResetSysLog() {
 }
 
 #define PACKET_SIZE 64
+uint16_t _icmp_seq = 0;
+
 void ConsoleCommands_Ping() {
   if (CommandLineParser::Instance().GetNoOfParameters() != 1) {
     throw upan::exception(XLOC, "required parameter: <ip address>");
@@ -2325,16 +2326,26 @@ void ConsoleCommands_Ping() {
   auto icmp_hdr = (struct icmp*) packet;
   memset(packet, 0, sizeof(packet));
 
+  struct timeval timeout {};
+  timeout.tv_sec = 10;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
+  }
+
   icmp_hdr->icmp_type = ICMP_ECHO;
   icmp_hdr->icmp_code = 0;
   icmp_hdr->icmp_id = htons(getpid() & 0xFFFF);
-  icmp_hdr->icmp_seq = htons(1);
-  memset(icmp_hdr->icmp_data, 0xA5, PACKET_SIZE - sizeof(struct icmp));
-  icmp_hdr->icmp_cksum = 0;
-  icmp_hdr->icmp_cksum = NetworkUtil::CalculateChecksum((uint16_t*) packet, PACKET_SIZE, 0);
+  icmp_hdr->icmp_seq = htons(_icmp_seq++);
 
   struct timeval start, end;
   gettimeofday(&start);
+  memcpy(icmp_hdr->icmp_data, &start, sizeof(start));
+  memset(icmp_hdr->icmp_data + sizeof(start), 0xA5, PACKET_SIZE - sizeof(struct icmp) - sizeof(start));
+
+  icmp_hdr->icmp_cksum = 0;
+  icmp_hdr->icmp_cksum = NetworkUtil::CalculateChecksum((uint16_t*) packet, PACKET_SIZE, 0);
+
   if (sendto(sd, packet, PACKET_SIZE, 0, (struct sockaddr*) &addr, sizeof(addr)) <= 0) {
     close(sd);
     throw upan::exception(XLOC, "failed to send packet");
@@ -2355,9 +2366,9 @@ void ConsoleCommands_Ping() {
   if (reply_icmp->icmp_type == ICMP_ECHOREPLY && ntohs(reply_icmp->icmp_id) == (getpid() & 0xFFFF)) {
     double rtt = (end.tv_sec - start.tv_sec) * 1000.0 +
                  (end.tv_usec - start.tv_usec) / 1000.0;
-    printf("Reply from %s: seq=%d time=%.2f ms\n", inet_ntoa(addr.sin_addr), ntohs(reply_icmp->icmp_seq), rtt);
+    printf("\nReply from %s: seq=%d time=%.2f ms\n", inet_ntoa(addr.sin_addr), ntohs(reply_icmp->icmp_seq), rtt);
   } else {
-    printf("Received ICMP packet, but it's not an echo reply.\n");
+    printf("\nReceived ICMP packet, but it's not an echo reply.\n");
   }
 
   close(sd);

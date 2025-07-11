@@ -25,7 +25,7 @@
 
 class SocketDescriptorDataGram : public SocketDescriptor {
 public:
-  SocketDescriptorDataGram(int pid, int fd, int protocol);
+  SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 private:
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;

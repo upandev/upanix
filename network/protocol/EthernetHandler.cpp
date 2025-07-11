@@ -21,7 +21,7 @@
  */
 
 #include <exception.h>
-
+#include <net/ip.h>
 #include <RawNetPacket.h>
 #include <ARPHandler.h>
 #include <EthernetHandler.h>
@@ -39,6 +39,7 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& ethernetHeader = packet->getEthernetHeader();
   const MACAddress& destMAC = ethernetHeader._header.h_dest;
   if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
+    //KLog::debug("Ignoring ARP packet : DestMac: %s != %s", destMAC.str().c_str(), device().GetMACAddress().str().c_str());
     return;
   }
 
@@ -78,11 +79,15 @@ void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
   if (isBroadcast) {
     memcpy(ethernetHeader._header.h_dest, INADDR_MAC_BROADCAST, ETH_ALEN);
   } else {
-    const auto& mac = NetworkManager::Instance().lookupMAC(packet.getIPV4Header()._header.ip_dst.s_addr);
-    if (mac.isEmpty()) {
-      throw upan::exception(XLOC, "unable to determine the target/destination MAC");
+    in_addr_t dest_ip = packet.getIPV4Header()._header.ip_dst.s_addr;
+    if (device().isSameSubnet(dest_ip)) {
+      //TODO: instead of failing, lookup - try ARP
+      const auto& mac = NetworkManager::Instance().lookupMAC(dest_ip).valueOrThrow(XLOC,
+                                                                            upan::error("unable to determine the dest MAC for ip: %s",
+                                                                                        inet_ntoa( { dest_ip })).Msg());
+      memcpy(ethernetHeader._header.h_dest, mac.get(), ETH_ALEN);
     } else {
-      memcpy(ethernetHeader._header.h_dest, mac.value().get(), ETH_ALEN);
+      memcpy(ethernetHeader._header.h_dest, device().GetGatewayMACAddress().get(), ETH_ALEN);
     }
   }
 

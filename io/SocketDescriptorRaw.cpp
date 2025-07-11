@@ -23,7 +23,7 @@
 #include <NetworkManager.h>
 #include <UDP4Handler.h>
 
-SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, int protocol) : SocketDescriptor(pid, fd, protocol) {
+SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol) : SocketDescriptor(pid, fd, family, protocol) {
 }
 
 ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -32,13 +32,15 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
     throw upan::exception(XLOC, "send/destination address is not specified");
   }
 
-  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
-  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
-    throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
+  if (protocol() != ETH_P_ARP) {
+    const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
+    if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
+      throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
+    }
   }
 
   NetworkManager::Instance().bind(*this, buf, n);
-  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), destAddr);
+  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), *addr);
 }
 
 ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
@@ -51,8 +53,21 @@ ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct 
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, 0, packet->getIPV4Header()._header.ip_src };
-    *len = sizeof(sockaddr_in);
+    if (protocol() != ETH_P_ARP) {
+      reinterpret_cast<sockaddr_in&>(*addr) = {(sa_family_t) family(), 0, packet->getIPV4Header()._header.ip_src};
+      *len = sizeof(sockaddr_in);
+    } else if (protocol() == ETH_P_ARP) {
+      auto& etherAddr = reinterpret_cast<struct sockaddr_ll&>(*addr);
+
+      etherAddr.sll_family = (sa_family_t) family();
+      etherAddr.sll_protocol = (uint16_t) protocol();
+      etherAddr.sll_halen = ETH_ALEN;
+      etherAddr.sll_ifindex = 1;//todo
+      etherAddr.sll_pkttype = 0;//todo
+      etherAddr.sll_hatype = ARPHRD_ETHER;
+      memcpy(etherAddr.sll_addr, reinterpret_cast<const struct ether_arp*>(srcBuf)->arp_sha, ETH_ALEN);
+      *len = sizeof(struct sockaddr_ll);
+    }
   }
 
   return xferLen;
