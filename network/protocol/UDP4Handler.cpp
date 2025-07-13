@@ -57,7 +57,7 @@ void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_i
   udpHeader._destPort = destAddr.sin_port;
   udpHeader._len = htons(len + NetworkPacket::UDP::HEADER_SIZE);
   udpHeader._checksum = 0;
-  calcChecksum(packet, srcAddr.sin_addr.s_addr, destAddr.sin_addr.s_addr);
+  calcChecksum(packet, (device().isConnected() ? device().GetIPAddress() : INADDR_ANY), destAddr.sin_addr.s_addr);
 
   device().getIPV4Handler().send(packet, IPPROTO_UDP, srcAddr, destAddr);
 }

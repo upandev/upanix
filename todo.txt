@@ -1,8 +1,12 @@
+13 Jul 2025
+- fix issue with reset-syslog
+- fix issue with using malloc vs dmm().allocate for gethostbyname()
+
 9 Jul 2025
-- ARP to get gateway MAC
-- Ethernet to use correct MAC of IP in same subnet or gateway MAC
-- DNS nameserver /etc/resolv.conf from DHCP response
-- DNS method like gethostbyname()
+- ARP to get gateway MAC -> done
+- Ethernet to use correct MAC of IP in same subnet or gateway MAC -> done
+- DNS nameserver /etc/resolv.conf from DHCP response -> hard coded to 8.8.8.8
+- DNS method like gethostbyname() -> done
 
 10 Mar 2024
 - Cleanup terminated proccesses in a separate background kernel process and

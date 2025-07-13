@@ -145,6 +145,7 @@ static void ConsoleCommands_ResetMouse();
 static void ConsoleCommands_MemStats();
 static void ConsoleCommands_ResetSysLog();
 static void ConsoleCommands_Ping();
+static void ConsoleCommands_Host();
 
 /*****************************************/
 
@@ -204,6 +205,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
   { "lsnet", &ConsoleCommands_ListNetworkDevices },
   { "arping", &ConsoleCommands_ARPing },
   { "ping", &ConsoleCommands_Ping },
+  { "host", &ConsoleCommands_Host },
 	{ "showdisk",	&ConsoleCommands_ShowRawDiskList },
 	{ "initfdc",	&ConsoleCommands_InitFloppyController },
 	{ "initata",	&ConsoleCommands_InitATAController },
@@ -2149,18 +2151,19 @@ void ConsoleCommands_Ping() {
   if (CommandLineParser::Instance().GetNoOfParameters() != 1) {
     throw upan::exception(XLOC, "required parameter: <ip address>");
   }
-  const char* ip = CommandLineParser::Instance().GetParameterAt(0);
+  const char* host = CommandLineParser::Instance().GetParameterAt(0);
 
   struct sockaddr_in addr;
-//struct hostent *h = gethostbyname(host);
-//    if (!h) {
-//      perror("gethostbyname");
-//      return 1;
-//    }
+  struct hostent* hinfo = gethostbyname(host);
+  if (!hinfo) {
+    throw upan::exception(XLOC, "invalid host");
+  }
 
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = upan::net::inet_strton(ip);
+  memcpy(&addr.sin_addr, hinfo->h_addr_list[0], hinfo->h_length);
+
+  freehostinfo(hinfo);
 
   int sd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
   if (sd < 0) {
@@ -2217,4 +2220,37 @@ void ConsoleCommands_Ping() {
   }
 
   close(sd);
+}
+
+void ConsoleCommands_Host() {
+  if (CommandLineParser::Instance().GetNoOfParameters() != 1) {
+    throw upan::exception(XLOC, "required parameter: <ip address> or <hostname>");
+  }
+  const char* host = CommandLineParser::Instance().GetParameterAt(0);
+
+  struct hostent* hinfo = nullptr;
+  struct in_addr addr;
+  if (inet_aton(host, &addr) == 1) {
+    hinfo = gethostbyaddr(&addr, IPV4_ADDR_LEN, AF_INET);
+  } else {
+    hinfo = gethostbyname(host);
+  }
+
+  if (!hinfo) {
+    throw upan::exception(XLOC, "invalid host");
+  }
+
+  printf("\nHost name: %s", hinfo->h_name);
+
+  printf("\nAliases:");
+  for(int i = 0; hinfo->h_aliases[i]; ++i) {
+    printf("\n %s", hinfo->h_aliases[i]);
+  }
+
+  printf("\nAddress list:");
+  for(int i = 0; hinfo->h_addr_list[i]; ++i) {
+    printf("\n %s", inet_ntoa(*(struct in_addr*) hinfo->h_addr_list[i]));
+  }
+
+  freehostinfo(hinfo);
 }

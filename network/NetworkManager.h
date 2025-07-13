@@ -29,6 +29,7 @@
 #include <uniq_ptr.h>
 #include <SocketDescriptor.h>
 #include <SocketResolver.h>
+#include <DNSClient.h>
 
 class IRQ;
 
@@ -59,6 +60,8 @@ public:
   ssize_t send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr);
   void recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol);
 
+  DNSClient& getDNSClient() { return *_dnsClient; }
+
 private:
   typedef upan::map<in_addr_t, MACAddress> IP_MAP_TABLE;
   typedef upan::map<int, SocketResolver*> SOCKET_RESOLVER_MAP;
@@ -70,4 +73,5 @@ private:
   IP_MAP_TABLE _ipMACTable;
   upan::list<NetworkDevice*> _devices;
   SOCKET_RESOLVER_MAP _socketResolvers;
+  upan::uniq_ptr<DNSClient> _dnsClient;
 };

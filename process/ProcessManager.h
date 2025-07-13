@@ -59,7 +59,7 @@ class ProcessManager
     AutonomousProcess& GetThreadParentProcess(int pid);
 
     PS* GetProcList(unsigned& uiListSize);
-    void FreeProcListMem(PS* pProcList, unsigned uiListSize);
+    void FreeProcListMem(PS* procList, unsigned uiListSize);
     void AddToSchedulerList(SchedulableProcess& process);
     void AddToProcessMap(SchedulableProcess& process);
     void RemoveFromProcessMap(SchedulableProcess& process);

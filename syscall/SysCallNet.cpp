@@ -23,6 +23,7 @@
 #include <SysCall.h>
 #include <SysCallNet.h>
 #include <NetworkOperations.h>
+#include <NetworkManager.h>
 
 bool SysCallNet_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_NETWORK_START && sysCallId < SYS_CALL_NETWORK_END);
@@ -103,6 +104,51 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       const auto len = (socklen_t*)ext_param[1];
       try {
         *retVal = NetworkOperations::Instance().recvFrom(fd, buf, n, flags, address, len);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_GET_HOST_BY_NAME:
+    {
+      *retVal = 0;
+      auto name = (const char*)p1;
+      auto hostinfo = (struct hostent**)p2;
+      try {
+        *hostinfo = NetworkManager::Instance().getDNSClient().resolveHost(name);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *hostinfo = nullptr;
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_GET_HOST_BY_ADDR:
+    {
+      *retVal = 0;
+      auto addr = (const void*)p1;
+      auto len = (socklen_t)p2;
+      int type = (int)p3;
+      auto hostinfo = (struct hostent**)p4;
+      try {
+        *hostinfo = NetworkManager::Instance().getDNSClient().resolveReverseHost(addr, len, type);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *hostinfo = nullptr;
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_FREE_HOST_INFO:
+    {
+      *retVal = 0;
+      auto hostinfo = (struct hostent*)p1;
+      try {
+        NetworkManager::Instance().getDNSClient().freeHostinfo(hostinfo);
       } catch(const upan::exception& e) {
         KLog::exception(e);
         *retVal = -1;

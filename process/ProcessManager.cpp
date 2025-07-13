@@ -556,68 +556,40 @@ int ProcessManager::CreateThreadTask(int parentID, uintptr_t threadCaller, uintp
   return -1;
 }
 
-PS* ProcessManager::GetProcList(unsigned& uiListSize)
-{
+PS* ProcessManager::GetProcList(unsigned& uiListSize) {
   ProcessSwitchLock lock;
   uiListSize = _processMap.size();
 
-  PS* pProcList;
-  PS* pPS;
-  Process& pAddrSpc = GetCurrentPAS() ;
+  PS* procList;
+  Process& process = GetCurrentPAS() ;
 
-  if(pAddrSpc.isKernelProcess())
-  {
-    pPS = pProcList = (PS*)KernelDMM::Instance().allocate(sizeof(PS) * uiListSize) ;
-  }
-  else
-  {
-    pProcList = (PS*)pAddrSpc.dmm().allocate(sizeof(PS) * uiListSize) ;
-    pPS = (PS*)(pProcList);
-  }
+  procList = (PS*)process.dmm().allocate(sizeof(PS) * uiListSize);
 
   auto it = _processMap.begin();
-  for(int i = 0; it != _processMap.end(); ++i, ++it)
-  {
+  for(int i = 0; it != _processMap.end(); ++i, ++it) {
     SchedulableProcess& p = *it->second;
 
-    pPS[i].pid = p.processID();
-    pPS[i].status = p.status() ;
-    pPS[i].iParentProcessID = p.parentProcessID() ;
-    pPS[i].iProcessGroupID = p.processGroup()->Id();
-    pPS[i].iUserID = p.userID() ;
+    procList[i].pid = p.processID();
+    procList[i].status = p.status() ;
+    procList[i].iParentProcessID = p.parentProcessID() ;
+    procList[i].iProcessGroupID = p.processGroup()->Id();
+    procList[i].iUserID = p.userID() ;
 
-    char* pname ;
-    if(pAddrSpc.isKernelProcess())
-    {
-      pname = pPS[i].pname = (char*)KernelDMM::Instance().allocate(p.name().length() + 1) ;
-    }
-    else
-    {
-      pPS[i].pname = (char*)pAddrSpc.dmm().allocate(p.name().length() + 1) ;
-      pname = (char*)(pPS[i].pname);
-    }
-    strcpy(pname, p.name().c_str()) ;
+    procList[i].pname = (char*)process.dmm().allocate(p.name().length() + 1);
+    strcpy(procList[i].pname, p.name().c_str()) ;
   }
 
-  return pProcList;
+  return procList;
 }
 
-void ProcessManager::FreeProcListMem(PS* pProcList, unsigned uiListSize)
-{
-  Process& pAddrSpc = GetCurrentPAS();
+void ProcessManager::FreeProcListMem(PS* procList, unsigned uiListSize) {
+  Process& process = GetCurrentPAS();
 
-	for(unsigned i = 0; i < uiListSize; i++)
-	{
-		if(pAddrSpc.isKernelProcess())
-			KernelDMM::Instance().free((uintptr_t)pProcList[i].pname) ;
-		else
-			pAddrSpc.dmm().free((uintptr_t)pProcList[i].pname) ;
+	for(auto i = 0; i < uiListSize; i++) {
+    process.dmm().free((uintptr_t)procList[i].pname) ;
 	}
 
-	if(pAddrSpc.isKernelProcess())
-		KernelDMM::Instance().free((uintptr_t)pProcList) ;
-	else
-	  pAddrSpc.dmm().free((uintptr_t)pProcList);
+  process.dmm().free((uintptr_t)procList);
 }
 
 bool ProcessManager::IsDMMOn(int iProcessID) {

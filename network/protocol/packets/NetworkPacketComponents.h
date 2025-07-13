@@ -31,8 +31,6 @@
 #include <Global.h>
 
 namespace NetworkPacket {
-  constexpr int IPV4_ADDR_LEN = 4;
-
   namespace ARP {
     struct Header {
       struct ether_arp _header;
@@ -65,13 +63,13 @@ namespace NetworkPacket {
                     _header.ea_hdr.ar_pln,
                     _header.ea_hdr.ar_op);
 
-        char buf[1024];
+        char buf[256];
         upan::string msg("SHA: ");
         for (int i = 0; i < ETH_ALEN; i++) {
           sprintf(buf, "%02x%s", _header.arp_sha[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
-        sprintf(buf, ", SPA: %s", inet_ntoa( { _header.arp_spa}));
+        sprintf(buf, ", SPA: %s", upan::net::inet_ntostr(htonl(_header.arp_spa)).c_str());
         msg += buf;
 
         KLog::debug(msg.c_str());
@@ -81,7 +79,7 @@ namespace NetworkPacket {
           sprintf(buf, "%02x%s", _header.arp_tha[i], i < ETH_ALEN - 1 ? ":" : "");
           msg += buf;
         }
-        sprintf(buf, ", TPA: %s", inet_ntoa( { _header.arp_tpa }));
+        sprintf(buf, ", TPA: %s", upan::net::inet_ntostr(htonl(_header.arp_tpa)).c_str());
         msg += buf;
 
         KLog::debug(msg.c_str());

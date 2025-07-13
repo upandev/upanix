@@ -33,33 +33,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use ip, ether and arp headers from library libc/net">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="code cleanup - remove test dhcp code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libmcpp/cal/mdate.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libmcpp/cal/mdate.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ICMPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ICMPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/packets/NetworkPacketComponents.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +105,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/network/socket",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/network/service",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -134,8 +119,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/network/socket" />
       <recent name="$PROJECT_DIR$/network/service" />
+      <recent name="$PROJECT_DIR$/network/socket" />
       <recent name="$PROJECT_DIR$/network/protocol" />
       <recent name="$PROJECT_DIR$/network/socketresolver" />
       <recent name="$PROJECT_DIR$/network/socketresolver/" />
@@ -708,7 +693,7 @@
       <workItem from="1750256388766" duration="2278000" />
       <workItem from="1751725084166" duration="1683000" />
       <workItem from="1752024625810" duration="21064000" />
-      <workItem from="1752106041895" duration="39151000" />
+      <workItem from="1752106041895" duration="71463000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1053,7 +1038,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="161" />
+    <option name="localTasksCounter" value="163" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1087,8 +1072,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="support for timeout socket-option. enhance network packet header length calculation technique" />
-    <MESSAGE value="fix checksum calculation for UDP and IPV4 packets - this made DHCP Discover work" />
     <MESSAGE value="use dhcpclient config file for dhcpclient" />
     <MESSAGE value="bug fix in filesystem - O_TRUNC should set size to 0 on both fileNode on sectorBuffer and also the in-memory node" />
     <MESSAGE value="DHCP client implementation with all flow states" />
@@ -1112,7 +1095,9 @@
     <MESSAGE value="use ip header as defined in libc socket.h" />
     <MESSAGE value="change protocol param to int to support both ether and IP protocols in socket and network operations. Also, added support for IOCTL system call" />
     <MESSAGE value="use ip, ether and arp headers from library libc/net" />
-    <option name="LAST_COMMIT_MESSAGE" value="use ip, ether and arp headers from library libc/net" />
+    <MESSAGE value="1. Implement ARP request and response&#10;2. Implement logic to determine the gateway mac-address using ARP after DHCP init is completed&#10;3. Implement a simple ping command" />
+    <MESSAGE value="code cleanup - remove test dhcp code" />
+    <option name="LAST_COMMIT_MESSAGE" value="code cleanup - remove test dhcp code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

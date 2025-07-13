@@ -55,6 +55,10 @@ void NetworkManager::Initialize() {
   getDefaultDevice().ifPresent([](NetworkDevice& networkDevice) {
     networkDevice.connectToNetwork();
   });
+
+  if (_dnsClient.isEmpty()) {
+    _dnsClient.reset(new DNSClient());
+  }
 }
 
 upan::option<NetworkDevice&> NetworkManager::getDefaultDevice() {
