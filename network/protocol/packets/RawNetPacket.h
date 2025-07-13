@@ -22,7 +22,10 @@
 #pragma once
 
 #include <stdlib.h>
-#include <NetworkPacketComponents.h>
+#include <ARPHeaders.h>
+#include <EthernetHeaders.h>
+#include <IPV4Headers.h>
+#include <UDPHeaders.h>
 
 class RawNetPacket {
 public:

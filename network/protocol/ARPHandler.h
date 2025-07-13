@@ -21,9 +21,8 @@
  */
 #pragma once
 
+#include <shared_ptr.h>
 #include <PacketHandler.h>
-#include <NetworkPacketComponents.h>
-#include "shared_ptr.h"
 
 class ARPHandler : public PacketHandler {
 public:

@@ -1,6 +1,6 @@
 13 Jul 2025
 - fix issue with reset-syslog
-- fix issue with using malloc vs dmm().allocate for gethostbyname()
+- fix issue with using malloc vs dmm().allocate for gethostbyname() -> unable to reproduce
 
 9 Jul 2025
 - ARP to get gateway MAC -> done

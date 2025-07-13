@@ -22,13 +22,13 @@
 #pragma once
 
 #include <map.h>
-#include <PacketHandler.h>
+#include <shared_ptr.h>
 #include <option.h>
-#include <net/socket.h>
-#include <NetworkPacketComponents.h>
-#include "shared_ptr.h"
 #include <mutex.h>
 #include <vector.h>
+#include <net/socket.h>
+#include <IPV4Headers.h>
+#include <PacketHandler.h>
 
 class EthernetHandler;
 

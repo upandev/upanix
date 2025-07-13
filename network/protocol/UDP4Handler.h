@@ -22,10 +22,10 @@
 #pragma once
 
 #include <map.h>
-#include <PacketHandler.h>
 #include <option.h>
-#include <NetworkPacketComponents.h>
-#include "shared_ptr.h"
+#include <shared_ptr.h>
+#include <net/socket.h>
+#include <PacketHandler.h>
 
 class IPV4Handler;
 

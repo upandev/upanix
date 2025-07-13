@@ -20,21 +20,32 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
+  
+#include <stdlib.h>
+#include <ustring.h>
+#include <net/socket.h>
+#include <unet.h>
+#include <Global.h>
 
-#include <map.h>
-#include <option.h>
-#include <shared_ptr.h>
-#include <PacketHandler.h>
+namespace NetworkPacket {
+  namespace DHCP {
+    struct Header {
+      uint8_t _op;
+      uint8_t _hType;
+      uint8_t _hLen;
+      uint8_t _hops;
+      uint32_t _xid;
+      uint16_t _secs; // seconds elapsed since client started the protocol
+      uint16_t _flags;
+      struct in_addr _ciAddr; // Client IP Address
+      struct in_addr _yiAddr; // Your (Client) IP Address
+      struct in_addr _siAddr; // Server IP Address;
+      struct in_addr _giAddr; // Relay agent (Gateway) IP Address
+      uint8_t _chAddr[16]; // Client Hardware Address;
+      uint8_t _sName[64]; // Optional server host name (null terminated string)
+      uint8_t _file[128]; // boot file name (null terminated string)
+    } PACKED;
 
-class IPV4Handler;
-
-class ICMPHandler : public PacketHandler {
-public:
-  explicit ICMPHandler(NetworkDevice& networkDevice);
-  uint32_t headerLen() const override;
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
-
-private:
-  void verifyChecksum(const RawNetPacket& packet);
-};
+    constexpr uint32_t HEADER_SIZE = sizeof(Header);
+  }
+}

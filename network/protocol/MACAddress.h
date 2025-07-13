@@ -24,7 +24,7 @@
 
 #include <ustring.h>
 #include <vector.h>
-#include <NetworkPacketComponents.h>
+#include <net/if_ether.h>
 
 class MACAddress {
 public:

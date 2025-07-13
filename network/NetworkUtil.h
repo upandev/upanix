@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include <ustring.h>
-#include <NetworkPacketComponents.h>
 #include <vector.h>
 
 class NetworkUtil {

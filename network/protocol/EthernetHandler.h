@@ -22,10 +22,9 @@
 #pragma once
 
 #include <map.h>
-#include <NetworkPacketComponents.h>
-#include <PacketHandler.h>
 #include <option.h>
-#include "shared_ptr.h"
+#include <shared_ptr.h>
+#include <PacketHandler.h>
 
 class RawNetPacket;
 class NetworkDevice;

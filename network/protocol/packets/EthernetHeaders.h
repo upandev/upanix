@@ -20,21 +20,48 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
+  
+#include <stdlib.h>
+#include <ustring.h>
+#include <net/if_ether.h>
+#include <unet.h>
+#include <Global.h>
 
-#include <map.h>
-#include <option.h>
-#include <shared_ptr.h>
-#include <PacketHandler.h>
+namespace NetworkPacket {
+  namespace Ethernet {
+    struct Header {
+      struct ethhdr _header;
 
-class IPV4Handler;
+      ETH_PROTO_TYPE type() const {
+        return static_cast<ETH_PROTO_TYPE>(ntohs(_header.h_proto));
+      }
 
-class ICMPHandler : public PacketHandler {
-public:
-  explicit ICMPHandler(NetworkDevice& networkDevice);
-  uint32_t headerLen() const override;
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+      Header toHost() const {
+        Header h {};
+        memcpy(h._header.h_dest, _header.h_dest, ETH_ALEN);
+        memcpy(h._header.h_source, _header.h_source, ETH_ALEN);
+        h._header.h_proto = ntohs(_header.h_proto);
+        return h;
+      }
 
-private:
-  void verifyChecksum(const RawNetPacket& packet);
-};
+      void print() const {
+        char buf[1024];
+        upan::string msg("Ethernet - Type: %d", ntohs(_header.h_proto));
+        msg += "\n Src MAC: ";
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.h_source[i], i < ETH_ALEN - 1 ? ":" : "");
+          msg += buf;
+        }
+
+        msg += "\n Dest MAC: ";
+        for (int i = 0; i < ETH_ALEN; i++) {
+          sprintf(buf, "%02x%s", _header.h_dest[i], i < ETH_ALEN - 1 ? ":" : "");
+          msg += buf;
+        }
+        KLog::debug(msg.c_str());
+      }
+    } PACKED;
+
+    constexpr uint32_t HEADER_SIZE = sizeof(Header);
+  }
+}

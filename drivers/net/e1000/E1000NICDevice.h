@@ -26,7 +26,6 @@
 #include <ustring.h>
 #include <RawNetPacket.h>
 #include <EthernetHandler.h>
-#include <NetworkPacketComponents.h>
 #include <NetworkUtil.h>
 #include <NetworkDevice.h>
 #include <ARPHandler.h>

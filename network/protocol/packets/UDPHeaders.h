@@ -20,21 +20,43 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #pragma once
+  
+#include <stdlib.h>
+#include <ustring.h>
+#include <net/socket.h>
+#include <unet.h>
+#include <Global.h>
 
-#include <map.h>
-#include <option.h>
-#include <shared_ptr.h>
-#include <PacketHandler.h>
+namespace NetworkPacket {
+  namespace UDP {
+    struct Header {
+      uint16_t _srcPort;
+      uint16_t _destPort;
+      uint16_t _len;
+      uint16_t _checksum;
 
-class IPV4Handler;
+      void print() const {
+        KLog::debug("Src Port: %d, Dest Port: %d, Len: %d, Checksum: 0x%x", _srcPort, _destPort, _len, _checksum);
+      }
 
-class ICMPHandler : public PacketHandler {
-public:
-  explicit ICMPHandler(NetworkDevice& networkDevice);
-  uint32_t headerLen() const override;
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+      Header toHost() const {
+        return Header {
+        ntohs(_srcPort),
+        ntohs(_destPort),
+        ntohs(_len),
+        ntohs(_checksum) };
+      }
+    } PACKED;
 
-private:
-  void verifyChecksum(const RawNetPacket& packet);
-};
+    struct IPV4PseudoHeader {
+      in_addr_t _srcAddr;
+      in_addr_t _destAddr;
+      uint8_t _zeros;
+      uint8_t _protocol;
+      uint16_t _udpLen;
+    } PACKED;
+
+    constexpr uint32_t HEADER_SIZE = sizeof(Header);
+    constexpr uint32_t IPV4_PSEUDO_HEADER_SIZE = sizeof(IPV4PseudoHeader);
+  }
+}
