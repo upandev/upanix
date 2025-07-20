@@ -32,7 +32,7 @@
 
 class EthernetHandler;
 
-class IPV4Handler : public PacketHandler {
+class IPV4Handler : public PacketHandler<> {
 public:
   explicit IPV4Handler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;

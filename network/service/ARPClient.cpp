@@ -23,9 +23,9 @@
 #include <net/if.h>
 #include <ARPClient.h>
 #include <NetworkManager.h>
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
-ARPClient::ARPClient(NetworkDevice& networkDevice) : _networkDevice(networkDevice) {
+ARPClient::ARPClient(RealNetworkDevice& networkDevice) : _networkDevice(networkDevice) {
 }
 
 MACAddress ARPClient::resolveMacAddress(in_addr_t dest_ip) {
@@ -37,8 +37,8 @@ MACAddress ARPClient::resolveMacAddress(in_addr_t dest_ip) {
   struct ether_arp arp {};
   arp.ea_hdr.ar_op = htons(ARPOP_REQUEST);
 
-  memcpy(arp.arp_sha, _networkDevice.GetMACAddress().get(), ETH_ALEN);
-  arp.arp_spa = _networkDevice.GetIPAddress();
+  memcpy(arp.arp_sha, _networkDevice.getMACAddress().get(), ETH_ALEN);
+  arp.arp_spa = _networkDevice.getIPAddress();
 
   memset(arp.arp_tha, 0, ETH_ALEN);
   arp.arp_tpa = dest_ip;

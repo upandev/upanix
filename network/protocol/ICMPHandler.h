@@ -28,7 +28,7 @@
 
 class IPV4Handler;
 
-class ICMPHandler : public PacketHandler {
+class ICMPHandler : public PacketHandler<> {
 public:
   explicit ICMPHandler(NetworkDevice& networkDevice);
   uint32_t headerLen() const override;

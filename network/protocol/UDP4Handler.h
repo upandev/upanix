@@ -29,7 +29,7 @@
 
 class IPV4Handler;
 
-class UDP4Handler : public PacketHandler {
+class UDP4Handler : public PacketHandler<> {
 public:
   explicit UDP4Handler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;

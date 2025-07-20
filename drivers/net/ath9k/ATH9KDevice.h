@@ -21,11 +21,11 @@
  */
 #pragma once
 
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
 class ATH9KHardware;
 
-class ATH9KDevice : public NetworkDevice
+class ATH9KDevice : public RealNetworkDevice
 {
 public:
   ATH9KDevice(PCIEntry& pciEntry);

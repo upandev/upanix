@@ -22,7 +22,7 @@
 
 #include <DHCPClient.h>
 #include <NetworkManager.h>
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 #include <PIT.h>
 
 static constexpr int MAX_BUFFER_SIZE = 1024;
@@ -37,7 +37,7 @@ const upan::string DHCPClient::CFG_BROADCAST_IP_ADDRESS("BROADCAST_IP_ADDRESS");
 const upan::string DHCPClient::CFG_SUBNET_MASK("SUBNET_MASK");
 const upan::string DHCPClient::CFG_DNS_IP_ADDRESS("DNS_IP_ADDRESS");
 
-DHCPClient::DHCPClient(NetworkDevice& networkDevice) :
+DHCPClient::DHCPClient(RealNetworkDevice& networkDevice) :
   _networkDevice(networkDevice),
   _flowState(FlowState_Discover),
   _dhcpServerAddress(INADDR_NONE),
@@ -61,7 +61,7 @@ void DHCPClient::loadFromConfig() {
   _config.get(CFG_DNS_IP_ADDRESS).ifPresent([&](const upan::string& val) { _networkDevice.setDNSAddress(upan::net::inet_strton(val)); });
 
   if (_dhcpServerAddress == INADDR_NONE) {
-    _dhcpServerAddress = _networkDevice.GetGatewayAddress();
+    _dhcpServerAddress = _networkDevice.getGatewayAddress();
   }
 
   if (_leaseRenewalTime == 0) {
@@ -72,12 +72,12 @@ void DHCPClient::loadFromConfig() {
   KLog::info("DHCP config loaded");
   KLog::info("Lease Time: %u, Renewal Time: %u, Rebinding Time: %u", _leaseTime, _leaseRenewalTime, _leaseRebindingTime);
   KLog::info("IP: %s, Gateway: %s, Subnet Mask: %s",
-             upan::net::inet_ntostr(_networkDevice.GetIPAddress()).c_str(),
-             upan::net::inet_ntostr(_networkDevice.GetGatewayAddress()).c_str(),
-             upan::net::inet_ntostr(_networkDevice.GetSubnetMask()).c_str());
+             upan::net::inet_ntostr(_networkDevice.getIPAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.getGatewayAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.getSubnetMask()).c_str());
   KLog::info("Broadcast: %s, DNS: %s",
-             upan::net::inet_ntostr(_networkDevice.GetBroadcastAddress()).c_str(),
-             upan::net::inet_ntostr(_networkDevice.GetDNSAddress()).c_str());
+             upan::net::inet_ntostr(_networkDevice.getBroadcastAddress()).c_str(),
+             upan::net::inet_ntostr(_networkDevice.getDNSAddress()).c_str());
 }
 
 void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
@@ -106,7 +106,7 @@ void DHCPClient::updateFromDHCPResponse(const DHCPMessage& response) {
 
 void DHCPClient::run() {
   KLog::info("DHCP service started");
-  if (_networkDevice.GetIPAddress() == INADDR_ANY) {
+  if (_networkDevice.getIPAddress() == INADDR_ANY) {
     _flowState = FlowState_Discover;
   } else {
     _flowState = FlowState_Request;
@@ -115,7 +115,7 @@ void DHCPClient::run() {
   try {
     while (is_active()) {
       if (state() == running) {
-        KLog::debug("processing flow-state: %d", _flowState);
+        KLog::info("processing flow-state: %d", _flowState);
         switch (_flowState) {
           case FlowState_Discover:
             dhcpDiscover();
@@ -278,7 +278,7 @@ upan::result<DHCPMessage> DHCPClient::sendDiscover() {
   len = sendto(sd, &dhcpDiscover, sizeof(dhcpDiscover), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (len < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to send DHCP Discover");
+    throw upan::exception(XLOC, "failed to sendPacket DHCP Discover");
   }
 
   char buffer[MAX_BUFFER_SIZE];
@@ -359,7 +359,7 @@ upan::result<DHCPMessage> DHCPClient::sendRequest() {
   len = sendto(sd, &dhcpRequest, sizeof(dhcpRequest), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (len < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to send DHCP Discover");
+    throw upan::exception(XLOC, "failed to sendPacket DHCP Discover");
   }
 
   char buffer[MAX_BUFFER_SIZE];
@@ -433,7 +433,7 @@ upan::result<DHCPMessage> DHCPClient::sendRenew() {
   len = sendto(sd, &dhcpRequest, sizeof(dhcpRequest), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (len < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to send DHCP Discover");
+    throw upan::exception(XLOC, "failed to sendPacket DHCP Discover");
   }
 
   char buffer[MAX_BUFFER_SIZE];

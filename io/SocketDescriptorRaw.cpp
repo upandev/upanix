@@ -29,13 +29,13 @@ SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family,
 ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
-    throw upan::exception(XLOC, "send/destination address is not specified");
+    throw upan::exception(XLOC, "sendPacket/destination address is not specified");
   }
 
   if (protocol() != ETH_P_ARP) {
     const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
     if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
-      throw upan::exception(XLOC, "send failed - broadcast socket-option is not enabled on socket: %d", id());
+      throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
     }
   }
 

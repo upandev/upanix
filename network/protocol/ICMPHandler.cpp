@@ -37,7 +37,7 @@ uint32_t ICMPHandler::headerLen() const {
 }
 
 void ICMPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  KLog::debug("Handling ICMP Packet");
+  KLog::trace("Handling ICMP Packet");
   verifyChecksum(*packet);
   NetworkManager::Instance().recv(packet, IPPROTO_ICMP);
 }

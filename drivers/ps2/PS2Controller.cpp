@@ -143,7 +143,7 @@ void PS2Controller::Initialize() {
 
     SendCommand2(0xF5, "disable scanning");
     WaitForAck();
-    printf("\n send id command");
+    printf("\n sendPacket id command");
     SendCommand2(0xF2, "identify command");
     WaitForAck();
     auto devCode1 = ReceiveData().valueOrThrow(XLOC, "failed to read first byte of device id response");

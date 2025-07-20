@@ -27,33 +27,32 @@
 #include <RawNetPacket.h>
 #include <EthernetHandler.h>
 #include <NetworkUtil.h>
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 #include <ARPHandler.h>
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
 #include <shared_ptr.h>
 #include <queue.h>
 
-class E1000NICDevice : public NetworkDevice {
+class E1000NICDevice : public RealNetworkDevice {
 private:
   static E1000NICDevice* _instance;
   explicit E1000NICDevice(const PCIEntry&);
-  ~E1000NICDevice();
+  ~E1000NICDevice() override;
 
 public:
   static void Create(const PCIEntry&);
   static E1000NICDevice& Instance();
   static void InterruptHandler();
 
-  void Initialize() override;
-  void NotifyEvent() override;
-  void SendPacket(const RawNetPacket& packet) override;
+  void Initialize();
+  void NotifyEvent();
+  void sendPacket(const RawNetPacket& packet) override;
 
 private:
   static void EventHandler();
   void StartEventHandler();
   void HandleEvent();
-  void ProcessRxQueue();
 
   class RegEEPROM {
   public:
@@ -209,6 +208,5 @@ private:
     RegControl* regControl;
     RegRXDescriptor* regRx;
     RegTXDescriptor* regTx;
-    EthernetHandler _ethernetHandler;
     upan::queue<InterruptData> _eventQueue;
 };

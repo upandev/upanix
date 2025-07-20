@@ -25,18 +25,20 @@
 #include <PCIBusHandler.h>
 #include <ATH9KDevice.h>
 #include <E1000NICDevice.h>
+#include <LoopbackNetworkDevice.h>
+#include <RealNetworkDevice.h>
 #include <NetworkManager.h>
 #include <UDPSocketResolver.h>
 #include <ICMPSocketResolver.h>
-#include "ARPSocketResolver.h"
+#include <ARPSocketResolver.h>
+#include <typeinfo.h>
 
 NetworkManager& NetworkManager::Instance() {
   static NetworkManager instance;
   return instance;
 }
 
-NetworkManager::NetworkManager() : _interfaceId(0) {
-
+NetworkManager::NetworkManager() : _interfaceId(0), _defaultRealDevice(nullptr), _loopbackDevice(nullptr) {
 }
 
 void NetworkManager::Initialize() {
@@ -47,12 +49,19 @@ void NetworkManager::Initialize() {
     Probe(*pPCIEntry);
   }
 
+  if (!_devices.empty()) {
+    _defaultRealDevice = dynamic_cast<RealNetworkDevice*>(_devices.front());
+  }
+
+  _loopbackDevice = new LoopbackNetworkDevice();
+  _devices.push_back(_loopbackDevice);
+
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_TCP, new TCPSocketResolver()));
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_UDP, new UDPSocketResolver()));
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_ICMP, new ICMPSocketResolver()));
   _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(ETH_PROTO_TYPE::ETH_P_ARP, new ARPSocketResolver()));
 
-  getDefaultDevice().ifPresent([](NetworkDevice& networkDevice) {
+  getDefaultRealDevice().ifPresent([](RealNetworkDevice& networkDevice) {
     networkDevice.connectToNetwork();
   });
 
@@ -61,11 +70,42 @@ void NetworkManager::Initialize() {
   }
 }
 
-upan::option<NetworkDevice&> NetworkManager::getDefaultDevice() {
-  if (_devices.empty()) {
-    return upan::option<NetworkDevice&>::empty();
+upan::option<RealNetworkDevice&> NetworkManager::getDefaultRealDevice() {
+  if (_defaultRealDevice == nullptr) {
+    return upan::option<RealNetworkDevice&>::empty();
   }
-  return upan::option<NetworkDevice&>(*_devices.front());
+  return upan::option<RealNetworkDevice&>(*_defaultRealDevice);
+}
+
+upan::option<LoopbackNetworkDevice&> NetworkManager::getLoopbackDevice() {
+  if (_loopbackDevice == nullptr) {
+    return upan::option<LoopbackNetworkDevice&>::empty();
+  }
+  return upan::option<LoopbackNetworkDevice&>(*_loopbackDevice);
+}
+
+NetworkDevice& NetworkManager::getDevice(const struct sockaddr_in& addr) {
+  if (addr.sin_addr.s_addr == INADDR_LOOPBACK) {
+    if (_loopbackDevice != nullptr) {
+      return *_loopbackDevice;
+    } else {
+      throw upan::exception(XLOC, "loopback device not found");
+    }
+  }
+
+  if (_defaultRealDevice == nullptr) {
+    throw upan::exception(XLOC, "default real device not found");
+  }
+
+  if (addr.sin_addr.s_addr == _defaultRealDevice->getIPAddress()) {
+    if (_loopbackDevice != nullptr) {
+      return *_loopbackDevice;
+    } else {
+      throw upan::exception(XLOC, "loopback device not found");
+    }
+  }
+
+  return *_defaultRealDevice;
 }
 
 upan::option<NetworkDevice&> NetworkManager::getDeviceById(int id) {
@@ -141,17 +181,24 @@ void NetworkManager::unbind(SocketDescriptor& socket) {
 
 ssize_t NetworkManager::send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr) {
   switch (protocol) {
-    case IPPROTO_UDP:
-      getDefaultDevice().value().getUDP4Handler().send(buf, n, srcAddr, reinterpret_cast<const struct sockaddr_in&>(destAddr));
-      break;
-    case IPPROTO_ICMP:
-      getDefaultDevice().value().getICMPHandler().send(buf, n, srcAddr, reinterpret_cast<const struct sockaddr_in&>(destAddr));
-      break;
+    case IPPROTO_UDP: {
+      const auto& dest = reinterpret_cast<const struct sockaddr_in&>(destAddr);
+      getDevice(dest).getUDP4Handler().send(buf, n, srcAddr, dest);
+    }
+    break;
+
+    case IPPROTO_ICMP: {
+      const auto& dest = reinterpret_cast<const struct sockaddr_in&>(destAddr);
+      getDevice(dest).getICMPHandler().send(buf, n, srcAddr, dest);
+    }
+    break;
+
     case ETH_P_ARP:
-      getDefaultDevice().value().getARPHandler().send(buf, n, srcAddr, destAddr);
+      getDefaultRealDevice().value().getARPHandler().send(buf, n, srcAddr, destAddr);
       break;
+
     default:
-      throw upan::exception(XLOC, "packet send failed - unsupported protocol: %d", protocol);
+      throw upan::exception(XLOC, "packet sendPacket failed - unsupported protocol: %d", protocol);
   }
   //todo: handle partial send?
   return n;

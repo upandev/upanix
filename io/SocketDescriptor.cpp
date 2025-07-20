@@ -58,7 +58,7 @@ void SocketDescriptor::validateFlags(int flags) const {
 
 void SocketDescriptor::validateBuf(const void* buf) const {
   if (!buf) {
-    throw upan::exception(XLOC, "send/recv buf can't be null");
+    throw upan::exception(XLOC, "sendPacket/recv buf can't be null");
   }
 }
 

@@ -218,7 +218,7 @@ struct hostent* DNSClient::resolveHost(const upan::string& name) {
       strcpy(cname_copy, cname);
       aliases.push_back(cname_copy);
     } else {
-      KLog::debug("DNS record type %d not handled", ansType);
+      KLog::info("DNS record type %d not handled", ansType);
     }
     response += ansDataLen;
   }

@@ -19,23 +19,19 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
+#include <unet.h>
+#include <net/socket.h>
+#include <LoopbackNetworkDevice.h>
 
-#include <map.h>
-#include <option.h>
-#include <shared_ptr.h>
-#include <PacketHandler.h>
+constexpr char LoopbackNetworkDevice::DEFAULT_HOST_NAME[];
 
-class RawNetPacket;
-class RealNetworkDevice;
+LoopbackNetworkDevice::LoopbackNetworkDevice() : NetworkDevice(0, "l0", true, INADDR_LOOPBACK, 0x000000ff) {
+}
 
-class EthernetHandler : public PacketHandler<RealNetworkDevice> {
-public:
-  explicit EthernetHandler(RealNetworkDevice& networkDevice);
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-  uint32_t headerLen() const override;
-  void send(RawNetPacket& packet, ETH_PROTO_TYPE eType);
+void LoopbackNetworkDevice::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
+  if (eType != ETH_PROTO_TYPE::ETH_P_IP) {
+    throw upan::exception(XLOC, "loopback device can only support IP. Unsupported proto type: %d", eType);
+  }
 
-  private:
-    const static uint32_t MIN_ETHERNET_PACKET_LEN = ETH_ALEN /*dmac*/ + ETH_ALEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
-};
+  //TODO: loopback send
+}

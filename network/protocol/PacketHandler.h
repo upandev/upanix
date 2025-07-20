@@ -27,14 +27,15 @@
 class NetworkDevice;
 class RawNetPacket;
 
+template <typename NetDev = NetworkDevice>
 class PacketHandler {
 public:
-  explicit PacketHandler(NetworkDevice& networkDevice) : _networkDevice(networkDevice) {}
+  explicit PacketHandler(NetDev& networkDevice) : _networkDevice(networkDevice) {}
   virtual void recv(const upan::shared_ptr<RawNetPacket>& packet) = 0;
   virtual uint32_t headerLen() const = 0;
-  NetworkDevice& device() { return _networkDevice; }
-  const NetworkDevice& device() const { return _networkDevice; }
+  NetDev& device() { return _networkDevice; }
+  const NetDev& device() const { return _networkDevice; }
 
 private:
-  NetworkDevice& _networkDevice;
+  NetDev& _networkDevice;
 };

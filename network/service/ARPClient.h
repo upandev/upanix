@@ -22,13 +22,13 @@
 #pragma once
 
 #include <MACAddress.h>
-class NetworkDevice;
+class RealNetworkDevice;
 
 class ARPClient {
 public:
-  explicit ARPClient(NetworkDevice& networkDevice);
+  explicit ARPClient(RealNetworkDevice& networkDevice);
   MACAddress resolveMacAddress(in_addr_t dest_ip);
 
 private:
-  NetworkDevice& _networkDevice;
+  RealNetworkDevice& _networkDevice;
 };

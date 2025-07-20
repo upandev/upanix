@@ -24,56 +24,39 @@
 #include <ustring.h>
 #include <option.h>
 #include <NetworkUtil.h>
-#include <MACAddress.h>
 #include <RawNetPacket.h>
-#include <EthernetHandler.h>
 #include <IPV4Handler.h>
 #include <UDP4Handler.h>
-#include <ARPHandler.h>
 #include <ICMPHandler.h>
-#include <uniq_ptr.h>
-#include <DHCPClient.h>
-#include <ARPClient.h>
+#include <MACAddress.h>
 
-class PCIEntry;
 class SocketBuffer;
 
 class NetworkDevice {
 private:
   static constexpr uint16_t DEFAULT_MTU = 1500;
-  static constexpr char DEFAULT_HOST_NAME[] = "Upanix";
 
 public:
 
-  explicit NetworkDevice(const PCIEntry& pciEntry);
-  virtual ~NetworkDevice() = 0;
+  NetworkDevice(int id, const upan::string& name, bool connected, in_addr_t ipAddress, in_addr_t subnetMask);
+  virtual ~NetworkDevice() = default;
 
   const upan::string& name() const { return _name; }
   int id() const { return _id; }
   bool isConnected() const { return _connected; }
 
-  virtual void Initialize() = 0;
-  virtual void NotifyEvent() = 0;
-  virtual void SendPacket(const RawNetPacket& packet) = 0;
-
-  virtual uint16_t mtu() const { return DEFAULT_MTU; }
-  virtual const char* hostName() const { return DEFAULT_HOST_NAME; }
-
   bool isSameSubnet(const in_addr_t& ip) const;
+  virtual uint16_t mtu() const { return DEFAULT_MTU; }
 
-  const MACAddress& GetMACAddress() const { return _macAddress; }
-  const MACAddress& GetGatewayMACAddress() const { return _gatewayMacAddress; }
-  in_addr_t GetIPAddress() const { return _ipAddress; }
-  in_addr_t GetGatewayAddress() const { return _gatewayAddress; }
-  in_addr_t GetSubnetMask() const { return _subnetMask; }
-  in_addr_t GetBroadcastAddress() const { return _broadcastAddress; }
-  in_addr_t GetDNSAddress() const { return _dnsAddress; }
+  virtual void print() const;
 
-  EthernetHandler& getEthernetHandler() { return _ethernetHandler; }
-  const EthernetHandler& getEthernetHandler() const { return _ethernetHandler; }
+  virtual void send(RawNetPacket& packet, ETH_PROTO_TYPE eType) = 0;
+  virtual uint32_t deviceLayerHeaderLen() const = 0;
+  virtual const char* hostName() const = 0;
 
-  ARPHandler& getARPHandler() { return _arpHandler; }
-  const ARPHandler& getARPHandler() const { return _arpHandler; }
+  in_addr_t getIPAddress() const { return _ipAddress; }
+  in_addr_t getSubnetMask() const { return _subnetMask; }
+  const MACAddress& getMACAddress() const { return _macAddress; }
 
   IPV4Handler& getIPV4Handler() { return _ipv4Handler; }
   const IPV4Handler& getIPV4Handler() const { return _ipv4Handler; }
@@ -84,44 +67,18 @@ public:
   ICMPHandler& getICMPHandler() { return _icmpHandler; }
   const ICMPHandler& getICMPHandler() const { return _icmpHandler; }
 
-  ARPClient& getARPClient() { return *_arpClient; }
-
-protected:
-  void setName(const upan::string& name) { _name = name; }
-  void setId(int id) { _id = id; }
-
-  void connectToNetwork();
-  void onConnected();
-  void setMACAddress(const MACAddress& macAddress) { _macAddress = macAddress; }
-  void setIPAddress(in_addr_t ip) { _ipAddress = ip; }
-  void setGatewayAddress(in_addr_t ip) { _gatewayAddress = ip; }
-  void setSubnetMask(in_addr_t ip) { _subnetMask = ip; }
-  void setBroadcastAddress(in_addr_t ip) { _broadcastAddress = ip; }
-  void setDNSAddress(in_addr_t ip) { _dnsAddress = ip; }
-
-  friend class DHCPClient;
   friend class NetworkManager;
-protected:
-  const PCIEntry& _pciEntry;
 
-  upan::string _name;
+protected:
   int _id;
+  upan::string _name;
   bool _connected;
 
-  MACAddress _macAddress;
-  MACAddress _gatewayMacAddress;
   in_addr_t _ipAddress;
-  in_addr_t _gatewayAddress;
   in_addr_t _subnetMask;
-  in_addr_t _broadcastAddress;
-  in_addr_t _dnsAddress;
+  MACAddress _macAddress;
 
-  EthernetHandler _ethernetHandler;
   IPV4Handler _ipv4Handler;
   UDP4Handler _udp4Handler;
   ICMPHandler _icmpHandler;
-  ARPHandler _arpHandler;
-
-  upan::uniq_ptr<DHCPClient> _dhcpClient;
-  upan::uniq_ptr<ARPClient> _arpClient;
 };

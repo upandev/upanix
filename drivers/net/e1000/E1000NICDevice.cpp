@@ -59,15 +59,12 @@ E1000NICDevice& E1000NICDevice::Instance() {
   return *_instance;
 }
 
-void E1000NICDevice::InterruptHandler()
-{
+void E1000NICDevice::InterruptHandler() {
   E1000NICDevice::Instance().NotifyEvent();
 }
 
-E1000NICDevice::E1000NICDevice(const PCIEntry& pciEntry) : NetworkDevice(pciEntry),
-                                                           _irq(nullptr),
-                                                           _ethernetHandler(*this),
-                                                           _eventQueue(1024) {
+E1000NICDevice::E1000NICDevice(const PCIEntry& pciEntry) : RealNetworkDevice(pciEntry),
+  _irq(nullptr), _eventQueue(1024) {
 }
 
 E1000NICDevice::~E1000NICDevice() {
@@ -105,7 +102,7 @@ void E1000NICDevice::Initialize() {
 
   regEEPROM = new RegEEPROM(_memIOBase);
   setMACAddress(regEEPROM->fetchMACAddress());
-  printf("\n MAC address: %s", GetMACAddress().str().c_str());
+  printf("\n MAC address: %s", getMACAddress().str().c_str());
 
   regIntControl = new RegIntControl(_memIOBase);
   regIntControl->disable();
@@ -148,9 +145,9 @@ void E1000NICDevice::NotifyEvent() {
   IrqManager::Instance().SendEOI(*_irq);
 }
 
-void E1000NICDevice::SendPacket(const RawNetPacket& packet) {
+void E1000NICDevice::sendPacket(const RawNetPacket& packet) {
   regTx->SendPacket(packet.buf(), packet.len());
-  KLog::debug("Packet sent with len: %d", packet.len());
+  KLog::trace("Packet sent with len: %d", packet.len());
 }
 
 volatile uint32_t* REG(const uint64_t base, const uint32_t offset) {
@@ -346,11 +343,11 @@ void E1000NICDevice::HandleEvent() {
     _eventQueue.pop_front();
 
     if (data._icrVal & ICR_RECEIVE) {
-      _ethernetHandler.recv(data._packet);
+      getEthernetHandler().recv(data._packet);
     } else if (data._icrVal & ICR_LINK_CHANGE) {
       KLog::info("Link status changed");
     } else if (data._icrVal & ICR_TRANSMIT) {
-      KLog::debug("Packet Transmitted");
+      KLog::trace("Packet Transmitted");
     } else if (data._icrVal & STATUS_LINK_UP) {
       KLog::info("Status link-up");
     } else {

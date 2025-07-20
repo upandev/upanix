@@ -22,7 +22,6 @@
 #pragma once
 
 #include <list.h>
-#include <NetworkDevice.h>
 #include <bitset.h>
 #include <set.h>
 #include <map.h>
@@ -30,8 +29,13 @@
 #include <SocketDescriptor.h>
 #include <SocketResolver.h>
 #include <DNSClient.h>
+#include <MACAddress.h>
+#include <PCIBusHandler.h>
 
 class IRQ;
+class NetworkDevice;
+class RealNetworkDevice;
+class LoopbackNetworkDevice;
 
 class NetworkManager
 {
@@ -46,8 +50,10 @@ public:
   static NetworkManager& Instance();
 
   void Initialize();
-  upan::list<NetworkDevice*>& Devices() { return _devices; }
-  upan::option<NetworkDevice&> getDefaultDevice();
+  upan::list<NetworkDevice*>& devices() { return _devices; }
+  upan::option<RealNetworkDevice&> getDefaultRealDevice();
+  upan::option<LoopbackNetworkDevice&> getLoopbackDevice();
+  NetworkDevice& getDevice(const struct sockaddr_in& addr);
   upan::option<NetworkDevice&> getDeviceById(int);
   upan::option<NetworkDevice&> getDeviceByName(const upan::string&);
 
@@ -72,6 +78,8 @@ private:
   int _interfaceId;
   IP_MAP_TABLE _ipMACTable;
   upan::list<NetworkDevice*> _devices;
+  RealNetworkDevice* _defaultRealDevice;
+  LoopbackNetworkDevice* _loopbackDevice;
   SOCKET_RESOLVER_MAP _socketResolvers;
   upan::uniq_ptr<DNSClient> _dnsClient;
 };

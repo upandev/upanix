@@ -158,7 +158,6 @@ void Initialize() {
 	RootConsole::Create();
   MemManager::Instance();
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
-  KLog::init();
 
   ProcessManager::Instance();
 

@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <ARPHandler.h>
 #include <NetworkManager.h>
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
-ARPHandler::ARPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
+ARPHandler::ARPHandler(RealNetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
 uint32_t ARPHandler::headerLen() const {
@@ -34,18 +34,18 @@ uint32_t ARPHandler::headerLen() const {
 void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& arpHeader = packet->getARPHeader();
   if (arpHeader.isResponse()) {
-    KLog::debug("Handling ARP packet reply");
+    KLog::trace("Handling ARP packet reply");
     arpHeader.toHost().print();
     NetworkManager::Instance().recv(packet, ETH_PROTO_TYPE::ETH_P_ARP);
   } else if (arpHeader.isRequest()) {
     if (device().isConnected()) {
-      if (arpHeader._header.arp_tpa == device().GetIPAddress()) {
-        KLog::debug("Handling ARP packet request");
+      if (arpHeader._header.arp_tpa == device().getIPAddress()) {
+        KLog::trace("Handling ARP packet request");
         struct ether_arp arp_reply {};
         arp_reply.ea_hdr.ar_op = htons(ARPOP_REPLY);
 
-        memcpy(arp_reply.arp_sha, device().GetMACAddress().get(), ETH_ALEN);
-        arp_reply.arp_spa = device().GetIPAddress();
+        memcpy(arp_reply.arp_sha, device().getMACAddress().get(), ETH_ALEN);
+        arp_reply.arp_spa = device().getIPAddress();
 
         memcpy(arp_reply.arp_tha, arpHeader._header.arp_sha, ETH_ALEN);
         arp_reply.arp_tpa = arpHeader._header.arp_spa;
@@ -53,7 +53,7 @@ void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
       }
     }
   } else {
-    //KLog::debug("Ignoring ARP packet : %s", inet_ntoa( { arpHeader._header.arp_spa }));
+    KLog::trace("Ignoring ARP packet : %s", inet_ntoa( { arpHeader._header.arp_spa }));
   }
 }
 
@@ -69,5 +69,5 @@ void ARPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in
   arpHeader._header.ea_hdr.ar_pln = IPV4_ADDR_LEN
 ;
 
-  device().getEthernetHandler().send(packet, ETH_PROTO_TYPE::ETH_P_ARP);
+  device().send(packet, ETH_PROTO_TYPE::ETH_P_ARP);
 }

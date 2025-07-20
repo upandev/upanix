@@ -28,7 +28,7 @@
 #include <result.h>
 #include <DHCPMessage.h>
 
-class NetworkDevice;
+class RealNetworkDevice;
 
 class DHCPClient : public upan::thread {
 private:
@@ -42,7 +42,7 @@ private:
   } DHCPResponseErrorCode;
 
 public:
-  explicit DHCPClient(NetworkDevice& networkDevice);
+  explicit DHCPClient(RealNetworkDevice& networkDevice);
   void run() override;
 
 private:
@@ -76,7 +76,7 @@ private:
     FlowState_Rebind
   };
 
-  NetworkDevice& _networkDevice;
+  RealNetworkDevice& _networkDevice;
   DHCPFlowState _flowState;
   in_addr_t _dhcpServerAddress;
   time_t _leaseTime;

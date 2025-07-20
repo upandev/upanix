@@ -66,7 +66,7 @@ static SupportedDevices SINGLE_BT_DIV_ANTENNA_DEVICES[] = {
   { PCI_VENDOR_ID_DELL, 0x020C }
 };
 
-ATH9KDevice::ATH9KDevice(PCIEntry& pciEntry) : NetworkDevice(pciEntry)
+ATH9KDevice::ATH9KDevice(PCIEntry& pciEntry) : RealNetworkDevice(pciEntry)
 {
 }
 

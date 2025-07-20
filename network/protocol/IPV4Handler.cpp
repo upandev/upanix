@@ -28,7 +28,7 @@ IPV4Handler::IPV4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 }
 
 void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  KLog::debug("Handling IPV4 Packet");
+  KLog::trace("Handling IPV4 Packet");
   const auto& ipv4Header = packet->getIPV4Header();
   verifyChecksum(ipv4Header);
 
@@ -63,7 +63,7 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
 
 uint32_t IPV4Handler::headerLen() const {
   //TODO: if IPV4 header has header-options then that must be factored here
-  return NetworkPacket::IPV4::HEADER_SIZE + device().getEthernetHandler().headerLen();
+  return NetworkPacket::IPV4::HEADER_SIZE + device().deviceLayerHeaderLen();
 }
 
 void IPV4Handler::initHeaderLen(RawNetPacket& packet) {
@@ -99,18 +99,18 @@ void IPV4Handler::send(RawNetPacket& packet, IPPROTO_TYPE protocol, const struct
     ipv4Header._header.ip_ttl = 255;
     ipv4Header._header.ip_p = protocol;
     ipv4Header._header.ip_sum = 0;
-    ipv4Header._header.ip_src = { device().isConnected() ? device().GetIPAddress() : INADDR_ANY };
+    ipv4Header._header.ip_src = { device().isConnected() ? device().getIPAddress() : INADDR_ANY };
     ipv4Header._header.ip_dst = destAddr.sin_addr;
 
     ipv4Header._header.ip_sum = calcChecksum(ipv4Header);
 
     if (totalPayloadSize <= maxPayload) { //there is only one fragment - use the main packet
-      device().getEthernetHandler().send(packet, ETH_PROTO_TYPE::ETH_P_IP);
+      device().send(packet, ETH_PROTO_TYPE::ETH_P_IP);
     } else {
       RawNetPacket fragmentPacket(packetHeaderLen + fragmentLen);
       fragmentPacket.getIPV4Header() = ipv4Header;
       memcpy(fragmentPacket.getIPV4Data(), packet.getIPV4Data() + offset, fragmentLen);
-      device().getEthernetHandler().send(fragmentPacket, ETH_PROTO_TYPE::ETH_P_IP);
+      device().send(fragmentPacket, ETH_PROTO_TYPE::ETH_P_IP);
     }
 
     offset += fragmentLen;

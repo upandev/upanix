@@ -75,6 +75,8 @@
 #include <KernelRootProcess.h>
 #include <math.h>
 #include <ConfigFileDB.h>
+#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -766,13 +768,14 @@ void ConsoleCommands_ProbeXHCIUSB()
 }
 
 void ConsoleCommands_ListNetworkDevices() {
-  for(const auto d : NetworkManager::Instance().Devices()) {
-    printf("\nIP: %d, MAC: %s", inet_ntoa( { d->GetIPAddress() }), d->GetMACAddress().str().c_str());
+  for(const auto d : NetworkManager::Instance().devices()) {
+    printf("\n");
+    d->print();
   }
 }
 
 void ConsoleCommands_ARPing() {
-  auto d = NetworkManager::Instance().getDefaultDevice();
+  auto d = NetworkManager::Instance().getDefaultRealDevice();
   if (d.isEmpty()) {
     printf("\nno network device exists");
     return;
@@ -2196,7 +2199,7 @@ void ConsoleCommands_Ping() {
 
   if (sendto(sd, packet, PACKET_SIZE, 0, (struct sockaddr*) &addr, sizeof(addr)) <= 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to send packet");
+    throw upan::exception(XLOC, "failed to sendPacket packet");
   }
 
   socklen_t len = sizeof(addr);

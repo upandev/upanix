@@ -44,12 +44,12 @@ void PCIBusHandler::Initialize()
     Find();
 
     printf("\n\tPCI Configuration Mechanism# %d", _type);
-    printf("\n\tScanning PCI Bus for Devices...");
+    printf("\n\tScanning PCI Bus for devices...");
 
     ScanBus(0);
 
     printf("\n\tPCI Bus Scan Successfull");
-    printf("\n\tFollowing Devices are found: ");
+    printf("\n\tFollowing devices are found: ");
 
     int i = 0;
     for(auto p : _pciEntries)
@@ -176,7 +176,7 @@ void PCIBusHandler::ScanBus(unsigned uiBusNumber)
         if(_pciEntries.size() < MAX_PCI_DEVICES)
           _pciEntries.push_back(new PCIEntry(uiBusNumber, uiDeviceNumber, uiFunction, bHeaderType));
         else
-          printf("\n Too many PCI Devices!!!");
+          printf("\n Too many PCI devices!!!");
 	   	}
 		}
   }

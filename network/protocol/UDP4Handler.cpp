@@ -32,7 +32,7 @@ UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 }
 
 void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  KLog::debug("Handling UDP Packet");
+  KLog::trace("Handling UDP Packet");
   verifyChecksum(*packet);
   const auto& udpHeader = packet->getUDP4Header();
   udpHeader.toHost().print();
@@ -57,7 +57,7 @@ void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_i
   udpHeader._destPort = destAddr.sin_port;
   udpHeader._len = htons(len + NetworkPacket::UDP::HEADER_SIZE);
   udpHeader._checksum = 0;
-  calcChecksum(packet, (device().isConnected() ? device().GetIPAddress() : INADDR_ANY), destAddr.sin_addr.s_addr);
+  calcChecksum(packet, (device().isConnected() ? device().getIPAddress() : INADDR_ANY), destAddr.sin_addr.s_addr);
 
   device().getIPV4Handler().send(packet, IPPROTO_UDP, srcAddr, destAddr);
 }

@@ -24,6 +24,8 @@
 #include <ProcessManager.h>
 #include <KernelUtil.h>
 #include <NetworkManager.h>
+#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 
@@ -89,25 +91,25 @@ void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
     case SIOCGIFADDR:
     {
       auto req = (struct ifreq*)arg;
-      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      NetworkDevice& defaultDevice = NetworkManager::Instance().getDefaultRealDevice().value();
       auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
-      reinterpret_cast<struct sockaddr_in&>(req->ifr_addr).sin_addr.s_addr = device.GetIPAddress();
+      reinterpret_cast<struct sockaddr_in&>(req->ifr_addr).sin_addr.s_addr = device.getIPAddress();
     }
     break;
 
     case SIOCGIFHWADDR:
     {
       auto req = (struct ifreq*)arg;
-      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      auto& defaultDevice = NetworkManager::Instance().getDefaultRealDevice().value();
       auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
-      memcpy(req->ifr_hwaddr.sa_data, device.GetMACAddress().get(), ETH_ALEN);
+      memcpy(req->ifr_hwaddr.sa_data, device.getMACAddress().get(), ETH_ALEN);
     }
     break;
 
     case SIOCGIFINDEX:
     {
       auto req = (struct ifreq*)arg;
-      auto& defaultDevice = NetworkManager::Instance().getDefaultDevice().value();
+      auto& defaultDevice = NetworkManager::Instance().getDefaultRealDevice().value();
       auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
       req->ifr_ifindex = device.id();
     }

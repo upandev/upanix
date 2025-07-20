@@ -27,7 +27,7 @@
 #include <ConfigFileDB.h>
 #include <result.h>
 
-class NetworkDevice;
+class RealNetworkDevice;
 
 class DHCPMessage {
 private:
@@ -126,8 +126,8 @@ public:
   upan::string readString(DHCPOptionType optionType) const;
   upan::string getMessageText() const;
 
-  void createDiscoverPacket(const NetworkDevice&);
-  void createRequestPacket(const NetworkDevice&);
-  void createRenewPacket(const NetworkDevice&, in_addr_t dhcpServerIP);
-  void validateResponse(const DHCPMessage& request, const NetworkDevice&);
+  void createDiscoverPacket(const RealNetworkDevice&);
+  void createRequestPacket(const RealNetworkDevice&);
+  void createRenewPacket(const RealNetworkDevice&, in_addr_t dhcpServerIP);
+  void validateResponse(const DHCPMessage& request, const RealNetworkDevice&);
 } PACKED;

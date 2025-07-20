@@ -21,11 +21,11 @@
  */
 
 #include <DHCPMessage.h>
-#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
 static constexpr int DHCP_REQUEST_IP_RENEWAL_TIME = 3600; // 1 min
 
-void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
+void DHCPMessage::createDiscoverPacket(const RealNetworkDevice& networkDevice) {
   memset(this, 0, sizeof(DHCPMessage));
 
   _op = DHCPOperationType::BootRequest;
@@ -33,7 +33,7 @@ void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
   _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Broadcast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
+  memcpy(_chaddr, networkDevice.getMACAddress().get(), ETH_ALEN);
 
   // Add DHCP options
   _magicCookie = DHCP_MAGIC_COOKIE;
@@ -60,7 +60,7 @@ void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
+  memcpy(_options + oi, networkDevice.getMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::LeaseTime;
@@ -78,7 +78,7 @@ void DHCPMessage::createDiscoverPacket(const NetworkDevice& networkDevice) {
   _options[oi] = DHCPOptionType::OptionEnd;
 }
 
-void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
+void DHCPMessage::createRequestPacket(const RealNetworkDevice& networkDevice) {
   memset(this, 0, sizeof(DHCPMessage));
 
   _op = DHCPOperationType::BootRequest;
@@ -86,7 +86,7 @@ void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
   _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Unicast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
+  memcpy(_chaddr, networkDevice.getMACAddress().get(), ETH_ALEN);
 
   // Add DHCP options
   _magicCookie = DHCP_MAGIC_COOKIE;
@@ -113,12 +113,12 @@ void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
+  memcpy(_options + oi, networkDevice.getMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::RequestedIPAddress;
   _options[oi++] = 4;
-  uint32_t ipAddress = networkDevice.GetIPAddress();
+  uint32_t ipAddress = networkDevice.getIPAddress();
   memcpy(_options + oi, (void*)&ipAddress, sizeof(uint32_t));
   oi += 4;
 
@@ -137,7 +137,7 @@ void DHCPMessage::createRequestPacket(const NetworkDevice& networkDevice) {
   _options[oi] = DHCPOptionType::OptionEnd;
 }
 
-void DHCPMessage::createRenewPacket(const NetworkDevice& networkDevice, in_addr_t dhcpServerIP) {
+void DHCPMessage::createRenewPacket(const RealNetworkDevice& networkDevice, in_addr_t dhcpServerIP) {
   memset(this, 0, sizeof(DHCPMessage));
 
   _op = DHCPOperationType::BootRequest;
@@ -145,8 +145,8 @@ void DHCPMessage::createRenewPacket(const NetworkDevice& networkDevice, in_addr_
   _hlen = ETH_ALEN;
   _xid = htonl(rand());
   _flags = DHCPFlags::Unicast;
-  memcpy(_chaddr, networkDevice.GetMACAddress().get(), ETH_ALEN);
-  _ciaddr = networkDevice.GetIPAddress();
+  memcpy(_chaddr, networkDevice.getMACAddress().get(), ETH_ALEN);
+  _ciaddr = networkDevice.getIPAddress();
   _siaddr = dhcpServerIP;
 
   // Add DHCP options
@@ -174,12 +174,12 @@ void DHCPMessage::createRenewPacket(const NetworkDevice& networkDevice, in_addr_
   _options[oi++] = DHCPOptionType::ClientIdentifier;
   _options[oi++] = 7;
   _options[oi++] = HardwareType::Ethernet;
-  memcpy(_options + oi, networkDevice.GetMACAddress().get(), ETH_ALEN);
+  memcpy(_options + oi, networkDevice.getMACAddress().get(), ETH_ALEN);
   oi += 6;
 
   _options[oi++] = DHCPOptionType::RequestedIPAddress;
   _options[oi++] = 4;
-  uint32_t ipAddress = networkDevice.GetIPAddress();
+  uint32_t ipAddress = networkDevice.getIPAddress();
   memcpy(_options + oi, (void*)&ipAddress, sizeof(uint32_t));
   oi += 4;
 
@@ -323,7 +323,7 @@ upan::string DHCPMessage::getMessageText() const {
   return readString(DHCPOptionType::MessageText);
 }
 
-void DHCPMessage::validateResponse(const DHCPMessage& request, const NetworkDevice& networkDevice) {
+void DHCPMessage::validateResponse(const DHCPMessage& request, const RealNetworkDevice& networkDevice) {
   if (_op != DHCPOperationType::BootResponse) {
     throw upan::exception(XLOC, "unsupported DHCP message type: %d", _op);
   }
@@ -345,7 +345,7 @@ void DHCPMessage::validateResponse(const DHCPMessage& request, const NetworkDevi
   }
 
   const MACAddress clientMacAddress(_chaddr);
-  if (clientMacAddress != networkDevice.GetMACAddress()) {
+  if (clientMacAddress != networkDevice.getMACAddress()) {
     throw upan::exception(XLOC, "MAC address mismatch. Response: %s", clientMacAddress.str().c_str());
   }
 }

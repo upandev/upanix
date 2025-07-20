@@ -25,10 +25,10 @@
 #include <RawNetPacket.h>
 #include <ARPHandler.h>
 #include <EthernetHandler.h>
-#include <NetworkDevice.h>
 #include <NetworkManager.h>
+#include <RealNetworkDevice.h>
 
-EthernetHandler::EthernetHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
+EthernetHandler::EthernetHandler(RealNetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
 void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
@@ -38,8 +38,8 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
 
   const auto& ethernetHeader = packet->getEthernetHeader();
   const MACAddress& destMAC = ethernetHeader._header.h_dest;
-  if (!destMAC.isBroadcast() && destMAC != device().GetMACAddress()) {
-    //KLog::debug("Ignoring ARP packet : DestMac: %s != %s", destMAC.str().c_str(), device().GetMACAddress().str().c_str());
+  if (!destMAC.isBroadcast() && destMAC != device().getMACAddress()) {
+    KLog::trace("Ignoring ARP packet : DestMac: %s != %s", destMAC.str().c_str(), device().getMACAddress().str().c_str());
     return;
   }
 
@@ -61,7 +61,7 @@ uint32_t EthernetHandler::headerLen() const {
 
 void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
   auto& ethernetHeader = packet.getEthernetHeader();
-  memcpy(ethernetHeader._header.h_source, device().GetMACAddress().get(), ETH_ALEN);
+  memcpy(ethernetHeader._header.h_source, device().getMACAddress().get(), ETH_ALEN);
   ethernetHeader._header.h_proto = htons(eType);
 
   bool isBroadcast = false;
@@ -87,9 +87,9 @@ void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
                                                                                         inet_ntoa( { dest_ip })).Msg());
       memcpy(ethernetHeader._header.h_dest, mac.get(), ETH_ALEN);
     } else {
-      memcpy(ethernetHeader._header.h_dest, device().GetGatewayMACAddress().get(), ETH_ALEN);
+      memcpy(ethernetHeader._header.h_dest, device().getGatewayMACAddress().get(), ETH_ALEN);
     }
   }
 
-  device().SendPacket(packet);
+  device().sendPacket(packet);
 }

@@ -21,21 +21,19 @@
  */
 #pragma once
 
-#include <map.h>
-#include <option.h>
-#include <shared_ptr.h>
-#include <PacketHandler.h>
+#include <NetworkDevice.h>
 
-class RawNetPacket;
-class RealNetworkDevice;
+class SocketBuffer;
 
-class EthernetHandler : public PacketHandler<RealNetworkDevice> {
+class LoopbackNetworkDevice : public NetworkDevice {
+private:
+  static constexpr char DEFAULT_HOST_NAME[] = "localhost";
+
 public:
-  explicit EthernetHandler(RealNetworkDevice& networkDevice);
-  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
-  uint32_t headerLen() const override;
-  void send(RawNetPacket& packet, ETH_PROTO_TYPE eType);
+  explicit LoopbackNetworkDevice();
+  ~LoopbackNetworkDevice() override = default;
 
-  private:
-    const static uint32_t MIN_ETHERNET_PACKET_LEN = ETH_ALEN /*dmac*/ + ETH_ALEN /*smac*/ + 2 /*eType*/ + 1 /*payload*/;
+  void send(RawNetPacket& packet, ETH_PROTO_TYPE eType) override;
+  uint32_t deviceLayerHeaderLen() const override { return 0; };
+  const char* hostName() const override { return DEFAULT_HOST_NAME; }
 };
