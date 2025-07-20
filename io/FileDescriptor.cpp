@@ -94,6 +94,7 @@ void FileDescriptor::truncate() {
 
   _diskDrive.fileSystem().truncate(_fileNodeRef);
   _offset = 0;
+  setLastReadSectorDetails(0, _fileNodeRef.startSectorId());
 }
 
 struct stat FileDescriptor::getStat() {
