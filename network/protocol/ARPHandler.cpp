@@ -34,13 +34,13 @@ uint32_t ARPHandler::headerLen() const {
 void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& arpHeader = packet->getARPHeader();
   if (arpHeader.isResponse()) {
-    KLog::trace("Handling ARP packet reply");
+    KLog::debug("Handling ARP packet reply");
     arpHeader.toHost().print();
     NetworkManager::Instance().recv(packet, ETH_PROTO_TYPE::ETH_P_ARP);
   } else if (arpHeader.isRequest()) {
     if (device().isConnected()) {
       if (arpHeader._header.arp_tpa == device().getIPAddress()) {
-        KLog::trace("Handling ARP packet request");
+        KLog::debug("Handling ARP packet request");
         struct ether_arp arp_reply {};
         arp_reply.ea_hdr.ar_op = htons(ARPOP_REPLY);
 
@@ -53,7 +53,7 @@ void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
       }
     }
   } else {
-    KLog::trace("Ignoring ARP packet : %s", inet_ntoa( { arpHeader._header.arp_spa }));
+    //KLog::trace("Ignoring ARP packet : %s", inet_ntoa( { arpHeader._header.arp_spa }));
   }
 }
 

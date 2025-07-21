@@ -145,7 +145,7 @@ static void ConsoleCommands_Sleep();
 static void ConsoleCommands_Kill();
 static void ConsoleCommands_ResetMouse();
 static void ConsoleCommands_MemStats();
-static void ConsoleCommands_ResetSysLog();
+static void ConsoleCommands_SysLog();
 static void ConsoleCommands_Ping();
 static void ConsoleCommands_Host();
 
@@ -223,7 +223,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "kill", &ConsoleCommands_Kill },
 	{ "resetmouse", &ConsoleCommands_ResetMouse },
   { "memstats", &ConsoleCommands_MemStats },
-  { "resetsyslog", &ConsoleCommands_ResetSysLog },
+  { "syslog", &ConsoleCommands_SysLog },
 	{ "\0",			NULL }
 } ;
 
@@ -1925,6 +1925,39 @@ public:
   }
 };
 
+static void tcp_client() {
+  const upan::string& host = "127.0.0.1";
+  const int server_port = 12345;
+  const char *message = "Hello, TCP Server!";
+
+  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket() failed");
+  }
+
+  struct sockaddr_in server_addr;
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(server_port);
+  server_addr.sin_addr.s_addr = upan::net::inet_strton(host.c_str());
+
+  if (connect(sd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "connect() failed");
+  }
+
+  printf("Connected to %s:%d\n", host.c_str(), server_port);
+
+  ssize_t bytes_sent = send(sd, message, strlen(message), 0);
+  if (bytes_sent < 0) {
+    throw upan::exception(XLOC, "send() failed");
+  } else {
+    printf("Sent %zd bytes: %s\n", bytes_sent, message);
+  }
+
+  close(sd);
+}
+
 void ConsoleCommands_Test() {
   upan::string test;
 
@@ -1932,7 +1965,9 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "config") {
+  if (test == "tcp") {
+    tcp_client();
+  } else if (test == "config") {
     upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
 
     printf("\n **** Initial content");
@@ -2142,9 +2177,23 @@ void ConsoleCommands_MemStats() {
   printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }
 
-void ConsoleCommands_ResetSysLog() {
-  KernelRootProcess::Instance().resetSysLoggerFile();
-  printf("\n syslog cleared");
+void ConsoleCommands_SysLog() {
+  if (CommandLineParser::Instance().GetNoOfParameters() == 0) {
+    throw upan::exception(XLOC, "required parameter: <cmd -> reset, enable trace|debug|info|warn|error, disable trace|debug|info|warn|error>");
+  }
+
+  const upan::string option = CommandLineParser::Instance().GetParameterAt(0);
+
+  if (option == "reset") {
+    KernelRootProcess::Instance().resetSysLoggerFile();
+    printf("\n syslog cleared");
+  } else if (option == "enable") {
+    KLog::enable(CommandLineParser::Instance().GetParameterAt(1));
+  } else if (option == "disable") {
+    KLog::disable(CommandLineParser::Instance().GetParameterAt(1));
+  } else {
+    throw upan::exception(XLOC, "invalid option: %s", option.c_str());;
+  }
 }
 
 #define PACKET_SIZE 64

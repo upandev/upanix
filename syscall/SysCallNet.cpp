@@ -111,6 +111,21 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     }
     break;
 
+    case SYS_CALL_SOCKET_CONNECT:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      auto& addr = *(struct sockaddr*)p2;
+      auto len = (size_t)p3;
+      try {
+        NetworkOperations::Instance().connect(fd, addr, len);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_GET_HOST_BY_NAME:
     {
       *retVal = 0;

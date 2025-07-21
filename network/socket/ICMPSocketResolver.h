@@ -28,8 +28,8 @@
 class ICMPSocketResolver : public SocketResolver {
 public:
   upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override;
-  void unbind(SocketDescriptor& socket) override;
+  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override;
+  void release(SocketDescriptor& socket) override;
 
 private:
   typedef uint32_t ICMP_PACKET_ID;

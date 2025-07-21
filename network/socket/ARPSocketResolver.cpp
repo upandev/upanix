@@ -23,28 +23,32 @@
 #include <net/if_arp.h>
 #include <ARPSocketResolver.h>
 
-void ARPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
-  if (!buf) {
+void ARPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData, size_t len) {
+  upan::mutex_guard g(_mutex);
+
+  if (!protocolData) {
     return;
   }
 
   if (len < sizeof(struct ether_arp)) {
-    throw upan::exception(XLOC, "ICMPSocketResolver::bind: buf len is too small");
+    throw upan::exception(XLOC, "ARPSocketResolver::setupRoute: buf len is too small");
   }
 
-  auto arp = reinterpret_cast<const struct ether_arp*>(buf);
+  auto arp = reinterpret_cast<const struct ether_arp*>(protocolData);
   in_addr_t dest_ip = arp->arp_tpa;
 
   auto it = _destIpSocketMap.find(dest_ip);
   if (it != _destIpSocketMap.end() && it->second != &socket) {
-    throw upan::exception(XLOC, "ARPSocketResolver::bind: duplicate destination ip: %s", inet_ntoa({ dest_ip }));
+    throw upan::exception(XLOC, "ARPSocketResolver::setupRoute: duplicate destination ip: %s", inet_ntoa({ dest_ip }));
   }
 
   _destIpSocketMap.insert(DEST_IP_SOCKET_MAP ::value_type(dest_ip, &socket));
   _destIpSocketMapReverse[&socket].insert(dest_ip);
 }
 
-void ARPSocketResolver::unbind(SocketDescriptor& socket) {
+void ARPSocketResolver::release(SocketDescriptor& socket) {
+  upan::mutex_guard g(_mutex);
+
   auto it = _destIpSocketMapReverse.find(&socket);
   if (it != _destIpSocketMapReverse.end()) {
     for (auto id : it->second) {
@@ -55,6 +59,8 @@ void ARPSocketResolver::unbind(SocketDescriptor& socket) {
 }
 
 upan::option<SocketDescriptor&> ARPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+  upan::mutex_guard g(_mutex);
+
   const auto arpDataLen = packet->len() - NetworkPacket::Ethernet::HEADER_SIZE;
   if (arpDataLen < (int)sizeof(struct ether_arp)) {
     throw upan::exception(XLOC, "ARPSocketResolver::resolve: packet len is too small");

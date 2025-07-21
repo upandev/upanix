@@ -39,7 +39,7 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   const auto& ethernetHeader = packet->getEthernetHeader();
   const MACAddress& destMAC = ethernetHeader._header.h_dest;
   if (!destMAC.isBroadcast() && destMAC != device().getMACAddress()) {
-    KLog::trace("Ignoring ARP packet : DestMac: %s != %s", destMAC.str().c_str(), device().getMACAddress().str().c_str());
+    //KLog::trace("Ignoring ARP packet : DestMac: %s != %s", destMAC.str().c_str(), device().getMACAddress().str().c_str());
     return;
   }
 

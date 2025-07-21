@@ -30,14 +30,10 @@
 class UDPSocketResolver : public SocketResolver {
 public:
   upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override;
-  void unbind(SocketDescriptor& socket) override;
+  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override;
+  void release(SocketDescriptor& socket) override;
 
 private:
-  uint16_t allocatePort();
-  void releasePort(in_port_t port);
-  bool isPortAllocated(in_port_t port) const;
-
   bool isPortBounded(in_addr_t ip, in_port_t port);
   upan::option<SocketDescriptor&> findBindingSocket(in_addr_t addr, in_port_t port);
 
@@ -45,8 +41,9 @@ private:
   typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
   typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
   typedef upan::map<in_port_t, int> SOCKET_BIND_SET;
+  typedef upan::map<SocketDescriptor*, sockaddr_in> SOCKET_SRC_ADDR_MAP;
 
-  upan::bitset<UINT16_MAX + 1> _portPool;
   SOCKET_BIND_SET _socketBindSet;
   SOCKET_BIND_MAP _socketBindMap;
+  SOCKET_SRC_ADDR_MAP _socketSrcAddrMap;
 };

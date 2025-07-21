@@ -28,6 +28,9 @@ class KLog {
 public:
   static void enable(uint32_t levels);
   static void disable(uint32_t levels);
+  static void enable(const upan::string& level);
+  static void disable(const upan::string& level);
+
   static void trace(const char* __restrict fmsg, ...);
   static void debug(const char* __restrict fmsg, ...);
   static void info(const char* __restrict fmsg, ...);

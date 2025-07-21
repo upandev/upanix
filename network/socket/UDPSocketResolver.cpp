@@ -23,18 +23,7 @@
 #include <UDPSocketResolver.h>
 #include <NetworkManager.h>
 #include <RealNetworkDevice.h>
-
-uint16_t UDPSocketResolver::allocatePort() {
-  return _portPool.allocate(49152, 65535);
-}
-
-bool UDPSocketResolver::isPortAllocated(in_port_t port) const {
-  return _portPool.test(port);
-}
-
-void UDPSocketResolver::releasePort(in_port_t port) {
-  return _portPool.set(port);
-}
+#include <SocketDescriptorDataGram.h>
 
 bool UDPSocketResolver::isPortBounded(in_addr_t ip, in_port_t port) {
   if (ip == INADDR_ANY || ip == INADDR_LOOPBACK) {
@@ -57,13 +46,21 @@ upan::option<SocketDescriptor&> UDPSocketResolver::findBindingSocket(in_addr_t a
   return upan::option<SocketDescriptor&>::empty();
 }
 
-void UDPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
-  if (socket.bindAddress().sin_port == 0) {
-    socket.setBindAddress({ AF_INET, htons(allocatePort()), INADDR_ANY, 0 });
+void UDPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData, size_t len) {
+  upan::mutex_guard g(_mutex);
+
+  if (!protocolData) {
+    throw upan::exception(XLOC, "protocolData is null");
   }
 
-  const in_addr_t ip = socket.bindAddress().sin_addr.s_addr;
-  const in_port_t port = socket.bindAddress().sin_port;
+  if (len != sizeof(struct sockaddr_in)) {
+    throw upan::exception(XLOC, "invalid protocolData len: %d", len);
+  }
+
+  const auto& srcAddr = *reinterpret_cast<const struct sockaddr_in*>(protocolData);
+
+  const in_addr_t ip = srcAddr.sin_addr.s_addr;
+  const in_port_t port = srcAddr.sin_port;
 
   if (isPortBounded(ip, port)) {
     throw upan::exception(XLOC, "port %d is already bound", ntohs(port));
@@ -75,7 +72,7 @@ void UDPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_
       throw upan::exception(XLOC, "network device doesn't have an IP address yet");
     }
     if (ip != networkDeviceIP) {
-      throw upan::exception(XLOC, "invalid IP %s to bind. Network device IP is %s",
+      throw upan::exception(XLOC, "invalid IP %s to setupRoute. Network device IP is %s",
                             upan::net::inet_ntostr(ip).c_str(),
                             upan::net::inet_ntostr(networkDeviceIP).c_str());
     }
@@ -83,17 +80,21 @@ void UDPSocketResolver::bind(SocketDescriptor& socket, const uint8_t* buf, size_
 
   _socketBindMap[ip][port] = &socket;
   ++_socketBindSet[port];
+  _socketSrcAddrMap[&socket] = srcAddr;
 }
 
-void UDPSocketResolver::unbind(SocketDescriptor& socket) {
-  if (socket.bindAddress().sin_port == 0) {
-    return;
+void UDPSocketResolver::release(SocketDescriptor& socket) {
+  upan::mutex_guard g(_mutex);
+
+  auto it = _socketSrcAddrMap.find(&socket);
+  if (it == _socketSrcAddrMap.end()) {
+    throw upan::exception(XLOC, "invalid socket");
   }
 
-  const in_addr_t ip = socket.bindAddress().sin_addr.s_addr;
-  const in_port_t port = socket.bindAddress().sin_port;
+  const in_addr_t ip = it->second.sin_addr.s_addr;
+  const in_port_t port = it->second.sin_port;
 
-  releasePort(ntohs(port));
+  _socketSrcAddrMap.erase(it);
 
   auto ipIt = _socketBindMap.find(ip);
   if (ipIt != _socketBindMap.end()) {
@@ -112,8 +113,10 @@ void UDPSocketResolver::unbind(SocketDescriptor& socket) {
     }
   }
 }
+
 upan::option<SocketDescriptor&> UDPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
+
   const in_addr_t destIP = packet->getIPV4Header()._header.ip_dst.s_addr;
   const in_port_t destPort = packet->getUDP4Header()._destPort;
 
@@ -133,6 +136,5 @@ upan::option<SocketDescriptor&> UDPSocketResolver::resolve(const upan::shared_pt
       return r;
     }
   }
-
   return upan::option<SocketDescriptor&>::empty();
 }

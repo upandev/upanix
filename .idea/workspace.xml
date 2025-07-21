@@ -33,45 +33,39 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor to create separate header files to contain definitions of the headers structs across different protocols such as UDP, ARP, IPV4 etc.">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix issue with resetsyslog">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/bus/PCIBusHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/PCIBusHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/NetworkDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/ath9k/ATH9KDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2Controller.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2Controller.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorDataGram.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorRaw.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ARPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ARPHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/EthernetHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ICMPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ICMPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ICMPHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/IPV4Handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/PacketHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/PacketHandler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/UDP4Handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/ARPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/ARPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/ARPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/ARPClient.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPClient.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPMessage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPMessage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/DHCPMessage.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DHCPMessage.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/service/DNSClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/DNSClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/ARPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/ARPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/ARPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/ARPSocketResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/ICMPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/ICMPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/ICMPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/ICMPSocketResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/SocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/SocketResolver.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/UDPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/socket/UDPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/socket/UDPSocketResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/KLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/KLog.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -720,7 +714,7 @@
       <workItem from="1750256388766" duration="2278000" />
       <workItem from="1751725084166" duration="1683000" />
       <workItem from="1752024625810" duration="21064000" />
-      <workItem from="1752106041895" duration="105285000" />
+      <workItem from="1752106041895" duration="128852000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1065,7 +1059,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="165" />
+    <option name="localTasksCounter" value="167" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1099,8 +1093,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="DHCP client implementation with all flow states" />
-    <MESSAGE value="build IP vs MAC address table" />
     <MESSAGE value="use klog with proper levels" />
     <MESSAGE value="creating a shared kernel logger instance that can be used across all processes and threads. It points to either STDOUT or a file on disk" />
     <MESSAGE value="added KLog utility. Introduced a new kernel mode called KERNEL_ROOT to be used while initializing syslog that ensures there is no race condition with setting KERNEL_MODE during timer interrupt" />
@@ -1124,7 +1116,9 @@
     <MESSAGE value="code cleanup - remove test dhcp code" />
     <MESSAGE value="implement basic DNS client for host resolution and reverse-host resolution" />
     <MESSAGE value="refactor to create separate header files to contain definitions of the headers structs across different protocols such as UDP, ARP, IPV4 etc." />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor to create separate header files to contain definitions of the headers structs across different protocols such as UDP, ARP, IPV4 etc." />
+    <MESSAGE value="introduced loopback device - created necessary object oriented inheritance hierarchy to separate loopback device from real-network devices" />
+    <MESSAGE value="fix issue with resetsyslog" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix issue with resetsyslog" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -232,7 +232,7 @@ void DHCPClient::dhcpRebind() {
 }
 
 upan::result<DHCPMessage> DHCPClient::sendDiscover() {
-  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  const auto sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }
@@ -246,7 +246,7 @@ upan::result<DHCPMessage> DHCPClient::sendDiscover() {
 
   if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to bind socket");
+    throw upan::exception(XLOC, "failed to setupRoute socket");
   }
 
   struct sockaddr_in server_addr {};
@@ -313,7 +313,7 @@ upan::result<DHCPMessage> DHCPClient::sendDiscover() {
 }
 
 upan::result<DHCPMessage> DHCPClient::sendRequest() {
-  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  const auto sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }
@@ -327,7 +327,7 @@ upan::result<DHCPMessage> DHCPClient::sendRequest() {
 
   if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to bind socket");
+    throw upan::exception(XLOC, "failed to setupRoute socket");
   }
 
   struct sockaddr_in server_addr {};
@@ -394,7 +394,7 @@ upan::result<DHCPMessage> DHCPClient::sendRequest() {
 }
 
 upan::result<DHCPMessage> DHCPClient::sendRenew() {
-  const auto sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+  const auto sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }
@@ -408,7 +408,7 @@ upan::result<DHCPMessage> DHCPClient::sendRenew() {
 
   if (bind(sd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
     close(sd);
-    throw upan::exception(XLOC, "failed to bind socket");
+    throw upan::exception(XLOC, "failed to setupRoute socket");
   }
 
   struct sockaddr_in server_addr {};

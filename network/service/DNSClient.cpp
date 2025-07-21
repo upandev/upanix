@@ -115,7 +115,7 @@ struct hostent* DNSClient::resolveHost(const upan::string& name) {
   uint8_t payload[MAX_DNS_PACKET_SIZE];
   struct DNSHeader& dnsHeader = *(struct DNSHeader*)payload;
 
-  int sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  int sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }
@@ -283,7 +283,7 @@ struct hostent* DNSClient::resolveReverseHost(const void *addr, socklen_t len, i
 
   const int queryLen = sizeof(struct DNSHeader) + qnameLen + sizeof(DNSQuestion);
 
-  int sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  int sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket creation failed");
   }

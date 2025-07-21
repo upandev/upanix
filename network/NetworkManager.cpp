@@ -161,21 +161,21 @@ upan::option<const MACAddress&> NetworkManager::lookupMAC(in_addr_t ip) {
   return upan::option<const MACAddress&>(i->second);
 }
 
-void NetworkManager::bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) {
+void NetworkManager::setupRoute(SocketDescriptor& socket, const void* protocolData, size_t len) {
   upan::mutex_guard g(_nMutex);
 
   auto it = _socketResolvers.find(socket.protocol());
   if (it != _socketResolvers.end()) {
-    it->second->bind(socket, buf, len);
+    it->second->setup(socket, protocolData, len);
   }
 }
 
-void NetworkManager::unbind(SocketDescriptor& socket) {
+void NetworkManager::releaseRoute(SocketDescriptor& socket) {
   upan::mutex_guard g(_nMutex);
 
   auto it = _socketResolvers.find(socket.protocol());
   if (it != _socketResolvers.end()) {
-    it->second->unbind(socket);
+    it->second->release(socket);
   }
 }
 
@@ -211,4 +211,22 @@ void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, int prot
       socket.recvNotify(packet);
     });
   }
+}
+
+uint16_t NetworkManager::PortPool::allocate() {
+  upan::mutex_guard g(_mutex);
+  return _portPool.allocate(49152, 65535);
+}
+
+void NetworkManager::PortPool::allocate(in_port_t port) {
+  upan::mutex_guard g(_mutex);
+  if (_portPool.test(port)) {
+    throw upan::exception(XLOC, "port %d already allocated", port);
+  }
+  _portPool.set(port);
+}
+
+void NetworkManager::PortPool::release(in_port_t port) {
+  upan::mutex_guard g(_mutex);
+  return _portPool.reset(port);
 }

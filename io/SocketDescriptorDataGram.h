@@ -26,8 +26,20 @@
 class SocketDescriptorDataGram : public SocketDescriptor {
 public:
   SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+  ~SocketDescriptorDataGram() override;
 
 private:
+  const struct sockaddr_in& srcAddr() const { return _srcAddr; }
+  void srcAddr(const struct sockaddr_in& addr) { _srcAddr = addr; }
+
+  void bind(const struct sockaddr& address, socklen_t len) override;
+  void connect(const struct sockaddr& address, socklen_t len) override {
+    throw upan::exception(XLOC, "connect not supported for datagram sockets");
+  }
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+
+  friend class UDPSocketResolver;
+private:
+  struct sockaddr_in _srcAddr;
 };

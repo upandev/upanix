@@ -32,7 +32,7 @@ UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDe
 }
 
 void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  KLog::trace("Handling UDP Packet");
+  KLog::debug("Handling UDP Packet");
   verifyChecksum(*packet);
   const auto& udpHeader = packet->getUDP4Header();
   udpHeader.toHost().print();

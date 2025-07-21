@@ -48,7 +48,8 @@ public:
   void seek(int seekType, int offset) override { }
   uint32_t getOffset() const override { return 0; }
 
-  void bind(const struct sockaddr& address, socklen_t len);
+  virtual void bind(const struct sockaddr& address, socklen_t len) = 0;
+  virtual void connect(const struct sockaddr& address, socklen_t len) = 0;
   virtual ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
   virtual ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
@@ -65,15 +66,12 @@ public:
 
   SA_FAMILY_TYPE family() const { return _family; }
   int protocol() const { return _protocol; }
-  const struct sockaddr_in& bindAddress() const { return _bindAddress; }
-  void setBindAddress(const struct sockaddr_in& addr) { _bindAddress = addr; }
 
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
   void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);
   upan::shared_ptr<RawNetPacket> recvPacket();
 
-private:
   void validateSockAddrLen(socklen_t len) const;
   void validateFlags(int flags) const;
   void validateBuf(const void* buf) const;
@@ -83,7 +81,6 @@ private:
   upan::mutex _ioSync;
   const SA_FAMILY_TYPE _family;
   const int _protocol;
-  struct sockaddr_in _bindAddress;
   bool _allowBroadcast;
   time_t _recvTimeoutInMs;
   upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;

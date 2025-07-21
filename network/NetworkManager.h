@@ -37,8 +37,7 @@ class NetworkDevice;
 class RealNetworkDevice;
 class LoopbackNetworkDevice;
 
-class NetworkManager
-{
+class NetworkManager {
 public:
   NetworkManager(const NetworkManager&) = delete;
   NetworkManager& operator=(const NetworkManager&) = delete;
@@ -60,13 +59,27 @@ public:
   void updateIPMACTable(in_addr_t ip, const MACAddress& mac);
   upan::option<const MACAddress&> lookupMAC(in_addr_t ip);
 
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len);
-  void unbind(SocketDescriptor& socket);
+  void setupRoute(SocketDescriptor& socket, const void* protocolData, size_t len);
+  void releaseRoute(SocketDescriptor& socket);
 
   ssize_t send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr);
   void recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol);
 
   DNSClient& getDNSClient() { return *_dnsClient; }
+
+  class PortPool {
+  public:
+    uint16_t allocate();
+    void allocate(in_port_t port);
+    void release(in_port_t port);
+
+  private:
+    upan::mutex _mutex;
+    upan::bitset<UINT16_MAX + 1> _portPool;
+  };
+
+  PortPool& getUDPPortPool() { return _udpPortPool; }
+  PortPool& getTCPPortPool() { return _tcpPortPool; }
 
 private:
   typedef upan::map<in_addr_t, MACAddress> IP_MAP_TABLE;
@@ -82,4 +95,6 @@ private:
   LoopbackNetworkDevice* _loopbackDevice;
   SOCKET_RESOLVER_MAP _socketResolvers;
   upan::uniq_ptr<DNSClient> _dnsClient;
+  PortPool _udpPortPool;
+  PortPool _tcpPortPool;
 };

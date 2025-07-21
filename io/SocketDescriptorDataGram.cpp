@@ -19,11 +19,31 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
 #include <SocketDescriptorDataGram.h>
 #include <NetworkManager.h>
-#include <UDP4Handler.h>
 
-SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol) : SocketDescriptor(pid, fd, family, protocol) {
+SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
+  : SocketDescriptor(pid, fd, family, protocol),
+    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, {0 } }) {
+}
+
+SocketDescriptorDataGram::~SocketDescriptorDataGram() {
+  NetworkManager::Instance().getUDPPortPool().release(_srcAddr.sin_port);
+}
+
+void SocketDescriptorDataGram::bind(const struct sockaddr& address, socklen_t len) {
+  if (_srcAddr.sin_port != 0) {
+    throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), _srcAddr.sin_port);
+  }
+
+  if (len != sizeof(struct sockaddr_in)) {
+    throw upan::exception(XLOC, "invalid socket len: %d", len);
+  }
+
+  memcpy((void*)&_srcAddr, (void*)&address, len);
+  NetworkManager::Instance().getUDPPortPool().allocate(_srcAddr.sin_port);
+  NetworkManager::Instance().setupRoute(*this, &_srcAddr, sizeof(sockaddr_in));
 }
 
 ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -37,11 +57,16 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
     throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
   }
 
-  if (bindAddress().sin_port == 0) {
-    NetworkManager::Instance().bind(*this, buf, n);
+  if (_srcAddr.sin_port == 0) {
+    _srcAddr = { (sa_family_t)family(),
+                 NetworkManager::Instance().getUDPPortPool().allocate(),
+                 { INADDR_ANY },
+                 { 0 }
+    };
+    NetworkManager::Instance().setupRoute(*this, &_srcAddr, sizeof(sockaddr_in));
   }
 
-  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), *addr);
+  return NetworkManager::Instance().send(buf, n, protocol(), _srcAddr, *addr);
 }
 
 ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {

@@ -23,7 +23,14 @@
 #include <NetworkManager.h>
 #include <UDP4Handler.h>
 
-SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol) : SocketDescriptor(pid, fd, family, protocol) {
+SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
+  : SocketDescriptor(pid, fd, family, protocol),
+    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, { 0 } }) {
+}
+
+void SocketDescriptorRaw::bind(const struct sockaddr& address, socklen_t len) {
+  validateSockAddrLen(len);
+  memcpy((void*)&_srcAddr, (void*)&address, len);
 }
 
 ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -39,8 +46,8 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
     }
   }
 
-  NetworkManager::Instance().bind(*this, buf, n);
-  return NetworkManager::Instance().send(buf, n, protocol(), bindAddress(), *addr);
+  NetworkManager::Instance().setupRoute(*this, buf, n);
+  return NetworkManager::Instance().send(buf, n, protocol(), _srcAddr, *addr);
 }
 
 ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {

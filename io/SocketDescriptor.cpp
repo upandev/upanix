@@ -30,13 +30,12 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int p
   : IODescriptor(pid, fd, O_RDWR),
     _family(family),
     _protocol(protocol),
-    _bindAddress({ (sa_family_t)family, 0, { INADDR_ANY }, { 0 } }),
     _allowBroadcast(false), _recvTimeoutInMs(0),
     _packetQueue(1024) {
 }
 
 SocketDescriptor::~SocketDescriptor() {
-  NetworkManager::Instance().unbind(*this);
+  NetworkManager::Instance().releaseRoute(*this);
 }
 
 bool SocketDescriptor::canRead() {
@@ -82,19 +81,6 @@ int SocketDescriptor::read(void* buffer, int len) {
 
 int SocketDescriptor::write(const void* buffer, int len) {
   return len;
-}
-
-void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
-  upan::mutex_guard g(_ioSync);
-
-  if (_bindAddress.sin_port != 0) {
-    throw upan::exception(XLOC, "bind failed - socket %d is already bound to port %d", id(), _bindAddress.sin_port);
-  }
-
-  validateSockAddrLen(len);
-
-  memcpy((void*)&_bindAddress, (void*)&address, len);
-  NetworkManager::Instance().bind(*this, nullptr, 0);
 }
 
 upan::shared_ptr<RawNetPacket> SocketDescriptor::recvPacket() {

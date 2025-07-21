@@ -53,6 +53,12 @@ int SysNet_RecvFrom(int fd, void *buf, size_t n, int flags, struct sockaddr* add
   return (int) retStatus;
 }
 
+int SysNet_Connect(int fd, const struct sockaddr *addr, socklen_t len) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_CONNECT, false, (uint64_t)fd, (uint64_t)addr, (uint64_t)len, 4, 5);
+  return (int) retStatus;
+}
+
 int SysNet_GetHostByName(const char* name, struct hostent** hostinfo) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_GET_HOST_BY_NAME, false, (uint64_t)name, (uint64_t)hostinfo, 3, 4, 5);

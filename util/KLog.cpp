@@ -30,6 +30,14 @@ void KLog::disable(uint32_t levels) {
   upan::logger::instance().disable(levels);
 }
 
+void KLog::enable(const upan::string& level) {
+  upan::logger::instance().enable(level);
+}
+
+void KLog::disable(const upan::string& level) {
+  upan::logger::instance().enable(level);
+}
+
 void KLog::trace(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);

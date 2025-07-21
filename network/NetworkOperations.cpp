@@ -142,3 +142,8 @@ ssize_t NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, s
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.recvFrom(buf, n, flags, addr, len);
 }
+
+void NetworkOperations::connect(int fd, const struct sockaddr& addr, socklen_t len) {
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  descriptor.connect(addr, len);
+}

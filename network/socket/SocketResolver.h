@@ -28,8 +28,8 @@
 class SocketResolver {
 public:
   virtual upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) = 0;
-  virtual void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) = 0;
-  virtual void unbind(SocketDescriptor& socket) = 0;
+  virtual void setup(SocketDescriptor& socket, const void* protocolData, size_t len) = 0;
+  virtual void release(SocketDescriptor& socket) = 0;
 protected:
   upan::mutex _mutex;
 };
@@ -37,6 +37,6 @@ protected:
 class TCPSocketResolver : public SocketResolver {
 public:
   upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override { return upan::option<SocketDescriptor&>::empty(); }
-  void bind(SocketDescriptor& socket, const uint8_t* buf, size_t len) override {}
-  void unbind(SocketDescriptor& socket) override {}
+  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override {}
+  void release(SocketDescriptor& socket) override {}
 };
