@@ -772,6 +772,11 @@ void ConsoleCommands_ListNetworkDevices() {
     printf("\n");
     d->print();
   }
+
+  printf("\n");
+  for(const auto& d : NetworkManager::Instance().getIPMACTable()) {
+    printf("\n %s -> %s", inet_ntoa({ d.first }), d.second.str().c_str());
+  }
 }
 
 void ConsoleCommands_ARPing() {
@@ -1925,14 +1930,67 @@ public:
   }
 };
 
-static void tcp_client() {
-  const upan::string& host = "127.0.0.1";
+#define TEST_TCP_SERVER_PORT 8080
+#define TEST_TCP_SERVER_BUFFER_SIZE 1024
+
+static void test_tcp_server() {
+  struct sockaddr_in address;
+  char buffer[TEST_TCP_SERVER_BUFFER_SIZE] = {0};
+
+  auto sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket() failed");
+  }
+
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = INADDR_ANY; // 0.0.0.0
+  address.sin_port = htons(TEST_TCP_SERVER_PORT);
+
+  if (bind(sd, (struct sockaddr*) &address, sizeof(address)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "bind() failed");
+  }
+
+  if (listen(sd, 1) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "listen() failed");
+  }
+
+  printf("\nServer is listening on port %d...", TEST_TCP_SERVER_PORT);
+
+  // Accept a connection
+  auto new_sd = 0;//accept(sd, (struct sockaddr*) &address, (socklen_t*) &addrlen);
+  if (new_sd < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "accept() failed");
+  }
+
+  int n = recv(new_sd, buffer, TEST_TCP_SERVER_BUFFER_SIZE - 1, 0);
+  if (n >= 0) {
+    buffer[n] = '\0'; // Null-terminate
+    printf("\nReceived: %s", buffer);
+  }
+
+  close(new_sd);
+  close(sd);
+}
+
+static void test_tcp_client() {
+  const upan::string& host = "192.168.50.208";
   const int server_port = 12345;
-  const char *message = "Hello, TCP Server!";
+  char message[1024] = "Hello, TCP Server!";
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
     throw upan::exception(XLOC, "socket() failed");
+  }
+
+  struct timeval timeout {};
+  timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
   }
 
   struct sockaddr_in server_addr;
@@ -1946,13 +2004,20 @@ static void tcp_client() {
     throw upan::exception(XLOC, "connect() failed");
   }
 
-  printf("Connected to %s:%d\n", host.c_str(), server_port);
+  printf("\nConnected to %s:%d", host.c_str(), server_port);
 
   ssize_t bytes_sent = send(sd, message, strlen(message), 0);
   if (bytes_sent < 0) {
     throw upan::exception(XLOC, "send() failed");
   } else {
-    printf("Sent %zd bytes: %s\n", bytes_sent, message);
+    printf("\nSent %d bytes: %s", bytes_sent, message);
+  }
+
+  // 5. Receive response
+  ssize_t bytes_received = recv(sd, message, 1024 - 1, 0);
+  if (bytes_received > 0) {
+    message[bytes_received] = '\0';
+    printf("\nReceived from server: %s", message);
   }
 
   close(sd);
@@ -1966,7 +2031,8 @@ void ConsoleCommands_Test() {
   }
 
   if (test == "tcp") {
-    tcp_client();
+    //test_tcp_server();
+    test_tcp_client();
   } else if (test == "config") {
     upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
 
@@ -2228,6 +2294,7 @@ void ConsoleCommands_Ping() {
 
   struct timeval timeout {};
   timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     close(sd);
     throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");

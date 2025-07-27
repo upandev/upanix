@@ -36,7 +36,7 @@ void ARPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   if (arpHeader.isResponse()) {
     KLog::debug("Handling ARP packet reply");
     arpHeader.toHost().print();
-    NetworkManager::Instance().recv(packet, ETH_PROTO_TYPE::ETH_P_ARP);
+    NetworkManager::Instance().getARPSocketResolver().recv(packet);
   } else if (arpHeader.isRequest()) {
     if (device().isConnected()) {
       if (arpHeader._header.arp_tpa == device().getIPAddress()) {

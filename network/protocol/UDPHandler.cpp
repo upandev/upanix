@@ -20,7 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
-#include <UDP4Handler.h>
+#include <UDPHandler.h>
 #include <IPV4Handler.h>
 #include <RawNetPacket.h>
 #include <NetworkUtil.h>
@@ -28,31 +28,31 @@
 #include <NetworkManager.h>
 #include <Global.h>
 
-UDP4Handler::UDP4Handler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
+UDPHandler::UDPHandler(NetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }
 
-void UDP4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
+void UDPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   KLog::debug("Handling UDP Packet");
   verifyChecksum(*packet);
-  const auto& udpHeader = packet->getUDP4Header();
+  const auto& udpHeader = packet->getUDPHeader();
   udpHeader.toHost().print();
 
-  NetworkManager::Instance().recv(packet, IPPROTO_UDP);
+  NetworkManager::Instance().getUDPSocketResolver().recv(packet);
 }
 
-uint32_t UDP4Handler::headerLen() const {
+uint32_t UDPHandler::headerLen() const {
   return NetworkPacket::UDP::HEADER_SIZE + device().getIPV4Handler().headerLen();
 }
 
-void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+void UDPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
   RawNetPacket packet(len + headerLen());
   //IPV4 header can potentially have varying length because of header-options
   //therefore, we need to initialize the IPV4 header length at the very beginning before constructing the packet bottom up
   device().getIPV4Handler().initHeaderLen(packet);
 
-  memcpy(packet.getUDP4Data(), buf, len);
+  memcpy(packet.getUDPData(), buf, len);
 
-  auto& udpHeader = packet.getUDP4Header();
+  auto& udpHeader = packet.getUDPHeader();
   udpHeader._srcPort = srcAddr.sin_port;
   udpHeader._destPort = destAddr.sin_port;
   udpHeader._len = htons(len + NetworkPacket::UDP::HEADER_SIZE);
@@ -62,9 +62,9 @@ void UDP4Handler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_i
   device().getIPV4Handler().send(packet, IPPROTO_UDP, srcAddr, destAddr);
 }
 
-void UDP4Handler::calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr) {
-  auto& udpHeader = packet.getUDP4Header();
-  const NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader {
+void UDPHandler::calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr) {
+  auto& udpHeader = packet.getUDPHeader();
+  const NetworkPacket::IPV4::IPV4PseudoHeader pseudoHeader {
           srcAddr,
           destAddr,
           0,
@@ -73,15 +73,15 @@ void UDP4Handler::calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_
   };
 
   const uint32_t len = ntohs(udpHeader._len);
-  const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0);
+  const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::IPV4::IPV4_PSEUDO_HEADER_SIZE, 0);
   udpHeader._checksum = NetworkUtil::CalculateChecksum((uint16_t *) packet.getIPV4Data(),len, partialChecksum);
 }
 
-void UDP4Handler::verifyChecksum(const RawNetPacket& packet) {
-  const auto& udpHeader = packet.getUDP4Header();
+void UDPHandler::verifyChecksum(const RawNetPacket& packet) {
+  const auto& udpHeader = packet.getUDPHeader();
   const auto& ipv4Header = packet.getIPV4Header();
   if (udpHeader._checksum) {
-    const NetworkPacket::UDP::IPV4PseudoHeader pseudoHeader {
+    const NetworkPacket::IPV4::IPV4PseudoHeader pseudoHeader {
       ipv4Header._header.ip_src.s_addr,
       ipv4Header._header.ip_dst.s_addr,
       0,
@@ -90,7 +90,7 @@ void UDP4Handler::verifyChecksum(const RawNetPacket& packet) {
     };
 
     const uint32_t len = ntohs(udpHeader._len);
-    const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::UDP::IPV4_PSEUDO_HEADER_SIZE, 0);
+    const uint32_t partialChecksum = NetworkUtil::CalculatePartialChecksum((uint16_t*) &pseudoHeader, NetworkPacket::IPV4::IPV4_PSEUDO_HEADER_SIZE, 0);
     const uint16_t calculatedChecksum = NetworkUtil::CalculateChecksum((uint16_t *) packet.getIPV4Data(),len, partialChecksum);
 
     if (calculatedChecksum != 0) {

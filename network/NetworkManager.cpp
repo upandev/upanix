@@ -23,15 +23,10 @@
 
 #include <IrqManager.h>
 #include <PCIBusHandler.h>
-#include <ATH9KDevice.h>
 #include <E1000NICDevice.h>
 #include <LoopbackNetworkDevice.h>
 #include <RealNetworkDevice.h>
 #include <NetworkManager.h>
-#include <UDPSocketResolver.h>
-#include <ICMPSocketResolver.h>
-#include <ARPSocketResolver.h>
-#include <typeinfo.h>
 
 NetworkManager& NetworkManager::Instance() {
   static NetworkManager instance;
@@ -56,11 +51,6 @@ void NetworkManager::Initialize() {
   _loopbackDevice = new LoopbackNetworkDevice();
   _devices.push_back(_loopbackDevice);
 
-  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_TCP, new TCPSocketResolver()));
-  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_UDP, new UDPSocketResolver()));
-  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(IPPROTO_TYPE::IPPROTO_ICMP, new ICMPSocketResolver()));
-  _socketResolvers.insert(SOCKET_RESOLVER_MAP::value_type(ETH_PROTO_TYPE::ETH_P_ARP, new ARPSocketResolver()));
-
   getDefaultRealDevice().ifPresent([](RealNetworkDevice& networkDevice) {
     networkDevice.connectToNetwork();
   });
@@ -68,6 +58,8 @@ void NetworkManager::Initialize() {
   if (_dnsClient.isEmpty()) {
     _dnsClient.reset(new DNSClient());
   }
+
+  _tcpShutdownHandler.start();
 }
 
 upan::option<RealNetworkDevice&> NetworkManager::getDefaultRealDevice() {
@@ -84,7 +76,7 @@ upan::option<LoopbackNetworkDevice&> NetworkManager::getLoopbackDevice() {
   return upan::option<LoopbackNetworkDevice&>(*_loopbackDevice);
 }
 
-NetworkDevice& NetworkManager::getDevice(const struct sockaddr_in& addr) {
+NetworkDevice& NetworkManager::getDevice(const struct sockaddr_in& addr, bool isDestination) {
   if (addr.sin_addr.s_addr == INADDR_LOOPBACK) {
     if (_loopbackDevice != nullptr) {
       return *_loopbackDevice;
@@ -97,15 +89,23 @@ NetworkDevice& NetworkManager::getDevice(const struct sockaddr_in& addr) {
     throw upan::exception(XLOC, "default real device not found");
   }
 
-  if (addr.sin_addr.s_addr == _defaultRealDevice->getIPAddress()) {
-    if (_loopbackDevice != nullptr) {
-      return *_loopbackDevice;
+  if (isDestination) {
+    if (addr.sin_addr.s_addr == _defaultRealDevice->getIPAddress()) {
+      if (_loopbackDevice != nullptr) {
+        return *_loopbackDevice;
+      } else {
+        throw upan::exception(XLOC, "loopback device not found");
+      }
     } else {
-      throw upan::exception(XLOC, "loopback device not found");
+      return *_defaultRealDevice;
+    }
+  } else {
+    if (addr.sin_addr.s_addr == _defaultRealDevice->getIPAddress()) {
+      return *_defaultRealDevice;
+    } else {
+      throw upan::exception(XLOC, "destination address is not default real device");
     }
   }
-
-  return *_defaultRealDevice;
 }
 
 upan::option<NetworkDevice&> NetworkManager::getDeviceById(int id) {
@@ -148,69 +148,27 @@ void NetworkManager::Probe(const PCIEntry& pciEntry) {
 }
 
 void NetworkManager::updateIPMACTable(in_addr_t ip, const MACAddress& mac) {
+  upan::mutex_guard g(_nMutex);
   if (ip != INADDR_BROADCAST && mac != INADDR_MAC_BROADCAST) {
     _ipMACTable.insert(IP_MAP_TABLE::value_type(ip, mac));
   }
 }
 
 upan::option<const MACAddress&> NetworkManager::lookupMAC(in_addr_t ip) {
+  upan::mutex_guard g(_nMutex);
   auto i = _ipMACTable.find(ip);
   if (i == _ipMACTable.end()) {
-    return upan::option<const MACAddress&>::empty();
+    _nMutex.unlock();
+    getDefaultRealDevice().ifPresent([ip](RealNetworkDevice& networkDevice) {
+      networkDevice.getARPClient().resolveMacAddress(ip);
+    });
+    _nMutex.lock();
+    i = _ipMACTable.find(ip);
+    if (i == _ipMACTable.end()) {
+      return upan::option<const MACAddress&>::empty();
+    }
   }
   return upan::option<const MACAddress&>(i->second);
-}
-
-void NetworkManager::setupRoute(SocketDescriptor& socket, const void* protocolData, size_t len) {
-  upan::mutex_guard g(_nMutex);
-
-  auto it = _socketResolvers.find(socket.protocol());
-  if (it != _socketResolvers.end()) {
-    it->second->setup(socket, protocolData, len);
-  }
-}
-
-void NetworkManager::releaseRoute(SocketDescriptor& socket) {
-  upan::mutex_guard g(_nMutex);
-
-  auto it = _socketResolvers.find(socket.protocol());
-  if (it != _socketResolvers.end()) {
-    it->second->release(socket);
-  }
-}
-
-ssize_t NetworkManager::send(const uint8_t* buf, size_t n, int protocol, const struct sockaddr_in& srcAddr, const struct sockaddr& destAddr) {
-  switch (protocol) {
-    case IPPROTO_UDP: {
-      const auto& dest = reinterpret_cast<const struct sockaddr_in&>(destAddr);
-      getDevice(dest).getUDP4Handler().send(buf, n, srcAddr, dest);
-    }
-    break;
-
-    case IPPROTO_ICMP: {
-      const auto& dest = reinterpret_cast<const struct sockaddr_in&>(destAddr);
-      getDevice(dest).getICMPHandler().send(buf, n, srcAddr, dest);
-    }
-    break;
-
-    case ETH_P_ARP:
-      getDefaultRealDevice().value().getARPHandler().send(buf, n, srcAddr, destAddr);
-      break;
-
-    default:
-      throw upan::exception(XLOC, "packet sendPacket failed - unsupported protocol: %d", protocol);
-  }
-  //todo: handle partial send?
-  return n;
-}
-
-void NetworkManager::recv(const upan::shared_ptr<RawNetPacket>& packet, int protocol) {
-  auto it = _socketResolvers.find(protocol);
-  if (it != _socketResolvers.end()) {
-    it->second->resolve(packet).ifPresent([&packet](SocketDescriptor& socket) {
-      socket.recvNotify(packet);
-    });
-  }
 }
 
 uint16_t NetworkManager::PortPool::allocate() {
@@ -229,4 +187,44 @@ void NetworkManager::PortPool::allocate(in_port_t port) {
 void NetworkManager::PortPool::release(in_port_t port) {
   upan::mutex_guard g(_mutex);
   return _portPool.reset(port);
+}
+
+void NetworkManager::TCPShutdownHandler::add(SocketDescriptorStream& socket) {
+  upan::mutex_guard g(_mutex);
+  _sockets.insert({ &socket, 0 });
+}
+
+void NetworkManager::TCPShutdownHandler::run() {
+  KLog::info("TCP shutdown handler started...");
+  while (true) {
+    sleepms(1000);
+    try {
+      for(auto i = _sockets.begin(); i != _sockets.end();) {
+        auto& socket = const_cast<Socket&>(*i);
+        const auto tcpState = socket._socket->getState();
+
+        if (tcpState == NetworkPacket::TCP::TCP_CLOSED) {
+          if (socket._socket->closedByApp()) {
+            delete socket._socket;
+          }
+          _sockets.erase(i++);
+          continue;
+        } else if (tcpState == NetworkPacket::TCP::TCP_FIN_WAIT_2) {
+          const auto curTime = btime();
+          if ((curTime - socket._opTime) > 60000) {
+            KLog::warn("TCP socket(%d) waited enough for FIN - didn't receive - force closing...", socket._socket->id());
+            socket._socket->release();
+          }
+        } else {
+          socket._socket->sendFin();
+          socket._opTime = btime();
+        }
+        ++i;
+      }
+    } catch(const upan::exception& e) {
+      KLog::exception(e);
+    } catch(...) {
+      KLog::error("unknown error in TCP socket shutdown handler...");
+    }
+  }
 }

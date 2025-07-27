@@ -59,6 +59,12 @@ int SysNet_Connect(int fd, const struct sockaddr *addr, socklen_t len) {
   return (int) retStatus;
 }
 
+int SysNet_Listen(int fd, int backlog) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_LISTEN, false, (uint64_t)fd, (uint64_t)backlog, 3, 4, 5);
+  return (int) retStatus;
+}
+
 int SysNet_GetHostByName(const char* name, struct hostent** hostinfo) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_GET_HOST_BY_NAME, false, (uint64_t)name, (uint64_t)hostinfo, 3, 4, 5);

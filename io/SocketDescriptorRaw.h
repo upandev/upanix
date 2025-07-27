@@ -26,12 +26,18 @@
 class SocketDescriptorRaw : public SocketDescriptor {
 public:
   SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+  ~SocketDescriptorRaw() override;
 
 private:
-  void bind(const struct sockaddr& address, socklen_t len) override;
   void connect(const struct sockaddr& address, socklen_t len) override {
     throw upan::exception(XLOC, "connect not supported for raw sockets");
   }
+
+  void listen(int backlog) override {
+    throw upan::exception(XLOC, "listen not supported for raw sockets");
+  }
+
+  void bind(const struct sockaddr& address, socklen_t len) override;
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
 

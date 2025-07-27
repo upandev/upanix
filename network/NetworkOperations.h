@@ -37,4 +37,5 @@ public:
   ssize_t sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len);
   ssize_t recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len);
   void connect(int fd, const struct sockaddr& addr, socklen_t len);
+  void listen(int fd, int backlog);
 };

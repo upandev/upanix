@@ -22,13 +22,15 @@
 
 #include <SocketDescriptorDataGram.h>
 #include <NetworkManager.h>
+#include <NetworkDevice.h>
 
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
   : SocketDescriptor(pid, fd, family, protocol),
-    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, {0 } }) {
+    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, {0 } }), _routeSetupCompleted(false) {
 }
 
 SocketDescriptorDataGram::~SocketDescriptorDataGram() {
+  NetworkManager::Instance().getUDPSocketResolver().release(*this);
   NetworkManager::Instance().getUDPPortPool().release(_srcAddr.sin_port);
 }
 
@@ -42,8 +44,11 @@ void SocketDescriptorDataGram::bind(const struct sockaddr& address, socklen_t le
   }
 
   memcpy((void*)&_srcAddr, (void*)&address, len);
-  NetworkManager::Instance().getUDPPortPool().allocate(_srcAddr.sin_port);
-  NetworkManager::Instance().setupRoute(*this, &_srcAddr, sizeof(sockaddr_in));
+  if (_srcAddr.sin_port == 0) {
+    _srcAddr.sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
+  } else {
+    NetworkManager::Instance().getUDPPortPool().allocate(_srcAddr.sin_port);
+  }
 }
 
 ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -57,31 +62,38 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
     throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
   }
 
+  auto& device = NetworkManager::Instance().getDevice(destAddr, true);
+
   if (_srcAddr.sin_port == 0) {
-    _srcAddr = { (sa_family_t)family(),
-                 NetworkManager::Instance().getUDPPortPool().allocate(),
-                 { INADDR_ANY },
-                 { 0 }
-    };
-    NetworkManager::Instance().setupRoute(*this, &_srcAddr, sizeof(sockaddr_in));
+    _srcAddr.sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
   }
 
-  return NetworkManager::Instance().send(buf, n, protocol(), _srcAddr, *addr);
+  if (_srcAddr.sin_addr.s_addr != INADDR_ANY && _srcAddr.sin_addr.s_addr != device.getIPAddress()) {
+    throw upan::exception(XLOC, "sendPacket failed - socket %d is not connected to the same network device", id());
+  }
+
+  if (_routeSetupCompleted == false) {
+    NetworkManager::Instance().getUDPSocketResolver().setup(*this);
+    _routeSetupCompleted = true;
+  }
+
+  device.getUDPHandler().send(buf, n, _srcAddr, destAddr);
+  return n;
 }
 
 ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
-  const void* srcBuf = packet->getUDP4Data();
-  const size_t dataLen = packet->getUDP4Header()._len - NetworkPacket::UDP::HEADER_SIZE;
+  const void* srcBuf = packet->getUDPData();
+  const size_t dataLen = packet->getUDPHeader()._len - NetworkPacket::UDP::HEADER_SIZE;
   const auto xferLen = upan::min(n, dataLen);
 
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDP4Header()._srcPort, packet->getIPV4Header()._header.ip_src };
+    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDPHeader()._srcPort, packet->getIPV4Header()._header.ip_src };
     *len = sizeof(sockaddr_in);
   }
 
   return xferLen;
-}
+};

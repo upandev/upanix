@@ -29,12 +29,22 @@
 
 class IPV4Handler;
 
-class UDP4Handler : public PacketHandler<> {
+class TCPHandler : public PacketHandler<> {
 public:
-  explicit UDP4Handler(NetworkDevice& networkDevice);
+  typedef enum {
+    SYN,
+    SYN_ACK,
+    ACK,
+    DATA,
+    FIN,
+    RST
+  } SendType;
+
+  explicit TCPHandler(NetworkDevice& networkDevice);
   void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
   uint32_t headerLen() const override;
-  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr,
+            SendType sendType, uint32_t seqNum, uint32_t ackNum);
 
 private:
   void calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr);

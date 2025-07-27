@@ -29,10 +29,9 @@ class IODescriptor {
 protected:
   IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(1) {
   }
-
-public:
   virtual ~IODescriptor() = default;
 
+public:
   int id() const {
     return _id;
   }
@@ -71,6 +70,10 @@ public:
   virtual bool canWrite() = 0;
   virtual void seek(int seekType, int offset) = 0;
   virtual uint32_t getOffset() const = 0;
+
+  virtual void destroy() {
+    delete this;
+  }
 
 private:
   const int _pid;

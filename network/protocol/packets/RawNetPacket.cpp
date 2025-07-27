@@ -36,6 +36,7 @@ RawNetPacket::RawNetPacket(const uint8_t* addr, const int len) :
 
 RawNetPacket::RawNetPacket(const int len) :
   _buf(new uint8_t[len]), _len(len) {
+  memset(_buf, 0, _len);
 }
 
 RawNetPacket::~RawNetPacket() {
@@ -100,18 +101,38 @@ const NetworkPacket::ARP::Header& RawNetPacket::getARPHeader() const {
   return const_cast<RawNetPacket*>(this)->getARPHeader();
 }
 
-NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() {
+NetworkPacket::UDP::Header& RawNetPacket::getUDPHeader() {
   return *reinterpret_cast<NetworkPacket::UDP::Header*>(getIPV4Data());
 }
 
-const NetworkPacket::UDP::Header& RawNetPacket::getUDP4Header() const {
-  return const_cast<RawNetPacket*>(this)->getUDP4Header();
+const NetworkPacket::UDP::Header& RawNetPacket::getUDPHeader() const {
+  return const_cast<RawNetPacket*>(this)->getUDPHeader();
 }
 
-uint8_t* RawNetPacket::getUDP4Data() {
+uint8_t* RawNetPacket::getUDPData() {
   return getIPV4Data() + NetworkPacket::UDP::HEADER_SIZE;
 }
 
-const uint8_t* RawNetPacket::getUDP4Data() const {
-  return const_cast<RawNetPacket*>(this)->getUDP4Data();
+const uint8_t* RawNetPacket::getUDPData() const {
+  return const_cast<RawNetPacket*>(this)->getUDPData();
+}
+
+NetworkPacket::TCP::Header& RawNetPacket::getTCPHeader() {
+  return *reinterpret_cast<NetworkPacket::TCP::Header*>(getIPV4Data());
+}
+
+const NetworkPacket::TCP::Header& RawNetPacket::getTCPHeader() const {
+  return const_cast<RawNetPacket*>(this)->getTCPHeader();
+}
+
+uint8_t* RawNetPacket::getTCPData() {
+  return getIPV4Data() + NetworkPacket::TCP::HEADER_SIZE;
+}
+
+auto RawNetPacket::getTCPData() const -> const uint8_t* {
+  return const_cast<RawNetPacket*>(this)->getTCPData();
+}
+
+size_t RawNetPacket::getTCPDataLen() const {
+  return getIPV4Header().dataLen() - NetworkPacket::TCP::HEADER_SIZE;
 }

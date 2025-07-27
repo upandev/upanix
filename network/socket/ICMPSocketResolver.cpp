@@ -20,22 +20,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <net/ip_icmp.h>
 #include <ICMPSocketResolver.h>
 
-void ICMPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData, size_t len) {
+void ICMPSocketResolver::setup(SocketDescriptorRaw& socket, const struct icmp& header) {
   upan::mutex_guard g(_mutex);
 
-  if (!protocolData) {
-    return;
-  }
-
-  if (len < sizeof(struct icmp)) {
-    throw upan::exception(XLOC, "ICMPSocketResolver::setupRoute: buf len is too small");
-  }
-
-  auto icmp = reinterpret_cast<const struct icmp*>(protocolData);
-  ICMP_PACKET_ID icmpId = icmp->icmp_id << 16 | icmp->icmp_seq;
+  ICMP_PACKET_ID icmpId = header.icmp_id << 16 | header.icmp_seq;
 
   auto it = _icmpIdSocketMap.find(icmpId);
   if (it != _icmpIdSocketMap.end()) {
@@ -46,7 +36,7 @@ void ICMPSocketResolver::setup(SocketDescriptor& socket, const void* protocolDat
   _icmpIdSocketMapReverse[&socket].insert(icmpId);
 }
 
-void ICMPSocketResolver::release(SocketDescriptor& socket) {
+void ICMPSocketResolver::release(SocketDescriptorRaw& socket) {
   upan::mutex_guard g(_mutex);
 
   auto it = _icmpIdSocketMapReverse.find(&socket);
@@ -58,7 +48,7 @@ void ICMPSocketResolver::release(SocketDescriptor& socket) {
   }
 }
 
-upan::option<SocketDescriptor&> ICMPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::option<SocketDescriptorRaw&> ICMPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   if (packet->getIPV4Header().dataLen() < (int)sizeof(struct icmp)) {
@@ -70,8 +60,12 @@ upan::option<SocketDescriptor&> ICMPSocketResolver::resolve(const upan::shared_p
 
   auto it = _icmpIdSocketMap.find(icmpId);
   if (it != _icmpIdSocketMap.end()) {
-    return upan::option<SocketDescriptor&>(it->second);
+    return upan::option<SocketDescriptorRaw&>(it->second);
   }
 
-  return upan::option<SocketDescriptor&>::empty();
+  return upan::option<SocketDescriptorRaw&>::empty();
+}
+
+void ICMPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
+  resolve(packet).ifPresent([&packet](SocketDescriptorRaw& socket) { socket.recvNotify(packet); });
 }

@@ -24,26 +24,22 @@
 #include <option.h>
 #include <map.h>
 #include <bitset.h>
-#include <SocketDescriptor.h>
-#include <SocketResolver.h>
+#include <SocketDescriptorDataGram.h>
 
-class UDPSocketResolver : public SocketResolver {
+class UDPSocketResolver {
 public:
-  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override;
-  void release(SocketDescriptor& socket) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet);
+  void setup(SocketDescriptorDataGram& socket);
+  void release(SocketDescriptorDataGram& socket);
 
 private:
-  bool isPortBounded(in_addr_t ip, in_port_t port);
-  upan::option<SocketDescriptor&> findBindingSocket(in_addr_t addr, in_port_t port);
+  upan::option<SocketDescriptorDataGram&> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+  upan::option<SocketDescriptorDataGram&> findBindingSocket(in_addr_t addr, in_port_t port);
 
 private:
-  typedef upan::map<in_port_t, SocketDescriptor*> SOCKET_PORT_MAP;
+  typedef upan::map<in_port_t, SocketDescriptorDataGram*> SOCKET_PORT_MAP;
   typedef upan::map<in_addr_t, SOCKET_PORT_MAP> SOCKET_BIND_MAP;
-  typedef upan::map<in_port_t, int> SOCKET_BIND_SET;
-  typedef upan::map<SocketDescriptor*, sockaddr_in> SOCKET_SRC_ADDR_MAP;
 
-  SOCKET_BIND_SET _socketBindSet;
   SOCKET_BIND_MAP _socketBindMap;
-  SOCKET_SRC_ADDR_MAP _socketSrcAddrMap;
+  upan::mutex _mutex;
 };

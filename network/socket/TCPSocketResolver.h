@@ -19,19 +19,29 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#include <unet.h>
-#include <NetworkDevice.h>
+#pragma once
 
-NetworkDevice::NetworkDevice(int id, const upan::string& name, bool connected, in_addr_t ipAddress, in_addr_t subnetMask)
-  : _id(id), _name(name), _connected(connected), _ipAddress(ipAddress), _subnetMask(subnetMask),
-    _ipv4Handler(*this), _tcpHandler(*this), _udp4Handler(*this), _icmpHandler(*this) {
-}
+#include <option.h>
+#include <map.h>
+#include <SocketDescriptorStream.h>
 
-bool NetworkDevice::isSameSubnet(const in_addr_t& ip) const {
-  return (_ipAddress & _subnetMask) == (ip & _subnetMask);
-}
+class TCPSocketResolver {
+public:
+  void recv(const upan::shared_ptr<RawNetPacket>& packet);
+  void listen(SocketDescriptorStream& socket);
+  void setup(SocketDescriptorStream& socket);
+  void release(SocketDescriptorStream& socket);
 
-void NetworkDevice::print() const {
-  printf("\n%s: id(%d), status: %d", _name.c_str(), _id, _connected);
-  printf("\n inet: %s, netmask: %s", upan::net::inet_ntostr(_ipAddress).c_str(), upan::net::inet_ntostr(_subnetMask).c_str());
-}
+private:
+  upan::option<SocketDescriptorStream&> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+
+  typedef uint64_t sock_addr_t;
+  constexpr sock_addr_t SOCK_ADDR(const sockaddr_in& addr) { return ((uint64_t)addr.sin_addr.s_addr << 32) | addr.sin_port; }
+
+  typedef upan::map<sock_addr_t, SocketDescriptorStream*> SOCKET_ADDR_MAP;
+  typedef upan::map<sock_addr_t, SOCKET_ADDR_MAP> SOCKET_BIND_MAP;
+
+  SOCKET_ADDR_MAP _socketListenMap;
+  SOCKET_BIND_MAP _socketBindMap;
+  upan::mutex _mutex;
+};

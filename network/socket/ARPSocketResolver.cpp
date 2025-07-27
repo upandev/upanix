@@ -20,22 +20,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <net/if_arp.h>
 #include <ARPSocketResolver.h>
 
-void ARPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData, size_t len) {
+void ARPSocketResolver::setup(SocketDescriptorRaw& socket, const struct ether_arp& header) {
   upan::mutex_guard g(_mutex);
 
-  if (!protocolData) {
-    return;
-  }
-
-  if (len < sizeof(struct ether_arp)) {
-    throw upan::exception(XLOC, "ARPSocketResolver::setupRoute: buf len is too small");
-  }
-
-  auto arp = reinterpret_cast<const struct ether_arp*>(protocolData);
-  in_addr_t dest_ip = arp->arp_tpa;
+  in_addr_t dest_ip = header.arp_tpa;
 
   auto it = _destIpSocketMap.find(dest_ip);
   if (it != _destIpSocketMap.end() && it->second != &socket) {
@@ -46,7 +36,7 @@ void ARPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData
   _destIpSocketMapReverse[&socket].insert(dest_ip);
 }
 
-void ARPSocketResolver::release(SocketDescriptor& socket) {
+void ARPSocketResolver::release(SocketDescriptorRaw& socket) {
   upan::mutex_guard g(_mutex);
 
   auto it = _destIpSocketMapReverse.find(&socket);
@@ -58,7 +48,7 @@ void ARPSocketResolver::release(SocketDescriptor& socket) {
   }
 }
 
-upan::option<SocketDescriptor&> ARPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::option<SocketDescriptorRaw&> ARPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   const auto arpDataLen = packet->len() - NetworkPacket::Ethernet::HEADER_SIZE;
@@ -75,9 +65,13 @@ upan::option<SocketDescriptor&> ARPSocketResolver::resolve(const upan::shared_pt
 
     auto it = _destIpSocketMap.find(dest_ip);
     if (it != _destIpSocketMap.end()) {
-      return upan::option<SocketDescriptor&>(it->second);
+      return upan::option<SocketDescriptorRaw&>(it->second);
     }
   }
 
-  return upan::option<SocketDescriptor&>::empty();
+  return upan::option<SocketDescriptorRaw&>::empty();
+}
+
+void ARPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
+  resolve(packet).ifPresent([&packet](SocketDescriptorRaw& socket) { socket.recvNotify(packet); });
 }

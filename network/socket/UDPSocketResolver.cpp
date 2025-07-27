@@ -23,78 +23,29 @@
 #include <UDPSocketResolver.h>
 #include <NetworkManager.h>
 #include <RealNetworkDevice.h>
-#include <SocketDescriptorDataGram.h>
 
-bool UDPSocketResolver::isPortBounded(in_addr_t ip, in_port_t port) {
-  if (ip == INADDR_ANY || ip == INADDR_LOOPBACK) {
-    return _socketBindSet.exists(port);
-  } else {
-    return _socketBindMap[INADDR_ANY].exists(port)
-           || _socketBindMap[INADDR_LOOPBACK].exists(port)
-           || _socketBindMap[ip].exists(port);
-  }
-}
-
-upan::option<SocketDescriptor&> UDPSocketResolver::findBindingSocket(in_addr_t addr, in_port_t port) {
+upan::option<SocketDescriptorDataGram&> UDPSocketResolver::findBindingSocket(in_addr_t addr, in_port_t port) {
   auto e = _socketBindMap.find(addr);
   if (e != _socketBindMap.end()) {
     auto i = e->second.find(port);
     if (i != e->second.end()) {
-      return upan::option<SocketDescriptor&>(i->second);
+      return upan::option<SocketDescriptorDataGram&>(i->second);
     }
   }
-  return upan::option<SocketDescriptor&>::empty();
+  return upan::option<SocketDescriptorDataGram&>::empty();
 }
 
-void UDPSocketResolver::setup(SocketDescriptor& socket, const void* protocolData, size_t len) {
+void UDPSocketResolver::setup(SocketDescriptorDataGram& socket) {
+  upan::mutex_guard g(_mutex);
+  _socketBindMap[socket.srcAddr().sin_addr.s_addr][socket.srcAddr().sin_port] = &socket;
+}
+
+void UDPSocketResolver::release(SocketDescriptorDataGram& socket) {
   upan::mutex_guard g(_mutex);
 
-  if (!protocolData) {
-    throw upan::exception(XLOC, "protocolData is null");
-  }
-
-  if (len != sizeof(struct sockaddr_in)) {
-    throw upan::exception(XLOC, "invalid protocolData len: %d", len);
-  }
-
-  const auto& srcAddr = *reinterpret_cast<const struct sockaddr_in*>(protocolData);
-
+  const auto& srcAddr = socket.srcAddr();
   const in_addr_t ip = srcAddr.sin_addr.s_addr;
   const in_port_t port = srcAddr.sin_port;
-
-  if (isPortBounded(ip, port)) {
-    throw upan::exception(XLOC, "port %d is already bound", ntohs(port));
-  }
-
-  if (ip != INADDR_ANY && ip != INADDR_LOOPBACK) {
-    const auto networkDeviceIP = NetworkManager::Instance().getDefaultRealDevice().value().getIPAddress();
-    if (networkDeviceIP == INADDR_ANY) {
-      throw upan::exception(XLOC, "network device doesn't have an IP address yet");
-    }
-    if (ip != networkDeviceIP) {
-      throw upan::exception(XLOC, "invalid IP %s to setupRoute. Network device IP is %s",
-                            upan::net::inet_ntostr(ip).c_str(),
-                            upan::net::inet_ntostr(networkDeviceIP).c_str());
-    }
-  }
-
-  _socketBindMap[ip][port] = &socket;
-  ++_socketBindSet[port];
-  _socketSrcAddrMap[&socket] = srcAddr;
-}
-
-void UDPSocketResolver::release(SocketDescriptor& socket) {
-  upan::mutex_guard g(_mutex);
-
-  auto it = _socketSrcAddrMap.find(&socket);
-  if (it == _socketSrcAddrMap.end()) {
-    throw upan::exception(XLOC, "invalid socket");
-  }
-
-  const in_addr_t ip = it->second.sin_addr.s_addr;
-  const in_port_t port = it->second.sin_port;
-
-  _socketSrcAddrMap.erase(it);
 
   auto ipIt = _socketBindMap.find(ip);
   if (ipIt != _socketBindMap.end()) {
@@ -103,22 +54,13 @@ void UDPSocketResolver::release(SocketDescriptor& socket) {
       _socketBindMap.erase(ipIt);
     }
   }
-
-  auto portIt = _socketBindSet.find(port);
-  if (portIt != _socketBindSet.end()) {
-    if (portIt->second > 1) {
-      --portIt->second;
-    } else {
-      _socketBindSet.erase(portIt);
-    }
-  }
 }
 
-upan::option<SocketDescriptor&> UDPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::option<SocketDescriptorDataGram&> UDPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   const in_addr_t destIP = packet->getIPV4Header()._header.ip_dst.s_addr;
-  const in_port_t destPort = packet->getUDP4Header()._destPort;
+  const in_port_t destPort = packet->getUDPHeader()._destPort;
 
   if (destIP == INADDR_BROADCAST) {
     for(auto& e : _socketBindMap) {
@@ -136,5 +78,9 @@ upan::option<SocketDescriptor&> UDPSocketResolver::resolve(const upan::shared_pt
       return r;
     }
   }
-  return upan::option<SocketDescriptor&>::empty();
+  return upan::option<SocketDescriptorDataGram&>::empty();
+}
+
+void UDPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
+  resolve(packet).ifPresent([&packet](SocketDescriptorDataGram& socket) { socket.recvNotify(packet); });
 }

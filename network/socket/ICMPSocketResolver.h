@@ -23,20 +23,24 @@
 
 #include <map.h>
 #include <set.h>
-#include <SocketResolver.h>
+#include <net/ip_icmp.h>
+#include <SocketDescriptorRaw.h>
 
-class ICMPSocketResolver : public SocketResolver {
+class ICMPSocketResolver {
 public:
-  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override;
-  void release(SocketDescriptor& socket) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet);
+  void setup(SocketDescriptorRaw& socket, const struct icmp& header);
+  void release(SocketDescriptorRaw& socket);
 
 private:
+  upan::option<SocketDescriptorRaw&> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+
   typedef uint32_t ICMP_PACKET_ID;
-  typedef upan::map<ICMP_PACKET_ID, SocketDescriptor*> ICMP_ID_SOCKET_MAP;
+  typedef upan::map<ICMP_PACKET_ID, SocketDescriptorRaw*> ICMP_ID_SOCKET_MAP;
   typedef upan::set<ICMP_PACKET_ID> ICMP_ID_SET;
-  typedef upan::map<SocketDescriptor*, ICMP_ID_SET> ICMP_ID_SET_MAP;
+  typedef upan::map<SocketDescriptorRaw*, ICMP_ID_SET> ICMP_ID_SET_MAP;
 
   ICMP_ID_SOCKET_MAP _icmpIdSocketMap;
   ICMP_ID_SET_MAP _icmpIdSocketMapReverse;
+  upan::mutex _mutex;
 };

@@ -49,8 +49,11 @@ void IPV4Handler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
     upan::shared_ptr<RawNetPacket> assembledPacket(assemblePacket(fragmentKey, packet));
 
     switch(ipv4Header.type()) {
+      case IPPROTO_TCP:
+        device().getTCPHandler().recv(assembledPacket);
+        break;
       case IPPROTO_UDP:
-        device().getUDP4Handler().recv(assembledPacket);
+        device().getUDPHandler().recv(assembledPacket);
         break;
       case IPPROTO_ICMP:
         device().getICMPHandler().recv(assembledPacket);

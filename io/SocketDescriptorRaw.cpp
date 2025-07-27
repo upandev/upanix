@@ -21,11 +21,23 @@
  */
 #include <SocketDescriptorRaw.h>
 #include <NetworkManager.h>
-#include <UDP4Handler.h>
+#include <NetworkDevice.h>
+#include <RealNetworkDevice.h>
 
 SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
   : SocketDescriptor(pid, fd, family, protocol),
     _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, { 0 } }) {
+}
+
+SocketDescriptorRaw::~SocketDescriptorRaw() {
+  switch(protocol()) {
+    case ETH_P_ARP:
+      NetworkManager::Instance().getARPSocketResolver().release(*this);
+      break;
+    case IPPROTO_ICMP:
+      NetworkManager::Instance().getICMPSocketResolver().release(*this);
+      break;
+  }
 }
 
 void SocketDescriptorRaw::bind(const struct sockaddr& address, socklen_t len) {
@@ -39,15 +51,32 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
     throw upan::exception(XLOC, "sendPacket/destination address is not specified");
   }
 
-  if (protocol() != ETH_P_ARP) {
-    const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
-    if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
-      throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
+  switch (protocol()) {
+    case ETH_P_ARP:
+    {
+      NetworkManager::Instance().getARPSocketResolver().setup(*this, *reinterpret_cast<const struct ether_arp*>(buf));
+      const auto& device = NetworkManager::Instance().getDefaultRealDevice();
+      device.value().getARPHandler().send(buf, n, _srcAddr, *addr);
     }
+    break;
+
+    case IPPROTO_ICMP:
+    {
+      const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
+      if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
+        throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
+      }
+      NetworkManager::Instance().getICMPSocketResolver().setup(*this, *reinterpret_cast<const struct icmp*>(buf));
+      auto& device = NetworkManager::Instance().getDevice(destAddr, true);
+      device.getICMPHandler().send(buf, n, _srcAddr, destAddr);
+    }
+    break;
+
+    default:
+      throw upan::exception(XLOC, "send raw packet failed - unsupported protocol: %d", protocol());
   }
 
-  NetworkManager::Instance().setupRoute(*this, buf, n);
-  return NetworkManager::Instance().send(buf, n, protocol(), _srcAddr, *addr);
+  return n;
 }
 
 ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {

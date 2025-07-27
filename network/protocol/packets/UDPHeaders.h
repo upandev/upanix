@@ -48,15 +48,6 @@ namespace NetworkPacket {
       }
     } PACKED;
 
-    struct IPV4PseudoHeader {
-      in_addr_t _srcAddr;
-      in_addr_t _destAddr;
-      uint8_t _zeros;
-      uint8_t _protocol;
-      uint16_t _udpLen;
-    } PACKED;
-
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
-    constexpr uint32_t IPV4_PSEUDO_HEADER_SIZE = sizeof(IPV4PseudoHeader);
   }
 }

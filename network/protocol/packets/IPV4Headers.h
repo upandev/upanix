@@ -83,8 +83,17 @@ namespace NetworkPacket {
       uint32_t _padding:8;
     } PACKED;
 
+    struct IPV4PseudoHeader {
+      in_addr_t _srcAddr;
+      in_addr_t _destAddr;
+      uint8_t _zeros;
+      uint8_t _protocol;
+      uint16_t _len;
+    } PACKED;
+
     constexpr uint32_t HEADER_SIZE = sizeof(Header);
     constexpr uint32_t DEFAULT_IHL = HEADER_SIZE / sizeof(uint32_t);
     constexpr uint32_t HEADER_OPT_SIZE = sizeof(HeaderOptions);
+    constexpr uint32_t IPV4_PSEUDO_HEADER_SIZE = sizeof(IPV4PseudoHeader);
   }
 }

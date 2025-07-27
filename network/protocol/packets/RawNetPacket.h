@@ -26,6 +26,7 @@
 #include <EthernetHeaders.h>
 #include <IPV4Headers.h>
 #include <UDPHeaders.h>
+#include <TCPHeaders.h>
 
 class RawNetPacket {
 public:
@@ -56,10 +57,16 @@ public:
   NetworkPacket::ARP::Header& getARPHeader();
   const NetworkPacket::ARP::Header& getARPHeader() const;
 
-  NetworkPacket::UDP::Header& getUDP4Header();
-  const NetworkPacket::UDP::Header& getUDP4Header() const;
-  uint8_t* getUDP4Data();
-  const uint8_t* getUDP4Data() const;
+  NetworkPacket::UDP::Header& getUDPHeader();
+  const NetworkPacket::UDP::Header& getUDPHeader() const;
+  uint8_t* getUDPData();
+  const uint8_t* getUDPData() const;
+
+  NetworkPacket::TCP::Header& getTCPHeader();
+  const NetworkPacket::TCP::Header& getTCPHeader() const;
+  uint8_t* getTCPData();
+  const uint8_t* getTCPData() const;
+  size_t getTCPDataLen() const;
 
 private:
   void move(RawNetPacket& o);

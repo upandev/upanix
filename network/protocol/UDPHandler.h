@@ -21,22 +21,22 @@
  */
 #pragma once
 
-#include "option.h"
-#include "map.h"
-#include "io/SocketDescriptor.h"
+#include <map.h>
+#include <option.h>
+#include <shared_ptr.h>
+#include <net/socket.h>
+#include <PacketHandler.h>
 
-class SocketResolver {
-public:
-  virtual upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) = 0;
-  virtual void setup(SocketDescriptor& socket, const void* protocolData, size_t len) = 0;
-  virtual void release(SocketDescriptor& socket) = 0;
-protected:
-  upan::mutex _mutex;
-};
+class IPV4Handler;
 
-class TCPSocketResolver : public SocketResolver {
+class UDPHandler : public PacketHandler<> {
 public:
-  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override { return upan::option<SocketDescriptor&>::empty(); }
-  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override {}
-  void release(SocketDescriptor& socket) override {}
+  explicit UDPHandler(NetworkDevice& networkDevice);
+  void recv(const upan::shared_ptr<RawNetPacket>& packet) override;
+  uint32_t headerLen() const override;
+  void send(const uint8_t* buf, uint32_t len, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr);
+
+private:
+  void calcChecksum(RawNetPacket& packet, in_addr_t srcAddr, in_addr_t destAddr);
+  void verifyChecksum(const RawNetPacket& packet);
 };

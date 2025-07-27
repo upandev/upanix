@@ -23,20 +23,23 @@
 
 #include <map.h>
 #include <set.h>
-#include <SocketResolver.h>
+#include <net/if_arp.h>
+#include <SocketDescriptorRaw.h>
 
-class ARPSocketResolver : public SocketResolver {
+class ARPSocketResolver {
 public:
-  upan::option<SocketDescriptor&> resolve(const upan::shared_ptr<RawNetPacket>& packet) override;
-  void setup(SocketDescriptor& socket, const void* protocolData, size_t len) override;
-  void release(SocketDescriptor& socket) override;
+  void recv(const upan::shared_ptr<RawNetPacket>& packet);
+  void setup(SocketDescriptorRaw& socket, const struct ether_arp& header);
+  void release(SocketDescriptorRaw& socket);
 
 private:
-  typedef uint32_t ICMP_PACKET_ID;
-  typedef upan::map<in_addr_t, SocketDescriptor*> DEST_IP_SOCKET_MAP;
+  upan::option<SocketDescriptorRaw&> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+
+  typedef upan::map<in_addr_t, SocketDescriptorRaw*> DEST_IP_SOCKET_MAP;
   typedef upan::set<in_addr_t> DEST_IP_SET;
-  typedef upan::map<SocketDescriptor*, DEST_IP_SET> SOCKET_DEST_IP_SET_MAP;
+  typedef upan::map<SocketDescriptorRaw*, DEST_IP_SET> SOCKET_DEST_IP_SET_MAP;
 
   DEST_IP_SOCKET_MAP _destIpSocketMap;
   SOCKET_DEST_IP_SET_MAP _destIpSocketMapReverse;
+  upan::mutex _mutex;
 };

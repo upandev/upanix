@@ -26,7 +26,8 @@
 #include <NetworkUtil.h>
 #include <RawNetPacket.h>
 #include <IPV4Handler.h>
-#include <UDP4Handler.h>
+#include <TCPHandler.h>
+#include <UDPHandler.h>
 #include <ICMPHandler.h>
 #include <MACAddress.h>
 
@@ -61,8 +62,11 @@ public:
   IPV4Handler& getIPV4Handler() { return _ipv4Handler; }
   const IPV4Handler& getIPV4Handler() const { return _ipv4Handler; }
 
-  UDP4Handler& getUDP4Handler() { return _udp4Handler; }
-  const UDP4Handler& getUDP4Handler() const { return _udp4Handler; }
+  TCPHandler& getTCPHandler() { return _tcpHandler; }
+  const TCPHandler& getTCPHandler() const { return _tcpHandler; }
+
+  UDPHandler& getUDPHandler() { return _udp4Handler; }
+  const UDPHandler& getUDPHandler() const { return _udp4Handler; }
 
   ICMPHandler& getICMPHandler() { return _icmpHandler; }
   const ICMPHandler& getICMPHandler() const { return _icmpHandler; }
@@ -79,6 +83,7 @@ protected:
   MACAddress _macAddress;
 
   IPV4Handler _ipv4Handler;
-  UDP4Handler _udp4Handler;
+  TCPHandler _tcpHandler;
+  UDPHandler _udp4Handler;
   ICMPHandler _icmpHandler;
 };

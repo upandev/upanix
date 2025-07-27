@@ -50,6 +50,7 @@ public:
 
   virtual void bind(const struct sockaddr& address, socklen_t len) = 0;
   virtual void connect(const struct sockaddr& address, socklen_t len) = 0;
+  virtual void listen(int backlog) = 0;
   virtual ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
   virtual ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
@@ -57,6 +58,15 @@ public:
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
   bool canBroadcast() const { return _allowBroadcast; }
 
+  time_t getSendTimeout() const { return _sendTimeoutInMs; }
+  void setSendTimeout(const struct timeval* timeout) {
+    _sendTimeoutInMs = 0;
+    if (timeout) {
+      _sendTimeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+    }
+  }
+
+  time_t getRecvTimeout() const { return _recvTimeoutInMs; }
   void setRecvTimeout(const struct timeval* timeout) {
     _recvTimeoutInMs = 0;
     if (timeout) {
@@ -75,15 +85,19 @@ protected:
   void validateSockAddrLen(socklen_t len) const;
   void validateFlags(int flags) const;
   void validateBuf(const void* buf) const;
-  void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
+  virtual void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
 
 private:
   upan::mutex _ioSync;
   const SA_FAMILY_TYPE _family;
   const int _protocol;
   bool _allowBroadcast;
+  time_t _sendTimeoutInMs;
   time_t _recvTimeoutInMs;
   upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;
 
-  friend class NetworkManager;
+  friend class TCPSocketResolver;
+  friend class UDPSocketResolver;
+  friend class ARPSocketResolver;
+  friend class ICMPSocketResolver;
 };
