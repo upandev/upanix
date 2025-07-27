@@ -265,7 +265,6 @@ void SocketDescriptorStream::recvNotify(const upan::shared_ptr<RawNetPacket>& pa
   }
 
   if (tcpHeader._fin == 1) {
-    upan::mutex_guard g(_finMutex);
     if (_state == NetworkPacket::TCP::TCP_FIN_WAIT_1) {
       _ackQueue.push(packet);
       return;

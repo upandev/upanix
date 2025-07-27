@@ -23,9 +23,9 @@
 #include <NetworkOperations.h>
 #include <exception.h>
 #include <ProcessManager.h>
-#include <SocketDescriptorStream.h>
-#include <SocketDescriptorDataGram.h>
-#include <SocketDescriptorRaw.h>
+#include "io/socket/SocketDescriptorStream.h"
+#include "io/socket/SocketDescriptorDataGram.h"
+#include "io/socket/SocketDescriptorRaw.h"
 
 NetworkOperations::NetworkOperations() {
 }

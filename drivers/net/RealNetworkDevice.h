@@ -28,7 +28,6 @@
 #include <ARPHandler.h>
 #include <EthernetHandler.h>
 
-class SocketBuffer;
 class PCIEntry;
 
 class RealNetworkDevice : public NetworkDevice {

@@ -21,7 +21,6 @@
  */
 #include <PCIBusHandler.h>
 #include <MemManager.h>
-#include <SocketBuffer.h>
 #include <ATH9KHardware.h>
 #include <ATH9KDevice.h>
 

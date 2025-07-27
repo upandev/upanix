@@ -31,8 +31,6 @@
 #include <ICMPHandler.h>
 #include <MACAddress.h>
 
-class SocketBuffer;
-
 class NetworkDevice {
 private:
   static constexpr uint16_t DEFAULT_MTU = 1500;

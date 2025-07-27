@@ -23,8 +23,6 @@
 
 #include <NetworkDevice.h>
 
-class SocketBuffer;
-
 class LoopbackNetworkDevice : public NetworkDevice {
 private:
   static constexpr char DEFAULT_HOST_NAME[] = "localhost";

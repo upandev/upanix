@@ -24,6 +24,7 @@
 #include <RealNetworkDevice.h>
 
 class ATH9KHardware;
+class SocketBuffer;
 
 class ATH9KDevice : public RealNetworkDevice
 {
