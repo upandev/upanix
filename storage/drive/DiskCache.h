@@ -213,12 +213,12 @@ class DestroyDiskCacheKeyValue : public BTree::DestroyKeyValue
 
 		void DestroyKey(BTreeKey* pKey)
 		{
-			_cache._cacheKeyMemPool.Release(static_cast<DiskCacheKey*>(pKey)) ;
+			_cache._cacheKeyMemPool.release(*static_cast<DiskCacheKey*>(pKey)) ;
 		}
 
 		void DestroyValue(BTreeValue* pValue)
 		{
-			_cache._cacheValueMemPool.Release(static_cast<DiskCacheValue*>(pValue)) ;
+			_cache._cacheValueMemPool.release(*static_cast<DiskCacheValue*>(pValue)) ;
 		}
 } ;
 

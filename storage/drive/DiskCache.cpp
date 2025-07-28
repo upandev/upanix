@@ -152,8 +152,8 @@ void LFUSectorManager::operator()(const BTreeKey& rKey, BTreeValue* pValue)
 }
 
 DiskCache::DiskCache() :
-	_cacheKeyMemPool(MemPool<DiskCacheKey>::CreateMemPool(MAX_CACHE_SECTORS, 32)),
-	_cacheValueMemPool(MemPool<DiskCacheValue>::CreateMemPool(MAX_CACHE_SECTORS, 32)),
+	_cacheKeyMemPool(MemPool<DiskCacheKey>::createMemPool(MAX_CACHE_SECTORS, 32)),
+	_cacheValueMemPool(MemPool<DiskCacheValue>::createMemPool(MAX_CACHE_SECTORS, 32)),
   _tree(MAX_CACHE_SECTORS),
   _LFUSectorManager(*this)
 {
@@ -176,14 +176,22 @@ void DiskCache::InsertToDirtyList(const DiskCache::SecKeyCacheValue& v)
 
 DiskCacheKey* DiskCache::CreateKey(unsigned uiSectorID)
 {
-	DiskCacheKey* pKey = _cacheKeyMemPool.Create() ;
+	auto object = _cacheKeyMemPool.allocate() ;
+  if (object.isEmpty()) {
+    throw upan::exception(XLOC, "disk cache-key pool is full");
+  }
+  auto pKey = &object.value();
 	pKey->SetSectorID(uiSectorID) ;
 	return pKey ;
 }
 
 DiskCacheValue* DiskCache::CreateValue(const byte* pSrc)
 {
-	DiskCacheValue* pValue = _cacheValueMemPool.Create() ;
+  auto object = _cacheValueMemPool.allocate() ;
+  if (object.isEmpty()) {
+    throw upan::exception(XLOC, "disk cache-value pool is full");
+  }
+  auto pValue = &object.value();
 	pValue->Write(pSrc) ;
 	return pValue ;
 }
