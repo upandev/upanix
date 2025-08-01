@@ -35,7 +35,8 @@
 #include <UDPSocketResolver.h>
 #include <ICMPSocketResolver.h>
 #include <ARPSocketResolver.h>
-#include "TCPSocketResolver.h"
+#include <TCPSocketResolver.h>
+#include <TCPStreamWorker.h>
 
 class IRQ;
 class NetworkDevice;
@@ -56,6 +57,8 @@ public:
   static NetworkManager& Instance();
 
   void Initialize();
+  void addTCPConnection(upan::shared_ptr<TCPConnection>& connection);
+
   upan::list<NetworkDevice*>& devices() { return _devices; }
   upan::option<RealNetworkDevice&> getDefaultRealDevice();
   upan::option<LoopbackNetworkDevice&> getLoopbackDevice();
@@ -68,28 +71,6 @@ public:
   const IP_MAP_TABLE& getIPMACTable() { return _ipMACTable; }
 
   DNSClient& getDNSClient() { return *_dnsClient; }
-
-  void shutdownTCPConnection(SocketDescriptorStream& socket) {
-    _tcpShutdownHandler.add(socket);
-  }
-
-  class TCPShutdownHandler : public upan::thread {
-  public:
-    typedef struct Socket {
-      SocketDescriptorStream* _socket;
-      time_t _opTime;
-      bool operator<(const struct Socket& r) const {
-        return _socket < r._socket;
-      }
-    } Socket;
-
-    void add(SocketDescriptorStream& socket);
-    void run() override;
-
-  private:
-    upan::mutex _mutex;
-    upan::set<Socket> _sockets;
-  };
 
   class PortPool {
   public:
@@ -129,5 +110,5 @@ private:
   ICMPSocketResolver _icmpSocketResolver;
   ARPSocketResolver _arpSocketResolver;
 
-  TCPShutdownHandler _tcpShutdownHandler;
+  TCPStreamWorker _tcpStreamWorker;
 };

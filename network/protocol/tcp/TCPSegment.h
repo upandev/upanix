@@ -21,27 +21,58 @@
  */
 #pragma once
 
-#include <option.h>
-#include <map.h>
-#include <SocketDescriptorStream.h>
+#include <stdlib.h>
+#include <dtime.h>
 
-class TCPSocketResolver {
+class TCPSegment {
 public:
-  void recv(const upan::shared_ptr<RawNetPacket>& packet);
-  void listen(SocketDescriptorStream& socket);
-  void setup(upan::shared_ptr<TCPConnection>& tcpConnection);
-  void release(upan::shared_ptr<TCPConnection>& tcpConnection);
+  typedef enum {
+    SYN,
+    SYN_ACK,
+    ACK,
+    DATA,
+    FIN,
+    RST
+  } Type;
+
+public:
+  static const int MAX_SEGMENT_SIZE = 1024;
+  explicit TCPSegment();
+  ~TCPSegment() = default;
+
+  TCPSegment(const TCPSegment& o) = delete;
+  TCPSegment& operator=(const TCPSegment& o) = delete;
+
+  void resetTime() { _time = btime(); }
+  time_t elapsedTime() const { return btime() - _time; }
+  bool isExpired(time_t timeout) const { return elapsedTime() > timeout; }
+
+  uint8_t* buf() { return _buf; }
+  const uint8_t* buf() const { return _buf; }
+
+  int len() const { return _len; }
+  void len(int n) { _len = n; }
+
+  uint32_t seqNum() const { return _seqNum; }
+  void seqNum(uint32_t n) { _seqNum = n; }
+
+  uint32_t ackNum() const { return _ackNum; }
+  void ackNum(uint32_t n) { _ackNum = n; }
+
+  void type(Type v) { _type = v; }
+  Type type() const { return _type; }
+
+  void incRetryCount() { ++_retryCount; }
+  int retryCount() const { return _retryCount; }
+
+  bool psh() const;
 
 private:
-  upan::shared_ptr<TCPConnection> resolve(const upan::shared_ptr<RawNetPacket>& packet);
-
-  typedef uint64_t sock_addr_t;
-  constexpr sock_addr_t SOCK_ADDR(const sockaddr_in& addr) { return ((uint64_t)addr.sin_addr.s_addr << 32) | addr.sin_port; }
-
-  typedef upan::map<sock_addr_t, upan::shared_ptr<TCPConnection>> TCP_CONNECTION_ADDR_MAP;
-  typedef upan::map<sock_addr_t, TCP_CONNECTION_ADDR_MAP> SOCKET_BIND_MAP;
-
-  TCP_CONNECTION_ADDR_MAP _tcpConnectionListenMap;
-  SOCKET_BIND_MAP _socketBindMap;
-  upan::mutex _mutex;
+  uint8_t _buf[MAX_SEGMENT_SIZE];
+  int _len;
+  uint32_t _seqNum;
+  uint32_t _ackNum;
+  Type _type;
+  time_t _time;
+  int _retryCount;
 };

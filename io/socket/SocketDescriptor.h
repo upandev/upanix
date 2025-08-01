@@ -37,14 +37,6 @@ protected:
   SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 public:
-  ~SocketDescriptor() override;
-
-  int read(void* buffer, int len) override;
-  bool canRead() override;
-
-  int write(const void* buffer, int len) override;
-  bool canWrite() override { return true; }
-
   void seek(int seekType, int offset) override { }
   uint32_t getOffset() const override { return 0; }
 
@@ -80,24 +72,15 @@ public:
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
   void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);
-  upan::shared_ptr<RawNetPacket> recvPacket();
 
   void validateSockAddrLen(socklen_t len) const;
   void validateFlags(int flags) const;
   void validateBuf(const void* buf) const;
-  virtual void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
 
 private:
-  upan::mutex _ioSync;
   const SA_FAMILY_TYPE _family;
   const int _protocol;
   bool _allowBroadcast;
   time_t _sendTimeoutInMs;
   time_t _recvTimeoutInMs;
-  upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;
-
-  friend class TCPSocketResolver;
-  friend class UDPSocketResolver;
-  friend class ARPSocketResolver;
-  friend class ICMPSocketResolver;
 };

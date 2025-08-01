@@ -235,6 +235,12 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
         stateInfo.WaitQueueId(0);
         stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
         process.setStatus(RUN);
+      } else {
+        if (stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= stateInfo.SleepTime()) {
+          process.stateInfo().SleepTime(0);
+          process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
+          process.setStatus(RUN);
+        }
       }
     }
     break;
@@ -423,7 +429,7 @@ int ProcessManager::GetWaitQueueSpaceId(Process& process, bool isKernelSpace) {
   return isKernelSpace ? NO_PROCESS_ID : dynamic_cast<SchedulableProcess&>(process).mainThreadID();
 }
 
-void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, bool isKernelSpace) {
+void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace) {
   if(GetCurProcId() < 0)
     return ;
 
@@ -439,6 +445,11 @@ void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, bool isKernelSp
     _processWaitQueueMap[spaceId][id].push_back(p.processID());
     p.stateInfo().WaitQueueId(id);
     p.stateInfo().WaitQueueSpaceId(spaceId);
+    if (timeoutInMs) {
+      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    } else {
+      p.stateInfo().SleepTime(0);
+    }
     p.setStatus(WAIT_QUEUE);
     waitMutex.unlock();
   }

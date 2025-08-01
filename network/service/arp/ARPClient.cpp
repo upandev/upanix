@@ -51,7 +51,7 @@ MACAddress ARPClient::resolveMacAddress(in_addr_t dest_ip) {
   memcpy(addr.sll_addr, INADDR_MAC_BROADCAST, 6);
 
   struct timeval timeout {};
-  timeout.tv_sec = 10;
+  timeout.tv_sec = 5;
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     close(sd);
     throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");

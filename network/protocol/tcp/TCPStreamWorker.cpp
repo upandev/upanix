@@ -19,29 +19,32 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
+#include <TCPStreamWorker.h>
+#include "NetworkManager.h"
 
-#include <option.h>
-#include <map.h>
-#include <SocketDescriptorStream.h>
+TCPStreamWorker::TCPStreamWorker() : upan::timer_thread(10) {
+}
 
-class TCPSocketResolver {
-public:
-  void recv(const upan::shared_ptr<RawNetPacket>& packet);
-  void listen(SocketDescriptorStream& socket);
-  void setup(upan::shared_ptr<TCPConnection>& tcpConnection);
-  void release(upan::shared_ptr<TCPConnection>& tcpConnection);
+void TCPStreamWorker::addConnection(upan::shared_ptr<TCPConnection>& connection) {
+  upan::mutex_guard g(_mutex);
+  NetworkManager::Instance().getTCPSocketResolver().setup(connection);
+  _tcpConnections.insert(connection);
+}
 
-private:
-  upan::shared_ptr<TCPConnection> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+void TCPStreamWorker::on_timer_trigger() {
+  upan::mutex_guard g(_mutex);
+  for (auto it = _tcpConnections.begin(); it != _tcpConnections.end();) {
+    auto conn = *it;
+    if (conn->state() == TCPConnection::TCP_CLOSED) {
+      _tcpConnections.erase(it++);
+      NetworkManager::Instance().getTCPSocketResolver().release(conn);
+      NetworkManager::Instance().getTCPPortPool().release(conn->srcAddr().sin_port);
+    } else {
+      ++it;
+    }
+  }
 
-  typedef uint64_t sock_addr_t;
-  constexpr sock_addr_t SOCK_ADDR(const sockaddr_in& addr) { return ((uint64_t)addr.sin_addr.s_addr << 32) | addr.sin_port; }
-
-  typedef upan::map<sock_addr_t, upan::shared_ptr<TCPConnection>> TCP_CONNECTION_ADDR_MAP;
-  typedef upan::map<sock_addr_t, TCP_CONNECTION_ADDR_MAP> SOCKET_BIND_MAP;
-
-  TCP_CONNECTION_ADDR_MAP _tcpConnectionListenMap;
-  SOCKET_BIND_MAP _socketBindMap;
-  upan::mutex _mutex;
-};
+  for (auto connection : _tcpConnections) {
+    connection->processStream();
+  }
+}

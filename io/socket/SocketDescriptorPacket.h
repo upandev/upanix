@@ -19,41 +19,44 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
 #pragma once
 
-#include <list.h>
-#include <shared_ptr.h>
 #include <SocketDescriptor.h>
-#include <TCPHeaders.h>
-#include <TCPHandler.h>
-#include "TCPConnection.h"
 
-class SocketDescriptorStream : public SocketDescriptor {
+class SocketDescriptorPacket : public SocketDescriptor {
+protected:
+  SocketDescriptorPacket(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+
 public:
-  SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
-  ~SocketDescriptorStream() override;
-
   int read(void* buffer, int len) override;
   bool canRead() override;
 
   int write(const void* buffer, int len) override;
-  bool canWrite() override;
+  bool canWrite() override { return true; }
 
-  const struct sockaddr_in& srcAddr() { return _srcAddr; }
-  const struct sockaddr_in& destAddr() { return _destAddr; }
+  void seek(int seekType, int offset) override { }
+  uint32_t getOffset() const override { return 0; }
 
-private:
-  void bind(const struct sockaddr& address, socklen_t len) override;
-  void connect(const struct sockaddr& address, socklen_t len) override;
-  void listen(int backlog) override;
-  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  void connect(const struct sockaddr& address, socklen_t len) override {
+    throw upan::exception(XLOC, "connect not supported for packet sockets");
+  }
 
-  friend class TCPSocketResolver;
-  friend class NetworkManager;
+  void listen(int backlog) override {
+    throw upan::exception(XLOC, "listen not supported for packet sockets");
+  }
+
+protected:
+  struct sockaddr_in& srcAddr() { return _srcAddr; }
+  upan::shared_ptr<RawNetPacket> recvPacket();
+  void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
 
 private:
   struct sockaddr_in _srcAddr;
-  struct sockaddr_in _destAddr;
-  upan::shared_ptr<TCPConnection> _tcpConnection;
+  upan::mutex _ioSync;
+  upan::queue<upan::shared_ptr<RawNetPacket>> _packetQueue;
+
+  friend class ARPSocketResolver;
+  friend class ICMPSocketResolver;
+  friend class UDPSocketResolver;
 };

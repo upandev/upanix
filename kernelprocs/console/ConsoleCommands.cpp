@@ -1986,7 +1986,7 @@ static void test_tcp_client() {
   }
 
   struct timeval timeout {};
-  timeout.tv_sec = 10;
+  timeout.tv_sec = 5;
   timeout.tv_usec = 0;
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     close(sd);
@@ -2293,7 +2293,7 @@ void ConsoleCommands_Ping() {
   memset(packet, 0, sizeof(packet));
 
   struct timeval timeout {};
-  timeout.tv_sec = 10;
+  timeout.tv_sec = 2;
   timeout.tv_usec = 0;
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     close(sd);

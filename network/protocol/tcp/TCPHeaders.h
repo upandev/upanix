@@ -30,20 +30,6 @@
 namespace NetworkPacket {
   namespace TCP {
     typedef enum {
-      TCP_CLOSED,
-      TCP_LISTEN,
-      TCP_SYN_SENT,
-      TCP_SYN_RECEIVED,
-      TCP_ESTABLISHED,
-      TCP_FIN_WAIT_1,
-      TCP_FIN_WAIT_2,
-      TCP_CLOSING,
-      TCP_TIME_WAIT,
-      TCP_CLOSE_WAIT,
-      TCP_LAST_ACK
-    } TCP_STATE;
-
-    typedef enum {
       TCP_FLAG_FIN = 0x01,
       TCP_FLAG_SYN = 0x02,
       TCP_FLAG_RST = 0x04,

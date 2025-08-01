@@ -30,16 +30,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int p
   : IODescriptor(pid, fd, O_RDWR),
     _family(family),
     _protocol(protocol),
-    _allowBroadcast(false), _sendTimeoutInMs(0), _recvTimeoutInMs(0),
-    _packetQueue(1024) {
-}
-
-SocketDescriptor::~SocketDescriptor() {
-}
-
-bool SocketDescriptor::canRead() {
-  upan::mutex_guard g(_ioSync);
-  return !_packetQueue.empty();
+    _allowBroadcast(false), _sendTimeoutInMs(0), _recvTimeoutInMs(0) {
 }
 
 void SocketDescriptor::validateSockAddrLen(socklen_t len) const {
@@ -72,43 +63,4 @@ void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct
   }
   validateFlags(flags);
   validateBuf(buf);
-}
-
-int SocketDescriptor::read(void* buffer, int len) {
-  return len;
-}
-
-int SocketDescriptor::write(const void* buffer, int len) {
-  return len;
-}
-
-upan::shared_ptr<RawNetPacket> SocketDescriptor::recvPacket() {
-  while(true) {
-    {
-      upan::mutex_guard g(_ioSync);
-      if (!_packetQueue.empty()) {
-        const auto& packet = _packetQueue.front();
-        _packetQueue.pop_front();
-        return packet;
-      }
-    }
-    if (getMode() & O_RD_NONBLOCK) {
-      return {};
-    }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, _recvTimeoutInMs);
-    if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
-      throw upan::exception(XLOC, "socket receive timed-out");
-    }
-  }
-}
-
-void SocketDescriptor::recvNotify(const upan::shared_ptr<RawNetPacket>& packet) {
-  upan::mutex_guard g(_ioSync);
-
-  if (_packetQueue.full()) {
-    printf("\nsocket (%d) queue is full - dropping packet", id());
-    _packetQueue.pop_front();
-  }
-
-  _packetQueue.push_back(packet);
 }

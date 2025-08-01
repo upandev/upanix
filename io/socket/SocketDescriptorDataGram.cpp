@@ -25,29 +25,28 @@
 #include <NetworkDevice.h>
 
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
-  : SocketDescriptor(pid, fd, family, protocol),
-    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, {0 } }), _routeSetupCompleted(false) {
+  : SocketDescriptorPacket(pid, fd, family, protocol), _routeSetupCompleted(false) {
 }
 
 SocketDescriptorDataGram::~SocketDescriptorDataGram() {
   NetworkManager::Instance().getUDPSocketResolver().release(*this);
-  NetworkManager::Instance().getUDPPortPool().release(_srcAddr.sin_port);
+  NetworkManager::Instance().getUDPPortPool().release(srcAddr().sin_port);
 }
 
 void SocketDescriptorDataGram::bind(const struct sockaddr& address, socklen_t len) {
-  if (_srcAddr.sin_port != 0) {
-    throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), _srcAddr.sin_port);
+  if (srcAddr().sin_port != 0) {
+    throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), srcAddr().sin_port);
   }
 
   if (len != sizeof(struct sockaddr_in)) {
     throw upan::exception(XLOC, "invalid socket len: %d", len);
   }
 
-  memcpy((void*)&_srcAddr, (void*)&address, len);
-  if (_srcAddr.sin_port == 0) {
-    _srcAddr.sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
+  memcpy((void*)&srcAddr(), (void*)&address, len);
+  if (srcAddr().sin_port == 0) {
+    srcAddr().sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
   } else {
-    NetworkManager::Instance().getUDPPortPool().allocate(_srcAddr.sin_port);
+    NetworkManager::Instance().getUDPPortPool().allocate(srcAddr().sin_port);
   }
 }
 
@@ -64,11 +63,11 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
 
   auto& device = NetworkManager::Instance().getDevice(destAddr, true);
 
-  if (_srcAddr.sin_port == 0) {
-    _srcAddr.sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
+  if (srcAddr().sin_port == 0) {
+    srcAddr().sin_port = NetworkManager::Instance().getUDPPortPool().allocate();
   }
 
-  if (_srcAddr.sin_addr.s_addr != INADDR_ANY && _srcAddr.sin_addr.s_addr != device.getIPAddress()) {
+  if (srcAddr().sin_addr.s_addr != INADDR_ANY && srcAddr().sin_addr.s_addr != device.getIPAddress()) {
     throw upan::exception(XLOC, "sendPacket failed - socket %d is not connected to the same network device", id());
   }
 
@@ -77,7 +76,7 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
     _routeSetupCompleted = true;
   }
 
-  device.getUDPHandler().send(buf, n, _srcAddr, destAddr);
+  device.getUDPHandler().send(buf, n, srcAddr(), destAddr);
   return n;
 }
 

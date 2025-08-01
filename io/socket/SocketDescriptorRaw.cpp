@@ -25,8 +25,7 @@
 #include <RealNetworkDevice.h>
 
 SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
-  : SocketDescriptor(pid, fd, family, protocol),
-    _srcAddr({(sa_family_t)family, 0, {INADDR_ANY }, { 0 } }) {
+  : SocketDescriptorPacket(pid, fd, family, protocol) {
 }
 
 SocketDescriptorRaw::~SocketDescriptorRaw() {
@@ -42,7 +41,7 @@ SocketDescriptorRaw::~SocketDescriptorRaw() {
 
 void SocketDescriptorRaw::bind(const struct sockaddr& address, socklen_t len) {
   validateSockAddrLen(len);
-  memcpy((void*)&_srcAddr, (void*)&address, len);
+  memcpy((void*)&srcAddr(), (void*)&address, len);
 }
 
 ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
@@ -56,7 +55,7 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
     {
       NetworkManager::Instance().getARPSocketResolver().setup(*this, *reinterpret_cast<const struct ether_arp*>(buf));
       const auto& device = NetworkManager::Instance().getDefaultRealDevice();
-      device.value().getARPHandler().send(buf, n, _srcAddr, *addr);
+      device.value().getARPHandler().send(buf, n, srcAddr(), *addr);
     }
     break;
 
@@ -68,7 +67,7 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
       }
       NetworkManager::Instance().getICMPSocketResolver().setup(*this, *reinterpret_cast<const struct icmp*>(buf));
       auto& device = NetworkManager::Instance().getDevice(destAddr, true);
-      device.getICMPHandler().send(buf, n, _srcAddr, destAddr);
+      device.getICMPHandler().send(buf, n, srcAddr(), destAddr);
     }
     break;
 

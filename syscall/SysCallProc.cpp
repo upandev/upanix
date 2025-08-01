@@ -103,8 +103,18 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
     case SYS_CALL_PROCESS_WAIT_QUEUE:
       // P1 => queue id
       // P2 => mutex address
+      // P3 => timeout
       {
-        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), false);
+        const auto timeout = (struct timeval*)p3;
+        time_t timeoutInMs = 0;
+        if (timeout) {
+          timeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+        }
+        *retVal = 0;
+        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), timeoutInMs, false);
+        if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+          *retVal = -1;
+        }
       }
       break;
 

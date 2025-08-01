@@ -29,9 +29,10 @@ class IODescriptor {
 protected:
   IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(1) {
   }
-  virtual ~IODescriptor() = default;
 
 public:
+  virtual ~IODescriptor() = default;
+
   int id() const {
     return _id;
   }

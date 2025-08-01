@@ -47,26 +47,26 @@ IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descI
 
 IODescriptorTable::~IODescriptorTable() noexcept {
   for(auto& x : _iodMap) {
-    x.second->destroy();
+    delete x.second;
   }
 }
 
 void IODescriptorTable::setupStreamedStdio() {
   upan::mutex_guard g(_ioMutex);
-  _iodMap[STDOUT]->destroy();
+  delete _iodMap[STDOUT];
   _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_WR_NONBLOCK);
 
-  _iodMap[STDIN]->destroy();
+  delete _iodMap[STDIN];
   _iodMap[STDIN] = new StreamBufferDescriptor(_pid, STDIN, 4096, O_WR_NONBLOCK);
 }
 
 void IODescriptorTable::setupNullStdio() {
   upan::mutex_guard g(_ioMutex);
 
-  _iodMap[STDOUT]->destroy();
+  delete _iodMap[STDOUT];
   _iodMap[STDOUT] = new NullDescriptor(_pid, STDOUT);
 
-  _iodMap[STDIN]->destroy();
+  delete _iodMap[STDIN];
   _iodMap[STDIN] = new NullDescriptor(_pid, STDIN);
 }
 
@@ -116,7 +116,7 @@ void IODescriptorTable::free(int fd) {
   e->second->decrementRefCount();
   e->second->getParentDescriptor().ifPresent([](IODescriptor& p) { p.decrementRefCount(); });
 
-  e->second->destroy();
+  delete e->second;
   _iodMap.erase(e);
 }
 

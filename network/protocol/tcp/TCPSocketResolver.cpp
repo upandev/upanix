@@ -23,33 +23,34 @@
 #include <TCPSocketResolver.h>
 #include <NetworkManager.h>
 #include <NetworkDevice.h>
+#include <TCPSegment.h>
 
 void TCPSocketResolver::listen(SocketDescriptorStream& socket) {
   upan::mutex_guard g(_mutex);
-  const auto& srcAddr = socket.srcAddr();
-  auto r = _socketListenMap.insert(SOCKET_ADDR_MAP::value_type(SOCK_ADDR(srcAddr), &socket));
+//  const auto& srcAddr = socket.srcAddr();
+//  auto r = _socketListenMap.insert(SOCKET_ADDR_MAP::value_type(SOCK_ADDR(srcAddr), &socket));
+//  if (r.second == false) {
+//    throw upan::exception(XLOC, "listen failed - socket %d is already listening", socket.id());
+//  }
+}
+
+void TCPSocketResolver::setup(upan::shared_ptr<TCPConnection>& tcpConnection) {
+  upan::mutex_guard g(_mutex);
+
+  auto srcAddr = SOCK_ADDR(tcpConnection->srcAddr());
+  auto destAddr = SOCK_ADDR(tcpConnection->destAddr());
+
+  auto r = _socketBindMap[srcAddr].insert(TCP_CONNECTION_ADDR_MAP::value_type(destAddr, tcpConnection));
   if (r.second == false) {
-    throw upan::exception(XLOC, "listen failed - socket %d is already listening", socket.id());
+    throw upan::exception(XLOC, "setup failed - socket %d is already bound", tcpConnection->socketId());
   }
 }
 
-void TCPSocketResolver::setup(SocketDescriptorStream& socket) {
+void TCPSocketResolver::release(upan::shared_ptr<TCPConnection>& tcpConnection) {
   upan::mutex_guard g(_mutex);
 
-  auto srcAddr = SOCK_ADDR(socket.srcAddr());
-  auto destAddr = SOCK_ADDR(socket.destAddr());
-
-  auto r = _socketBindMap[srcAddr].insert(SOCKET_ADDR_MAP::value_type(destAddr, &socket));
-  if (r.second == false) {
-    throw upan::exception(XLOC, "setup failed - socket %d is already bound", socket.id());
-  }
-}
-
-void TCPSocketResolver::release(SocketDescriptorStream& socket) {
-  upan::mutex_guard g(_mutex);
-
-  const auto& srcAddr = socket.srcAddr();
-  const auto& destAddr = socket.destAddr();
+  const auto& srcAddr = tcpConnection->srcAddr();
+  const auto& destAddr = tcpConnection->destAddr();
 
   if (destAddr.sin_port != 0) {
     auto it = _socketBindMap.find(SOCK_ADDR(srcAddr));
@@ -60,11 +61,11 @@ void TCPSocketResolver::release(SocketDescriptorStream& socket) {
       }
     }
   } else {
-    _socketListenMap.erase(SOCK_ADDR(srcAddr));
+    _tcpConnectionListenMap.erase(SOCK_ADDR(srcAddr));
   }
 }
 
-upan::option<SocketDescriptorStream&> TCPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::shared_ptr<TCPConnection> TCPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   const auto& ipv4Header = packet->getIPV4Header();
@@ -77,28 +78,28 @@ upan::option<SocketDescriptorStream&> TCPSocketResolver::resolve(const upan::sha
   if (it != _socketBindMap.end()) {
     auto it2 = it->second.find(SOCK_ADDR(srcAddr));
     if (it2 != it->second.end()) {
-      return upan::option<SocketDescriptorStream&>(*it2->second);
+      return it2->second;
     }
   } else {
-    auto lt = _socketListenMap.find(SOCK_ADDR(destAddr));
-    if (lt != _socketListenMap.end()) {
-      return upan::option<SocketDescriptorStream&>(*lt->second);
+    auto lt = _tcpConnectionListenMap.find(SOCK_ADDR(destAddr));
+    if (lt != _tcpConnectionListenMap.end()) {
+      return lt->second;
     } else {
       struct sockaddr_in anyAddr = { AF_INET, destAddr.sin_port, { INADDR_ANY }, 0 };
-      auto it2 = _socketListenMap.find(SOCK_ADDR(anyAddr));
-      if (it2 != _socketListenMap.end()) {
-        return upan::option<SocketDescriptorStream&>(*it2->second);
+      auto it2 = _tcpConnectionListenMap.find(SOCK_ADDR(anyAddr));
+      if (it2 != _tcpConnectionListenMap.end()) {
+        return it2->second;
       }
     }
   }
 
-  return upan::option<SocketDescriptorStream&>::empty();
+  return upan::shared_ptr<TCPConnection> {};
 }
 
 void TCPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  auto sd = resolve(packet);
+  auto conn = resolve(packet);
 
-  if (sd.isEmpty()) {
+  if (conn.isEmpty()) {
     const auto& tcpHeader = packet->getTCPHeader();
     const auto& ipv4Header = packet->getIPV4Header();
 
@@ -106,10 +107,13 @@ void TCPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
     struct sockaddr_in destAddr = { AF_INET, tcpHeader._srcPort, ipv4Header._header.ip_src, 0 };
 
     auto& device = NetworkManager::Instance().getDevice(destAddr, true);
-    device.getTCPHandler().send(nullptr, 0, srcAddr, destAddr, TCPHandler::SendType::RST,
-                                0, ntohl(tcpHeader._ackNum) + packet->getTCPDataLen());
-    KLog::warn("send RST for invalid TCP packet from %s:%d", inet_ntoa(destAddr.sin_addr), destAddr.sin_port);
+    TCPSegment segment;
+    segment.type(TCPSegment::RST);
+    segment.seqNum(0);
+    segment.ackNum(ntohl(tcpHeader._ackNum) + packet->getTCPDataLen());
+    device.getTCPHandler().send(segment, srcAddr, destAddr);
+    KLog::warn("send RST for invalid TCP packet from %s:%d", inet_ntoa(destAddr.sin_addr), ntohs(destAddr.sin_port));
   } else {
-    sd.value().recvNotify(packet);
+    conn->recvPacket(packet);
   }
 }

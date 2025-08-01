@@ -97,8 +97,16 @@ void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_ON_LOCK, false, lockAddress, newVal, curVal, 4, 5);
 }
 
-void SysProcess_WaitQueue(int id, void* mutex) {
-  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), true);
+int SysProcess_WaitQueue(int id, void* mutex, const struct timeval* timeout) {
+  time_t timeoutInMs = 0;
+  if (timeout) {
+    timeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+  }
+  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), timeoutInMs, true);
+  if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+    return -1;
+  }
+  return 0;
 }
 
 void SysProcess_WaitDequeue(int id, bool all) {

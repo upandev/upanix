@@ -59,7 +59,11 @@ void NetworkManager::Initialize() {
     _dnsClient.reset(new DNSClient());
   }
 
-  _tcpShutdownHandler.start();
+  _tcpStreamWorker.start();
+}
+
+void NetworkManager::addTCPConnection(upan::shared_ptr<TCPConnection>& connection) {
+  _tcpStreamWorker.addConnection(connection);
 }
 
 upan::option<RealNetworkDevice&> NetworkManager::getDefaultRealDevice() {
@@ -187,44 +191,4 @@ void NetworkManager::PortPool::allocate(in_port_t port) {
 void NetworkManager::PortPool::release(in_port_t port) {
   upan::mutex_guard g(_mutex);
   return _portPool.reset(port);
-}
-
-void NetworkManager::TCPShutdownHandler::add(SocketDescriptorStream& socket) {
-  upan::mutex_guard g(_mutex);
-  _sockets.insert({ &socket, 0 });
-}
-
-void NetworkManager::TCPShutdownHandler::run() {
-  KLog::info("TCP shutdown handler started...");
-  while (true) {
-    sleepms(1000);
-    try {
-      for(auto i = _sockets.begin(); i != _sockets.end();) {
-        auto& socket = const_cast<Socket&>(*i);
-        const auto tcpState = socket._socket->getState();
-
-        if (tcpState == NetworkPacket::TCP::TCP_CLOSED) {
-          if (socket._socket->closedByApp()) {
-            delete socket._socket;
-          }
-          _sockets.erase(i++);
-          continue;
-        } else if (tcpState == NetworkPacket::TCP::TCP_FIN_WAIT_2) {
-          const auto curTime = btime();
-          if ((curTime - socket._opTime) > 60000) {
-            KLog::warn("TCP socket(%d) waited enough for FIN - didn't receive - force closing...", socket._socket->id());
-            socket._socket->release();
-          }
-        } else {
-          socket._socket->sendFin();
-          socket._opTime = btime();
-        }
-        ++i;
-      }
-    } catch(const upan::exception& e) {
-      KLog::exception(e);
-    } catch(...) {
-      KLog::error("unknown error in TCP socket shutdown handler...");
-    }
-  }
 }

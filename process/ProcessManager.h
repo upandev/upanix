@@ -81,7 +81,7 @@ class ProcessManager
     void WaitOnChild(int iChildProcessID);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
     int GetWaitQueueSpaceId(Process& process, bool isKernelSpace);
-    void WaitOnQueue(int id, upan::mutex &waitMutex, bool isKernelSpace);
+    void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
     void WaitOnResource(RESOURCE_KEYS uiResourceType);
     void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs);

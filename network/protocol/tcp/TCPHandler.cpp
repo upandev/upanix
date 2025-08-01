@@ -43,51 +43,71 @@ uint32_t TCPHandler::headerLen() const {
   return NetworkPacket::TCP::HEADER_SIZE + device().getIPV4Handler().headerLen();
 }
 
-void TCPHandler::send(const uint8_t* buf, uint32_t len,
-                      const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr,
-                      TCPHandler::SendType sendType,
-                      uint32_t seqNum, uint32_t ackNum) {
-  if (sendType != SendType::DATA) {
-    if (buf != nullptr || len != 0) {
-      throw upan::exception(XLOC, "sendPacket/buf can't be specified for SYN/ACK packets");
-    }
+void TCPHandler::send(const TCPSegment& segment, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
+  if (segment.type() != TCPSegment::DATA && segment.len() > 0) {
+    throw upan::exception(XLOC, "invalid packet type: %d", segment.type());
   }
 
-  RawNetPacket packet(len + headerLen());
+  RawNetPacket packet(segment.len() + headerLen());
   //IPV4 header can potentially have varying length because of header-options
   //therefore, we need to initialize the IPV4 header length at the very beginning before constructing the packet bottom up
   device().getIPV4Handler().initHeaderLen(packet);
 
-  memcpy(packet.getTCPData(), buf, len);
+  if (segment.type() == TCPSegment::DATA) {
+    memcpy(packet.getTCPData(), segment.buf(), segment.len());
+  }
 
   auto& tcpHeader = packet.getTCPHeader();
 
   tcpHeader._srcPort = srcAddr.sin_port;
   tcpHeader._destPort = destAddr.sin_port;
-  tcpHeader._seqNum = htonl(seqNum);
-  tcpHeader._ackNum = htonl(ackNum);
+  tcpHeader._seqNum = htonl(segment.seqNum());
+  tcpHeader._ackNum = htonl(segment.ackNum());
   tcpHeader._dataOffset = NetworkPacket::TCP::HEADER_SIZE / sizeof(uint32_t);
   tcpHeader._reserved = 0;
   tcpHeader._windowSize = htons(5840);
   tcpHeader._checksum = 0;
   tcpHeader._urgentPtr = 0;
 
-  if (sendType == SendType::SYN) {
-    tcpHeader._syn = 1;
-  } else if (sendType == SendType::SYN_ACK) {
-    tcpHeader._syn = 1;
-    tcpHeader._ack = 1;
-  } else if (sendType == SendType::ACK) {
-    tcpHeader._ack = 1;
-  } else if (sendType == SendType::FIN) {
-    tcpHeader._fin = 1;
-  } else if (sendType == SendType::RST) {
-    tcpHeader._rst = 1;
-  } else if (sendType == SendType::DATA) {
-    tcpHeader._ack = 1;
+  switch (segment.type()) {
+    case TCPSegment::SYN: {
+      tcpHeader._syn = 1;
+    }
+    break;
+
+    case TCPSegment::SYN_ACK: {
+      tcpHeader._syn = 1;
+      tcpHeader._ack = 1;
+    }
+    break;
+
+    case TCPSegment::ACK: {
+      tcpHeader._ack = 1;
+    }
+    break;
+
+    case TCPSegment::FIN: {
+      tcpHeader._fin = 1;
+      tcpHeader._ack = 1;
+    }
+    break;
+
+    case TCPSegment::RST: {
+      tcpHeader._rst = 1;
+    }
+    break;
+
+    case TCPSegment::DATA: {
+      tcpHeader._ack = 1;
+    }
+    break;
+
+    default:
+      throw upan::exception(XLOC, "invalid packet type: %d", segment.type());
+  }
+
+  if (segment.psh()) {
     tcpHeader._psh = 1;
-  } else {
-    throw upan::exception(XLOC, "invalid send type: %d", sendType);
   }
 
   calcChecksum(packet, (device().isConnected() ? device().getIPAddress() : INADDR_ANY), destAddr.sin_addr.s_addr);
