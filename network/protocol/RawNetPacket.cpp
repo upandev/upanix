@@ -126,7 +126,7 @@ const NetworkPacket::TCP::Header& RawNetPacket::getTCPHeader() const {
 }
 
 uint8_t* RawNetPacket::getTCPData() {
-  return getIPV4Data() + NetworkPacket::TCP::HEADER_SIZE;
+  return getIPV4Data() + getTCPHeader()._dataOffset * sizeof(uint32_t);
 }
 
 auto RawNetPacket::getTCPData() const -> const uint8_t* {
@@ -134,5 +134,5 @@ auto RawNetPacket::getTCPData() const -> const uint8_t* {
 }
 
 size_t RawNetPacket::getTCPDataLen() const {
-  return getIPV4Header().dataLen() - NetworkPacket::TCP::HEADER_SIZE;
+  return getIPV4Header().dataLen() - getTCPHeader()._dataOffset * sizeof(uint32_t);
 }

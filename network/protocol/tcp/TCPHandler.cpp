@@ -35,7 +35,7 @@ void TCPHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
   verifyChecksum(*packet);
   const auto& tcpHeader = packet->getTCPHeader();
   tcpHeader.toHost().print();
-
+  //TODO: Handle TCP options like MSS, Window Scaling etc.
   NetworkManager::Instance().getTCPSocketResolver().recv(packet);
 }
 
@@ -44,26 +44,22 @@ uint32_t TCPHandler::headerLen() const {
 }
 
 void TCPHandler::send(const TCPSegment& segment, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr) {
-  if (segment.type() != TCPSegment::DATA && segment.len() > 0) {
-    throw upan::exception(XLOC, "invalid packet type: %d", segment.type());
-  }
-
   RawNetPacket packet(segment.len() + headerLen());
+
   //IPV4 header can potentially have varying length because of header-options
   //therefore, we need to initialize the IPV4 header length at the very beginning before constructing the packet bottom up
   device().getIPV4Handler().initHeaderLen(packet);
+  auto& tcpHeader = packet.getTCPHeader();
+  tcpHeader._dataOffset = NetworkPacket::TCP::HEADER_SIZE / sizeof(uint32_t);
 
-  if (segment.type() == TCPSegment::DATA) {
+  if (segment.len() > 0) {
     memcpy(packet.getTCPData(), segment.buf(), segment.len());
   }
-
-  auto& tcpHeader = packet.getTCPHeader();
 
   tcpHeader._srcPort = srcAddr.sin_port;
   tcpHeader._destPort = destAddr.sin_port;
   tcpHeader._seqNum = htonl(segment.seqNum());
   tcpHeader._ackNum = htonl(segment.ackNum());
-  tcpHeader._dataOffset = NetworkPacket::TCP::HEADER_SIZE / sizeof(uint32_t);
   tcpHeader._reserved = 0;
   tcpHeader._windowSize = htons(5840);
   tcpHeader._checksum = 0;

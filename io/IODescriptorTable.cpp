@@ -110,7 +110,7 @@ void IODescriptorTable::free(int fd) {
   auto e = getItr(fd);
 
   if (e->second->getRefCount() > 1) {
-    throw upan::exception(XLOC, "file descriptor is open - refcount: %d", e->second->getRefCount());
+    throw upan::exception(XLOC, "descriptor is open - refcount: %d", e->second->getRefCount());
   }
 
   e->second->decrementRefCount();

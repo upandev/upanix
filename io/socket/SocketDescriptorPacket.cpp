@@ -59,8 +59,11 @@ upan::shared_ptr<RawNetPacket> SocketDescriptorPacket::recvPacket() {
       return {};
     }
     ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getRecvTimeout());
-    if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+    const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+    if (r == ProcessStateInfo::TIMEOUT) {
       throw upan::exception(XLOC, "socket receive timed-out");
+    } else if (r == ProcessStateInfo::INTERRUPTED) {
+      throw upan::exception(XLOC, "socket receive interrupted");
     }
   }
 }

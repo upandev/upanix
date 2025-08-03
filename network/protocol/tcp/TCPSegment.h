@@ -68,7 +68,7 @@ public:
   bool psh() const;
 
 private:
-  uint8_t _buf[MAX_SEGMENT_SIZE];
+  uint8_t _buf[MAX_SEGMENT_SIZE]{};
   int _len;
   uint32_t _seqNum;
   uint32_t _ackNum;

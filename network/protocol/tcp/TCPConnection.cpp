@@ -21,6 +21,7 @@
  */
 #include <TCPConnection.h>
 #include <RawNetPacket.h>
+#include <NetworkManager.h>
 
 constexpr int MAX_RETRY_PER_SEGMENT = 6;
 constexpr int RETRANSMIT_TIMEOUT = 1000; //ms
@@ -33,6 +34,22 @@ TCPConnection::TCPConnection(TCPHandler& tcpHandler,
   : _tcpHandler(tcpHandler), _srcAddr(srcAddr), _destAddr(destAddr), _socketId(socketId),
     _state(TCP_NEW), _seqNum(1), _ackNum(0), _finSeqNum(0), _sendFin(false), _timeWaitStart(0),
     _sendStream(64 KB), _recvStream(64 KB) {
+  updateToString();
+  KLog::info("TCP connection created for %s", _str.c_str());
+}
+
+void TCPConnection::updateToString() {
+  char buf[1024];
+  sprintf(buf, "socket: %d, src: %s:%u, dest: %s:%u", _socketId,
+          upan::net::inet_ntostr(_srcAddr.sin_addr.s_addr).c_str(), ntohs(_srcAddr.sin_port),
+          upan::net::inet_ntostr(_destAddr.sin_addr.s_addr).c_str(), ntohs(_destAddr.sin_port));
+  _str = buf;
+}
+
+void TCPConnection::socketId(int socketId) {
+  _socketId = socketId;
+  updateToString();
+  KLog::info("TCP connection accepted for %s", _str.c_str());
 }
 
 void TCPConnection::connect() {
@@ -61,6 +78,24 @@ void TCPConnection::connect() {
   if (_state.get() != TCP_ESTABLISHED) {
     throw upan::exception(XLOC, "connect failed - state: %d", _state.get());
   }
+}
+
+void TCPConnection::accept() {
+  upan::mutex_guard g(_sendRecvMutex);
+
+  upan::shared_ptr<TCPSegment> segment(new TCPSegment());
+
+  segment->type(TCPSegment::SYN_ACK);
+  segment->seqNum(_seqNum);
+
+  sendSegment(*segment);
+
+  _state.set(TCP_LISTEN);
+  _seqNum++;
+
+  segment->resetTime();
+
+  _pendingAckSegments.push_back(segment);
 }
 
 void TCPConnection::close() {
@@ -324,12 +359,14 @@ void TCPConnection::processAck(upan::shared_ptr<RawNetPacket> rawPacket) {
       } else if (_state.get() == TCP_CLOSING) {
         _state.set(TCP_TIME_WAIT);
       }
+    } else if (_state.get() == TCP_LISTEN) {
+      _state.set(TCP_ESTABLISHED);
+      NetworkManager::Instance().getTCPSocketResolver().connectionAccepted(*this);
     }
 
     if (recvAckNum == segment->seqNum()) {
       break;
     }
-
   }
 }
 

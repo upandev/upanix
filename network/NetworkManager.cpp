@@ -177,11 +177,12 @@ upan::option<const MACAddress&> NetworkManager::lookupMAC(in_addr_t ip) {
 
 uint16_t NetworkManager::PortPool::allocate() {
   upan::mutex_guard g(_mutex);
-  return _portPool.allocate(49152, 65535);
+  return ntohs(_portPool.allocate(49152, 65535));
 }
 
 void NetworkManager::PortPool::allocate(in_port_t port) {
   upan::mutex_guard g(_mutex);
+  port = ntohs(port);
   if (_portPool.test(port)) {
     throw upan::exception(XLOC, "port %d already allocated", port);
   }
@@ -190,5 +191,23 @@ void NetworkManager::PortPool::allocate(in_port_t port) {
 
 void NetworkManager::PortPool::release(in_port_t port) {
   upan::mutex_guard g(_mutex);
-  return _portPool.reset(port);
+  port = ntohs(port);
+  bool remove = true;
+
+  auto i = _portRefCount.find(port);
+  if (i != _portRefCount.end()) {
+    i->second--;
+    remove = (i->second == 0);
+    _portRefCount.erase(i);
+  }
+
+  if (remove) {
+    _portPool.reset(port);
+  }
+}
+
+void NetworkManager::PortPool::addRefCount(in_port_t port) {
+  upan::mutex_guard g(_mutex);
+  port = ntohs(port);
+  _portRefCount[port]++;
 }

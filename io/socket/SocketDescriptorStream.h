@@ -46,8 +46,11 @@ private:
   void bind(const struct sockaddr& address, socklen_t len) override;
   void connect(const struct sockaddr& address, socklen_t len) override;
   void listen(int backlog) override;
+  int accept(struct sockaddr* addr, socklen_t* len) override;
   ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  void acceptResponse(const upan::shared_ptr<RawNetPacket>& rawPacket);
+  void acceptConnection(TCPConnection& tcpConnection);
 
   friend class TCPSocketResolver;
   friend class NetworkManager;
@@ -56,4 +59,10 @@ private:
   struct sockaddr_in _srcAddr;
   struct sockaddr_in _destAddr;
   upan::shared_ptr<TCPConnection> _tcpConnection;
+
+  uint32_t _connectionBacklog;
+  upan::mutex _acceptMutex;
+  upan::condition_variable _acceptCond;
+  upan::list<upan::shared_ptr<TCPConnection>> _acceptQueue;
+  upan::list<upan::shared_ptr<TCPConnection>> _listenQueue;
 };

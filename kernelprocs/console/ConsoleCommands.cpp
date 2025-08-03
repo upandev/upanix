@@ -1959,7 +1959,8 @@ static void test_tcp_server() {
   printf("\nServer is listening on port %d...", TEST_TCP_SERVER_PORT);
 
   // Accept a connection
-  auto new_sd = 0;//accept(sd, (struct sockaddr*) &address, (socklen_t*) &addrlen);
+  socklen_t addrlen;
+  auto new_sd = accept(sd, (struct sockaddr*) &address, (socklen_t*) &addrlen);
   if (new_sd < 0) {
     close(sd);
     throw upan::exception(XLOC, "accept() failed");
@@ -1969,6 +1970,14 @@ static void test_tcp_server() {
   if (n >= 0) {
     buffer[n] = '\0'; // Null-terminate
     printf("\nReceived: %s", buffer);
+  }
+
+  strcpy(buffer, "Hello from Upanix server!");
+  ssize_t bytes_sent = send(new_sd, buffer, strlen(buffer), 0);
+  if (bytes_sent < 0) {
+    throw upan::exception(XLOC, "send() failed");
+  } else {
+    printf("\nSent %d bytes: %s", bytes_sent, buffer);
   }
 
   close(new_sd);
@@ -2030,48 +2039,49 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "tcp") {
-    //test_tcp_server();
+  if (test == "tcp-client") {
     test_tcp_client();
+  } else if (test == "tcp-server") {
+    test_tcp_server();
   } else if (test == "config") {
-    upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
+      upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
 
-    printf("\n **** Initial content");
-    for (const auto& i : configFileDb.getAll()) {
-      printf("\n%s %s", i.first.c_str(), i.second.c_str());
-    }
+      printf("\n **** Initial content");
+      for (const auto& i : configFileDb.getAll()) {
+        printf("\n%s %s", i.first.c_str(), i.second.c_str());
+      }
 
-    configFileDb.set("Protocol", "DHCP", "");
-    configFileDb.set("LeaseTime", "1234", "This is lease time");
-    configFileDb.set("IP Address", "192.168.50.27", "This is the IP address");
-    configFileDb.set("Gateway", "192.168.255.255", "");
-    printf("\n **** First update");
-    for (const auto& i : configFileDb.getAll()) {
-      printf("\n%s %s", i.first.c_str(), i.second.c_str());
-    }
+      configFileDb.set("Protocol", "DHCP", "");
+      configFileDb.set("LeaseTime", "1234", "This is lease time");
+      configFileDb.set("IP Address", "192.168.50.27", "This is the IP address");
+      configFileDb.set("Gateway", "192.168.255.255", "");
+      printf("\n **** First update");
+      for (const auto& i : configFileDb.getAll()) {
+        printf("\n%s %s", i.first.c_str(), i.second.c_str());
+      }
 
-    {
-      upan::ConfigFileDB::BatchWriteGuard g(configFileDb);
+      {
+        upan::ConfigFileDB::BatchWriteGuard g(configFileDb);
+        configFileDb.set("Protocol", "DHCP", "This is the protocol type");
+        configFileDb.set("LeaseTime", "12345678", "This is lease time");
+        configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
+        configFileDb.set("Gateway", "192.168.255.255", "This is Gateway IP");
+      }
+      printf("\n **** Second update");
+      for (const auto& i : configFileDb.getAll()) {
+        printf("\n%s %s", i.first.c_str(), i.second.c_str());
+      }
+
       configFileDb.set("Protocol", "DHCP", "This is the protocol type");
       configFileDb.set("LeaseTime", "12345678", "This is lease time");
       configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
-      configFileDb.set("Gateway", "192.168.255.255", "This is Gateway IP");
-    }
-    printf("\n **** Second update");
-    for (const auto& i : configFileDb.getAll()) {
-      printf("\n%s %s", i.first.c_str(), i.second.c_str());
-    }
-
-    configFileDb.set("Protocol", "DHCP", "This is the protocol type");
-    configFileDb.set("LeaseTime", "12345678", "This is lease time");
-    configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
-    configFileDb.remove("Gateway");
-    configFileDb.set("Router", "192.168.255.255", "This is Gateway/Router IP");
-    printf("\n **** Third update");
-    for (const auto& i : configFileDb.getAll()) {
-      printf("\n%s %s", i.first.c_str(), i.second.c_str());
-    }
-  } else if (test == "tls") {
+      configFileDb.remove("Gateway");
+      configFileDb.set("Router", "192.168.255.255", "This is Gateway/Router IP");
+      printf("\n **** Third update");
+      for (const auto& i : configFileDb.getAll()) {
+        printf("\n%s %s", i.first.c_str(), i.second.c_str());
+      }
+    } else if (test == "tls") {
     printf("\n %d", _t_local_var_data1);
     printf("\n %d", (int) _t_local_var_data2);
     printf("\n %d", (int) _t_local_var_data3);
@@ -2130,8 +2140,6 @@ void ConsoleCommands_Test() {
       }
       printf("\n internal uniq ptrs destroyed");
     }
-  } else {
-
   }
 
 //  for(auto& e : get_syscall_stats()) {

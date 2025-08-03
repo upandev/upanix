@@ -28,20 +28,29 @@
 class TCPSocketResolver {
 public:
   void recv(const upan::shared_ptr<RawNetPacket>& packet);
-  void listen(SocketDescriptorStream& socket);
+
   void setup(upan::shared_ptr<TCPConnection>& tcpConnection);
-  void release(upan::shared_ptr<TCPConnection>& tcpConnection);
+  void releaseConnection(upan::shared_ptr<TCPConnection>& tcpConnection);
+
+  void listen(SocketDescriptorStream& socket);
+  void releaseListeningSocket(SocketDescriptorStream& socket);
+  void connectionAccepted(TCPConnection& tcpConnection);
 
 private:
-  upan::shared_ptr<TCPConnection> resolve(const upan::shared_ptr<RawNetPacket>& packet);
+  upan::shared_ptr<TCPConnection> resolveConnection(const upan::shared_ptr<RawNetPacket>& packet);
+  upan::option<SocketDescriptorStream&> resolveListeningSocket(const upan::shared_ptr<RawNetPacket>& packet);
+  void sendReset(const upan::shared_ptr<RawNetPacket>& packet);
 
   typedef uint64_t sock_addr_t;
   constexpr sock_addr_t SOCK_ADDR(const sockaddr_in& addr) { return ((uint64_t)addr.sin_addr.s_addr << 32) | addr.sin_port; }
 
-  typedef upan::map<sock_addr_t, upan::shared_ptr<TCPConnection>> TCP_CONNECTION_ADDR_MAP;
-  typedef upan::map<sock_addr_t, TCP_CONNECTION_ADDR_MAP> SOCKET_BIND_MAP;
+  typedef upan::map<int, SocketDescriptorStream*> SOCKET_ACCEPT_MAP;
+  typedef upan::map<sock_addr_t, SocketDescriptorStream*> SOCKET_LISTEN_MAP;
+  typedef upan::map<sock_addr_t, upan::shared_ptr<TCPConnection>> CONNECTION_ADDR_MAP;
+  typedef upan::map<sock_addr_t, CONNECTION_ADDR_MAP> CONNECTION_BIND_MAP;
 
-  TCP_CONNECTION_ADDR_MAP _tcpConnectionListenMap;
-  SOCKET_BIND_MAP _socketBindMap;
+  SOCKET_ACCEPT_MAP _socketAcceptMap;
+  SOCKET_LISTEN_MAP _socketListenMap;
+  CONNECTION_BIND_MAP _connectionBindMap;
   upan::mutex _mutex;
 };

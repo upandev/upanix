@@ -77,10 +77,12 @@ public:
     uint16_t allocate();
     void allocate(in_port_t port);
     void release(in_port_t port);
+    void addRefCount(in_port_t port);
 
   private:
     upan::mutex _mutex;
     upan::bitset<UINT16_MAX + 1> _portPool;
+    upan::map<in_port_t, int> _portRefCount;
   };
 
   PortPool& getUDPPortPool() { return _udpPortPool; }

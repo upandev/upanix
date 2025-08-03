@@ -46,6 +46,10 @@ public:
     throw upan::exception(XLOC, "listen not supported for packet sockets");
   }
 
+  int accept(struct sockaddr* sockaddr, socklen_t* len) override {
+    throw upan::exception(XLOC, "accept not supported for packet sockets");
+  }
+
 protected:
   struct sockaddr_in& srcAddr() { return _srcAddr; }
   upan::shared_ptr<RawNetPacket> recvPacket();

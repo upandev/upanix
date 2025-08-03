@@ -24,20 +24,29 @@
 #include <NetworkManager.h>
 #include <NetworkDevice.h>
 #include <ProcessManager.h>
+#include <RealNetworkDevice.h>
 
 SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
   : SocketDescriptor(pid, fd, family, protocol),
     _srcAddr({(sa_family_t)family, 0, { INADDR_ANY }, { 0 } }),
-    _destAddr({(sa_family_t)family, 0, { INADDR_ANY }, { 0 } }) {
+    _destAddr({(sa_family_t)family, 0, { INADDR_ANY }, { 0 } }),
+    _connectionBacklog(0) {
 }
 
 SocketDescriptorStream::~SocketDescriptorStream() {
+  NetworkManager::Instance().getTCPSocketResolver().releaseListeningSocket(*this);
   _tcpConnection.toOption().ifPresent([](TCPConnection& tcpConnection) { tcpConnection.close(); });
+  for(auto& c : _listenQueue) {
+    c->close();
+  }
+  for(auto& c : _acceptQueue) {
+    c->close();
+  }
 }
 
 void SocketDescriptorStream::bind(const struct sockaddr& address, socklen_t len) {
   if (_srcAddr.sin_port != 0) {
-    throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), _srcAddr.sin_port);
+    throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), ntohs(_srcAddr.sin_port));
   }
 
   if (len != sizeof(struct sockaddr_in)) {
@@ -88,8 +97,79 @@ void SocketDescriptorStream::listen(int backlog) {
     NetworkManager::Instance().getDevice(_srcAddr, false);
   }
 
-  //_state = NetworkPacket::TCP::TCP_LISTEN;
+  _connectionBacklog = backlog;
   NetworkManager::Instance().getTCPSocketResolver().listen(*this);
+  NetworkManager::Instance().getTCPPortPool().addRefCount(_srcAddr.sin_port);
+}
+
+int SocketDescriptorStream::accept(struct sockaddr* addr, socklen_t* len) {
+  upan::mutex_guard g(_acceptMutex);
+  _acceptCond.waitc(_acceptMutex, [&]() { return !_acceptQueue.empty(); });
+
+  auto tcpConnection = _acceptQueue.front();
+  _acceptQueue.pop_front();
+
+  SocketDescriptorStream* sd = nullptr;
+  Process& process = ProcessManager::Instance().GetCurrentPAS();
+  process.iodTable().allocate([&](int fd) -> SocketDescriptorStream* {
+    sd = new SocketDescriptorStream(process.processID(), fd, family(), protocol());
+    return sd;
+  });
+
+  if (!sd) {
+    throw upan::exception(XLOC, "accept failed on socket: %d - new socket creation failed", id());
+  }
+
+  NetworkManager::Instance().getTCPPortPool().addRefCount(_srcAddr.sin_port);
+  tcpConnection->socketId(sd->id());
+  sd->_tcpConnection = tcpConnection;
+  sd->_srcAddr = tcpConnection->srcAddr();
+  sd->_destAddr = tcpConnection->destAddr();
+  if (addr && len) {
+    *addr = reinterpret_cast<struct sockaddr&>(sd->_destAddr);
+    *len = sizeof(struct sockaddr_in);
+  }
+
+  return sd->id();
+}
+
+void SocketDescriptorStream::acceptResponse(const upan::shared_ptr<RawNetPacket>& rawPacket) {
+  const auto& tcpHeader = rawPacket->getTCPHeader();
+
+  if (tcpHeader._syn != 1 || tcpHeader._ack == 1 || rawPacket->getTCPDataLen() > 0) {
+    throw upan::exception(XLOC, "invalid TCP packet received - expected SYN on listening socket: %d", id());
+  }
+
+  if (_listenQueue.size() == _connectionBacklog) {
+    throw upan::exception(XLOC, "accept failed - listening socket %d is full", id());
+  }
+
+  const auto& ipv4Header = rawPacket->getIPV4Header();
+
+  struct sockaddr_in srcAddr = { AF_INET, tcpHeader._destPort, ipv4Header._header.ip_dst, 0 };
+  struct sockaddr_in destAddr = { AF_INET, tcpHeader._srcPort, ipv4Header._header.ip_src, 0 };
+
+  auto& device = NetworkManager::Instance().getDevice(destAddr, true);
+
+  upan::shared_ptr<TCPConnection> tcpConnection(new TCPConnection(device.getTCPHandler(), srcAddr, destAddr, id()));
+  tcpConnection->setAckNum(ntohl(tcpHeader._seqNum) + 1);
+  NetworkManager::Instance().addTCPConnection(tcpConnection);
+  _listenQueue.push_back(tcpConnection);
+  tcpConnection->accept();
+}
+
+void SocketDescriptorStream::acceptConnection(TCPConnection& tcpConnection) {
+  upan::mutex_guard g(_acceptMutex);
+  for(auto it = _listenQueue.begin(); it != _listenQueue.end(); ++it) {
+    auto& c = *it;
+    if (c.get() == &tcpConnection) {
+      _listenQueue.erase(it);
+      _acceptQueue.push_back(c);
+      _acceptCond.notify_one();
+      return;
+    }
+  }
+  throw upan::exception(XLOC, "accept failed - socket %d can't find the connection in listen queue", id());
 }
 
 int SocketDescriptorStream::read(void* buffer, int len) {
@@ -107,8 +187,11 @@ int SocketDescriptorStream::read(void* buffer, int len) {
     }
 
     ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getRecvTimeout());
-    if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+    const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+    if (r == ProcessStateInfo::TIMEOUT) {
       throw upan::exception(XLOC, "socket receive timed-out");
+    } else if (r == ProcessStateInfo::INTERRUPTED) {
+      throw upan::exception(XLOC, "socket receive interrupted");
     }
   }
 }
@@ -135,8 +218,11 @@ int SocketDescriptorStream::write(const void* buffer, int len) {
     }
 
     ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getSendTimeout());
-    if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
-      throw upan::exception(XLOC, "socket send timed-out");
+    const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+    if (r == ProcessStateInfo::TIMEOUT) {
+      throw upan::exception(XLOC, "socket receive timed-out");
+    } else if (r == ProcessStateInfo::INTERRUPTED) {
+      throw upan::exception(XLOC, "socket receive interrupted");
     }
   }
 }

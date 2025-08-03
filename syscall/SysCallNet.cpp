@@ -140,6 +140,21 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     }
     break;
 
+    case SYS_CALL_SOCKET_ACCEPT:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      auto sockaddr = (struct sockaddr*)p2;
+      auto socklen = (socklen_t*)p3;
+      try {
+        *retVal = NetworkOperations::Instance().accept(fd, sockaddr, socklen);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_GET_HOST_BY_NAME:
     {
       *retVal = 0;

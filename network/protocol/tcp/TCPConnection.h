@@ -54,6 +54,7 @@ public:
   State state() { return _state.get(); }
   void state(State state) { _state.set(state); }
   void connect();
+  void accept();
   void close();
 
   int recv(uint8_t* buf, int len);
@@ -64,18 +65,18 @@ public:
   void processStream();
 
   int socketId() const { return _socketId; }
+  void socketId(int id);
   const struct sockaddr_in& srcAddr() { return _srcAddr; }
   const struct sockaddr_in& destAddr() { return _destAddr; }
+  const upan::string& str() const { return _str; }
+
   void recvPacket(upan::shared_ptr<RawNetPacket> packet);
 
+  void setAckNum(uint32_t ackNum) { _ackNum = ackNum; }
 private:
-  bool allowAppSend() {
-    return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT;
-  }
-
-  bool allowAppRecv() {
-    return _state.get() != TCP_CLOSED;
-  }
+  bool allowAppSend() { return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT; }
+  bool allowAppRecv() { return _state.get() != TCP_CLOSED; }
+  void updateToString();
 
   void processRecvPackets();
   void processPendingAckSegments();
@@ -96,9 +97,10 @@ private:
   typedef upan::map<uint32_t, upan::shared_ptr<RawNetPacket>> PACKET_SEQ_MAP;
 
   TCPHandler& _tcpHandler;
-  struct sockaddr_in _srcAddr;
-  struct sockaddr_in _destAddr;
+  const struct sockaddr_in _srcAddr;
+  const struct sockaddr_in _destAddr;
   int _socketId;
+  upan::string _str;
 
   upan::atomic::integral<State> _state;
   uint32_t _seqNum;

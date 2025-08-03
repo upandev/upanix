@@ -163,3 +163,8 @@ void NetworkOperations::listen(int fd, int backlog) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   descriptor.listen(backlog);
 }
+
+int NetworkOperations::accept(int fd, struct sockaddr* addr, socklen_t* len) {
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  return descriptor.accept(addr, len);
+}

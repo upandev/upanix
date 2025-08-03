@@ -132,13 +132,13 @@ void E1000NICDevice::NotifyEvent() {
         break;
       } else {
         if (!_eventQueue.push_back(data)) {
-          printf("\n (%d) E1000 NIC event buffer is full!!\n", __LINE__);
+          KLog::error("E1000 NIC event buffer is full!!");
         }
       }
     }
   } else {
     if (!_eventQueue.push_back(data)) {
-      printf("\n (%d) E1000 NIC event buffer is full!!\n", __LINE__);
+      KLog::error("E1000 NIC event buffer is full!!");
     }
   }
   _irq->Signal();

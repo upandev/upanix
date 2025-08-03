@@ -37,8 +37,8 @@ void TCPStreamWorker::on_timer_trigger() {
     auto conn = *it;
     if (conn->state() == TCPConnection::TCP_CLOSED) {
       _tcpConnections.erase(it++);
-      NetworkManager::Instance().getTCPSocketResolver().release(conn);
-      NetworkManager::Instance().getTCPPortPool().release(conn->srcAddr().sin_port);
+      NetworkManager::Instance().getTCPSocketResolver().releaseConnection(conn);
+      KLog::info("TCP connection closed for %s", conn->str().c_str());
     } else {
       ++it;
     }

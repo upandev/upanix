@@ -33,31 +33,44 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor MemPool">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="TCP layer implementation for client">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KBInputHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KBInputHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KBInputHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KBInputHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/PacketHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/PacketHandler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/RawNetPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/RawNetPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPHeaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPHeaders.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPSegment.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPSegment.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/arp/ARPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/arp/ARPClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPStreamWorker.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPStreamWorker.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessGroup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessGroup.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessGroup.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessGroup.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -709,7 +722,7 @@
       <workItem from="1752024625810" duration="21064000" />
       <workItem from="1752106041895" duration="164041000" />
       <workItem from="1753457749603" duration="2026000" />
-      <workItem from="1753486132389" duration="100779000" />
+      <workItem from="1753486132389" duration="146431000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1054,7 +1067,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="171" />
+    <option name="localTasksCounter" value="172" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1088,7 +1101,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="set ist flag to 0 for regular interrupts - so they use RSP0 when switching from ring3 to ring0 and continue to use existing RSP when not switching rings" />
     <MESSAGE value="a util method added to IrqManager to check if an interrupt is enabled" />
     <MESSAGE value="if interrupt is disabled (i.e. cli) then do a tight loop for 100000 times in poll wait - this is possibly happening because the poll wait is being called from inside an interrupt handler" />
     <MESSAGE value="Revert the logic to use IST specific stack frame instead of RSP0 - this will ensure that all interrupts whether they trigger ring3-&gt;ring0 switch, will use an interrupt stack that is 16 byte aligned and each process/thread will have its own stack space mapped to the same IST stack top - so, interrupts that trigger across process switch are using different stack space without overwriting each other's stack." />
@@ -1113,7 +1125,8 @@
     <MESSAGE value="More TCP implementation. The approach is not correct. Working on the correct implementation in next commit" />
     <MESSAGE value="refactor the directory structure" />
     <MESSAGE value="refactor MemPool" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor MemPool" />
+    <MESSAGE value="TCP layer implementation for client" />
+    <option name="LAST_COMMIT_MESSAGE" value="TCP layer implementation for client" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
