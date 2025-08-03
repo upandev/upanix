@@ -22,9 +22,6 @@
 # include <SysCall.h>
 # include <SysCallFile.h>
 # include <StorageDrive.h>
-# include <try.h>
-# include <FileDescriptor.h>
-# include <StreamBufferDescriptor.h>
 # include <KernelUtil.h>
 
 bool SysCallIO_IsPresent(uint64_t sysCallId) {
@@ -40,7 +37,7 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
         try {
           ProcessManager::Instance().GetCurrentPAS().iodTable().free((int)p1);
         } catch(upan::exception& e) {
-          e.Print();
+          KLog::exception(e);
           *retVal = -1;
         }
 			}
