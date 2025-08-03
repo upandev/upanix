@@ -24,8 +24,8 @@
 #include <Thread.h>
 #include <StreamBufferDescriptor.h>
 #include <ProcessManager.h>
-#include <KeyboardHandler.h>
 #include <GraphicsVideo.h>
+#include <signal.h>
 
 AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess)
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
@@ -89,14 +89,21 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
     case Process::REDIRECT_TTY:
     case Process::TTY: {
       const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
-      if (ch != Keyboard_NA_CHAR) {
+      if (ch == Keyboard_CTRL_C) {
+        ProcessManager::Instance().SendSignal(_processID, SIGINT);
+      } else if (ch != Keyboard_NA_CHAR) {
         iodTable().get(IODescriptorTable::STDIN).write((void*)&ch, 1);
       }
     }
     break;
 
     case Process::GUI:
-      _uiKeyboardEventStreamFD->write((void*)&data, sizeof(upanui::KeyboardData));
+      const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
+      if (ch == Keyboard_CTRL_C) {
+        ProcessManager::Instance().SendSignal(_processID, SIGINT);
+      } else {
+        _uiKeyboardEventStreamFD->write((void*) &data, sizeof(upanui::KeyboardData));
+      }
       break;
 
     case Process::NA:
