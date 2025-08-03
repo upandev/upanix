@@ -103,7 +103,9 @@ int SysProcess_WaitQueue(int id, void* mutex, const struct timeval* timeout) {
     timeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
   }
   ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), timeoutInMs, true);
-  if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+
+  const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+  if (r != ProcessStateInfo::NO_ERROR) {
     return -1;
   }
   return 0;
@@ -161,4 +163,10 @@ int SysProcess_IsChildAlive(int iProcessID) {
 
 int SysProcess_IsKernel() {
   return IsKernel() ? 1 : 0;
+}
+
+int SysProcess_Kill(int pid, int signal) {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_KILL, false, pid, signal, 3, 4, 5);
+  return (int)retStatus;
 }

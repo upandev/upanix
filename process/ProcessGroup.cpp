@@ -35,11 +35,6 @@ ProcessGroup::ProcessGroup(bool isFGProcessGroup)
     _fgProcessGroup = this;
 }
 
-ProcessGroup::~ProcessGroup()
-{
-
-}
-
 void ProcessGroup::PutOnFGProcessList(int iProcessID)
 {
   _fgProcessList.push_front(iProcessID);
@@ -75,4 +70,10 @@ bool ProcessGroup::IsFGProcess(int iProcessID) const
   if(_fgProcessList.empty())
     return false;
   return *_fgProcessList.begin() == iProcessID;
+}
+
+int ProcessGroup::GetFGProcessID() {
+  if(_fgProcessList.empty())
+    return NO_PROCESS_ID;
+  return *_fgProcessList.begin();
 }

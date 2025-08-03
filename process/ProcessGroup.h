@@ -29,8 +29,8 @@
 class ProcessGroup
 {
   public:
-    ProcessGroup(bool isFGProcessGroup);
-    ~ProcessGroup();
+    explicit ProcessGroup(bool isFGProcessGroup);
+    ~ProcessGroup() = default;
 
     int Id() const { return _id; }
     int Size() const { return _iProcessCount; }
@@ -42,6 +42,7 @@ class ProcessGroup
     void AddProcess();
     void RemoveProcess();
     void SwitchToFG();
+    int GetFGProcessID();
 
     static ProcessGroup* GetFGProcessGroup() { return _fgProcessGroup; }
 

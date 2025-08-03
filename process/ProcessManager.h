@@ -92,6 +92,7 @@ class ProcessManager
     void WaitForEvent();
     void EventCompleted(int pid);
     void ContextSwitch(TaskContext &);
+    void SendSignal(int pid, int signal);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;
@@ -111,7 +112,6 @@ class ProcessManager
 
   private:
     void PrepareToRun(SchedulableProcess& process);
-    void Destroy(SchedulableProcess& pas);
     bool DoPollWait();
     bool IsEventCompleted(int pid);
     ProcessStateInfo& GetProcessStateInfo(int pid);

@@ -45,8 +45,8 @@ byte KBInputHandler_InRegList(byte key)
 
 /***************************************************************/
 
-bool KBInputHandler_Process(upanui::KeyboardData data) {
-	if(KBInputHandler_InRegList(data.getCh()))
+bool KBInputHandler_Process(const upanui::KeyboardData& data) {
+  if(KBInputHandler_InRegList(data.getCh()))
 	{
 	  SessionManager_SwitchToSession(SessionManager_KeyToSessionIDMap(data.getCh())) ;
 		return true ;

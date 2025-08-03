@@ -120,11 +120,11 @@ public:
   }
 
   ProcessGroup* processGroup() override {
-    throw upan::exception(XLOC, "processGroup() unsupported");
+    return _processGroup;
   }
 
-  void setProcessGroup(ProcessGroup* processGroup) {
-    throw upan::exception(XLOC, "setProcessGroup() unsupported");
+  void setProcessGroup(ProcessGroup* processGroup) override {
+    _processGroup = processGroup;
   }
 
   DMM& dmm() override;
@@ -165,4 +165,5 @@ private:
   ProcessEnvMap _envMap;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
   int _scheduleRunnerPid;
+  ProcessGroup* _processGroup;
 };

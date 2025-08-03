@@ -27,6 +27,7 @@
 #include <logger.h>
 #include <RedirectDescriptor.h>
 #include <typeinfo.h>
+#include <signal.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -42,7 +43,9 @@ KernelRootProcess& KernelRootProcess::Instance() {
   return instance;
 }
 
-KernelRootProcess::KernelRootProcess() : _iodTable(NO_PROCESS_ID, NO_PROCESS_ID) {
+KernelRootProcess::KernelRootProcess() :
+  _iodTable(NO_PROCESS_ID, NO_PROCESS_ID),
+  _scheduleRunnerPid(NO_PROCESS_ID), _processGroup(nullptr)  {
   upan::logger::create(IODescriptorTable::SYSLOG);
 }
 
@@ -135,7 +138,12 @@ void KernelRootProcess::initGuiFrame() {
 
 void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
-  iodTable().get(IODescriptorTable::STDIN).write((void*)&ch, 1);
+  int fgPid = NO_PROCESS_ID;
+  if (ch == Keyboard_CTRL_C && (fgPid = _processGroup->GetFGProcessID()) != NO_PROCESS_ID) {
+    ProcessManager::Instance().SendSignal(fgPid, SIGINT);
+  } else {
+    iodTable().get(IODescriptorTable::STDIN).write((void*) &ch, 1);
+  }
 }
 
 void KernelRootProcess::dispatchMouseData(const upanui::MouseData& mouseData) {

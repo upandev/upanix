@@ -112,7 +112,8 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         }
         *retVal = 0;
         ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), timeoutInMs, false);
-        if (ProcessManager::Instance().GetCurrentPAS().stateInfo().getError() == ProcessStateInfo::TIMEOUT) {
+        const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+        if (r != ProcessStateInfo::NO_ERROR) {
           *retVal = -1;
         }
       }
@@ -214,6 +215,21 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         *retVal = ProcessManager::Instance().IsAlive((int)p1) ;
       }
       break ;
+
+    case SYS_CALL_PROCESS_KILL:
+    {
+      try {
+        *retVal = 0;
+        auto pid = (int)p1;
+        auto signal = (int)p2;
+        ProcessManager::Instance().SendSignal(pid, signal);
+
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
   }
 }
 

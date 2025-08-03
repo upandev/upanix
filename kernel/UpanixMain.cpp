@@ -76,6 +76,8 @@ bool SPECIAL_TASK;
   KeyboardHandler::Instance().StartDispatcher();
   PS2MouseDriver::Instance().StartDispatcher();
 
+  KernelRootProcess::Instance().setProcessGroup(ProcessManager::Instance().GetCurrentPAS().processGroup());
+
 	while(true) {
     const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
                                                                    ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());

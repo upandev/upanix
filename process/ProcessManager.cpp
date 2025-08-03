@@ -38,6 +38,7 @@
 #include <UserThread.h>
 #include <Cpu.h>
 #include <KernelRootProcess.h>
+#include "signal.h"
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
@@ -194,6 +195,10 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
           process.stateInfo().SleepTime(0);
           process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
           process.setStatus(RUN);
+        } else if (stateInfo.hasSignal() && stateInfo.isSignal(SIGINT)) {
+          process.stateInfo().clearSignal();
+          process.stateInfo().setError(ProcessStateInfo::INTERRUPTED);
+          process.setStatus(RUN);
         }
       }
 	  }
@@ -240,6 +245,10 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
           process.stateInfo().SleepTime(0);
           process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
           process.setStatus(RUN);
+        } else if (stateInfo.hasSignal() && stateInfo.isSignal(SIGINT)) {
+          process.stateInfo().clearSignal();
+          process.stateInfo().setError(ProcessStateInfo::INTERRUPTED);
+          process.setStatus(RUN);
         }
       }
     }
@@ -270,6 +279,7 @@ void ProcessManager::PrepareToRun(SchedulableProcess& process) {
 	  case RUN:
 	    break ;
 	}
+  process.stateInfo().clearSignal();
 }
 
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
@@ -636,6 +646,7 @@ int ProcessManager::GetCurProcId()
 }
 
 void ProcessManager::Kill(int iProcessID) {
+  ProcessSwitchLock lock;
   GetSchedulableProcess(iProcessID).ifPresent([this, iProcessID](SchedulableProcess& process) {
     if (process.status() != TERMINATED && process.status() != RELEASED) {
       if (iProcessID == GetCurProcId()) {
@@ -716,4 +727,15 @@ ProcessStateInfo& ProcessManager::GetProcessStateInfo(int pid) {
   return GetSchedulableProcess(pid).map<ProcessStateInfo&>(
       [](SchedulableProcess& p) -> ProcessStateInfo& { return p.stateInfo(); })
       .valueOrElse(_kernelModeStateInfo);
+}
+
+void ProcessManager::SendSignal(int pid, int signal) {
+  ProcessSwitchLock lock;
+  if (signal == SIGKILL || signal == SIGTERM) {
+    Kill(pid);
+  } else if (signal == SIGINT) {
+    GetSchedulableProcess(pid).ifPresent([this, pid](SchedulableProcess& process) {
+      process.stateInfo().setSignal(SIGINT);
+    });
+  }
 }
