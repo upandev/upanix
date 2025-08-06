@@ -32,8 +32,8 @@ constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
 IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descIdCounter(0) {
   if (pid == NO_PROCESS_ID) {
-    allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_NONBLOCK | O_RDWR); });
-    auto& stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_NONBLOCK | O_RDWR); });
+    allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
+    auto stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
   } else {
@@ -47,30 +47,30 @@ IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descI
 
 IODescriptorTable::~IODescriptorTable() noexcept {
   for(auto& x : _iodMap) {
-    delete x.second;
+    x.second->close();
   }
 }
 
 void IODescriptorTable::setupStreamedStdio() {
   upan::mutex_guard g(_ioMutex);
-  delete _iodMap[STDOUT];
-  _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_NONBLOCK | O_RDWR);
+  _iodMap[STDOUT]->close();
+  _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_WR_NONBLOCK);
 
-  delete _iodMap[STDIN];
-  _iodMap[STDIN] = new StreamBufferDescriptor(_pid, STDIN, 4096, O_NONBLOCK | O_RDWR);
+  _iodMap[STDIN]->close();
+  _iodMap[STDIN] = new StreamBufferDescriptor(_pid, STDIN, 4096, O_WR_NONBLOCK);
 }
 
 void IODescriptorTable::setupNullStdio() {
   upan::mutex_guard g(_ioMutex);
 
-  delete _iodMap[STDOUT];
+  _iodMap[STDOUT]->close();
   _iodMap[STDOUT] = new NullDescriptor(_pid, STDOUT);
 
-  delete _iodMap[STDIN];
+  _iodMap[STDIN]->close();
   _iodMap[STDIN] = new NullDescriptor(_pid, STDIN);
 }
 
-IODescriptor& IODescriptorTable::allocate(const upan::function<IODescriptor*, int>& descriptorBuilder) {
+IODescriptor::Ptr IODescriptorTable::allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder) {
   upan::mutex_guard g(_ioMutex);
 
   if(_iodMap.size() >= PROC_SYS_MAX_OPEN_FILES) {
@@ -84,7 +84,7 @@ IODescriptor& IODescriptorTable::allocate(const upan::function<IODescriptor*, in
     throw upan::exception(XLOC, "failed to create an entry in File IODescriptor table");
   }
 
-  return *i.first->second;
+  return i.first->second;
 }
 
 IODescriptorTable::IODMap::iterator IODescriptorTable::getItr(int fd) {
@@ -95,14 +95,18 @@ IODescriptorTable::IODMap::iterator IODescriptorTable::getItr(int fd) {
   return i;
 }
 
-IODescriptor& IODescriptorTable::get(int fd) {
+IODescriptor::Ptr IODescriptorTable::get(int fd) {
   upan::mutex_guard g(_ioMutex);
-  return *(getItr(fd)->second);
+  return getItr(fd)->second;
 }
 
-IODescriptor& IODescriptorTable::getRealNonDupped(int fd) {
+IODescriptor::Ptr IODescriptorTable::getRealNonDupped(int fd) {
   upan::mutex_guard g(_ioMutex);
-  return get(fd).getRealDescriptor();
+  auto ptr = get(fd);
+  while (!ptr->getParentDescriptor().isEmpty()) {
+    ptr = ptr->getParentDescriptor();
+  }
+  return ptr;
 }
 
 void IODescriptorTable::free(int fd) {
@@ -113,17 +117,14 @@ void IODescriptorTable::free(int fd) {
     throw upan::exception(XLOC, "descriptor is open - refcount: %d", e->second->getRefCount());
   }
 
-  e->second->decrementRefCount();
-  e->second->getParentDescriptor().ifPresent([](IODescriptor& p) { p.decrementRefCount(); });
-
-  delete e->second;
+  e->second->close();
   _iodMap.erase(e);
 }
 
 void IODescriptorTable::dup2(int oldFD, int newFD) {
   upan::mutex_guard g(_ioMutex);
-  auto& oldF = get(oldFD);
-  auto& newF = get(newFD);
+  auto oldF = get(oldFD);
+  auto newF = get(newFD);
   free(newFD);
   _iodMap.insert(IODMap::value_type(newFD, new RedirectDescriptor(_pid, newFD, oldF)));
 }
@@ -141,15 +142,15 @@ upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_desc
 upan::vector<io_descriptor> IODescriptorTable::selectCheck(const upan::vector<io_descriptor>& ioDescriptors) {
   upan::vector<io_descriptor> result;
   for(const auto& ioDescriptor : ioDescriptors) {
-    auto& d = get(ioDescriptor._fd);
+    auto d = get(ioDescriptor._fd);
     switch(ioDescriptor._ioType) {
       case IO_OP_TYPES::IO_Read:
-        if (d.canRead()) {
+        if (d->canRead()) {
           result.push_back(ioDescriptor);
         }
         break;
       case IO_OP_TYPES::IO_Write:
-        if (d.canWrite()) {
+        if (d->canWrite()) {
           result.push_back(ioDescriptor);
         }
         break;

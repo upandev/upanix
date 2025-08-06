@@ -52,7 +52,7 @@ void UserManager::InitializeDefaultUserList() {
 }
 
 void UserManager::WriteUserList() {
-  auto& file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC).value();
+  auto file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC);
 
   for(auto u : _users) {
     const User& user = *u.second;
@@ -62,28 +62,28 @@ void UserManager::WriteUserList() {
     sprintf(buffer.get(), "%s\n%s\n%s\n%d\n", user.Name().c_str(), user.Password().c_str(), user.HomeDirPath().c_str(), user.Type());
 
     try {
-      file.write((const char*)buffer.get(), buf_size);
+      file->write((const char*)buffer.get(), buf_size);
     } catch(const upan::exception&) {
-      close(file.id());
+      close(file->id());
       throw;
     }
   }
 
-	if(close(file.id())) {
+	if(close(file->id())) {
     throw upan::exception(XLOC, "erroring closing fd for user file list");
   }
 }
 
 bool UserManager::LoadUserList() {
-  auto& file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY).value();
+  auto file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY);
 
   upan::string name;
-  while(FileOperations_ReadLine(file.id(), name))
+  while(FileOperations_ReadLine(file->id(), name))
   {
     upan::string password, homeDirPath, szType;
-    if(!FileOperations_ReadLine(file.id(), password)
-      || !FileOperations_ReadLine(file.id(), homeDirPath)
-      || !FileOperations_ReadLine(file.id(), szType))
+    if(!FileOperations_ReadLine(file->id(), password)
+      || !FileOperations_ReadLine(file->id(), homeDirPath)
+      || !FileOperations_ReadLine(file->id(), szType))
       throw upan::exception(XLOC, "user list file is corrupted");
     
     USER_TYPES type = NO_USER;
@@ -96,7 +96,7 @@ bool UserManager::LoadUserList() {
     _users.insert(UserMap::value_type(name, new User(name, password, homeDirPath, type)));
   }
 
-  return close(file.id()) == 0;
+  return close(file->id()) == 0;
 }
 
 bool UserManager::Create(const upan::string& name, const upan::string& password, const upan::string& homeDirPath, USER_TYPES type)

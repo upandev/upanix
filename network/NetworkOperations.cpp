@@ -78,7 +78,7 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
   }
 
   Process& process = ProcessManager::Instance().GetCurrentPAS();
-  auto& sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
+  auto sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
     switch (socketType) {
       case SOCK_STREAM:
         return new SocketDescriptorStream(process.processID(), fd, family, protocol);
@@ -91,12 +91,12 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
     }
   });
 
-  return sd.id();
+  return sd->id();
 }
 
 void NetworkOperations::bind(sock_t fd, const struct sockaddr& address, socklen_t len) {
-  auto& descriptor = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
-  dynamic_cast<SocketDescriptor&>(descriptor).bind(address, len);
+  auto descriptor = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
+  dynamic_cast<SocketDescriptor&>(*descriptor).bind(address, len);
 }
 
 void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, const void* optval, socklen_t len) {
@@ -104,7 +104,7 @@ void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, c
     throw upan::exception(XLOC, "unsupported socket option level: %d", level);
   }
 
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   switch(option) {
     case SO_BROADCAST:
     {
@@ -153,7 +153,7 @@ void NetworkOperations::getSockOpt(sock_t fd, int level, SOCKET_OPTION option, v
     throw upan::exception(XLOC, "invalid optval or len");
   }
 
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   switch(option) {
     case SO_BROADCAST:
     {
@@ -195,26 +195,26 @@ void NetworkOperations::getSockOpt(sock_t fd, int level, SOCKET_OPTION option, v
 }
 
 ssize_t NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.sendTo(buf, n, flags, addr, len);
 }
 
 ssize_t NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.recvFrom(buf, n, flags, addr, len);
 }
 
 void NetworkOperations::connect(int fd, const struct sockaddr& addr, socklen_t len) {
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   descriptor.connect(addr, len);
 }
 
 void NetworkOperations::listen(int fd, int backlog) {
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   descriptor.listen(backlog);
 }
 
 int NetworkOperations::accept(int fd, struct sockaddr* addr, socklen_t* len) {
-  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.accept(addr, len);
 }

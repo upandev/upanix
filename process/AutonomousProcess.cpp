@@ -92,7 +92,7 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
       if (ch == Keyboard_CTRL_C) {
         ProcessManager::Instance().SendSignal(_processID, SIGINT);
       } else if (ch != Keyboard_NA_CHAR) {
-        iodTable().get(IODescriptorTable::STDIN).write((void*)&ch, 1);
+        iodTable().get(IODescriptorTable::STDIN)->write((void*)&ch, 1);
       }
     }
     break;
@@ -138,11 +138,11 @@ void AutonomousProcess::setupAsGuiProcess(int fdList[]) {
   }
 
   _uiType = Process::UIType::GUI;
-  _uiKeyboardEventStreamFD = &iodTable().allocate([&](int fd) {
+  _uiKeyboardEventStreamFD = iodTable().allocate([&](int fd) {
     return new StreamBufferDescriptor(_processID, fd, 4096, O_NONBLOCK | O_RDWR);
   });
 
-  _uiMouseEventStreamFD = &iodTable().allocate([&](int fd) {
+  _uiMouseEventStreamFD = iodTable().allocate([&](int fd) {
     return new StreamBufferDescriptor(_processID, fd, 4096, O_NONBLOCK | O_RDWR);
   });
 

@@ -141,8 +141,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
 
         try {
-          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).flatMap<int>(
-                  [](FileDescriptor& fd) {
+          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).toOption().flatMap<int>(
+                  [](IODescriptor& fd) {
                     return upan::option<int>(fd.id());
                   }).valueOrElse(-1);
         } catch(const upan::exception& ex) {
@@ -161,10 +161,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
       try {
         auto& process = ProcessManager::Instance().GetCurrentPAS();
-        auto& ioDescriptor = process.iodTable().allocate([&](int fd) {
+        auto ioDescriptor = process.iodTable().allocate([&](int fd) {
           return new StreamBufferDescriptor(process.processID(), fd, 4096, mode);
         });
-        *retVal = ioDescriptor.id();
+        *retVal = ioDescriptor->id();
       } catch(const upan::exception& ex) {
         ex.Print();
         *retVal = -1 ;
@@ -183,8 +183,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
         try
         {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
-          *retVal = file.read(szBufferAddr, (int)p3);
+          auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
+          *retVal = file->read(szBufferAddr, (int)p3);
         }
         catch(...)
         {
@@ -202,8 +202,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
 				*retVal = 0 ;
         try {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
-          *retVal =  file.write(szBufferAddr, (int)p3);
+          auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
+          *retVal =  file->write(szBufferAddr, (int)p3);
         } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;
@@ -239,8 +239,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
         try
         {
-          auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
-          file.seek((int)p3, (int)p2);
+          auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
+          file->seek((int)p3, (int)p2);
         }
         catch(upan::exception& ex)
         {
@@ -257,7 +257,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
         try
         {
-          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1).getOffset();
+          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1)->getOffset();
         }
         catch(const upan::exception& ex)
         {
@@ -273,7 +273,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P3 => Offset
 			{
         try {
-          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1).getMode();
+          *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1)->getMode();
         } catch(const upan::exception& ex) {
 					*retVal = -1 ;
 				}
@@ -303,7 +303,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				*retVal = 0 ;
         try
         {
-          auto& file = dynamic_cast<FileDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1));
+          auto& file = dynamic_cast<FileDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1));
           auto pFileStat = (struct stat*)p2;
           *pFileStat = file.getStat();
         }

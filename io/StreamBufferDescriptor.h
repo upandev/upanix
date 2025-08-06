@@ -43,6 +43,7 @@ public:
   uint32_t getOffset() const override {
     return 0;
   }
+  void onClose() override {}
 
 private:
   upan::queue<uint8_t> _queue;

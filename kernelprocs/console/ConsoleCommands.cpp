@@ -325,11 +325,11 @@ void ConsoleCommands_ReadFileContent()
 	
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY).value();
+  auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
 
   printf("\n");
 	while(true) {
-    int n = file.read(bDataBuffer, 512);
+    int n = file->read(bDataBuffer, 512);
 
 		bDataBuffer[n] = '\0' ;
 
@@ -341,7 +341,7 @@ void ConsoleCommands_ReadFileContent()
     printf("%s", bDataBuffer);
 	}
 
-	if(close(file.id())) {
+	if(close(file->id())) {
     printf("\n File Close Failed");
 		return ;
 	}
@@ -363,18 +363,18 @@ void ConsoleCommands_CopyFile()
 	char bDataBuffer[iBufSize] ;
 
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
-  auto& file = FileOperations::Instance().open(szFileName, O_RDONLY).value();
+  auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
 
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
   FileOperations::Instance().create(szDestFile, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT);
 
-  auto& file1 = FileOperations::Instance().open(szDestFile, O_RDWR).value();
+  auto file1 = FileOperations::Instance().open(szDestFile, O_RDWR);
 
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
 	int i = 0 ;
-  const struct stat& fStat = file.getStat();
+  const struct stat& fStat = file->getStat();
 	unsigned fsize = fStat.st_size ;
 	if(fsize == 0)
 	{
@@ -385,28 +385,28 @@ void ConsoleCommands_CopyFile()
 
 	while(true)
 	{
-    int n = file.read(bDataBuffer, iBufSize);
+    int n = file->read(bDataBuffer, iBufSize);
 
     if(n < 512)
 		{
 			if(n > 0)
-			  file1.write(bDataBuffer, n);
+			  file1->write(bDataBuffer, n);
       KC::MConsole().ShowProgress("", cr, 100) ;
 			break ;
 		}
 		
-    file1.write(bDataBuffer, 512);
+    file1->write(bDataBuffer, 512);
 
 		i++ ;
     KC::MConsole().ShowProgress("", cr, (i * iBufSize * 100) / fsize) ;
 	}
 
-	if(close(file.id())) {
+	if(close(file->id())) {
     printf("\n File Close Failed");
 		return ;
 	}
 
-	if(close(file1.id())) {
+	if(close(file1->id())) {
 	  printf("\n File1 Close Failed");
 		return ;
 	}
@@ -966,14 +966,14 @@ void graphics_photos(int x, int y) {
   for (const auto& s : fileStats) {
     if (S_ISFILE(s._stat.st_mode)) {
       const auto fileSize = s._stat.st_size;
-      auto& file = FileOperations::Instance().open(s._name, O_RDONLY).value();
-      file.seek(SEEK_SET, 0);
+      auto file = FileOperations::Instance().open(s._name, O_RDONLY);
+      file->seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
-      file.read(buffer.get(), fileSize);
+      file->read(buffer.get(), fileSize);
       upanui::BmpEncoder decoder;
       upanui::Image& image = decoder.decode(buffer.get(), upan::option<uint32_t>::empty());
       images.push_back(&image);
-      close(file.id());
+      close(file->id());
     }
   }
 
@@ -1640,15 +1640,15 @@ void graphics_desktop(int x, int y) {
                                                               upanui::VerticalPlacementType::TOP_FIXED);
 
     const upan::string desktopImageFile("usdb@/desktop/desktop.png");
-    auto& file = FileOperations::Instance().open(desktopImageFile, O_RDONLY).value();
-    auto fileSize = file.getStat().st_size;
+    auto file = FileOperations::Instance().open(desktopImageFile, O_RDONLY);
+    auto fileSize = file->getStat().st_size;
 
     upan::uniq_ptr<uint8_t[]> buffer(new uint8_t[fileSize]);
-    file.read(buffer.get(), fileSize);
+    file->read(buffer.get(), fileSize);
     upanui::PngEncoder decoder;
     upanui::Image& bgImage = decoder.decode(buffer.get(), fileSize);
 
-    close(file.id());
+    close(file->id());
 
     auto& uiMain = upanui::UIObjectFactory::createImageCanvas(uiRoot, bgImage, upanui::ImageComposeType::FIT_IN,
                                                               0, menuBarHeight, appWidth, mainHeight,

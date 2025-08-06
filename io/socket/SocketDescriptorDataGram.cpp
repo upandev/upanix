@@ -28,7 +28,7 @@ SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TY
   : SocketDescriptorPacket(pid, fd, family, protocol), _routeSetupCompleted(false) {
 }
 
-SocketDescriptorDataGram::~SocketDescriptorDataGram() {
+void SocketDescriptorDataGram::onClose() {
   NetworkManager::Instance().getUDPSocketResolver().release(*this);
   NetworkManager::Instance().getUDPPortPool().release(srcAddr().sin_port);
 }

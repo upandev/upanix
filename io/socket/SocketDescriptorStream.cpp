@@ -33,7 +33,7 @@ SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE f
     _connectionBacklog(0) {
 }
 
-SocketDescriptorStream::~SocketDescriptorStream() {
+void SocketDescriptorStream::onClose() {
   NetworkManager::Instance().getTCPSocketResolver().releaseListeningSocket(*this);
   _tcpConnection.toOption().ifPresent([](TCPConnection& tcpConnection) { tcpConnection.close(); });
   for(auto& c : _listenQueue) {

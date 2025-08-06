@@ -28,7 +28,7 @@ SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family,
   : SocketDescriptorPacket(pid, fd, family, protocol) {
 }
 
-SocketDescriptorRaw::~SocketDescriptorRaw() {
+void SocketDescriptorRaw::onClose() {
   switch(protocol()) {
     case ETH_P_ARP:
       NetworkManager::Instance().getARPSocketResolver().release(*this);

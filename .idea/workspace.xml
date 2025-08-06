@@ -33,37 +33,35 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="set disk format=raw">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support getsockopt()&#10;libc header refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/LoopbackNetworkDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/LoopbackNetworkDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ipv4/IPV4Handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ipv4/IPV4Handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ipv4/IPV4Headers.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ipv4/IPV4Headers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPHeaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPHeaders.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPSocketResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/udp/UDPHandler.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/udp/UDPHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/udp/UDPHeaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/udp/UDPHeaders.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/dhcp/DHCPMessage.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/dhcp/DHCPMessage.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/dns/DNSClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/dns/DNSClient.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/BufferedReader.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/BufferedReader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/UserManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/users/UserManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +122,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/io/socket",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/io",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -138,11 +136,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/io/socket" />
       <recent name="$PROJECT_DIR$/network/protocol/tcp" />
       <recent name="$PROJECT_DIR$/network/socket" />
       <recent name="$PROJECT_DIR$/network/protocol" />
-      <recent name="$PROJECT_DIR$/drivers/net" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/network/protocol" />
@@ -714,7 +712,7 @@
       <workItem from="1752024625810" duration="21064000" />
       <workItem from="1752106041895" duration="164041000" />
       <workItem from="1753457749603" duration="2026000" />
-      <workItem from="1753486132389" duration="163860000" />
+      <workItem from="1753486132389" duration="171016000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1059,7 +1057,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="177" />
+    <option name="localTasksCounter" value="178" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1093,7 +1091,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug in WAIT_INT logic to wait until the event queue is non-empty" />
     <MESSAGE value="special handling for schedule runner (.sr) to ensure it runs on every invocation irrespective of whether the sleep interval has elapsed - this is required because in case an interrupt occurs while executing .sr and if the interrupt calls sleep with a non-zero interval then we could end-up with all processes on the scheduler in wait or sleep mode and the timer interrupt will be in a loop to find the next ready process. If all processes are in sleep mode then they will not be picked up because PIT will not fire while timer interrupt is active" />
     <MESSAGE value="implemented and tested DHCP client" />
     <MESSAGE value="if there is no renewal/rebind time then set it to half of least time - this is to prevent a loop of renewal requests" />
@@ -1118,7 +1115,8 @@
     <MESSAGE value="support for TCP server side flow control - with listen and accept" />
     <MESSAGE value="bug fix - register SysIO system call handler" />
     <MESSAGE value="set disk format=raw" />
-    <option name="LAST_COMMIT_MESSAGE" value="set disk format=raw" />
+    <MESSAGE value="support getsockopt()&#10;libc header refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="support getsockopt()&#10;libc header refactoring" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

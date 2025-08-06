@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 #include <option.h>
+#include <shared_ptr.h>
+#include <fs.h>
 
 class IODescriptor {
 protected:
@@ -31,6 +33,8 @@ protected:
   }
 
 public:
+  typedef upan::shared_ptr<IODescriptor> Ptr;
+
   virtual ~IODescriptor() = default;
 
   int id() const {
@@ -41,12 +45,8 @@ public:
     return _pid;
   }
 
-  virtual IODescriptor& getRealDescriptor() {
-    return *this;
-  }
-
-  virtual upan::option<IODescriptor&> getParentDescriptor() {
-    return upan::option<IODescriptor&>::empty();
+  virtual IODescriptor::Ptr getParentDescriptor() {
+    return {};
   }
 
   uint32_t getMode() const {
@@ -71,9 +71,14 @@ public:
   virtual bool canWrite() = 0;
   virtual void seek(int seekType, int offset) = 0;
   virtual uint32_t getOffset() const = 0;
+  virtual struct stat getStat() { return {}; }
 
-  virtual void onClose() {};
+protected:
+  virtual void onClose() = 0;
+
+private:
   void close() {
+    decrementRefCount();
     _isClosed = true;
     onClose();
   }
@@ -84,4 +89,6 @@ private:
   uint32_t _mode;
   int _refCount;
   bool _isClosed;
+
+  friend class IODescriptorTable;
 };

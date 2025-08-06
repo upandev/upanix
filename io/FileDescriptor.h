@@ -46,7 +46,7 @@ public:
   void seek(int seekType, int offset) override;
   void truncate();
 
-  struct stat getStat();
+  struct stat getStat() override;
   uint32_t getOffset() const override {
     return _offset;
   }
@@ -69,6 +69,8 @@ public:
   void setOffset(uint32_t offset) {
     _offset = offset;
   }
+
+  void onClose() override {}
 
 private:
   FileNodeRef _fileNodeRef;

@@ -21,23 +21,8 @@
  */
 
 #include <RedirectDescriptor.h>
-#include <ProcessManager.h>
 
-RedirectDescriptor::RedirectDescriptor(int pid, int id, IODescriptor& parentDesc)
-  : IODescriptor(pid, id, parentDesc.getMode()),
-    _parentPid(parentDesc.getPid()),
-    _parentDescId(parentDesc.id()) {
-  if (_parentPid == getPid() && _parentDescId == id) {
-    throw upan::exception(XLOC, "invalid DupDescriptor - id same as parent id: %d", id);
-  }
-  parentDesc.incrementRefCount();
-}
-
-upan::option<IODescriptor&> RedirectDescriptor::getParentDescriptor() {
-  auto parentProcess = ProcessManager::Instance().GetProcess(_parentPid);
-  if (parentProcess.isEmpty()) {
-    throw upan::exception(XLOC, "broken redirect descriptor %d from process %d to process: %d, desc: %d",
-                          id(), getPid(), _parentPid, _parentDescId);
-  }
-  return upan::option<IODescriptor&>(parentProcess.value().iodTable().getRealNonDupped(_parentDescId));
+RedirectDescriptor::RedirectDescriptor(int pid, int id, IODescriptor::Ptr parentDesc)
+  : IODescriptor(pid, id, parentDesc->getMode()), _parentDesc(parentDesc) {
+  parentDesc->incrementRefCount();
 }

@@ -26,46 +26,46 @@
 
 class RedirectDescriptor : public IODescriptor {
 public:
-  RedirectDescriptor(int pid, int id, IODescriptor& parentDesc);
+  RedirectDescriptor(int pid, int id, IODescriptor::Ptr parentDesc);
 
-  upan::option<IODescriptor&> getParentDescriptor() override;
-
-  IODescriptor& getRealDescriptor() override {
-    return getParentDescriptor().value().getRealDescriptor();
+  IODescriptor::Ptr getParentDescriptor() override {
+    return _parentDesc;
   }
 
   int read(void* buffer, int len) override {
-    return getParentDescriptor().value().read(buffer, len);
+    return _parentDesc->read(buffer, len);
   }
 
   bool canRead() override {
-    return getParentDescriptor().value().canRead();
+    return _parentDesc->canRead();
   }
 
   int write(const void* buffer, int len) override {
-    return getParentDescriptor().value().write(buffer, len);
+    return _parentDesc->write(buffer, len);
   }
 
   bool canWrite() override {
-    return getParentDescriptor().value().canWrite();
+    return _parentDesc->canWrite();
   }
 
   void seek(int seekType, int offset) override {
-    getParentDescriptor().value().seek(seekType, offset);
+    _parentDesc->seek(seekType, offset);
   }
 
   uint32_t getOffset() const override {
-    return const_cast<RedirectDescriptor&>(*this).getParentDescriptor().value().getOffset();
+    return _parentDesc->getOffset();
   }
 
-  void changeRedirection(IODescriptor& ioDescriptor) {
-    getParentDescriptor().value().decrementRefCount();
-    _parentPid = ioDescriptor.getPid();
-    _parentDescId = ioDescriptor.id();
-    getParentDescriptor().value().incrementRefCount();
+  void changeRedirection(IODescriptor::Ptr ioDescriptor) {
+    _parentDesc->decrementRefCount();
+    _parentDesc = upan::move(ioDescriptor);
+    _parentDesc->incrementRefCount();
+  }
+
+  void onClose() override {
+    _parentDesc->decrementRefCount();
   }
 
 private:
-  int _parentPid;
-  int _parentDescId;
+  IODescriptor::Ptr _parentDesc;
 };

@@ -64,8 +64,8 @@ private:
   ThreadSchedulerList _threadSchedulerList;
   ThreadSchedulerList::iterator _nextThreadIt;
   UIType _uiType;
-  IODescriptor* _uiKeyboardEventStreamFD;
-  IODescriptor* _uiMouseEventStreamFD;
+  IODescriptor::Ptr _uiKeyboardEventStreamFD;
+  IODescriptor::Ptr _uiMouseEventStreamFD;
   bool _isGuiBase;
   MouseCursorType _mouseCursorType;
 

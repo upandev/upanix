@@ -31,7 +31,6 @@
 class SocketDescriptorStream : public SocketDescriptor {
 public:
   SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
-  ~SocketDescriptorStream() override;
 
   int read(void* buffer, int len) override;
   bool canRead() override;
@@ -52,6 +51,7 @@ private:
   void acceptResponse(const upan::shared_ptr<RawNetPacket>& rawPacket);
   void acceptConnection(TCPConnection& tcpConnection);
   int getLastError() const override;
+  void onClose() override;
 
   friend class TCPSocketResolver;
   friend class NetworkManager;

@@ -41,16 +41,16 @@ public:
     SYSLOG = 3
   } STD_DESCRIPTORS;
 
-  typedef upan::map<int, IODescriptor*> IODMap;
+  typedef upan::map<int, IODescriptor::Ptr> IODMap;
 
   IODescriptorTable(int pid, int parentPid);
   ~IODescriptorTable() noexcept;
 
-  IODescriptor& allocate(const upan::function<IODescriptor*, int>& descriptorBuilder);
+  IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
   void free(int fd);
   void dup2(int oldFD, int newFD);
-  IODescriptor& getRealNonDupped(int fd);
-  IODescriptor& get(int fd);
+  IODescriptor::Ptr getRealNonDupped(int fd);
+  IODescriptor::Ptr get(int fd);
   void setupStreamedStdio();
   void setupNullStdio();
   upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);

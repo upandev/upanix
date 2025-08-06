@@ -59,11 +59,11 @@ void KernelRootProcess::openSysLoggerFile(const upan::string& driveName) {
   SetKernelRootMode(true);
 
   try {
-    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
-    if (typeid(ioDescriptor.getParentDescriptor().value()) != typeid(FileDescriptor)) {
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(*_iodTable.get(IODescriptorTable::SYSLOG));
+    auto& parentDescriptor = *ioDescriptor.getParentDescriptor();
+    if (typeid(parentDescriptor) != typeid(FileDescriptor)) {
       int fileFD = open((driveName + "@" + "/var/log/sys.log").c_str(), O_RDWR | O_APPEND);
-      auto& fileDescriptor = _iodTable.get(fileFD);
-      ioDescriptor.changeRedirection(fileDescriptor);
+      ioDescriptor.changeRedirection(_iodTable.get(fileFD));
     }
   } catch(const upan::exception& e) {
     e.Print();
@@ -79,8 +79,8 @@ void KernelRootProcess::closeSysLoggerFile() {
   SetKernelRootMode(true);
 
   try {
-    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
-    auto& parentDescriptor = ioDescriptor.getParentDescriptor().value();
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(*_iodTable.get(IODescriptorTable::SYSLOG));
+    auto& parentDescriptor = *ioDescriptor.getParentDescriptor();
     if (typeid(parentDescriptor) == typeid(FileDescriptor)) {
       ioDescriptor.changeRedirection(_iodTable.get(IODescriptorTable::STDOUT));
       close(parentDescriptor.id());
@@ -99,8 +99,8 @@ void KernelRootProcess::resetSysLoggerFile() {
   SetKernelRootMode(true);
 
   try {
-    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(_iodTable.get(IODescriptorTable::SYSLOG));
-    auto& parentDescriptor = ioDescriptor.getParentDescriptor().value();
+    auto& ioDescriptor = dynamic_cast<RedirectDescriptor&>(*_iodTable.get(IODescriptorTable::SYSLOG));
+    auto& parentDescriptor = *ioDescriptor.getParentDescriptor();
     if (typeid(parentDescriptor) == typeid(FileDescriptor)) {
       dynamic_cast<FileDescriptor&>(parentDescriptor).truncate();
     }
@@ -142,7 +142,7 @@ void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   if (ch == Keyboard_CTRL_C && (fgPid = _processGroup->GetFGProcessID()) != NO_PROCESS_ID) {
     ProcessManager::Instance().SendSignal(fgPid, SIGINT);
   } else {
-    iodTable().get(IODescriptorTable::STDIN).write((void*) &ch, 1);
+    iodTable().get(IODescriptorTable::STDIN)->write((void*) &ch, 1);
   }
 }
 

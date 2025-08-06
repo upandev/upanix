@@ -66,8 +66,8 @@ static bool MountManager_GetHomeMountDrive(char* szHomeDriveName, unsigned uiSiz
     return false;
   }
 
-  const int bytesRead = fd.value().read(szHomeDriveName, uiSize);
-  close(fd.value().id());
+  const int bytesRead = fd->read(szHomeDriveName, uiSize);
+  close(fd->id());
 
   szHomeDriveName[bytesRead - 1] = '\0' ; /* Junk Fix... Use ctype and trim functions
 	from UPANIXApps library... port it to kernel using kernel coding conventions */

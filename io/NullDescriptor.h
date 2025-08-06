@@ -47,4 +47,6 @@ public:
   uint32_t getOffset() const override {
     return 0;
   }
+
+  void onClose() override {}
 };

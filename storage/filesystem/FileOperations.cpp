@@ -35,10 +35,10 @@ bool FileOperations_ReadLine(int fd, upan::string& line)
   const int CHUNK_SIZE = 64;
   char buffer[CHUNK_SIZE + 1];
   upan::list<upan::string> buffers;
-  auto& file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
+  auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
   while(true)
   {
-    int readLen = file.read(buffer, CHUNK_SIZE);
+    int readLen = file->read(buffer, CHUNK_SIZE);
     
     if(readLen == 0)
       break;
@@ -55,7 +55,7 @@ bool FileOperations_ReadLine(int fd, upan::string& line)
     int offset = i - readLen + 1;
     if(offset < 0)
     {
-      file.seek(SEEK_CUR, offset);
+      file->seek(SEEK_CUR, offset);
       break;
     }
   }
@@ -106,7 +106,7 @@ StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, co
   return storageDrive;
 }
 
-upan::option<FileDescriptor&> FileOperations::open(const upan::string& filePath, const uint8_t mode) {
+upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath, const uint8_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
@@ -116,14 +116,12 @@ upan::option<FileDescriptor&> FileOperations::open(const upan::string& filePath,
   auto fileNodeRef = storageDrive.fileSystem().open(fileTokens, mode, cwd, process);
 
   if (fileNodeRef.empty()) {
-    return upan::option<FileDescriptor&>::empty();
+    return {};
   }
 
-  auto& ioDescriptor = process.iodTable().allocate([&](int fd) {
+  return process.iodTable().allocate([&](int fd) {
     return new FileDescriptor(process.processID(), fd, mode, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
   });
-
-  return upan::option<FileDescriptor&>(dynamic_cast<FileDescriptor&>(ioDescriptor));
 }
 
 void FileOperations::create(const upan::string& filePath, uint16_t fileType, uint16_t mode) {

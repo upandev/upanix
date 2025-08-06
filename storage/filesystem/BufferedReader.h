@@ -40,6 +40,6 @@ class BufferedReader
     int Read(uint8_t* szBuffer, int iLen) ;
 
   private:
-    IODescriptor* _file;
+    IODescriptor::Ptr _file;
     int DoRead(uint8_t* szBuffer, int iLen);
 };
