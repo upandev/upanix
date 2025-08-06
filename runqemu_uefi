@@ -75,18 +75,37 @@ sleep 1
 #
 #~/workspace/tools/qemu/build/qemu-system-x86_64 \
 # -s -S \ -> for debugging. -s is localhost:1234, -S is pause until lldb/gdb connection
+
+
+#Use this if you want to use EHCI for boot-drive and XHCI for the other attached USB drive
+#-drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off,format=raw,cache=writeback \
+#-device usb-ehci,id=ehci \
+#-device usb-storage,bus=ehci.0,drive=usbbootdrive \
+#-drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img,file.locking=off,format=raw \
+#-device nec-usb-xhci,id=xhci \
+#-device usb-storage,bus=xhci.0,port=1,drive=usbdrive1 \
+#-device usb-hub,bus=xhci.0,port=3 \
+
+#Use this if you want to use XHCI for boot-drive and also the other attached USB drive
+#-drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off,format=raw,cache=writeback \
+#-drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img,file.locking=off,format=raw \
+#-device nec-usb-xhci,id=xhci \
+#-device usb-storage,bus=xhci.0,port=1,drive=usbbootdrive \
+#-device usb-storage,bus=xhci.0,port=2,drive=usbdrive1 \
+#-device usb-hub,bus=xhci.0,port=3 \
+
 sudo -S echo "starting qemu" < .sudopass
 sudo qemu-system-x86_64 \
 -serial file:serial_debug.log \
--pflash $UPANIX_TOOLS/OVMF.fd \
+-drive if=pflash,file=$UPANIX_TOOLS/OVMF.fd,format=raw \
 -m 512 \
 -s \
 -smp 1 \
 -usb \
--drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off \
--drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img,file.locking=off \
+-drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off,format=raw \
 -device usb-ehci,id=ehci \
 -device usb-storage,bus=ehci.0,drive=usbbootdrive \
+-drive if=none,id=usbdrive1,file=$UPANIX_HOME/USBImage/300MUSB_ehci.img,file.locking=off,format=raw \
 -device nec-usb-xhci,id=xhci \
 -device usb-storage,bus=xhci.0,port=1,drive=usbdrive1 \
 -device usb-hub,bus=xhci.0,port=3 \
