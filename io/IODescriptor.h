@@ -72,8 +72,10 @@ public:
   virtual void seek(int seekType, int offset) = 0;
   virtual uint32_t getOffset() const = 0;
 
-  virtual void destroy() {
-    delete this;
+  virtual void onClose() {};
+  void close() {
+    _isClosed = true;
+    onClose();
   }
 
 private:
@@ -81,4 +83,5 @@ private:
   const int _id;
   uint32_t _mode;
   int _refCount;
+  bool _isClosed;
 };

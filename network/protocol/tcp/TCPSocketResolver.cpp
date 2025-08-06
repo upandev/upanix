@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <arpa/inet.h>
 #include <TCPSocketResolver.h>
 #include <NetworkManager.h>
 #include <NetworkDevice.h>

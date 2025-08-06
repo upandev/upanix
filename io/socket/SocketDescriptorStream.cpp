@@ -83,7 +83,7 @@ void SocketDescriptorStream::connect(const struct sockaddr& address, socklen_t l
     throw upan::exception(XLOC, "connect failed - socket %d is not connected to the same network device", id());
   }
 
-  _tcpConnection.reset(new TCPConnection(device.getTCPHandler(), _srcAddr, _destAddr, id()));
+  _tcpConnection.reset(new TCPConnection(device.getTCPHandler(), _srcAddr, _destAddr, id(), !(getMode() & O_NONBLOCK)));
   NetworkManager::Instance().addTCPConnection(_tcpConnection);
   _tcpConnection->connect();
 }
@@ -151,7 +151,7 @@ void SocketDescriptorStream::acceptResponse(const upan::shared_ptr<RawNetPacket>
 
   auto& device = NetworkManager::Instance().getDevice(destAddr, true);
 
-  upan::shared_ptr<TCPConnection> tcpConnection(new TCPConnection(device.getTCPHandler(), srcAddr, destAddr, id()));
+  upan::shared_ptr<TCPConnection> tcpConnection(new TCPConnection(device.getTCPHandler(), srcAddr, destAddr, id(), getMode() & O_NONBLOCK));
   tcpConnection->setAckNum(ntohl(tcpHeader._seqNum) + 1);
   NetworkManager::Instance().addTCPConnection(tcpConnection);
   _listenQueue.push_back(tcpConnection);
@@ -182,7 +182,7 @@ int SocketDescriptorStream::read(void* buffer, int len) {
       return n;
     }
 
-    if (getMode() & O_RD_NONBLOCK) {
+    if (getMode() & O_NONBLOCK) {
       return 0;
     }
 
@@ -213,7 +213,7 @@ int SocketDescriptorStream::write(const void* buffer, int len) {
       return n;
     }
 
-    if (getMode() & O_WR_NONBLOCK) {
+    if (getMode() & O_NONBLOCK) {
       return 0;
     }
 
@@ -240,4 +240,8 @@ ssize_t SocketDescriptorStream::sendTo(const uint8_t* buf, size_t n, int flags, 
 
 ssize_t SocketDescriptorStream::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   return read(buf, n);
+}
+
+int SocketDescriptorStream::getLastError() const {
+  return _tcpConnection.isEmpty() ? 0 : _tcpConnection->errorCode();
 }

@@ -49,7 +49,7 @@ public:
   } State;
 
 public:
-  TCPConnection(TCPHandler& tcpHandler, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr, int socketId);
+  TCPConnection(TCPHandler& tcpHandler, const struct sockaddr_in& srcAddr, const struct sockaddr_in& destAddr, int socketId, bool blockingSocket);
 
   State state() { return _state.get(); }
   void state(State state) { _state.set(state); }
@@ -73,6 +73,8 @@ public:
   void recvPacket(upan::shared_ptr<RawNetPacket> packet);
 
   void setAckNum(uint32_t ackNum) { _ackNum = ackNum; }
+  int errorCode() const { return _errorCode; }
+
 private:
   bool allowAppSend() { return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT; }
   bool allowAppRecv() { return _state.get() != TCP_CLOSED; }
@@ -100,6 +102,7 @@ private:
   const struct sockaddr_in _srcAddr;
   const struct sockaddr_in _destAddr;
   int _socketId;
+  bool _blockingSocket;
   upan::string _str;
 
   upan::atomic::integral<State> _state;
@@ -116,4 +119,5 @@ private:
   PACKET_SEQ_MAP _pendingDataPackets;
   upan::mutex _sendRecvMutex;
   upan::condition_variable _sendRecvCond;
+  int _errorCode;
 };

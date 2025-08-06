@@ -23,8 +23,8 @@
   
 #include <stdlib.h>
 #include <ustring.h>
-#include <net/socket.h>
-#include <net/ip.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 #include <unet.h>
 #include <Global.h>
 

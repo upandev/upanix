@@ -30,10 +30,11 @@ constexpr int MAX_PENDING_PACKETS_SIZE = 128 KB; //ms
 TCPConnection::TCPConnection(TCPHandler& tcpHandler,
                              const struct sockaddr_in& srcAddr,
                              const struct sockaddr_in& destAddr,
-                             int socketId)
-  : _tcpHandler(tcpHandler), _srcAddr(srcAddr), _destAddr(destAddr), _socketId(socketId),
+                             int socketId,
+                             bool blockingSocket)
+  : _tcpHandler(tcpHandler), _srcAddr(srcAddr), _destAddr(destAddr), _socketId(socketId), _blockingSocket(blockingSocket),
     _state(TCP_NEW), _seqNum(1), _ackNum(0), _finSeqNum(0), _sendFin(false), _timeWaitStart(0),
-    _sendStream(64 KB), _recvStream(64 KB) {
+    _sendStream(64 KB), _recvStream(64 KB), _errorCode(0) {
   updateToString();
   KLog::info("TCP connection created for %s", _str.c_str());
 }
@@ -70,13 +71,15 @@ void TCPConnection::connect() {
   packet->resetTime();
   _pendingAckSegments.push_back(packet);
 
-  struct timeval timeout;
-  timeout.tv_sec = 3;
-  timeout.tv_usec = 0;
-  _sendRecvCond.wait(_sendRecvMutex, &timeout);
+  if (_blockingSocket) {
+    struct timeval timeout;
+    timeout.tv_sec = 3;
+    timeout.tv_usec = 0;
+    _sendRecvCond.wait(_sendRecvMutex, &timeout);
 
-  if (_state.get() != TCP_ESTABLISHED) {
-    throw upan::exception(XLOC, "connect failed - state: %d", _state.get());
+    if (_state.get() != TCP_ESTABLISHED) {
+      throw upan::exception(XLOC, "connect failed - state: %d", _state.get());
+    }
   }
 }
 
@@ -398,9 +401,12 @@ void TCPConnection::processSynAck(upan::shared_ptr<RawNetPacket> rawPacket) {
   } catch(const upan::exception& e) {
     KLog::exception(e);
     _state.set(TCP_CLOSED);
+    _errorCode = -1;
   }
 
-  _sendRecvCond.notify_one();
+  if (_blockingSocket) {
+    _sendRecvCond.notify_one();
+  }
 }
 
 void TCPConnection::sendSegment(TCPSegment& segment) {

@@ -21,6 +21,7 @@
  */
 
 #include <ARPSocketResolver.h>
+#include <arpa/inet.h>
 
 void ARPSocketResolver::setup(SocketDescriptorRaw& socket, const struct ether_arp& header) {
   upan::mutex_guard g(_mutex);

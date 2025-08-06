@@ -23,7 +23,7 @@
 #pragma once
 
 #include <IODescriptor.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <mutex.h>
 #include <RawNetPacket.h>
 #include <queue.h>
@@ -69,6 +69,8 @@ public:
 
   SA_FAMILY_TYPE family() const { return _family; }
   int protocol() const { return _protocol; }
+
+  virtual int getLastError() const { return 0; }
 
 protected:
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);

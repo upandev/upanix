@@ -139,11 +139,11 @@ void AutonomousProcess::setupAsGuiProcess(int fdList[]) {
 
   _uiType = Process::UIType::GUI;
   _uiKeyboardEventStreamFD = &iodTable().allocate([&](int fd) {
-    return new StreamBufferDescriptor(_processID, fd, 4096, O_WR_NONBLOCK | O_RD_NONBLOCK);
+    return new StreamBufferDescriptor(_processID, fd, 4096, O_NONBLOCK | O_RDWR);
   });
 
   _uiMouseEventStreamFD = &iodTable().allocate([&](int fd) {
-    return new StreamBufferDescriptor(_processID, fd, 4096, O_WR_NONBLOCK | O_RD_NONBLOCK);
+    return new StreamBufferDescriptor(_processID, fd, 4096, O_NONBLOCK | O_RDWR);
   });
 
   fdList[0] = _uiKeyboardEventStreamFD->id();

@@ -20,8 +20,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <net/socket.h>
-#include <net/netdb.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <unet.h>
 #include <DNSClient.h>
 #include <NetworkDevice.h>

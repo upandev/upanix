@@ -20,13 +20,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include "exception.h"
-#include "net/ip.h"
-#include "network/protocol/RawNetPacket.h"
-#include "network/protocol/arp/ARPHandler.h"
-#include "EthernetHandler.h"
-#include "network/NetworkManager.h"
-#include "drivers/net/RealNetworkDevice.h"
+#include <arpa/inet.h>
+#include <exception.h>
+#include <netinet/ip.h>
+#include <network/protocol/RawNetPacket.h>
+#include <network/protocol/arp/ARPHandler.h>
+#include <EthernetHandler.h>
+#include <network/NetworkManager.h>
+#include <drivers/net/RealNetworkDevice.h>
 
 EthernetHandler::EthernetHandler(RealNetworkDevice& networkDevice) : PacketHandler(networkDevice) {
 }

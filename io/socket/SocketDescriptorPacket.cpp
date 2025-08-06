@@ -55,7 +55,7 @@ upan::shared_ptr<RawNetPacket> SocketDescriptorPacket::recvPacket() {
         return packet;
       }
     }
-    if (getMode() & O_RD_NONBLOCK) {
+    if (getMode() & O_NONBLOCK) {
       return {};
     }
     ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getRecvTimeout());

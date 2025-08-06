@@ -21,6 +21,7 @@
  */
 
 #include <net/ip_icmp.h>
+#include <arpa/inet.h>
 #include <ConsoleCommands.h>
 #include <CommandLineParser.h>
 #include <Floppy.h>

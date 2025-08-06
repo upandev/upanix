@@ -157,7 +157,7 @@ void Initialize() {
 	SPECIAL_TASK = false ;
 
 	MultiBoot::Instance();
-	RootConsole::Create();
+  RootConsole::Create();
   MemManager::Instance();
   KC::MConsole().Message("\n **** _/\\_ Welcome to Upanix _/\\_ ****\n", upanui::CharStyle::WHITE_ON_BLACK());
 

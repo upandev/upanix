@@ -51,6 +51,7 @@ private:
   ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
   void acceptResponse(const upan::shared_ptr<RawNetPacket>& rawPacket);
   void acceptConnection(TCPConnection& tcpConnection);
+  int getLastError() const override;
 
   friend class TCPSocketResolver;
   friend class NetworkManager;

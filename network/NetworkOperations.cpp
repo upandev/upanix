@@ -144,6 +144,56 @@ void NetworkOperations::setSockOpt(sock_t fd, int level, SOCKET_OPTION option, c
   }
 }
 
+void NetworkOperations::getSockOpt(sock_t fd, int level, SOCKET_OPTION option, void* optval, socklen_t* len) {
+  if (level != SOL_SOCKET) {
+    throw upan::exception(XLOC, "unsupported socket option level: %d", level);
+  }
+
+  if (optval == nullptr || len == nullptr) {
+    throw upan::exception(XLOC, "invalid optval or len");
+  }
+
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  switch(option) {
+    case SO_BROADCAST:
+    {
+      *(uint8_t*)optval = descriptor.canBroadcast() ? 1 : 0;
+      *len = 1;
+    }
+      break;
+
+    case SO_SNDTIMEO:
+    {
+      const auto timeoutMs = descriptor.getSendTimeout();
+      auto timeout = reinterpret_cast<struct timeval*>(optval);
+      timeout->tv_sec = timeoutMs / 1000;
+      timeout->tv_usec = (timeoutMs % 1000) * 1000;
+      *len = sizeof(struct timeval);
+    }
+    break;
+
+    case SO_RCVTIMEO:
+    {
+      const auto timeoutMs = descriptor.getRecvTimeout();
+      auto timeout = reinterpret_cast<struct timeval*>(optval);
+      timeout->tv_sec = timeoutMs / 1000;
+      timeout->tv_usec = (timeoutMs % 1000) * 1000;
+      *len = sizeof(struct timeval);
+    }
+    break;
+
+    case SO_ERROR:
+    {
+      *(int*)optval = descriptor.getLastError();
+      *len = sizeof(int);
+    }
+    break;
+
+    default:
+      throw upan::exception(XLOC, "unsupported socket option: %d", option);
+  }
+}
+
 ssize_t NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.sendTo(buf, n, flags, addr, len);

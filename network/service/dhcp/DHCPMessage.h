@@ -22,7 +22,7 @@
 #pragma once
 
 #include <ithread.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <dtime.h>
 #include <ConfigFileDB.h>
 #include <result.h>

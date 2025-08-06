@@ -26,7 +26,7 @@
 #include <option.h>
 #include <mutex.h>
 #include <vector.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <IPV4Headers.h>
 #include <PacketHandler.h>
 

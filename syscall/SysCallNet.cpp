@@ -73,6 +73,18 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       }
       break;
 
+    case SYS_CALL_SOCKET_GET_OPT:
+      {
+        *retVal = 0;
+        try {
+          NetworkOperations::Instance().getSockOpt((sock_t)p1, (int)p2, (SOCKET_OPTION)p3, (void*)p4, (socklen_t*)p5);
+        } catch(const upan::exception& e) {
+          KLog::exception(e);
+          *retVal = -1;
+        }
+      }
+      break;
+
     case SYS_CALL_SOCKET_SEND_TO:
     {
       *retVal = 0;

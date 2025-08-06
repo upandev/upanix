@@ -20,7 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <unet.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <LoopbackNetworkDevice.h>
 
 constexpr char LoopbackNetworkDevice::DEFAULT_HOST_NAME[];

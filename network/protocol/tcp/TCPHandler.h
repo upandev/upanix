@@ -24,7 +24,7 @@
 #include <map.h>
 #include <option.h>
 #include <shared_ptr.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <PacketHandler.h>
 
 class IPV4Handler;

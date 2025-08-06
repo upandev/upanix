@@ -32,8 +32,8 @@ constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
 IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descIdCounter(0) {
   if (pid == NO_PROCESS_ID) {
-    allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
-    auto& stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
+    allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_NONBLOCK | O_RDWR); });
+    auto& stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_NONBLOCK | O_RDWR); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
   } else {
@@ -54,10 +54,10 @@ IODescriptorTable::~IODescriptorTable() noexcept {
 void IODescriptorTable::setupStreamedStdio() {
   upan::mutex_guard g(_ioMutex);
   delete _iodMap[STDOUT];
-  _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_WR_NONBLOCK);
+  _iodMap[STDOUT] = new StreamBufferDescriptor(_pid, STDOUT, 4096, O_NONBLOCK | O_RDWR);
 
   delete _iodMap[STDIN];
-  _iodMap[STDIN] = new StreamBufferDescriptor(_pid, STDIN, 4096, O_WR_NONBLOCK);
+  _iodMap[STDIN] = new StreamBufferDescriptor(_pid, STDIN, 4096, O_NONBLOCK | O_RDWR);
 }
 
 void IODescriptorTable::setupNullStdio() {
