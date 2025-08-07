@@ -37,15 +37,15 @@ protected:
   SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 public:
-  void seek(int seekType, int offset) override { }
-  uint32_t getOffset() const override { return 0; }
+  void _seek(int seekType, int offset) override { }
+  uint32_t _getOffset() const override { return 0; }
 
-  virtual void bind(const struct sockaddr& address, socklen_t len) = 0;
-  virtual void connect(const struct sockaddr& address, socklen_t len) = 0;
-  virtual void listen(int backlog) = 0;
-  virtual int accept(struct sockaddr* addr, socklen_t* len) = 0;
-  virtual ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
-  virtual ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
+  void bind(const struct sockaddr& address, socklen_t len);
+  void connect(const struct sockaddr& address, socklen_t len);
+  void listen(int backlog);
+  int accept(struct sockaddr* addr, socklen_t* len);
+  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len);
+  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len);
 
   //socket options
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
@@ -73,6 +73,13 @@ public:
   virtual int getLastError() const { return 0; }
 
 protected:
+  virtual void _bind(const struct sockaddr& address, socklen_t len) = 0;
+  virtual void _connect(const struct sockaddr& address, socklen_t len) = 0;
+  virtual void _listen(int backlog) = 0;
+  virtual int _accept(struct sockaddr* addr, socklen_t* len) = 0;
+  virtual ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+  virtual ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
+
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
   void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);
 

@@ -64,3 +64,33 @@ void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct
   validateFlags(flags);
   validateBuf(buf);
 }
+
+void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
+  closeCheckAndThrow();
+  _bind(address, len);
+}
+
+void SocketDescriptor::connect(const struct sockaddr& address, socklen_t len) {
+  closeCheckAndThrow();
+  _connect(address, len);
+}
+
+void SocketDescriptor::listen(int backlog) {
+  closeCheckAndThrow();
+  _listen(backlog);
+}
+
+int SocketDescriptor::accept(struct sockaddr* addr, socklen_t* len) {
+  closeCheckAndThrow();
+  return _accept(addr, len);
+}
+
+ssize_t SocketDescriptor::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  closeCheckAndThrow();
+  return _sendTo(buf, n, flags, addr, len);
+}
+
+ssize_t SocketDescriptor::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  closeCheckAndThrow();
+  return _recvFrom(buf, n, flags, addr, len);
+}

@@ -33,44 +33,27 @@ public:
                  const FileNodeRef& fileNodeRef, StorageDrive& diskDrive,
                  uint32_t startSectorId);
 
-  int read(void* buffer, int len) override;
-  bool canRead() override {
-    return true;
-  }
-
-  int write(const void* buffer, int len) override;
-  bool canWrite() override {
-    return true;
-  }
-
-  void seek(int seekType, int offset) override;
   void truncate();
 
-  struct stat getStat() override;
-  uint32_t getOffset() const override {
-    return _offset;
-  }
-  int getLastReadSectorIndex() const {
-    return _lastReadSectorIndex;
-  }
-  void setLastReadSectorIndex(int v) {
-    _lastReadSectorIndex = v;
-  }
-  uint32_t getLastReadSectorNo() const {
-    return _lastReadSectorNo;
-  }
-  void setLastReadSectorNo(uint32_t v) {
-    _lastReadSectorNo = v;
-  }
+  int getLastReadSectorIndex() const { return _lastReadSectorIndex; }
+  void setLastReadSectorIndex(int v) { _lastReadSectorIndex = v; }
+  uint32_t getLastReadSectorNo() const { return _lastReadSectorNo; }
+  void setLastReadSectorNo(uint32_t v) { _lastReadSectorNo = v; }
 
   void getLastReadSectorDetails(int& sectorIndex, uint32_t& sectorId);
   void setLastReadSectorDetails(int sectorIndex, uint32_t sectorId);
 
-  void setOffset(uint32_t offset) {
-    _offset = offset;
-  }
+  void setOffset(uint32_t offset) { _offset = offset; }
 
-  void onClose() override {}
+private:
+  int _read(void* buffer, int len) override;
+  bool _canRead() override { return true; }
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override { return true; }
+  void _seek(int seekType, int offset) override;
+  struct stat _getStat() override;
+  uint32_t _getOffset() const override { return _offset; }
+  void _close() override {}
 
 private:
   FileNodeRef _fileNodeRef;

@@ -28,7 +28,7 @@ SocketDescriptorRaw::SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family,
   : SocketDescriptorPacket(pid, fd, family, protocol) {
 }
 
-void SocketDescriptorRaw::onClose() {
+void SocketDescriptorRaw::_close() {
   switch(protocol()) {
     case ETH_P_ARP:
       NetworkManager::Instance().getARPSocketResolver().release(*this);
@@ -39,12 +39,12 @@ void SocketDescriptorRaw::onClose() {
   }
 }
 
-void SocketDescriptorRaw::bind(const struct sockaddr& address, socklen_t len) {
+void SocketDescriptorRaw::_bind(const struct sockaddr& address, socklen_t len) {
   validateSockAddrLen(len);
   memcpy((void*)&srcAddr(), (void*)&address, len);
 }
 
-ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorRaw::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "sendPacket/destination address is not specified");
@@ -78,7 +78,7 @@ ssize_t SocketDescriptorRaw::sendTo(const uint8_t* buf, size_t n, int flags, con
   return n;
 }
 
-ssize_t SocketDescriptorRaw::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorRaw::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getEthernetData();

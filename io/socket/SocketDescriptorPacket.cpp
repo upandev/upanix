@@ -32,16 +32,16 @@ SocketDescriptorPacket::SocketDescriptorPacket(int pid, int fd, SA_FAMILY_TYPE f
     _packetQueue(1024) {
 }
 
-bool SocketDescriptorPacket::canRead() {
+int SocketDescriptorPacket::_read(void* buffer, int len) {
+  throw upan::exception(XLOC, "read not supported for packet sockets");
+}
+
+bool SocketDescriptorPacket::_canRead() {
   upan::mutex_guard g(_ioSync);
   return !_packetQueue.empty();
 }
 
-int SocketDescriptorPacket::read(void* buffer, int len) {
-  throw upan::exception(XLOC, "read not supported for packet sockets");
-}
-
-int SocketDescriptorPacket::write(const void* buffer, int len) {
+int SocketDescriptorPacket::_write(const void* buffer, int len) {
   throw upan::exception(XLOC, "write not supported for packet sockets");
 }
 

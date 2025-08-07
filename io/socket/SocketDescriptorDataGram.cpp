@@ -28,12 +28,12 @@ SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TY
   : SocketDescriptorPacket(pid, fd, family, protocol), _routeSetupCompleted(false) {
 }
 
-void SocketDescriptorDataGram::onClose() {
+void SocketDescriptorDataGram::_close() {
   NetworkManager::Instance().getUDPSocketResolver().release(*this);
   NetworkManager::Instance().getUDPPortPool().release(srcAddr().sin_port);
 }
 
-void SocketDescriptorDataGram::bind(const struct sockaddr& address, socklen_t len) {
+void SocketDescriptorDataGram::_bind(const struct sockaddr& address, socklen_t len) {
   if (srcAddr().sin_port != 0) {
     throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), srcAddr().sin_port);
   }
@@ -50,7 +50,7 @@ void SocketDescriptorDataGram::bind(const struct sockaddr& address, socklen_t le
   }
 }
 
-ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorDataGram::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "sendPacket/destination address is not specified");
@@ -80,7 +80,7 @@ ssize_t SocketDescriptorDataGram::sendTo(const uint8_t* buf, size_t n, int flags
   return n;
 }
 
-ssize_t SocketDescriptorDataGram::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorDataGram::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getUDPData();

@@ -31,19 +31,14 @@ class StreamBufferDescriptor : public IODescriptor {
 public:
   StreamBufferDescriptor(int pid, int id, uint32_t bufSize, uint32_t mode);
 
-  int read(void* buffer, int len) override;
-  bool canRead() override;
-  int write(const void* buffer, int len) override;
-  bool canWrite() override;
-
-  void seek(int seekType, int offset) override {
-    //no-op;
-  }
-
-  uint32_t getOffset() const override {
-    return 0;
-  }
-  void onClose() override {}
+private:
+  int _read(void* buffer, int len) override;
+  bool _canRead() override;
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override;
+  void _seek(int seekType, int offset) override {}
+  uint32_t _getOffset() const override { return 0; }
+  void _close() override {}
 
 private:
   upan::queue<uint8_t> _queue;

@@ -28,10 +28,10 @@ public:
   SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 private:
-  void bind(const struct sockaddr& address, socklen_t len) override;
-  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
-  void onClose() override;
+  void _bind(const struct sockaddr& address, socklen_t len) override;
+  ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
+  ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  void _close() override;
 
   friend class UDPSocketResolver;
 

@@ -19,17 +19,53 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
 
-#include <SocketDescriptorPacket.h>
+#include <IODescriptor.h>
 
-class SocketDescriptorRaw : public SocketDescriptorPacket {
-public:
-  SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+int IODescriptor::read(void* buffer, int len) {
+  closeCheckAndThrow();
+  return _read(buffer, len);
+}
 
-private:
-  void _bind(const struct sockaddr& address, socklen_t len) override;
-  ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
-  void _close() override;
-};
+bool IODescriptor::canRead() {
+  closeCheckAndThrow();
+  return _canRead();
+}
+
+int IODescriptor::write(const void* buffer, int len) {
+  closeCheckAndThrow();
+  return _write(buffer, len);
+}
+
+bool IODescriptor::canWrite() {
+  closeCheckAndThrow();
+  return _canWrite();
+}
+
+void IODescriptor::seek(int seekType, int offset) {
+  closeCheckAndThrow();
+  _seek(seekType, offset);
+}
+
+uint32_t IODescriptor::getOffset() const {
+  closeCheckAndThrow();
+  return _getOffset();
+}
+
+struct stat IODescriptor::getStat() {
+  closeCheckAndThrow();
+  return _getStat();
+}
+
+void IODescriptor::close() {
+  closeCheckAndThrow();
+  decrementRefCount();
+  _close();
+  _isClosed = true;
+}
+
+void IODescriptor::closeCheckAndThrow() const {
+  if (_isClosed) {
+    throw upan::exception(XLOC, "IODescriptor %d is already closed", id());
+  }
+}

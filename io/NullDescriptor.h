@@ -31,22 +31,12 @@ class NullDescriptor : public IODescriptor {
 public:
   NullDescriptor(int pid, int id);
 
-  int read(void* buffer, int len) override;
-  bool canRead() override {
-    return true;
-  }
-  int write(const void* buffer, int len) override;
-  bool canWrite() override {
-    return true;
-  }
-
-  void seek(int seekType, int offset) override {
-    //no-op;
-  }
-
-  uint32_t getOffset() const override {
-    return 0;
-  }
-
-  void onClose() override {}
+private:
+  int _read(void* buffer, int len) override;
+  bool _canRead() override { return true; }
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override { return true; }
+  void _seek(int seekType, int offset) override {}
+  uint32_t _getOffset() const override { return 0; }
+  void _close() override {}
 };

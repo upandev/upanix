@@ -27,11 +27,11 @@ NullDescriptor::NullDescriptor(int pid, int id)
   : IODescriptor(pid, id, O_APPEND) {
 }
 
-int NullDescriptor::read(void* buffer, int len) {
+int NullDescriptor::_read(void* buffer, int len) {
   memset(buffer, 0, len);
   return len;
 }
 
-int NullDescriptor::write(const void* buffer, int len) {
+int NullDescriptor::_write(const void* buffer, int len) {
   return len;
 }

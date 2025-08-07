@@ -33,7 +33,7 @@ SocketDescriptorStream::SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE f
     _connectionBacklog(0) {
 }
 
-void SocketDescriptorStream::onClose() {
+void SocketDescriptorStream::_close() {
   NetworkManager::Instance().getTCPSocketResolver().releaseListeningSocket(*this);
   _tcpConnection.toOption().ifPresent([](TCPConnection& tcpConnection) { tcpConnection.close(); });
   for(auto& c : _listenQueue) {
@@ -44,7 +44,7 @@ void SocketDescriptorStream::onClose() {
   }
 }
 
-void SocketDescriptorStream::bind(const struct sockaddr& address, socklen_t len) {
+void SocketDescriptorStream::_bind(const struct sockaddr& address, socklen_t len) {
   if (_srcAddr.sin_port != 0) {
     throw upan::exception(XLOC, "setupRoute failed - socket %d is already bound to port %d", id(), ntohs(_srcAddr.sin_port));
   }
@@ -61,7 +61,7 @@ void SocketDescriptorStream::bind(const struct sockaddr& address, socklen_t len)
   }
 }
 
-void SocketDescriptorStream::connect(const struct sockaddr& address, socklen_t len) {
+void SocketDescriptorStream::_connect(const struct sockaddr& address, socklen_t len) {
   if (!_tcpConnection.isEmpty()) {
     throw upan::exception(XLOC, "connect failed - socket %d has already initialized a connection", id());
   }
@@ -88,7 +88,7 @@ void SocketDescriptorStream::connect(const struct sockaddr& address, socklen_t l
   _tcpConnection->connect();
 }
 
-void SocketDescriptorStream::listen(int backlog) {
+void SocketDescriptorStream::_listen(int backlog) {
   if (_srcAddr.sin_port == 0) {
     throw upan::exception(XLOC, "listen failed - socket %d is not bound to any port", id());
   }
@@ -102,7 +102,7 @@ void SocketDescriptorStream::listen(int backlog) {
   NetworkManager::Instance().getTCPPortPool().addRefCount(_srcAddr.sin_port);
 }
 
-int SocketDescriptorStream::accept(struct sockaddr* addr, socklen_t* len) {
+int SocketDescriptorStream::_accept(struct sockaddr* addr, socklen_t* len) {
   upan::mutex_guard g(_acceptMutex);
   _acceptCond.waitc(_acceptMutex, [&]() { return !_acceptQueue.empty(); });
 
@@ -172,7 +172,7 @@ void SocketDescriptorStream::acceptConnection(TCPConnection& tcpConnection) {
   throw upan::exception(XLOC, "accept failed - socket %d can't find the connection in listen queue", id());
 }
 
-int SocketDescriptorStream::read(void* buffer, int len) {
+int SocketDescriptorStream::_read(void* buffer, int len) {
   if (_tcpConnection.isEmpty()) {
     throw upan::exception(XLOC, "read failed - socket %d is not connected", id());
   }
@@ -196,14 +196,14 @@ int SocketDescriptorStream::read(void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::canRead() {
+bool SocketDescriptorStream::_canRead() {
   if (_tcpConnection.isEmpty()) {
     return false;
   }
   return _tcpConnection->canRecv();
 }
 
-int SocketDescriptorStream::write(const void* buffer, int len) {
+int SocketDescriptorStream::_write(const void* buffer, int len) {
   if (_tcpConnection.isEmpty()) {
     throw upan::exception(XLOC, "write failed - socket %d is not connected", id());
   }
@@ -227,18 +227,18 @@ int SocketDescriptorStream::write(const void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::canWrite() {
+bool SocketDescriptorStream::_canWrite() {
   if (_tcpConnection.isEmpty()) {
     return false;
   }
   return _tcpConnection->canSend();
 }
 
-ssize_t SocketDescriptorStream::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorStream::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   return write(buf, n);
 }
 
-ssize_t SocketDescriptorStream::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorStream::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   return read(buf, n);
 }
 

@@ -28,29 +28,28 @@ class SocketDescriptorPacket : public SocketDescriptor {
 protected:
   SocketDescriptorPacket(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
-public:
-  int read(void* buffer, int len) override;
-  bool canRead() override;
+protected:
+  int _read(void* buffer, int len) override;
+  bool _canRead() override;
 
-  int write(const void* buffer, int len) override;
-  bool canWrite() override { return true; }
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override { return true; }
 
-  void seek(int seekType, int offset) override { }
-  uint32_t getOffset() const override { return 0; }
+  void _seek(int seekType, int offset) override { }
+  uint32_t _getOffset() const override { return 0; }
 
-  void connect(const struct sockaddr& address, socklen_t len) override {
+  void _connect(const struct sockaddr& address, socklen_t len) override {
     throw upan::exception(XLOC, "connect not supported for packet sockets");
   }
 
-  void listen(int backlog) override {
+  void _listen(int backlog) override {
     throw upan::exception(XLOC, "listen not supported for packet sockets");
   }
 
-  int accept(struct sockaddr* sockaddr, socklen_t* len) override {
+  int _accept(struct sockaddr* sockaddr, socklen_t* len) override {
     throw upan::exception(XLOC, "accept not supported for packet sockets");
   }
 
-protected:
   struct sockaddr_in& srcAddr() { return _srcAddr; }
   upan::shared_ptr<RawNetPacket> recvPacket();
   void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);

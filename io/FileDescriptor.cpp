@@ -38,7 +38,7 @@ FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
         _lastReadSectorNo(startSectorId) {
 }
 
-int FileDescriptor::read(void* buffer, int len) {
+int FileDescriptor::_read(void* buffer, int len) {
   const int n = _diskDrive.fileSystem().read(_fileNodeRef, *this, (uint8_t*)buffer, len);
   _diskDrive.fileSystem().updateTime(_fileNodeRef, DIR_ACCESS_TIME);
   _offset += n;
@@ -46,7 +46,7 @@ int FileDescriptor::read(void* buffer, int len) {
   return n;
 }
 
-int FileDescriptor::write(const void* buffer, int len) {
+int FileDescriptor::_write(const void* buffer, int len) {
   if( !(getMode() & O_WRONLY || getMode() & O_RDWR || getMode() & O_APPEND) ) {
     throw upan::exception(XLOC, "insufficient permission to write file fd: %d", id());
   }
@@ -66,7 +66,7 @@ int FileDescriptor::write(const void* buffer, int len) {
   return len;
 }
 
-void FileDescriptor::seek(int seekType, int offset) {
+void FileDescriptor::_seek(int seekType, int offset) {
   switch(seekType) {
     case SEEK_SET:
       break ;
@@ -97,7 +97,7 @@ void FileDescriptor::truncate() {
   setLastReadSectorDetails(0, _fileNodeRef.startSectorId());
 }
 
-struct stat FileDescriptor::getStat() {
+struct stat FileDescriptor::_getStat() {
   return _diskDrive.fileSystem().stats(_fileNodeRef);
 }
 

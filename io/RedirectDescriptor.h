@@ -32,37 +32,38 @@ public:
     return _parentDesc;
   }
 
-  int read(void* buffer, int len) override {
-    return _parentDesc->read(buffer, len);
-  }
-
-  bool canRead() override {
-    return _parentDesc->canRead();
-  }
-
-  int write(const void* buffer, int len) override {
-    return _parentDesc->write(buffer, len);
-  }
-
-  bool canWrite() override {
-    return _parentDesc->canWrite();
-  }
-
-  void seek(int seekType, int offset) override {
-    _parentDesc->seek(seekType, offset);
-  }
-
-  uint32_t getOffset() const override {
-    return _parentDesc->getOffset();
-  }
-
   void changeRedirection(IODescriptor::Ptr ioDescriptor) {
     _parentDesc->decrementRefCount();
     _parentDesc = upan::move(ioDescriptor);
     _parentDesc->incrementRefCount();
   }
 
-  void onClose() override {
+private:
+  int _read(void* buffer, int len) override {
+    return _parentDesc->read(buffer, len);
+  }
+
+  bool _canRead() override {
+    return _parentDesc->canRead();
+  }
+
+  int _write(const void* buffer, int len) override {
+    return _parentDesc->write(buffer, len);
+  }
+
+  bool _canWrite() override {
+    return _parentDesc->canWrite();
+  }
+
+  void _seek(int seekType, int offset) override {
+    _parentDesc->seek(seekType, offset);
+  }
+
+  uint32_t _getOffset() const override {
+    return _parentDesc->getOffset();
+  }
+
+  void _close() override {
     _parentDesc->decrementRefCount();
   }
 

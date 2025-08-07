@@ -32,26 +32,27 @@ class SocketDescriptorStream : public SocketDescriptor {
 public:
   SocketDescriptorStream(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
-  int read(void* buffer, int len) override;
-  bool canRead() override;
-
-  int write(const void* buffer, int len) override;
-  bool canWrite() override;
-
   const struct sockaddr_in& srcAddr() { return _srcAddr; }
   const struct sockaddr_in& destAddr() { return _destAddr; }
 
 private:
-  void bind(const struct sockaddr& address, socklen_t len) override;
-  void connect(const struct sockaddr& address, socklen_t len) override;
-  void listen(int backlog) override;
-  int accept(struct sockaddr* addr, socklen_t* len) override;
-  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  int _read(void* buffer, int len) override;
+  bool _canRead() override;
+
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override;
+
+  void _bind(const struct sockaddr& address, socklen_t len) override;
+  void _connect(const struct sockaddr& address, socklen_t len) override;
+  void _listen(int backlog) override;
+  int _accept(struct sockaddr* addr, socklen_t* len) override;
+  ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
+  ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  void _close() override;
+
   void acceptResponse(const upan::shared_ptr<RawNetPacket>& rawPacket);
   void acceptConnection(TCPConnection& tcpConnection);
   int getLastError() const override;
-  void onClose() override;
 
   friend class TCPSocketResolver;
   friend class NetworkManager;

@@ -29,7 +29,7 @@
 
 class IODescriptor {
 protected:
-  IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(1) {
+  IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(1), _isClosed(false) {
   }
 
 public:
@@ -65,23 +65,29 @@ public:
     ++_refCount;
   }
 
-  virtual int read(void* buffer, int len) = 0;
-  virtual bool canRead() = 0;
-  virtual int write(const void* buffer, int len) = 0;
-  virtual bool canWrite() = 0;
-  virtual void seek(int seekType, int offset) = 0;
-  virtual uint32_t getOffset() const = 0;
-  virtual struct stat getStat() { return {}; }
+  int read(void* buffer, int len);
+  bool canRead();
+  int write(const void* buffer, int len);
+  bool canWrite();
+  void seek(int seekType, int offset);
+  uint32_t getOffset() const;
+  struct stat getStat();
 
 protected:
-  virtual void onClose() = 0;
+  virtual int _read(void* buffer, int len) = 0;
+  virtual bool _canRead() = 0;
+  virtual int _write(const void* buffer, int len) = 0;
+  virtual bool _canWrite() = 0;
+  virtual void _seek(int seekType, int offset) = 0;
+  virtual uint32_t _getOffset() const = 0;
+  virtual struct stat _getStat() { return {}; }
+  virtual void _close() = 0;
+
+  bool isClosed() const { return _isClosed; }
+  void closeCheckAndThrow() const;
 
 private:
-  void close() {
-    decrementRefCount();
-    _isClosed = true;
-    onClose();
-  }
+  void close();
 
 private:
   const int _pid;
