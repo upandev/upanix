@@ -66,8 +66,7 @@ void ARPHandler::send(const uint8_t* buf, uint32_t len, const struct sockaddr_in
   arpHeader._header.ea_hdr.ar_hrd = htons(ARPHRD_ETHER);
   arpHeader._header.ea_hdr.ar_pro = htons(ETH_PROTO_TYPE::ETH_P_IP);
   arpHeader._header.ea_hdr.ar_hln = ETH_ALEN;
-  arpHeader._header.ea_hdr.ar_pln = IPV4_ADDR_LEN
-;
+  arpHeader._header.ea_hdr.ar_pln = IPV4_ADDR_LEN;
 
   device().send(packet, ETH_PROTO_TYPE::ETH_P_ARP);
 }

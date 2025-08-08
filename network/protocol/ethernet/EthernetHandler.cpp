@@ -52,7 +52,7 @@ void EthernetHandler::recv(const upan::shared_ptr<RawNetPacket>& packet) {
       device().getARPHandler().recv(packet);
       break;
     default:
-      throw upan::exception(XLOC, "unsupported ethernet packet type: %d", ethernetHeader.type());
+      throw upan::exception(XLOC, "(recv)unsupported ethernet packet type: %d", ethernetHeader.type());
   }
 }
 
@@ -74,7 +74,7 @@ void EthernetHandler::send(RawNetPacket& packet, ETH_PROTO_TYPE eType) {
       isBroadcast = packet.getIPV4Header()._header.ip_dst.s_addr == INADDR_BROADCAST;
       break;
     default:
-      throw upan::exception(XLOC, "unsupported ethernet packet type: %d", eType);
+      throw upan::exception(XLOC, "(send)unsupported ethernet packet type: %d", eType);
   }
 
   if (isBroadcast) {

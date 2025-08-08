@@ -23,9 +23,10 @@
 #include <NetworkOperations.h>
 #include <exception.h>
 #include <ProcessManager.h>
-#include "io/socket/SocketDescriptorStream.h"
-#include "io/socket/SocketDescriptorDataGram.h"
-#include "io/socket/SocketDescriptorRaw.h"
+#include <SocketDescriptorStream.h>
+#include <SocketDescriptorDataGram.h>
+#include <SocketDescriptorARP.h>
+#include <SocketDescriptorICMP.h>
 
 NetworkOperations::NetworkOperations() {
 }
@@ -85,7 +86,15 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
       case SOCK_DGRAM:
         return new SocketDescriptorDataGram(process.processID(), fd, family, protocol);
       case SOCK_RAW:
-        return new SocketDescriptorRaw(process.processID(), fd, family, protocol);
+        if (protocol == ETH_P_ARP) {
+          return new SocketDescriptorARP(process.processID(), fd, family, protocol);
+        } else if (protocol == IPPROTO_ICMP) {
+          return new SocketDescriptorICMP(process.processID(), fd, family, protocol);
+        } else {
+          throw upan::exception(XLOC, "invalid protocol %d for raw-socket", protocol);
+        }
+        break;
+
       default:
         throw upan::exception(XLOC, "unsupport socket-type: %d", socketType);
     }

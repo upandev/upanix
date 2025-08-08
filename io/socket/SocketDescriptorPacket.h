@@ -38,10 +38,6 @@ protected:
   void _seek(int seekType, int offset) override { }
   uint32_t _getOffset() const override { return 0; }
 
-  void _connect(const struct sockaddr& address, socklen_t len) override {
-    throw upan::exception(XLOC, "connect not supported for packet sockets");
-  }
-
   void _listen(int backlog) override {
     throw upan::exception(XLOC, "listen not supported for packet sockets");
   }
@@ -50,9 +46,12 @@ protected:
     throw upan::exception(XLOC, "accept not supported for packet sockets");
   }
 
+  virtual bool filterPacket(const upan::shared_ptr<RawNetPacket>& packet) = 0;
   struct sockaddr_in& srcAddr() { return _srcAddr; }
   upan::shared_ptr<RawNetPacket> recvPacket();
   void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
+  const struct sockaddr_in& extractDestAddr(const struct sockaddr& addr, socklen_t len, bool portRequired);
+  const struct sockaddr_in& resolveDestAddr(const struct sockaddr_in& connectedAddr, const struct sockaddr* sendAddr, socklen_t len, bool portRequired);
 
 private:
   struct sockaddr_in _srcAddr;

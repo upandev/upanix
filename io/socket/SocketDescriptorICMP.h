@@ -21,15 +21,22 @@
  */
 #pragma once
 
+#include <net/if_arp.h>
+#include <net/ip_icmp.h>
 #include <SocketDescriptorPacket.h>
 
-class SocketDescriptorRaw : public SocketDescriptorPacket {
+class SocketDescriptorICMP : public SocketDescriptorPacket {
 public:
-  SocketDescriptorRaw(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+  SocketDescriptorICMP(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
 private:
   void _bind(const struct sockaddr& address, socklen_t len) override;
+  void _connect(const struct sockaddr& address, socklen_t len) override;
   ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
   void _close() override;
+  bool filterPacket(const upan::shared_ptr<RawNetPacket>& rawPacket) override;
+
+private:
+  struct sockaddr_in _destAddr;
 };

@@ -22,7 +22,7 @@
 
 #include <ICMPSocketResolver.h>
 
-void ICMPSocketResolver::setup(SocketDescriptorRaw& socket, const struct icmp& header) {
+void ICMPSocketResolver::setup(SocketDescriptorICMP& socket, const struct icmp& header) {
   upan::mutex_guard g(_mutex);
 
   ICMP_PACKET_ID icmpId = header.icmp_id << 16 | header.icmp_seq;
@@ -36,7 +36,7 @@ void ICMPSocketResolver::setup(SocketDescriptorRaw& socket, const struct icmp& h
   _icmpIdSocketMapReverse[&socket].insert(icmpId);
 }
 
-void ICMPSocketResolver::release(SocketDescriptorRaw& socket) {
+void ICMPSocketResolver::release(SocketDescriptorICMP& socket) {
   upan::mutex_guard g(_mutex);
 
   auto it = _icmpIdSocketMapReverse.find(&socket);
@@ -48,7 +48,7 @@ void ICMPSocketResolver::release(SocketDescriptorRaw& socket) {
   }
 }
 
-upan::option<SocketDescriptorRaw&> ICMPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::option<SocketDescriptorICMP&> ICMPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   if (packet->getIPV4Header().dataLen() < (int)sizeof(struct icmp)) {
@@ -60,12 +60,12 @@ upan::option<SocketDescriptorRaw&> ICMPSocketResolver::resolve(const upan::share
 
   auto it = _icmpIdSocketMap.find(icmpId);
   if (it != _icmpIdSocketMap.end()) {
-    return upan::option<SocketDescriptorRaw&>(it->second);
+    return upan::option<SocketDescriptorICMP&>(it->second);
   }
 
-  return upan::option<SocketDescriptorRaw&>::empty();
+  return upan::option<SocketDescriptorICMP&>::empty();
 }
 
 void ICMPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  resolve(packet).ifPresent([&packet](SocketDescriptorRaw& socket) { socket.recvNotify(packet); });
+  resolve(packet).ifPresent([&packet](SocketDescriptorICMP& socket) { socket.recvNotify(packet); });
 }

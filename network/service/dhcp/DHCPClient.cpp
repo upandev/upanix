@@ -26,6 +26,7 @@
 #include <PIT.h>
 
 static constexpr int MAX_BUFFER_SIZE = 1024;
+static constexpr int DHCP_RETRY_INTERVAL = 5; // in seconds
 
 const upan::string DHCPClient::CFG_DHCP_LEASE_TIME("DHCP_LEASE_TIME");
 const upan::string DHCPClient::CFG_DHCP_LEASE_RENEWAL_TIME("DHCP_LEASE_RENEWAL_TIME");
@@ -149,7 +150,7 @@ void DHCPClient::dhcpDiscover() {
   const auto& result = sendDiscover();
   if (result.isBad()) {
     KLog::error(result.badValue().Msg().c_str());
-    sleep(60); //re-try every minute
+    sleep(DHCP_RETRY_INTERVAL); //re-try after some time
     _flowState = FlowState_Discover;
   } else {
     KLog::info("DHCP discover completed");
@@ -171,7 +172,7 @@ void DHCPClient::dhcpRequest() {
     if (result.badValue().Val() == DHCPResponseErrorCode::REJECTED) {
       _flowState = FlowState_Discover;
     } else {
-      sleep(60); //re-try every minute
+      sleep(DHCP_RETRY_INTERVAL); //re-try after some time
       _flowState = FlowState_Request;
     }
   } else {
@@ -192,7 +193,7 @@ void DHCPClient::dhcpRenew() {
   if (result.isBad()) {
     KLog::error(result.badValue().Msg().c_str());
     time_t sleepTime = (_leaseRebindingTime - _leaseRenewalTime) / 10;
-    sleepTime = sleepTime > 0 ? sleepTime : 60;
+    sleepTime = sleepTime > 0 ? sleepTime : DHCP_RETRY_INTERVAL;
     sleep(sleepTime); //sleep for 1/10th the time interval between rebind - renewal lease time
     if (btime() < _leaseRenewalExpiry) { //still before rebind but after renewal
       _flowState = FlowState_Renew;

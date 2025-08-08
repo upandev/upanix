@@ -25,7 +25,9 @@
 #include <NetworkDevice.h>
 
 SocketDescriptorDataGram::SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol)
-  : SocketDescriptorPacket(pid, fd, family, protocol), _routeSetupCompleted(false) {
+  : SocketDescriptorPacket(pid, fd, family, protocol),
+    _routeSetupCompleted(false),
+    _destAddr({(sa_family_t)family, 0, { INADDR_ANY }, { 0 } }) {
 }
 
 void SocketDescriptorDataGram::_close() {
@@ -50,17 +52,15 @@ void SocketDescriptorDataGram::_bind(const struct sockaddr& address, socklen_t l
   }
 }
 
+void SocketDescriptorDataGram::_connect(const struct sockaddr& address, socklen_t len) {
+  _destAddr = extractDestAddr(address, len, true);
+}
+
 ssize_t SocketDescriptorDataGram::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
-  validateSendToParams(buf, flags, addr, len);
-  if (!addr) {
-    throw upan::exception(XLOC, "sendPacket/destination address is not specified");
-  }
+  validateFlags(flags);
+  validateBuf(buf);
 
-  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(*addr);
-  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
-    throw upan::exception(XLOC, "sendPacket failed - broadcast socket-option is not enabled on socket: %d", id());
-  }
-
+  const struct sockaddr_in& destAddr = resolveDestAddr(_destAddr, addr, len, true);
   auto& device = NetworkManager::Instance().getDevice(destAddr, true);
 
   if (srcAddr().sin_port == 0) {
@@ -83,16 +83,31 @@ ssize_t SocketDescriptorDataGram::_sendTo(const uint8_t* buf, size_t n, int flag
 ssize_t SocketDescriptorDataGram::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
-  const void* srcBuf = packet->getUDPData();
-  const size_t dataLen = packet->getUDPHeader()._len - NetworkPacket::UDP::HEADER_SIZE;
-  const auto xferLen = upan::min(n, dataLen);
+  const auto& udpHeader = packet->getUDPHeader();
+  const auto& ipv4Header = packet->getIPV4Header();
 
+  const void* srcBuf = packet->getUDPData();
+  const size_t dataLen = ntohs(udpHeader._len) - NetworkPacket::UDP::HEADER_SIZE;
+  const auto xferLen = upan::min(n, dataLen);
   memcpy(buf, srcBuf, xferLen);
 
   if (addr && len) {
-    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, packet->getUDPHeader()._srcPort, packet->getIPV4Header()._header.ip_src };
+    reinterpret_cast<sockaddr_in&>(*addr) = { AF_INET, udpHeader._srcPort, ipv4Header._header.ip_src };
     *len = sizeof(sockaddr_in);
   }
 
   return xferLen;
 };
+
+bool SocketDescriptorDataGram::filterPacket(const upan::shared_ptr<RawNetPacket>& rawPacket) {
+  const auto& udpHeader = rawPacket->getUDPHeader();
+  const auto& ipv4Header = rawPacket->getIPV4Header();
+
+  if (_destAddr.sin_port != 0) {
+    if (udpHeader._srcPort != _destAddr.sin_port || ipv4Header._header.ip_src.s_addr != _destAddr.sin_addr.s_addr) {
+      return false;
+    }
+  }
+
+  return true;
+}

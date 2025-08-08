@@ -52,7 +52,10 @@ upan::shared_ptr<RawNetPacket> SocketDescriptorPacket::recvPacket() {
       if (!_packetQueue.empty()) {
         const auto& packet = _packetQueue.front();
         _packetQueue.pop_front();
-        return packet;
+        if (filterPacket(packet)) {
+          return packet;
+        }
+        continue;
       }
     }
     if (getMode() & O_NONBLOCK) {
@@ -77,4 +80,37 @@ void SocketDescriptorPacket::recvNotify(const upan::shared_ptr<RawNetPacket>& pa
   }
 
   _packetQueue.push_back(packet);
+}
+
+const struct sockaddr_in& SocketDescriptorPacket::extractDestAddr(const struct sockaddr& addr, socklen_t len, bool portRequired) {
+  if (len != sizeof(struct sockaddr_in)) {
+    throw upan::exception(XLOC, "invalid socket len: %d", len);
+  }
+
+  const auto& destAddr = reinterpret_cast<const struct sockaddr_in&>(addr);
+  if (destAddr.sin_addr.s_addr == INADDR_BROADCAST && !canBroadcast()) {
+    throw upan::exception(XLOC, "connect failed - broadcast socket-option is not enabled on socket: %d", id());
+  }
+
+  if (destAddr.sin_addr.s_addr == INADDR_ANY) {
+    throw upan::exception(XLOC, "connect failed - socket %d doesn't have a destination address set", id());
+  }
+
+  if (portRequired && destAddr.sin_port == 0) {
+    throw upan::exception(XLOC, "connect failed - socket %d doesn't have a port set", id());
+  }
+
+  return destAddr;
+}
+
+const struct sockaddr_in& SocketDescriptorPacket::resolveDestAddr(const struct sockaddr_in& connectedAddr,
+                                                                  const struct sockaddr* sendAddr, socklen_t len, bool portRequired) {
+  if (!sendAddr) {
+    if (connectedAddr.sin_port == 0) {
+      throw upan::exception(XLOC, "sendPacket failed - socket %d doesn't have a destination address set", id());
+    }
+    return connectedAddr;
+  } else {
+    return extractDestAddr(*sendAddr, len, portRequired);
+  }
 }

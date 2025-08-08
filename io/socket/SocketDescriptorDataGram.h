@@ -22,6 +22,7 @@
 #pragma once
 
 #include <SocketDescriptorPacket.h>
+#include "TCPConnection.h"
 
 class SocketDescriptorDataGram : public SocketDescriptorPacket {
 public:
@@ -29,12 +30,15 @@ public:
 
 private:
   void _bind(const struct sockaddr& address, socklen_t len) override;
+  void _connect(const struct sockaddr& address, socklen_t len) override;
   ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
   void _close() override;
 
+  bool filterPacket(const upan::shared_ptr<RawNetPacket>& rawPacket) override;
   friend class UDPSocketResolver;
 
 private:
   bool _routeSetupCompleted;
+  struct sockaddr_in _destAddr;
 };

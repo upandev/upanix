@@ -23,7 +23,7 @@
 #include <ARPSocketResolver.h>
 #include <arpa/inet.h>
 
-void ARPSocketResolver::setup(SocketDescriptorRaw& socket, const struct ether_arp& header) {
+void ARPSocketResolver::setup(SocketDescriptorARP& socket, const struct ether_arp& header) {
   upan::mutex_guard g(_mutex);
 
   in_addr_t dest_ip = header.arp_tpa;
@@ -37,7 +37,7 @@ void ARPSocketResolver::setup(SocketDescriptorRaw& socket, const struct ether_ar
   _destIpSocketMapReverse[&socket].insert(dest_ip);
 }
 
-void ARPSocketResolver::release(SocketDescriptorRaw& socket) {
+void ARPSocketResolver::release(SocketDescriptorARP& socket) {
   upan::mutex_guard g(_mutex);
 
   auto it = _destIpSocketMapReverse.find(&socket);
@@ -49,7 +49,7 @@ void ARPSocketResolver::release(SocketDescriptorRaw& socket) {
   }
 }
 
-upan::option<SocketDescriptorRaw&> ARPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
+upan::option<SocketDescriptorARP&> ARPSocketResolver::resolve(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_mutex);
 
   const auto arpDataLen = packet->len() - NetworkPacket::Ethernet::HEADER_SIZE;
@@ -66,13 +66,13 @@ upan::option<SocketDescriptorRaw&> ARPSocketResolver::resolve(const upan::shared
 
     auto it = _destIpSocketMap.find(dest_ip);
     if (it != _destIpSocketMap.end()) {
-      return upan::option<SocketDescriptorRaw&>(it->second);
+      return upan::option<SocketDescriptorARP&>(it->second);
     }
   }
 
-  return upan::option<SocketDescriptorRaw&>::empty();
+  return upan::option<SocketDescriptorARP&>::empty();
 }
 
 void ARPSocketResolver::recv(const upan::shared_ptr<RawNetPacket>& packet) {
-  resolve(packet).ifPresent([&packet](SocketDescriptorRaw& socket) { socket.recvNotify(packet); });
+  resolve(packet).ifPresent([&packet](SocketDescriptorARP& socket) { socket.recvNotify(packet); });
 }

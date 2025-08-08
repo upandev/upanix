@@ -33,26 +33,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Refactor to use shared_ptr for IO descriptors in IO descriptor-table">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,34 +97,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck&quot;,
-    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/io&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHELLCHECK.PATH": "/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck",
+    "Shell Script.run.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/io/socket",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "Errors",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/io/socket" />
+      <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/network/protocol/tcp" />
       <recent name="$PROJECT_DIR$/network/socket" />
       <recent name="$PROJECT_DIR$/network/protocol" />
@@ -704,7 +700,7 @@
       <workItem from="1752106041895" duration="164041000" />
       <workItem from="1753457749603" duration="2026000" />
       <workItem from="1753486132389" duration="171861000" />
-      <workItem from="1754569413792" duration="2596000" />
+      <workItem from="1754569413792" duration="13954000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1049,7 +1045,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="179" />
+    <option name="localTasksCounter" value="180" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1083,7 +1079,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented and tested DHCP client" />
     <MESSAGE value="if there is no renewal/rebind time then set it to half of least time - this is to prevent a loop of renewal requests" />
     <MESSAGE value="implement truncate file capability in the filesystem" />
     <MESSAGE value="implemented SocketResolver per IP protocol - that will take care of binding/mapping socket to unique identifiers to match and route the response packets" />
@@ -1108,7 +1103,8 @@
     <MESSAGE value="set disk format=raw" />
     <MESSAGE value="support getsockopt()&#10;libc header refactoring" />
     <MESSAGE value="Refactor to use shared_ptr for IO descriptors in IO descriptor-table" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor to use shared_ptr for IO descriptors in IO descriptor-table" />
+    <MESSAGE value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1120,7 +1116,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h</url>
-          <line>26</line>
+          <line>27</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
