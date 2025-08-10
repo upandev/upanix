@@ -93,6 +93,7 @@ class ProcessManager
     void EventCompleted(int pid);
     void ContextSwitch(TaskContext &);
     void SendSignal(int pid, int signal);
+    void closeAllFiles(StorageDrive& storageDrive);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;

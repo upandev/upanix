@@ -23,21 +23,20 @@
 
 #include <atomicop.h>
 #include <exception.h>
+#include "logger.h"
 
 class KLog {
 public:
-  static void enable(uint32_t levels);
-  static void disable(uint32_t levels);
-  static void enable(const upan::string& level);
-  static void disable(const upan::string& level);
+  static void enable(const upan::string& priority);
+  static void disable(const upan::string& priority);
 
-  static void trace(const char* __restrict fmsg, ...);
   static void debug(const char* __restrict fmsg, ...);
   static void info(const char* __restrict fmsg, ...);
+  static void notice(const char* __restrict fmsg, ...);
   static void warn(const char* __restrict fmsg, ...);
   static void error(const char* __restrict fmsg, ...);
+  static void alert(const char* __restrict fmsg, ...);
+  static void critical(const char* __restrict fmsg, ...);
+  static void emergency(const char* __restrict fmsg, ...);
   static void exception(const upan::exception&);
-
-private:
-  static upan::atomic::integral<uint32_t> _logLevel;
 };

@@ -19,51 +19,28 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-
 #pragma once
 
-#include <Global.h>
+#include <option.h>
 #include <map.h>
-#include <uniq_ptr.h>
-#include <fs.h>
-#include <mutex.h>
-#include <IODescriptor.h>
-#include <function.h>
-#include <mosstd.h>
-#include <vector.h>
+#include <SocketDescriptorLocalDataGram.h>
 
-class StorageDrive;
+class LocalDataGramResolver {
+private:
+  LocalDataGramResolver() = default;
 
-class IODescriptorTable {
 public:
-  typedef enum {
-    STDIN = 0,
-    STDOUT = 1,
-    STDERR = 2,
-    KSYSLOG = 3,
-  } STD_DESCRIPTORS;
+  LocalDataGramResolver(const LocalDataGramResolver&) = delete;
+  LocalDataGramResolver& operator=(const LocalDataGramResolver&) = delete;
 
-  typedef upan::map<int, IODescriptor::Ptr> IODMap;
-
-  IODescriptorTable(int pid, int parentPid);
-  ~IODescriptorTable() noexcept;
-
-  IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
-  void free(int fd);
-  void dup2(int oldFD, int newFD);
-  IODescriptor::Ptr getRealNonDupped(int fd);
-  IODescriptor::Ptr get(int fd);
-  void setupStreamedStdio();
-  void setupNullStdio();
-  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);
-  upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
-  void closeAllFiles(StorageDrive&);
+  static LocalDataGramResolver& Instance();
+  void setup(SocketDescriptorLocalDataGram& socket, const upan::string& path);
+  void release(SocketDescriptorLocalDataGram& socket);
+  upan::option<SocketDescriptorLocalDataGram&> resolve(const upan::string& path);
 
 private:
-  IODMap::iterator getItr(int fd);
+  typedef upan::map<upan::string, SocketDescriptorLocalDataGram*> SOCKET_PATH_MAP;
 
-  int _pid;
-  int _descIdCounter;
-  upan::mutex _ioMutex;
-  IODMap _iodMap;
+  SOCKET_PATH_MAP _socketBindMap;
+  upan::mutex _mutex;
 };

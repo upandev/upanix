@@ -56,7 +56,7 @@ void SocketDescriptorDataGram::_connect(const struct sockaddr& address, socklen_
   _destAddr = extractDestAddr(address, len, true);
 }
 
-ssize_t SocketDescriptorDataGram::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorDataGram::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateFlags(flags);
   validateBuf(buf);
 
@@ -80,7 +80,7 @@ ssize_t SocketDescriptorDataGram::_sendTo(const uint8_t* buf, size_t n, int flag
   return n;
 }
 
-ssize_t SocketDescriptorDataGram::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorDataGram::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const auto& udpHeader = packet->getUDPHeader();

@@ -33,22 +33,49 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="1. refactor to create a separate SocketDescriptor class for ARP and ICMP. DGRAM, ARP and ICMP all derive from SocketDescriptorPacket base class.&#10;2. Fix a bug in UDP socket receiver to calculate the data length properly after ntohs() conversion.&#10;3. Reduce retry interval in DHCP client from 1 minute to 5 seconds upon any errors in receiving response from DHCP server.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorRaw.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/arp/ARPSocketResolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ethernet/EthernetHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/icmp/ICMPSocketResolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/service/dhcp/DHCPClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDisplay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysDisplay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysMemory.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysMemory.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/libsys/SysUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/upanix_src_files.sh" beforeDir="false" afterPath="$PROJECT_DIR$/upanix_src_files.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KLog.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KLog.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +136,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/io/socket",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/interopc",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -123,18 +150,18 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/interopc" />
+      <recent name="$PROJECT_DIR$/network/protocol/ldgram" />
+      <recent name="$PROJECT_DIR$/network/protocol/ludp" />
       <recent name="$PROJECT_DIR$/io/socket" />
       <recent name="$PROJECT_DIR$/io" />
-      <recent name="$PROJECT_DIR$/network/protocol/tcp" />
-      <recent name="$PROJECT_DIR$/network/socket" />
-      <recent name="$PROJECT_DIR$/network/protocol" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/interopc" />
       <recent name="$PROJECT_DIR$/network/protocol" />
       <recent name="$PROJECT_DIR$/network/protocol/udp" />
       <recent name="$PROJECT_DIR$/network/protocol/tcp" />
       <recent name="$PROJECT_DIR$/network/protocol/icmp" />
-      <recent name="$PROJECT_DIR$/network/protocol/arp" />
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
@@ -700,7 +727,7 @@
       <workItem from="1752106041895" duration="164041000" />
       <workItem from="1753457749603" duration="2026000" />
       <workItem from="1753486132389" duration="171861000" />
-      <workItem from="1754569413792" duration="13954000" />
+      <workItem from="1754569413792" duration="63071000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1045,7 +1072,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="180" />
+    <option name="localTasksCounter" value="181" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1079,7 +1106,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="if there is no renewal/rebind time then set it to half of least time - this is to prevent a loop of renewal requests" />
     <MESSAGE value="implement truncate file capability in the filesystem" />
     <MESSAGE value="implemented SocketResolver per IP protocol - that will take care of binding/mapping socket to unique identifiers to match and route the response packets" />
     <MESSAGE value="implementing ICMP, starting with ping" />
@@ -1104,7 +1130,8 @@
     <MESSAGE value="support getsockopt()&#10;libc header refactoring" />
     <MESSAGE value="Refactor to use shared_ptr for IO descriptors in IO descriptor-table" />
     <MESSAGE value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
+    <MESSAGE value="1. refactor to create a separate SocketDescriptor class for ARP and ICMP. DGRAM, ARP and ICMP all derive from SocketDescriptorPacket base class.&#10;2. Fix a bug in UDP socket receiver to calculate the data length properly after ntohs() conversion.&#10;3. Reduce retry interval in DHCP client from 1 minute to 5 seconds upon any errors in receiving response from DHCP server." />
+    <option name="LAST_COMMIT_MESSAGE" value="1. refactor to create a separate SocketDescriptor class for ARP and ICMP. DGRAM, ARP and ICMP all derive from SocketDescriptorPacket base class.&#10;2. Fix a bug in UDP socket receiver to calculate the data length properly after ntohs() conversion.&#10;3. Reduce retry interval in DHCP client from 1 minute to 5 seconds upon any errors in receiving response from DHCP server." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

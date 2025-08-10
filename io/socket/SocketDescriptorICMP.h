@@ -32,8 +32,8 @@ public:
 private:
   void _bind(const struct sockaddr& address, socklen_t len) override;
   void _connect(const struct sockaddr& address, socklen_t len) override;
-  ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
+  ssize_t _sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
+  ssize_t _recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
   void _close() override;
   bool filterPacket(const upan::shared_ptr<RawNetPacket>& rawPacket) override;
 

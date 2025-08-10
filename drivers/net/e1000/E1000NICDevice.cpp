@@ -147,7 +147,7 @@ void E1000NICDevice::NotifyEvent() {
 
 void E1000NICDevice::sendPacket(const RawNetPacket& packet) {
   regTx->SendPacket(packet.buf(), packet.len());
-  KLog::trace("Packet sent with len: %d", packet.len());
+  KLog::debug("Packet sent with len: %d", packet.len());
 }
 
 volatile uint32_t* REG(const uint64_t base, const uint32_t offset) {
@@ -347,7 +347,7 @@ void E1000NICDevice::HandleEvent() {
     } else if (data._icrVal & ICR_LINK_CHANGE) {
       KLog::info("Link status changed");
     } else if (data._icrVal & ICR_TRANSMIT) {
-      KLog::trace("Packet Transmitted");
+      KLog::debug("Packet Transmitted");
     } else if (data._icrVal & STATUS_LINK_UP) {
       KLog::info("Status link-up");
     } else {

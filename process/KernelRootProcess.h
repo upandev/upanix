@@ -28,6 +28,7 @@
 #include <UserManager.h>
 #include <MemManager.h>
 #include <ThreadLocalSpace.h>
+#include <ThreadLocalStorage.h>
 
 class KernelRootProcess : public Process {
 private:
@@ -38,9 +39,6 @@ public:
 
   void createScheduleRunner();
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
-  void openSysLoggerFile(const upan::string& driveName);
-  void closeSysLoggerFile();
-  void resetSysLoggerFile();
   void initTLS();
 
   bool isKernelProcess() const override {
@@ -160,10 +158,15 @@ public:
 
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
+  void startSysLogDaemon();
+  void stopSysLogDaemon();
+
 private:
   IODescriptorTable _iodTable;
   ProcessEnvMap _envMap;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
+  upan::uniq_ptr<ThreadLocalStorage> _tls;
   int _scheduleRunnerPid;
+  int _sysLogDaemonPid;
   ProcessGroup* _processGroup;
 };

@@ -27,6 +27,7 @@
 #include <SocketDescriptorDataGram.h>
 #include <SocketDescriptorARP.h>
 #include <SocketDescriptorICMP.h>
+#include <SocketDescriptorLocalDataGram.h>
 
 NetworkOperations::NetworkOperations() {
 }
@@ -37,70 +38,79 @@ NetworkOperations& NetworkOperations::Instance() {
 }
 
 int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol) {
-  switch(socketType) {
-    case SOCK_STREAM:
-    {
-      if (protocol == IPPROTO_IP) {
-        protocol = IPPROTO_TCP;
-      }
-
-      if (protocol != IPPROTO_TCP) {
-        throw upan::exception(XLOC, "invalid protocol %d for stream-socket", protocol);
-      }
+  if (family == AF_LOCAL) {
+    if (socketType != SOCK_DGRAM) {
+      throw upan::exception(XLOC, "invalid socket type %d for AF_LOCAL socket", socketType);
     }
-    break;
 
-    case SOCK_DGRAM:
-    {
-      if (protocol == IPPROTO_IP) {
-        protocol = IPPROTO_UDP;
-      }
+    Process& process = ProcessManager::Instance().GetCurrentPAS();
+    auto sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
+      return new SocketDescriptorLocalDataGram(process.processID(), fd, family);
+    });
 
-      if (protocol != IPPROTO_UDP) {
-        throw upan::exception(XLOC, "invalid protocol %d for dgram-socket", protocol);
-      }
-    }
-    break;
-
-    case SOCK_RAW:
-    {
-      if (protocol == IPPROTO_IP) {
-        protocol = IPPROTO_ICMP;
-      }
-
-      if (protocol != IPPROTO_ICMP && protocol != ETH_P_ARP) {
-        throw upan::exception(XLOC, "invalid protocol %d for raw-socket", protocol);
-      }
-    }
-    break;
-
-    default:
-      throw upan::exception(XLOC, "unsupported socket type: %d", socketType);
-  }
-
-  Process& process = ProcessManager::Instance().GetCurrentPAS();
-  auto sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
+    return sd->id();
+  } else {
     switch (socketType) {
-      case SOCK_STREAM:
-        return new SocketDescriptorStream(process.processID(), fd, family, protocol);
-      case SOCK_DGRAM:
-        return new SocketDescriptorDataGram(process.processID(), fd, family, protocol);
-      case SOCK_RAW:
-        if (protocol == ETH_P_ARP) {
-          return new SocketDescriptorARP(process.processID(), fd, family, protocol);
-        } else if (protocol == IPPROTO_ICMP) {
-          return new SocketDescriptorICMP(process.processID(), fd, family, protocol);
-        } else {
+      case SOCK_STREAM: {
+        if (protocol == IPPROTO_IP) {
+          protocol = IPPROTO_TCP;
+        }
+
+        if (protocol != IPPROTO_TCP) {
+          throw upan::exception(XLOC, "invalid protocol %d for stream-socket", protocol);
+        }
+      }
+        break;
+
+      case SOCK_DGRAM: {
+        if (protocol == IPPROTO_IP) {
+          protocol = IPPROTO_UDP;
+        }
+
+        if (protocol != IPPROTO_UDP) {
+          throw upan::exception(XLOC, "invalid protocol %d for dgram-socket", protocol);
+        }
+      }
+        break;
+
+      case SOCK_RAW: {
+        if (protocol == IPPROTO_IP) {
+          protocol = IPPROTO_ICMP;
+        }
+
+        if (protocol != IPPROTO_ICMP && protocol != ETH_P_ARP) {
           throw upan::exception(XLOC, "invalid protocol %d for raw-socket", protocol);
         }
+      }
         break;
 
       default:
-        throw upan::exception(XLOC, "unsupport socket-type: %d", socketType);
+        throw upan::exception(XLOC, "unsupported socket type: %d", socketType);
     }
-  });
 
-  return sd->id();
+    Process& process = ProcessManager::Instance().GetCurrentPAS();
+    auto sd = process.iodTable().allocate([&](int fd) -> SocketDescriptor* {
+      switch (socketType) {
+        case SOCK_STREAM:
+          return new SocketDescriptorStream(process.processID(), fd, family, protocol);
+        case SOCK_DGRAM:
+          return new SocketDescriptorDataGram(process.processID(), fd, family, protocol);
+        case SOCK_RAW:
+          if (protocol == ETH_P_ARP) {
+            return new SocketDescriptorARP(process.processID(), fd, family, protocol);
+          } else if (protocol == IPPROTO_ICMP) {
+            return new SocketDescriptorICMP(process.processID(), fd, family, protocol);
+          } else {
+            throw upan::exception(XLOC, "invalid protocol %d for raw-socket", protocol);
+          }
+
+        default:
+          throw upan::exception(XLOC, "unsupport socket-type: %d", socketType);
+      }
+    });
+
+    return sd->id();
+  }
 }
 
 void NetworkOperations::bind(sock_t fd, const struct sockaddr& address, socklen_t len) {
@@ -203,12 +213,12 @@ void NetworkOperations::getSockOpt(sock_t fd, int level, SOCKET_OPTION option, v
   }
 }
 
-ssize_t NetworkOperations::sendTo(int fd, const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t NetworkOperations::sendTo(int fd, const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.sendTo(buf, n, flags, addr, len);
 }
 
-ssize_t NetworkOperations::recvFrom(int fd, uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t NetworkOperations::recvFrom(int fd, void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.recvFrom(buf, n, flags, addr, len);
 }

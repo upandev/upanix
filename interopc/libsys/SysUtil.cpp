@@ -19,51 +19,28 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+# include <SysCall.h>
 
-#pragma once
+void SysUtil_GetDateTime(RTCDateTime* rtcDateTime)
+{
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_DTIME, false, (uint64_t) rtcDateTime, 2, 3, 4, 5);
+}
 
-#include <Global.h>
-#include <map.h>
-#include <uniq_ptr.h>
-#include <fs.h>
-#include <mutex.h>
-#include <IODescriptor.h>
-#include <function.h>
-#include <mosstd.h>
-#include <vector.h>
+void SysUtil_Reboot()
+{
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_REBOOT, false, 1, 2, 3, 4, 5);
+}
 
-class StorageDrive;
+int SysUtil_GetTimeOfDay(struct timeval* pTV) {
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_TOD, false, (uint64_t) pTV, 2, 3, 4, 5);
+	return retStatus ;
+}
 
-class IODescriptorTable {
-public:
-  typedef enum {
-    STDIN = 0,
-    STDOUT = 1,
-    STDERR = 2,
-    KSYSLOG = 3,
-  } STD_DESCRIPTORS;
-
-  typedef upan::map<int, IODescriptor::Ptr> IODMap;
-
-  IODescriptorTable(int pid, int parentPid);
-  ~IODescriptorTable() noexcept;
-
-  IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
-  void free(int fd);
-  void dup2(int oldFD, int newFD);
-  IODescriptor::Ptr getRealNonDupped(int fd);
-  IODescriptor::Ptr get(int fd);
-  void setupStreamedStdio();
-  void setupNullStdio();
-  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);
-  upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
-  void closeAllFiles(StorageDrive&);
-
-private:
-  IODMap::iterator getItr(int fd);
-
-  int _pid;
-  int _descIdCounter;
-  upan::mutex _ioMutex;
-  IODMap _iodMap;
-};
+uint32_t SysUtil_GetTimeSinceBoot() {
+  uint64_t retStatus ;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_BTIME, false, 1, 2, 3, 4, 5);
+  return retStatus ;
+}

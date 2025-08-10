@@ -52,7 +52,7 @@ ProcessManager::ProcessManager() {
 
   _processSchedulerIt = _processSchedulerList.end();
 
-  KC::MConsole().LoadMessage("recv Manager Initialization", Success);
+  KC::MConsole().LoadMessage("Process Manager Initialization", Success);
 }
 
 AutonomousProcess& ProcessManager::GetThreadParentProcess(int pid) {
@@ -734,8 +734,15 @@ void ProcessManager::SendSignal(int pid, int signal) {
   if (signal == SIGKILL || signal == SIGTERM) {
     Kill(pid);
   } else if (signal == SIGINT) {
-    GetSchedulableProcess(pid).ifPresent([this, pid](SchedulableProcess& process) {
+    GetSchedulableProcess(pid).ifPresent([](SchedulableProcess& process) {
       process.stateInfo().setSignal(SIGINT);
     });
+  }
+}
+
+void ProcessManager::closeAllFiles(StorageDrive& storageDrive) {
+  ProcessSwitchLock lock;
+  for (auto& process : _processMap) {
+    process.second->iodTable().closeAllFiles(storageDrive);
   }
 }

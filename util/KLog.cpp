@@ -19,60 +19,74 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
+# include <syslog.h>
 # include <KLog.h>
-# include <logger.h>
 
-void KLog::enable(uint32_t levels) {
-  upan::logger::instance().enable(levels);
+void KLog::enable(const upan::string& priority) {
+  enable_log_priority(str_to_log_priority(priority.c_str()));
 }
 
-void KLog::disable(uint32_t levels) {
-  upan::logger::instance().disable(levels);
-}
-
-void KLog::enable(const upan::string& level) {
-  upan::logger::instance().enable(level);
-}
-
-void KLog::disable(const upan::string& level) {
-  upan::logger::instance().enable(level);
-}
-
-void KLog::trace(const char* __restrict fmsg, ...) {
-  va_list arg;
-  va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_TRACE, fmsg, arg);
-  va_end(arg);
+void KLog::disable(const upan::string& priority) {
+  disable_log_priority(str_to_log_priority(priority.c_str()));
 }
 
 void KLog::debug(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_DEBUG, fmsg, arg);
+  syslog_arg(LOG_DEBUG, fmsg, arg);
   va_end(arg);
 }
 
 void KLog::info(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_INFO, fmsg, arg);
+  syslog_arg(LOG_INFO, fmsg, arg);
+  va_end(arg);
+}
+
+void KLog::notice(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  syslog_arg(LOG_NOTICE, fmsg, arg);
   va_end(arg);
 }
 
 void KLog::warn(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_WARN, fmsg, arg);
+  syslog_arg(LOG_WARNING, fmsg, arg);
   va_end(arg);
 }
 
 void KLog::error(const char* __restrict fmsg, ...) {
   va_list arg;
   va_start(arg, fmsg);
-  upan::logger::instance().logarg(upan::logger::LOG_ERROR, fmsg, arg);
+  syslog_arg(LOG_ERR, fmsg, arg);
+  va_end(arg);
+}
+
+void KLog::critical(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  syslog_arg(LOG_CRIT, fmsg, arg);
+  va_end(arg);
+}
+
+void KLog::alert(const char* __restrict fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  syslog_arg(LOG_ALERT, fmsg, arg);
+  va_end(arg);
+}
+
+void KLog::emergency(const char* fmsg, ...) {
+  va_list arg;
+  va_start(arg, fmsg);
+  syslog_arg(LOG_EMERG, fmsg, arg);
   va_end(arg);
 }
 
 void KLog::exception(const upan::exception& e) {
-  KLog::error("%s", e.ErrorMsg().c_str());
+  KLog::critical("%s", e.ErrorMsg().c_str());
 }

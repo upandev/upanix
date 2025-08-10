@@ -44,8 +44,8 @@ public:
   void connect(const struct sockaddr& address, socklen_t len);
   void listen(int backlog);
   int accept(struct sockaddr* addr, socklen_t* len);
-  ssize_t sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len);
-  ssize_t recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len);
+  ssize_t sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len);
+  ssize_t recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len);
 
   //socket options
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
@@ -77,8 +77,8 @@ protected:
   virtual void _connect(const struct sockaddr& address, socklen_t len) = 0;
   virtual void _listen(int backlog) = 0;
   virtual int _accept(struct sockaddr* addr, socklen_t* len) = 0;
-  virtual ssize_t _sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
-  virtual ssize_t _recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
+  virtual ssize_t _sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) = 0;
+  virtual ssize_t _recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) = 0;
 
   void validateSendToParams(const void* buf, int flags, const struct sockaddr* addr, socklen_t len);
   void validateRecvFromParams(const void* buf, int flags, struct sockaddr* addr, socklen_t * len);

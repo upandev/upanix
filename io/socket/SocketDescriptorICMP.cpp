@@ -42,7 +42,7 @@ void SocketDescriptorICMP::_connect(const struct sockaddr& address, socklen_t le
   _destAddr = extractDestAddr(address, len, false);
 }
 
-ssize_t SocketDescriptorICMP::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorICMP::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   validateFlags(flags);
   validateBuf(buf);
 
@@ -58,7 +58,7 @@ ssize_t SocketDescriptorICMP::_sendTo(const uint8_t* buf, size_t n, int flags, c
   return n;
 }
 
-ssize_t SocketDescriptorICMP::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorICMP::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getEthernetData();

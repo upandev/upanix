@@ -278,5 +278,14 @@ RESOURCE_KEYS StorageDriveManager::GetResourceType(RawStorageDrive::Types diskTy
 	//TODO: FLOPPY falls under this category which should be changed to particular disk type
     default: return RESOURCE_GENERIC_DISK;
 	}
+}
 
+upan::string StorageDriveManager::rootDriveName() {
+  upan::mutex_guard g(_driveListMutex);
+  return _rootDriveName;
+}
+
+void StorageDriveManager::rootDriveName(const upan::string& name) {
+  upan::mutex_guard g(_driveListMutex);
+  _rootDriveName = name;
 }

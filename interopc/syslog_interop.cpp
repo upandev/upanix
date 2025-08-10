@@ -1,5 +1,5 @@
 /*
- *	Upanix - An x86 based Operating System
+ *  Mother Operating System - An x86 based Operating System
  *  Copyright (C) 2011 'Prajwala Prabhakar' 'srinivasa.prajwal@gmail.com'
  *
  *  I am making my contributions/submissions to this project solely in
@@ -20,50 +20,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#pragma once
+#include <interopc.h>
+#include <syslog.h>
 
-#include <Global.h>
-#include <map.h>
-#include <uniq_ptr.h>
-#include <fs.h>
-#include <mutex.h>
-#include <IODescriptor.h>
-#include <function.h>
-#include <mosstd.h>
-#include <vector.h>
+static int syslog_fd = -1;
+static int log_option = LOG_CONS;
 
-class StorageDrive;
+bool syslog_iskernel() { return true; }
 
-class IODescriptorTable {
-public:
-  typedef enum {
-    STDIN = 0,
-    STDOUT = 1,
-    STDERR = 2,
-    KSYSLOG = 3,
-  } STD_DESCRIPTORS;
+int get_syslog_fd() { return syslog_fd; }
+void set_syslog_fd(int fd) { syslog_fd = fd; }
 
-  typedef upan::map<int, IODescriptor::Ptr> IODMap;
-
-  IODescriptorTable(int pid, int parentPid);
-  ~IODescriptorTable() noexcept;
-
-  IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
-  void free(int fd);
-  void dup2(int oldFD, int newFD);
-  IODescriptor::Ptr getRealNonDupped(int fd);
-  IODescriptor::Ptr get(int fd);
-  void setupStreamedStdio();
-  void setupNullStdio();
-  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);
-  upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
-  void closeAllFiles(StorageDrive&);
-
-private:
-  IODMap::iterator getItr(int fd);
-
-  int _pid;
-  int _descIdCounter;
-  upan::mutex _ioMutex;
-  IODMap _iodMap;
-};
+int get_syslog_option() { return log_option; }
+void set_syslog_option(int option) { log_option = option; }
+void set_syslog_option_default() { log_option = LOG_CONS; }

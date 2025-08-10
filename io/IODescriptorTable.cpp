@@ -21,12 +21,12 @@
  */
 
 #include <IODescriptorTable.h>
-#include <mutex.h>
-#include <mosstd.h>
 #include <ProcessManager.h>
 #include <RedirectDescriptor.h>
 #include <StreamBufferDescriptor.h>
 #include <NullDescriptor.h>
+#include <SocketDescriptorLocalDataGram.h>
+#include <StorageDrive.h>
 
 constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
@@ -35,19 +35,34 @@ IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descI
     allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     auto stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
     allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
-    allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
+    allocate([pid](int fd) { return new SocketDescriptorLocalDataGram(pid, fd, AF_LOCAL); });
   } else {
     auto& parentProcess = ProcessManager::Instance().GetProcess(parentPid).value();
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDIN)); });
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDOUT)); });
     allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDERR)); });
-    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(SYSLOG)); });
+    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(KSYSLOG)); });
   }
 }
 
 IODescriptorTable::~IODescriptorTable() noexcept {
   for(auto& x : _iodMap) {
     x.second->close();
+  }
+}
+
+void IODescriptorTable::closeAllFiles(StorageDrive& drive) {
+  upan::mutex_guard g(_ioMutex);
+  upan::vector<int> fds;
+  for(auto& x : _iodMap) {
+    auto fileDescriptor = dynamic_cast<FileDescriptor*>(x.second.get());
+    if (fileDescriptor && fileDescriptor->diskDrive().Id() == drive.Id()) {
+      fds.push_back(x.first);
+    }
+  }
+
+  for(auto fd : fds) {
+    free(fd);
   }
 }
 

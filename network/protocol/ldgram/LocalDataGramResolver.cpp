@@ -19,29 +19,35 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include <SysCall.h>
-# include <dtime.h>
 
-void SysUtil_GetDateTime(RTCDateTime* rtcDateTime)
-{
-  uint64_t retStatus ;
-  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_DTIME, false, (uint64_t) rtcDateTime, 2, 3, 4, 5);
+#include <LocalDataGramResolver.h>
+
+LocalDataGramResolver& LocalDataGramResolver::Instance() {
+  static LocalDataGramResolver instance;
+  return instance;
 }
 
-void SysUtil_Reboot()
-{
-  uint64_t retStatus ;
-  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_REBOOT, false, 1, 2, 3, 4, 5);
+void LocalDataGramResolver::setup(SocketDescriptorLocalDataGram& socket, const upan::string& path) {
+  upan::mutex_guard g(_mutex);
+  auto r = _socketBindMap.insert(SOCKET_PATH_MAP::value_type(path, &socket));
+  if (r.second == false) {
+    throw upan::exception(XLOC, "setup failed - socket %s is already bound", path.c_str());
+  }
 }
 
-int SysUtil_GetTimeOfDay(struct timeval* pTV) {
-  uint64_t retStatus ;
-  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_TOD, false, (uint64_t) pTV, 2, 3, 4, 5);
-	return retStatus ;
+void LocalDataGramResolver::release(SocketDescriptorLocalDataGram& socket) {
+  upan::mutex_guard g(_mutex);
+  auto it = _socketBindMap.find(socket.boundPath());
+  if (it != _socketBindMap.end()) {
+    _socketBindMap.erase(it);
+  }
 }
 
-uint32_t SysUtil_GetTimeSinceBoot() {
-  uint64_t retStatus ;
-  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_BTIME, false, 1, 2, 3, 4, 5);
-  return retStatus ;
+upan::option<SocketDescriptorLocalDataGram&> LocalDataGramResolver::resolve(const upan::string& path) {
+  upan::mutex_guard g(_mutex);
+  auto it = _socketBindMap.find(path);
+  if (it != _socketBindMap.end()) {
+    return upan::option<SocketDescriptorLocalDataGram&>(*it->second);
+  }
+  return upan::option<SocketDescriptorLocalDataGram&>::empty();
 }

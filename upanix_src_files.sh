@@ -30,6 +30,7 @@ SRC_DIRS="
   kernelprocs
   memory
   process
+  interopc
   syscall
   users
   util"

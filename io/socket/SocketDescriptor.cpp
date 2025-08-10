@@ -85,12 +85,12 @@ int SocketDescriptor::accept(struct sockaddr* addr, socklen_t* len) {
   return _accept(addr, len);
 }
 
-ssize_t SocketDescriptor::sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptor::sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   closeCheckAndThrow();
   return _sendTo(buf, n, flags, addr, len);
 }
 
-ssize_t SocketDescriptor::recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptor::recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   closeCheckAndThrow();
   return _recvFrom(buf, n, flags, addr, len);
 }

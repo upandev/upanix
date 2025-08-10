@@ -2259,10 +2259,7 @@ void ConsoleCommands_SysLog() {
 
   const upan::string option = CommandLineParser::Instance().GetParameterAt(0);
 
-  if (option == "reset") {
-    KernelRootProcess::Instance().resetSysLoggerFile();
-    printf("\n syslog cleared");
-  } else if (option == "enable") {
+  if (option == "enable") {
     KLog::enable(CommandLineParser::Instance().GetParameterAt(1));
   } else if (option == "disable") {
     KLog::disable(CommandLineParser::Instance().GetParameterAt(1));

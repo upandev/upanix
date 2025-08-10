@@ -44,6 +44,7 @@ public:
   void setLastReadSectorDetails(int sectorIndex, uint32_t sectorId);
 
   void setOffset(uint32_t offset) { _offset = offset; }
+  StorageDrive& diskDrive() { return _diskDrive; }
 
 private:
   int _read(void* buffer, int len) override;

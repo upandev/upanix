@@ -49,6 +49,7 @@
 # include <StorageDriveManager.h>
 # include <NetworkOperations.h>
 # include <KLog.h>
+# include <LocalDataGramResolver.h>
 
 /**** Global Variable declaration/definition *****/
 bool KERNEL_MODE;
@@ -61,13 +62,15 @@ bool SPECIAL_TASK;
 	//MountManager_MountDrives() ;
 	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
+  LocalDataGramResolver::Instance();
   KernelRootProcess::Instance().createScheduleRunner();
+  KernelRootProcess::Instance().startSysLogDaemon();
 
 	KC::MKernelService().Spawn() ;
 	KC::MKernelService().Spawn() ;
 
 	KernelRootProcess::Instance().initGuiFrame();
-	RootGUIConsole::Instance().ClearScreen();
+	//RootGUIConsole::Instance().ClearScreen();
 
   GraphicsVideo::Instance().CreateRefreshTask();
 
@@ -152,8 +155,6 @@ void SetKernelRootMode(bool val) {
 }
 
 void Initialize() {
-  SetKernelMode(true);
-  SetKernelRootMode(false);
 	SPECIAL_TASK = false ;
 
 	MultiBoot::Instance();
@@ -183,6 +184,7 @@ void Initialize() {
     DMA_Initialize();
     StdIRQ::Instance();
     SysCall_Initialize();
+    openlog("Upanix", LOG_CONS, LOG_KERN);
     DynamicLinkLoader::Instance();
     KC::MKernelService();
     GraphicsVideo::Instance().Initialize();
@@ -244,10 +246,17 @@ upan::mutex& UpanixMain_GetDMMMutex()
 }
 
 void UpanixMain() {
-	Initialize();
+  SetKernelMode(true);
+  SetKernelRootMode(false);
+
+  Initialize();
   KernelRootProcess::Instance().initTLS();
+  //Now that the TLS is initialized for KernelRoot, getpid() can get the PID from the thread local space
+  openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
+  KLog::info("Kernel Root TLS is Initialized");
+
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
-//	ProcessManager_CreateKernelImage((unsigned)&Console_StartMOSConsole, NO_PROCESS_ID, true, NULL, NULL, &pid) ;
+
   SetKernelMode(false);
 	ProcessManager::Instance().EnableTaskSwitch();
 	while(1) ;

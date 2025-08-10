@@ -37,6 +37,7 @@
 # include <drive.h>
 # include <logger.h>
 # include <KernelRootProcess.h>
+# include <StorageDriveManager.h>
 
 static unsigned uiTotalFloppyDiskReads = 0;
 static unsigned uiTotalATADiskReads = 0;
@@ -116,14 +117,18 @@ void StorageDrive::Mount() {
   }
   fileSystem().mount();
   _mounted = true;
-  KernelRootProcess::Instance().openSysLoggerFile(_driveName);
+  StorageDriveManager::Instance().rootDriveName(_driveName);
+  KLog::info("drive %s is mounted", _driveName.c_str());
 }
 
 void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
-  KernelRootProcess::Instance().closeSysLoggerFile();
+  StorageDriveManager::Instance().rootDriveName("");
+  KLog::info("drive %s is unmounted", _driveName.c_str());
+  ProcessManager::Instance().closeAllFiles(*this);
+  KLog::info("all files across all processes on drive % are closed", _driveName.c_str());
   fileSystem().unmount();
   _mounted = false;
 }

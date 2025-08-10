@@ -234,11 +234,11 @@ bool SocketDescriptorStream::_canWrite() {
   return _tcpConnection->canSend();
 }
 
-ssize_t SocketDescriptorStream::_sendTo(const uint8_t* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+ssize_t SocketDescriptorStream::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   return write(buf, n);
 }
 
-ssize_t SocketDescriptorStream::_recvFrom(uint8_t* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+ssize_t SocketDescriptorStream::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
   return read(buf, n);
 }
 

@@ -73,6 +73,9 @@ public:
   RESOURCE_KEYS GetResourceType(DEVICE_TYPE deviceType);
   RESOURCE_KEYS GetResourceType(RawStorageDrive::Types diskType);
 
+  upan::string rootDriveName();
+  void rootDriveName(const upan::string& driveName);
+
   const upan::list<StorageDrive*>& DiskDriveList() const { return _driveList; }
   const upan::list<RawStorageDrive*>& RawDiskDriveList() const { return _rawDiskList; }
 private:
@@ -80,4 +83,5 @@ private:
   upan::list<StorageDrive*> _driveList;
   upan::list<RawStorageDrive*> _rawDiskList;
   int _idSequence;
+  upan::string _rootDriveName;
 };
