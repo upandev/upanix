@@ -25,10 +25,6 @@
 #include <ProcessManager.h>
 #include <Cpu.h>
 #include <signal.h>
-#include <sys/un.h>
-#include <StorageDriveManager.h>
-#include <SocketDescriptor.h>
-#include <interopc.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -46,7 +42,7 @@ KernelRootProcess& KernelRootProcess::Instance() {
 
 KernelRootProcess::KernelRootProcess() :
   _iodTable(NO_PROCESS_ID, NO_PROCESS_ID),
-  _scheduleRunnerPid(NO_PROCESS_ID), _sysLogDaemonPid(NO_PROCESS_ID), _processGroup(nullptr) {
+  _scheduleRunnerPid(NO_PROCESS_ID), _processGroup(nullptr) {
 }
 
 void KernelRootProcess::createScheduleRunner() {
@@ -103,93 +99,4 @@ upan::option<upan::string> KernelRootProcess::getEnv(const upan::string& key) {
 
 DMM& KernelRootProcess::dmm() {
   return KernelDMM::Instance();
-}
-
-static void SysLogDaemon() {
-  try {
-    KLog::info("syslogd: server starting");
-    upan::uniq_ptr<upan::logger> _sysLogger(new upan::logger());
-    upan::string _rootDriveName;
-
-    struct sockaddr_un addr;
-    addr.sun_family = AF_LOCAL;
-    strcpy(addr.sun_path, SYS_LOG_PATH);
-
-    int sd = socket(AF_LOCAL, SOCK_DGRAM, 0);
-    if (sd < 0) {
-      throw upan::exception(XLOC, "syslogd: socket open failed");
-    }
-
-    if (bind(sd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-      throw upan::exception(XLOC, "syslogd: bind failed");
-    }
-    KLog::info("syslogd: server started");
-
-    //now, connect to syslogd
-    auto ioDesc = KernelRootProcess::Instance().iodTable().get(IODescriptorTable::KSYSLOG);
-    auto socketDesc = dynamic_cast<SocketDescriptor*>(ioDesc.get());
-    if (socketDesc == nullptr) {
-      throw upan::exception(XLOC, "syslogd: KSYSLOG is not a socket descriptor");
-    }
-
-    socketDesc->connect(*((struct sockaddr*)&addr), sizeof(addr));
-    set_syslog_fd(socketDesc->id());
-    KLog::info("syslogd: kernel client connected");
-
-    upan::string curRootDriveName = StorageDriveManager::Instance().rootDriveName();
-    if (_rootDriveName != curRootDriveName) {
-      _sysLogger->closeFile();
-      _rootDriveName = curRootDriveName;
-      if (!_rootDriveName.empty()) {
-        _sysLogger->openFile(_rootDriveName + "@/var/log/sys.log");
-      }
-    }
-
-    char buf[MAX_LOG_MESSAGE_SIZE];
-    while (true) {
-      ssize_t len = recv(sd, buf, sizeof(buf), 0);
-      if (len < 0) {
-        throw upan::exception(XLOC, "syslogd: recv failed");
-      }
-      buf[len] = '\0';
-
-      upan::string curRootDriveName = StorageDriveManager::Instance().rootDriveName();
-      if (_rootDriveName != curRootDriveName) {
-        _sysLogger->closeFile();
-        _rootDriveName = curRootDriveName;
-        if (!_rootDriveName.empty()) {
-          _sysLogger->openFile(_rootDriveName + "@/var/log/sys.log");
-        }
-      }
-
-      _sysLogger->log(buf);
-    }
-
-  } catch(const upan::exception& e) {
-    KLog::exception(e);
-  } catch(...) {
-    KLog::critical("unknown error in syslogd");
-  }
-
-  ProcessManager_Exit();
-}
-
-
-void KernelRootProcess::startSysLogDaemon() {
-  if (_sysLogDaemonPid != NO_PROCESS_ID) {
-    throw upan::exception(XLOC, "syslogd already running");
-  }
-
-  _sysLogDaemonPid = ProcessManager::Instance().CreateKernelProcess("syslogd", (uintptr_t) &SysLogDaemon,
-                                                 NO_PROCESS_ID, false, upan::vector<uintptr_t>());
-}
-
-void KernelRootProcess::stopSysLogDaemon() {
-  if (_sysLogDaemonPid == NO_PROCESS_ID) {
-    throw upan::exception(XLOC, "syslogd not running");
-  }
-
-  closelog();
-  ProcessManager::Instance().Kill(_sysLogDaemonPid);
-  _sysLogDaemonPid = NO_PROCESS_ID;
 }

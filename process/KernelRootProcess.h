@@ -158,15 +158,11 @@ public:
 
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
-  void startSysLogDaemon();
-  void stopSysLogDaemon();
-
 private:
   IODescriptorTable _iodTable;
   ProcessEnvMap _envMap;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
   int _scheduleRunnerPid;
-  int _sysLogDaemonPid;
   ProcessGroup* _processGroup;
 };
