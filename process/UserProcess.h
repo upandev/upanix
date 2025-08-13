@@ -73,17 +73,18 @@ public:
 
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
-  void dllInitRelocate();
+  process_init_fini_t* initRelocate();
 
 private:
-  typedef upan::map<upan::string, RelocateInfo> RELOCATE_INFO_MAP;
+  typedef upan::map<upan::string, DLLRelocateInfo> RELOCATE_INFO_DLL_MAP;
+  typedef upan::map<upan::string, ExeRelocateInfo> RELOCATE_INFO_EXE_MAP;
 
   void Load(int numOfParams, char** argvList);
   void LoadDLLs();
   void LoadELFDLL(const upan::string& dllName);
-  upan::option<RelocateInfo&> getRelocateInfo(const upan::string& symName);
-  void relocateMainExe();
-  void relocateDLLs();
+  upan::option<IRelocateInfo&> getRelocateInfo(const upan::string& symName, bool fallbackToExe, int stBind);
+  void relocateMainExe(process_init_fini_t& init_fini);
+  void relocateDLLs(process_init_fini_t* init_fini_list);
 
   void AllocateAddressSpace();
   void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
@@ -103,7 +104,8 @@ private:
   IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   ELFInfo _elfInfo;
-  RELOCATE_INFO_MAP _relocateInfoMap;
+  RELOCATE_INFO_DLL_MAP _relocateInfoDLLMap;
+  RELOCATE_INFO_EXE_MAP _relocateInfoExeMap;
   UserDMM _dmm;
   uint64_t* _pml4Table;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;

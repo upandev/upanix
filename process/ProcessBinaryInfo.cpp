@@ -154,3 +154,14 @@ upan::result<ELFInfo::Section> ELFInfo::getSectionByIndex(Elf64_Word index) {
           _elfSectionHeaders[index].sh_link,
           _elfSectionHeaders[index].sh_size / entSize));
 }
+
+void ELFInfo::loadInitFini(process_init_fini_t& init_fine) {
+  const auto dllDynSection = getDynSection().valueOrThrow(XLOC, "no dynamic section found");
+  for(Elf64_Xword i = 0; i < getDynSectionSize(); ++i) {
+    if(dllDynSection[i].d_tag == DT_INIT) {
+      init_fine._init = (void(*)())(getBase() + dllDynSection[i].d_un.d_ptr);
+    } else if(dllDynSection[i].d_tag == DT_FINI) {
+      init_fine._fini = (void(*)())(getBase() + dllDynSection[i].d_un.d_ptr);
+    }
+  }
+}

@@ -45,13 +45,13 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       }
 			break ;
 
-    case SYS_CALL_DLL_INIT_RELOCATE:
+    case SYS_CALL_PROCESS_INIT_RELOCATE:
       try {
         auto& process = ProcessManager::Instance().GetCurrentPAS();
         if (typeid(process) != typeid(UserProcess)) {
-          throw upan::exception(XLOC, "DLL Init Relocate can be done on a User recv once at program start-up");
+          throw upan::exception(XLOC, "DLL Init Relocate can be done on a User process once at program start-up");
         }
-        dynamic_cast<UserProcess&>(process).dllInitRelocate();
+        *retVal = (uintptr_t) dynamic_cast<UserProcess&>(process).initRelocate();
       } catch(const upan::exception& e) {
         printf("\n Dynamic Init Relocation Failed: %s", e.ErrorMsg().c_str());
       }

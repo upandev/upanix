@@ -56,8 +56,9 @@ int exec(const char* szFileName, ...) {
 	return iProcessID ;
 }
 
-void SysProcess_DLLInitRelocate() {
+process_init_fini_t* SysProcess_InitRelocate() {
   //no-op for kernel
+  return nullptr;
 }
 
 int SysProcess_Exec(const char* szFileName, int iNoOfArgs, char *const szArgList[])

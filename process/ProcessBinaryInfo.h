@@ -69,6 +69,9 @@ public:
 
   void init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable);
   void adjustBase(uint64_t base);
+  template <typename LAMBDA>
+  void extractDynSymbols(LAMBDA& consumer);
+  void loadInitFini(process_init_fini_t& init_fine);
 
   uint64_t getBase() const { return _base; }
   ElfSectionHeader::Elf64_Shdr* elfSectionHeaders() const { return _elfSectionHeaders; }
@@ -140,6 +143,24 @@ private:
   uint64_t _offset;
 };
 
+template <typename LAMBDA>
+void ELFInfo::extractDynSymbols(LAMBDA& consumer) {
+  getDynSymTable().ifPresent([&](const Elf64_Sym* dynSymTable) {
+    for(Elf64_Xword i = 0; i < getDynSymTableSize(); ++i) {
+      const auto& dynSym = dynSymTable[i];
+      const auto symType = ELF64_ST_TYPE(dynSym.st_info);
+      //At first, only STT_TLS and STT_OBJECT symbol types were added. Now, everything is added
+      //this includes symbol type STT_FUNC. This is required because function pointers can be used
+      //in executable or other shared libraries, which will then appear in their relocation table
+      //as GLOB_DAT entries, which needs to be relocated at program start-up in relocateDLLs()
+      if (dynSym.st_shndx != STN_UNDEF) {
+        const char* symName = getDynSymName(dynSym.st_name);
+        consumer(symName, dynSym.st_value);
+      }
+    }
+  });
+}
+
 class DLLInfo {
 public:
   DLLInfo(int id, uint64_t virtualLoadAddress, uint32_t noOfPages) : _id(id), _virtualLoadAddress(virtualLoadAddress), _noOfPages(noOfPages) {
@@ -164,12 +185,41 @@ private:
   TLSInfo _tlsInfo;
 };
 
-class RelocateInfo {
+class IRelocateInfo {
+  public:
+  virtual int id() const = 0;
+  virtual uint64_t value() const = 0;
+  virtual uint64_t base() const = 0;
+  virtual int tlsModuleId() const = 0;
+  virtual uint64_t tlsOffset() const = 0;
+};
+
+class DLLRelocateInfo : public IRelocateInfo {
 public:
-  RelocateInfo(const DLLInfo& dllInfo, uint64_t value) : _dllInfo(dllInfo), _value(value) {}
-  const DLLInfo& dllInfo() const { return _dllInfo; }
-  uint64_t value() const { return _value; }
+  DLLRelocateInfo(const DLLInfo& dllInfo, uint64_t value) : _dllInfo(dllInfo), _value(value) {}
+
+  int id() const override { return _dllInfo.id(); }
+  uint64_t base() const override { return _dllInfo.elfInfo().getBase(); }
+  uint64_t value() const override { return _value; }
+  int tlsModuleId() const override { return _dllInfo.tlsInfo().moduleId(); }
+  uint64_t tlsOffset() const override { return _dllInfo.tlsInfo().offset(); }
+
 private:
   const DLLInfo& _dllInfo;
-  uint64_t _value;
+  const uint64_t _value;
+};
+
+class ExeRelocateInfo : public IRelocateInfo {
+public:
+  ExeRelocateInfo(uint64_t base, uint64_t value) : _base(base), _value(value) {}
+
+  int id() const override { return -999; }
+  uint64_t base() const override { return _base; }
+  uint64_t value() const override { return _value; }
+  int tlsModuleId() const override { throw upan::exception(XLOC, "moduleId: TLS relocation not supported for executable"); }
+  uint64_t tlsOffset() const override { throw upan::exception(XLOC, "offset: TLS relocation not supported for executable"); }
+
+private:
+  const uint64_t _base;
+  const uint64_t _value;
 };
