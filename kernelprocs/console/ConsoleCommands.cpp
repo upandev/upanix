@@ -149,6 +149,7 @@ static void ConsoleCommands_MemStats();
 static void ConsoleCommands_SysLog();
 static void ConsoleCommands_Ping();
 static void ConsoleCommands_Host();
+static void ConsoleCommands_ListServents();
 
 /*****************************************/
 
@@ -225,6 +226,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "resetmouse", &ConsoleCommands_ResetMouse },
   { "memstats", &ConsoleCommands_MemStats },
   { "syslog", &ConsoleCommands_SysLog },
+  { "lsservent", &ConsoleCommands_ListServents },
 	{ "\0",			NULL }
 } ;
 
@@ -2252,22 +2254,6 @@ void ConsoleCommands_MemStats() {
   printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }
 
-void ConsoleCommands_SysLog() {
-  if (CommandLineParser::Instance().GetNoOfParameters() == 0) {
-    throw upan::exception(XLOC, "required parameter: <cmd -> reset, enable trace|debug|info|warn|error, disable trace|debug|info|warn|error>");
-  }
-
-  const upan::string option = CommandLineParser::Instance().GetParameterAt(0);
-
-  if (option == "enable") {
-    KLog::enable(CommandLineParser::Instance().GetParameterAt(1));
-  } else if (option == "disable") {
-    KLog::disable(CommandLineParser::Instance().GetParameterAt(1));
-  } else {
-    throw upan::exception(XLOC, "invalid option: %s", option.c_str());;
-  }
-}
-
 #define PACKET_SIZE 64
 uint16_t _icmp_seq = 0;
 
@@ -2378,4 +2364,52 @@ void ConsoleCommands_Host() {
   }
 
   freehostinfo(hinfo);
+}
+
+void ConsoleCommands_SysLog() {
+  if (CommandLineParser::Instance().GetNoOfParameters() == 0) {
+    throw upan::exception(XLOC, "required parameter: <cmd -> reset, enable trace|debug|info|warn|error, disable trace|debug|info|warn|error>");
+  }
+
+  const upan::string option = CommandLineParser::Instance().GetParameterAt(0);
+
+  if (option == "enable") {
+    KLog::enable(CommandLineParser::Instance().GetParameterAt(1));
+  } else if (option == "disable") {
+    KLog::disable(CommandLineParser::Instance().GetParameterAt(1));
+  } else {
+    throw upan::exception(XLOC, "invalid option: %s", option.c_str());;
+  }
+}
+
+void print_servent(struct servent* s) {
+  printf("\n%s %d/%s", s->s_name, s->s_port, s->s_proto);
+  for(int i = 0; s->s_aliases[i]; ++i) {
+    printf(" %s", s->s_aliases[i]);
+  }
+}
+
+void ConsoleCommands_ListServents() {
+  if (CommandLineParser::Instance().GetNoOfParameters() == 0) {
+    setservent(0);
+    struct servent* e;
+    while ((e = getservent()) != NULL) {
+      print_servent(e);
+    }
+  } else {
+    const char* p1 = CommandLineParser::Instance().GetParameterAt(0);
+    const char* p2 = NULL;
+    if (CommandLineParser::Instance().GetNoOfParameters() >= 2) {
+      p2 = CommandLineParser::Instance().GetParameterAt(1);
+    }
+
+    struct servent* e;
+    if ((e = getservbyname(p1, p2)) != NULL) {
+      print_servent(e);
+    } else if ((e = getservbyport(atoi(p1), p2)) != NULL) {
+      print_servent(e);
+    } else {
+      printf("\nNo such service");
+    }
+  }
 }

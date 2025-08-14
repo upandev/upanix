@@ -33,15 +33,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="refactor kernel syslog to a separate class KernelSysLog">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="1. cross compiler rebuilt with configuration changes to generate crtbeginS.o and crtendS.o&#10;2. Modified upanlibs build configuration to use a linker script and the necessary crt.* and crtbeginS.o and crtendS.o files for all shared libraries including libc.so&#10;3. (2) is done to ensure that the necessary C++ runtime handlers for rtti, exceptions and global object construction and destruction are compiled along with - so, that it is possible to fuse C++ code inside C shared library. This will allow us to implement several standard (posix) libc functions using C++ code behind the scenes&#10;4. process initialization code is triggered via _process_init_relocate - which relocates all dynamic symbols acros exe and loaded shared libraries and returns the list of _init and _fini function pointers for exe and all the loaded shared libraries - which will then be called inside the libc implementation of _process_init_reloacte&#10;5. Provided implementation for __cxa_atexit() and __cxa_finalize() - to ensure the destructors of globally initialized and function static objects are called upon process exit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfSymbolTable.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -689,7 +683,7 @@
       <workItem from="1753457749603" duration="2026000" />
       <workItem from="1753486132389" duration="171861000" />
       <workItem from="1754569413792" duration="74040000" />
-      <workItem from="1755000339568" duration="23397000" />
+      <workItem from="1755000339568" duration="26492000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1034,7 +1028,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="183" />
+    <option name="localTasksCounter" value="184" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1068,7 +1062,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implementing ICMP, starting with ping" />
     <MESSAGE value="use ip header as defined in libc socket.h" />
     <MESSAGE value="change protocol param to int to support both ether and IP protocols in socket and network operations. Also, added support for IOCTL system call" />
     <MESSAGE value="use ip, ether and arp headers from library libc/net" />
@@ -1093,7 +1086,8 @@
     <MESSAGE value="1. refactor to create a separate SocketDescriptor class for ARP and ICMP. DGRAM, ARP and ICMP all derive from SocketDescriptorPacket base class.&#10;2. Fix a bug in UDP socket receiver to calculate the data length properly after ntohs() conversion.&#10;3. Reduce retry interval in DHCP client from 1 minute to 5 seconds upon any errors in receiving response from DHCP server." />
     <MESSAGE value="support for AF_LOCAL/AF_UNIX sockets - that inturn enables the support for syslog(). introduced interopc - to group all kernel overrides to libc that includes system calls and other overrides. Close all open files across all processes when filesystem is unmounted" />
     <MESSAGE value="refactor kernel syslog to a separate class KernelSysLog" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor kernel syslog to a separate class KernelSysLog" />
+    <MESSAGE value="1. cross compiler rebuilt with configuration changes to generate crtbeginS.o and crtendS.o&#10;2. Modified upanlibs build configuration to use a linker script and the necessary crt.* and crtbeginS.o and crtendS.o files for all shared libraries including libc.so&#10;3. (2) is done to ensure that the necessary C++ runtime handlers for rtti, exceptions and global object construction and destruction are compiled along with - so, that it is possible to fuse C++ code inside C shared library. This will allow us to implement several standard (posix) libc functions using C++ code behind the scenes&#10;4. process initialization code is triggered via _process_init_relocate - which relocates all dynamic symbols acros exe and loaded shared libraries and returns the list of _init and _fini function pointers for exe and all the loaded shared libraries - which will then be called inside the libc implementation of _process_init_reloacte&#10;5. Provided implementation for __cxa_atexit() and __cxa_finalize() - to ensure the destructors of globally initialized and function static objects are called upon process exit" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. cross compiler rebuilt with configuration changes to generate crtbeginS.o and crtendS.o&#10;2. Modified upanlibs build configuration to use a linker script and the necessary crt.* and crtbeginS.o and crtendS.o files for all shared libraries including libc.so&#10;3. (2) is done to ensure that the necessary C++ runtime handlers for rtti, exceptions and global object construction and destruction are compiled along with - so, that it is possible to fuse C++ code inside C shared library. This will allow us to implement several standard (posix) libc functions using C++ code behind the scenes&#10;4. process initialization code is triggered via _process_init_relocate - which relocates all dynamic symbols acros exe and loaded shared libraries and returns the list of _init and _fini function pointers for exe and all the loaded shared libraries - which will then be called inside the libc implementation of _process_init_reloacte&#10;5. Provided implementation for __cxa_atexit() and __cxa_finalize() - to ensure the destructors of globally initialized and function static objects are called upon process exit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
