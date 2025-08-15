@@ -50,11 +50,6 @@ public:
   }
 
   void setGuiBase(bool v) override;
-  void setEnv(const upan::string& key, const upan::string& value) override;
-  upan::option<upan::string> getEnv(const upan::string& key) override;
-  const ProcessEnvMap& envMap() override {
-    return _envMap;
-  }
 
   MouseCursorType mouseCursorType() const override { return _mouseCursorType; }
   void setMouseCursorType(MouseCursorType type) { _mouseCursorType = type; }
@@ -68,7 +63,4 @@ private:
   IODescriptor::Ptr _uiMouseEventStreamFD;
   bool _isGuiBase;
   MouseCursorType _mouseCursorType;
-
-  upan::mutex _envMutex;
-  ProcessEnvMap _envMap;
 };

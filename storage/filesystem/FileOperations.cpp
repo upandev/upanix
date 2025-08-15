@@ -189,7 +189,7 @@ struct stat FileOperations::stats(const upan::string& filePath) {
   return storageDrive.fileSystem().stats(fileTokens, cwd);
 }
 
-void FileOperations::changeDir(const upan::string& dirPath) {
+void FileOperations::changeDir(const upan::string& dirPath, char** retPwd) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
@@ -207,7 +207,14 @@ void FileOperations::changeDir(const upan::string& dirPath) {
 
   process.setDriveID(storageDrive.Id());
   process.pwd(dirNodeRef);
-  process.setEnv("PWD", storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(dirNodeRef));
+  upan::string pwd(storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(dirNodeRef));
+
+  if (retPwd) {
+    *retPwd = (char*)process.dmm().allocate(pwd.length() + 1);
+    strcpy(*retPwd, pwd.c_str());
+  } else if (process.isKernelProcess()) {
+    setenv("PWD", pwd.c_str(), 1);
+  }
 }
 
 void FileOperations::listDir(const upan::string& filePath, FileStats& fileStats) {

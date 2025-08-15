@@ -90,13 +90,6 @@ void KernelRootProcess::dispatchMouseData(const upanui::MouseData& mouseData) {
   //no-op
 }
 
-void KernelRootProcess::setEnv(const upan::string& key, const upan::string& value) {
-}
-
-upan::option<upan::string> KernelRootProcess::getEnv(const upan::string& key) {
-  return upan::option<upan::string>::empty();
-}
-
 DMM& KernelRootProcess::dmm() {
   return KernelDMM::Instance();
 }

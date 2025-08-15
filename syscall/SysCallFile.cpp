@@ -40,11 +40,12 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_CHANGE_DIR : //Change Directory
 			//P1 => Directory Path
 			{
-				char* szPathAddress = ( char*) p1;
+				char* szPathAddress = (char*) p1;
+        char** retPwd = (char**)p2;
 
 				*retVal = 0 ;
         try {
-          FileOperations::Instance().changeDir(szPathAddress);
+          FileOperations::Instance().changeDir(szPathAddress, retPwd);
         } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;

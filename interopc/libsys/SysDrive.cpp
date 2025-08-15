@@ -22,10 +22,10 @@
 # include <SysCall.h>
 # include <drive.h>
 
-int SysDrive_ChangeDrive(const char* szDriveName)
+int SysDrive_ChangeDrive(const char* szDriveName, char** retPwd)
 {
   uint64_t retStatus ;
-  SysCallDrive_Handle(&retStatus, SYS_CALL_CHANGE_DRIVE, false, (uintptr_t) szDriveName, 2, 3, 4, 5);
+  SysCallDrive_Handle(&retStatus, SYS_CALL_CHANGE_DRIVE, false, (uintptr_t) szDriveName, (uintptr_t)retPwd, 3, 4, 5);
 	return retStatus ;
 }
 

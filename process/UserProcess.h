@@ -32,7 +32,9 @@ public:
   typedef upan::map<upan::string, DLLInfo> DLLInfoMap;
 
 public:
-  UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess, int noOfParams, char** args);
+  UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
+              const upan::vector<upan::string>& argv,
+              const upan::vector<upan::string>& envp);
 
   bool isKernelProcess() const override {
     return false;
@@ -79,7 +81,7 @@ private:
   typedef upan::map<upan::string, DLLRelocateInfo> RELOCATE_INFO_DLL_MAP;
   typedef upan::map<upan::string, ExeRelocateInfo> RELOCATE_INFO_EXE_MAP;
 
-  void Load(int numOfParams, char** argvList);
+  void Load(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp);
   void LoadDLLs();
   void LoadELFDLL(const upan::string& dllName);
   upan::option<IRelocateInfo&> getRelocateInfo(const upan::string& symName, bool fallbackToExe, int stBind);
@@ -88,7 +90,7 @@ private:
 
   void AllocateAddressSpace();
   void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
-  uint64_t PushProgramInitStackData(int numOfParams, char **argvList);
+  uint64_t PushProgramInitStackData(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp);
 
   void DeallocateResources() override;
   void DeallocateGUIFramebuffer();

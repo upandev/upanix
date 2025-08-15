@@ -44,12 +44,13 @@ using namespace ElfDynamicSection;
 #define BSS_SEC_NAME      ".bss"
 #define DLL_ELF_SEC_HEADER_PAGE 1
 
-UserProcess::UserProcess(const upan::string &name, int parentID, int userID,
-                         bool isFGProcess, int noOfParams, char** args)
-    : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
+UserProcess::UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
+                         const upan::vector<upan::string>& argv,
+                         const upan::vector<upan::string>& envp)
+                         : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
   _mainThreadID = _processID;
   _pml4Table = nullptr;
-  Load(noOfParams, args);
+  Load(argv, envp);
   _totalNoOfPagesForDLL = 0;
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
@@ -61,7 +62,7 @@ UserThread& UserProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAdd
   return *new UserThread(*this, threadCaller, entryAddress, arg);
 }
 
-void UserProcess::Load(int numOfParams, char** argvList) {
+void UserProcess::Load(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp) {
   ElfParser mELFParser(_name.c_str());
 
   uint64_t minMemAddr, maxMemAddr;
@@ -122,7 +123,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
 
   CopyElfImage(bProcessImage.get(), _processSpaceSize, _processBase);
 
-  const auto stackTopAddress = PushProgramInitStackData(numOfParams, argvList);
+  const auto stackTopAddress = PushProgramInitStackData(argv, envp);
   const auto entryAdddress = mELFParser.GetProgramStartAddress();
 
   auto relocateInfoConsumer = [this](const char* symName, const Elf64_Addr value) {
@@ -132,7 +133,7 @@ void UserProcess::Load(int numOfParams, char** argvList) {
 
   _elfInfo.adjustBase(0);
 
-  _taskContext.rdi = numOfParams; //argc
+  _taskContext.rdi = argv.size(); //argc
   _taskContext.rsi = stackTopAddress; //argv
 
   _taskContext.interruptState.cs = USER_CODE_SELECTOR | 0x3;
@@ -142,16 +143,21 @@ void UserProcess::Load(int numOfParams, char** argvList) {
   _taskContext.interruptState.rflags = 0x202;
 }
 
-uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList) {
-  const unsigned argvEntriesSize = numOfParams * sizeof(uint64_t); // address of char* entry (second dimension) of argv array
+uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp) {
+  const uint32_t argvD1Size = argv.size() * sizeof(uintptr_t); // address of char* entry (second dimension) of argv array
+  uint32_t argvD2Size = 0;
+  for(const auto& i : argv) {
+    argvD2Size += i.length();
+  }
 
-  uint32_t argumentSize = 0;
-  for(int i = 0; i < numOfParams; i++) {
-    argumentSize += (strlen(argvList[i]) + 1);
+  const uint32_t envpD1Size = (envp.size() +  1) * sizeof(uintptr_t); // no. of envp entries + 1 for null terminator
+  uint32_t envpD2Size = 0;
+  for(const auto& e : envp) {
+    envpD2Size += e.length();
   }
 
   //The stack must be aligned to 16 byte otherwise SSE/SSE2/SSE3 instructions will cause General Protection Fault
-  const uint32_t processEntryStackSize = upan::align(argvEntriesSize + argumentSize, 16);
+  const uint32_t processEntryStackSize = upan::align(argvD1Size + argvD2Size + envpD1Size + envpD2Size, 16);
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {
     throw upan::exception(XLOC, "Startup arguments size is larger than reserved init stack size of %u", PROCESS_INIT_STACK_SIZE);
   }
@@ -159,17 +165,34 @@ uint64_t UserProcess::PushProgramInitStackData(int numOfParams, char **argvList)
   const uint64_t virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize;
   const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
 
-  argumentSize = 0 ;// argv[0] through argv[argc - 1]
-  for(int i = 0; i < numOfParams; i++) {
-    const uint64_t realArgAddress = realStackTopAddress + argvEntriesSize + argumentSize;
-    const uint64_t virtualArgAddress = virtualStackTopAddress + argvEntriesSize + argumentSize;
+  uint32_t pos = argvD1Size;// argv[0] through argv[argc - 1]
+  for(int i = 0; i < argv.size(); i++) {
+    const uint64_t realArgAddress = realStackTopAddress + pos;
+    const uint64_t virtualArgAddress = virtualStackTopAddress + pos;
     //first dimension of argv
     ((uint64_t*)realStackTopAddress)[i] = virtualArgAddress;
 
     //second dimension of argv
-    strcpy((char*)realArgAddress, argvList[i]);
-    argumentSize += (strlen(argvList[i]) + 1);
+    strcpy((char*)realArgAddress, argv[i].c_str());
+    pos += argv[i].length() + 1;
   }
+
+  const uint64_t realEnvpStackTopAddress = realStackTopAddress + pos;
+  const uint64_t virtualEnvpStackTopAddress = virtualStackTopAddress + pos;
+
+  pos += envpD1Size;
+  for(int i = 0; i < envp.size(); i++) {
+    const uint64_t realArgAddress = realEnvpStackTopAddress + pos;
+    const uint64_t virtualArgAddress = virtualEnvpStackTopAddress + pos;
+    //first dimension of envp
+    ((uint64_t*)realEnvpStackTopAddress)[i] = virtualArgAddress;
+
+    //second dimension of envp
+    strcpy((char*)realArgAddress, envp[i].c_str());
+    pos += envp[i].length() + 1;
+  }
+  //null termination of envp
+  ((uint64_t*)realEnvpStackTopAddress)[envp.size()] = 0;
 
   return virtualStackTopAddress;
 }

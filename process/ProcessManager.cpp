@@ -546,9 +546,11 @@ int ProcessManager::CreateKernelProcess(const upan::string& name, const uintptr_
 	return -1;
 }
 
-int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID, int iNumberOfParameters, char** szArgumentList) {
+int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID,
+                           const upan::vector<upan::string>& argv,
+                           const upan::vector<upan::string>& envp) {
   try {
-    upan::uniq_ptr<SchedulableProcess> newPAS(new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, iNumberOfParameters, szArgumentList));
+    upan::uniq_ptr<SchedulableProcess> newPAS(new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, argv, envp));
     int pid = newPAS->processID();
     AddToSchedulerList(*newPAS.release());
     return pid;

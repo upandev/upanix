@@ -91,7 +91,7 @@ static void MountManager_MountDrive(char* szDriveName)
   pas.pwd(storageDrive.fileSystem().root());
 
 	// Change To Root Directory
-  FileOperations::Instance().changeDir(FS_ROOT_DIR);
+  FileOperations::Instance().changeDir(FS_ROOT_DIR, nullptr);
 }
 /****************************************************************************/
 

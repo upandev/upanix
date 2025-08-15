@@ -39,10 +39,11 @@ SysCallDrive_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation
 		case SYS_CALL_CHANGE_DRIVE : //Change Drive
 			//P1 => Drive Name
 			{
-				char* szDriveName = ( char*) p1;
+				char* szDriveName = (char*) p1;
+        char** retPwd = (char**)p2;
 
 				*retVal = 0 ;
-				if(StorageDriveManager::Instance().Change(szDriveName) != DeviceDrive_SUCCESS)
+				if(StorageDriveManager::Instance().Change(szDriveName, retPwd) != DeviceDrive_SUCCESS)
 					*retVal = -1 ;
 			}
 			break ;

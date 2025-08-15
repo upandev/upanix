@@ -22,10 +22,10 @@
 # include <SysCall.h>
 # include <fs.h>
 
-int SysFS_ChangeDirectory(const char* szDirPath)
+int SysFS_ChangeDirectory(const char* szDirPath, char** retPwd)
 {
 	uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_CHANGE_DIR, false, (uint64_t) szDirPath, 2, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_CHANGE_DIR, false, (uint64_t)szDirPath, (uint64_t)retPwd, 3, 4, 5);
 	return retStatus ;
 }
 

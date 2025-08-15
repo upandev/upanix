@@ -51,22 +51,18 @@ void KernelService::FlatAddress::Execute() {
 	m_uiFlatAddress = MemManager::Instance().GetFlatAddress(pas.pml4Table(), m_uiAddress) ;
 }
 
-KernelService::ProcessExec::ProcessExec(int iNoOfArgs, const upan::string& szFile, const char** szArgs)
-   	: m_iNoOfArgs(iNoOfArgs), _szFile(szFile), m_szArgs(NULL)
-{
-	m_szArgs = new char*[iNoOfArgs] ;
-	for(int i = 0; i < iNoOfArgs; i++)
-	{
-		m_szArgs[i] = new char[strlen(szArgs[i]) + 1] ;
-		strcpy(m_szArgs[i], szArgs[i]) ;
-	}
-}
+KernelService::ProcessExec::ProcessExec(const upan::string& szFile, const char** argv, const char** envp) : _szFile(szFile) {
+  if (argv) {
+    for(int i = 0; argv[i]; ++i) {
+      _argv.push_back(argv[i]);
+    }
+  }
 
-KernelService::ProcessExec::~ProcessExec()
-{
-	for(int i = 0; i < m_iNoOfArgs; i++)
-		delete[] m_szArgs[i] ;
-	delete[] m_szArgs ;
+  if (envp) {
+    for(int i = 0; envp[i]; ++i) {
+      _envp.push_back(envp[i]);
+    }
+  }
 }
 
 void KernelService::ProcessExec::Execute() {
@@ -79,7 +75,7 @@ void KernelService::ProcessExec::Execute() {
   curProc.setDriveID(srcPAS.driveID());
   curProc.pwd(srcPAS.pwd());
 
-  m_iNewProcId = ProcessManager::Instance().Create(_szFile.c_str(), GetRequestProcessID(), true, DERIVE_FROM_PARENT, m_iNoOfArgs, m_szArgs) ;
+  m_iNewProcId = ProcessManager::Instance().Create(_szFile.c_str(), GetRequestProcessID(), true, DERIVE_FROM_PARENT, _argv, _envp);
 
   curProc.setDriveID(curDriveId);
   curProc.pwd(curPwd);
@@ -121,7 +117,7 @@ uint64_t KernelService::RequestFlatAddress(uint64_t uiVirtualAddress)
 	return uiFlatAddress ;
 }
 
-int KernelService::RequestProcessExec(const upan::string& fileName, int iNoOfArgs, const char** szArgs) {
+int KernelService::RequestProcessExec(const upan::string& fileName, const char** argv, const char** envp) {
   upan::string fullPath = fileName;
   if (fileName.find('/') < 0) {
     const auto& r = upan::file_path::resolve(fileName, PATH_ENV, BIN_PATH);
@@ -131,7 +127,7 @@ int KernelService::RequestProcessExec(const upan::string& fileName, int iNoOfArg
     fullPath = r.value();
 	}
 	
-	auto pRequest = new KernelService::ProcessExec(iNoOfArgs, fullPath, szArgs) ;
+	auto pRequest = new KernelService::ProcessExec(fullPath, argv, envp);
 
 	AddRequest(pRequest) ;
 	ProcessManager::Instance().WaitOnKernelService() ;
@@ -218,7 +214,7 @@ int KernelService::Spawn()
 	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &(KernelService::Server),
                                                           ProcessManager::GetCurrentProcessID(), false, params);
 	if(pid < 0) {
-		printf("\n Failed to create Kernel Service recv %s", szName.c_str()) ;
+		printf("\n Failed to create Kernel Service Process %s", szName.c_str()) ;
 	} else {
     m_lServerList.push_back(pid);
   }

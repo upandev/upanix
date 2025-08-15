@@ -350,13 +350,11 @@ void ConsoleCommands_ReadFileContent()
 }
 
 void ConsoleCommands_ChangeDirectory() {
-  FileOperations::Instance().changeDir(CommandLineParser::Instance().GetParameterAt(0));
+  FileOperations::Instance().changeDir(CommandLineParser::Instance().GetParameterAt(0), nullptr);
 }
 
 void ConsoleCommands_PresentWorkingDir() {
-	char pwd[256] = "";
-  getenv("PWD", pwd);
-	printf("\n%s", pwd);
+	printf("\n%s", getenv("PWD"));
 }
 
 void ConsoleCommands_CopyFile()
@@ -629,22 +627,22 @@ void ConsoleCommands_DeleteExtendedPartition()
 }
 
 void ConsoleCommands_LoadExe() {
-  char a1[14], a2[40], a3[40];
-  strcpy(a1, "100");
-  strcpy(a2, "200");
-  strcpy(a3, "300");
-  char *argv[3];
-  argv[0] = (char *) &a1;
-  argv[1] = (char *) &a2;
-  argv[2] = (char *) &a3;
+  upan::vector<upan::string> argv;
+  argv.push_back("100");
+  argv.push_back("200");
+  argv.push_back("300");
+
+  upan::vector<upan::string> envp;
+  envp.push_back("PATH=/bin");
+  envp.push_back("OS=Upanix");
 
   auto& clp = CommandLineParser::Instance();
   const auto runInBG = clp.GetNoOfParameters() > 1 && strcmp("&", clp.GetParameterAt(1)) == 0;
   const int iChildProcessID = ProcessManager::Instance().Create(clp.GetParameterAt(0),
                                                                 ProcessManager::GetCurrentProcessID(), true,
-                                                                DERIVE_FROM_PARENT, 3, argv);
+                                                                DERIVE_FROM_PARENT, argv, envp);
   if (iChildProcessID < 0) {
-    printf("\n Load User recv Failed: %d", iChildProcessID);
+    printf("\n Load User Process Failed: %d", iChildProcessID);
   } else if (!runInBG) {
     ProcessManager::Instance().WaitOnChild(iChildProcessID);
   }
@@ -748,8 +746,7 @@ void ConsoleCommands_Export()
     val[0] = '\0' ;
     val = val + 1 ;
 
-    if(setenv(var, val) < 0)
-    {
+    if(setenv(var, val, 1) < 0) {
       printf("\n Failed to set env variable\n") ;
       return ;
     }
@@ -962,7 +959,7 @@ void graphics_photos(int x, int y) {
 
   FileStats fileStats;
   FileOperations::Instance().listDir(listDirPath, fileStats);
-  FileOperations::Instance().changeDir(listDirPath);
+  FileOperations::Instance().changeDir(listDirPath, nullptr);
 
   upan::vector<upanui::Image*> images;
   for (const auto& s : fileStats) {

@@ -150,17 +150,10 @@ public:
     throw upan::exception(XLOC, "setMouseCursorType() unsupported");
   }
 
-  void setEnv(const upan::string& key, const upan::string& value) override;
-  upan::option<upan::string> getEnv(const upan::string& key) override;
-  const ProcessEnvMap& envMap() override {
-    return _envMap;
-  }
-
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
 private:
   IODescriptorTable _iodTable;
-  ProcessEnvMap _envMap;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
   int _scheduleRunnerPid;

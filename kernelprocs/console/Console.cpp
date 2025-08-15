@@ -42,11 +42,8 @@ void Console::ClearCommandLine()
   memset(_commandLine, 0, COMMAND_LINE_SIZE) ;
 }
 
-void Console::DisplayCommandLine()
-{
-	char pwd[256] = "";
-  getenv("PWD", pwd);
-  printf("\nupanix:%s > ", pwd);
+void Console::DisplayCommandLine() {
+  printf("\nupanix:%s > ", getenv("PWD"));
 }
 
 void Console::Start()

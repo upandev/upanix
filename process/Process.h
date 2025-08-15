@@ -121,15 +121,4 @@ public:
   virtual void setGraphicsContext(upanui::GraphicsContext*) {
     throw upan::exception(XLOC, "setGraphicsContext unsupported");
   }
-  virtual void setEnv(const upan::string& key, const upan::string& value) {
-    throw upan::exception(XLOC, "setEnv unsupported");
-  }
-  virtual upan::option<upan::string> getEnv(const upan::string& key) {
-    throw upan::exception(XLOC, "setEnv unsupported");
-  }
-
-  typedef upan::map<upan::string, upan::string> ProcessEnvMap;
-  virtual const ProcessEnvMap& envMap() {
-    throw upan::exception(XLOC, "envMap unsupported");
-  }
 };

@@ -76,18 +76,6 @@ public:
     _parent.setGuiBase(v);
   }
 
-  void setEnv(const upan::string& key, const upan::string& value) override {
-    _parent.setEnv(key, value);
-  }
-
-  upan::option<upan::string> getEnv(const upan::string& key) override {
-    return _parent.getEnv(key);
-  }
-
-  const ProcessEnvMap& envMap() override {
-    return _parent.envMap();
-  }
-
   uint64_t* pml4Table() const override {
     return _parent.pml4Table();
   }

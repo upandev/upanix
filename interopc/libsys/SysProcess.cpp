@@ -116,20 +116,6 @@ void SysProcess_WaitDequeue(int id, bool all) {
   ProcessManager::Instance().WaitDequeue(id, all, true);
 }
 
-int SysProcess_GetEnv(const char* szVar, char* retVal)
-{
-  uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_GET_ENV, false, (uintptr_t) szVar, (uintptr_t) retVal, 3, 4, 5);
-	return retStatus ;
-}
-
-int SysProcess_SetEnv(const char* szVar, const char* szVal)
-{
-  uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_ENV, false, (uintptr_t) szVar, (uintptr_t) szVal, 3, 4, 5);
-	return retStatus ;
-}
-
 int SysProcess_GetProcList(PS** pProcList, unsigned* uiListSize)
 {
   uint64_t retStatus ;

@@ -64,13 +64,11 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
 				//ProcessManager_DisableTaskSwitch() ;
 				
-				char* szFile = ( char*) p1;
-				char** szArgList = ( char**) p3;
+				char* szFile = (char*) p1;
+				char** argv = (char**)p2;
+        char** envp = (char**)p3;
 
-				for(unsigned i = 0; i < p2; i++)
-					szArgList[i] = ( char*) szArgList[i];
-
-				*retVal = KC::MKernelService().RequestProcessExec(szFile, p2, (const char**)szArgList) ;
+				*retVal = KC::MKernelService().RequestProcessExec(szFile, argv, envp);
 
 				//ProcessManager_EnableTaskSwitch() ;
 			}
@@ -146,38 +144,6 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P1 => Exit Status
 			{
 				ProcessManager::Instance().Sleep((unsigned)p1) ;
-			}
-			break ;
-
-		case SYS_CALL_PROCESS_GET_ENV:
-			//P1 - Env Var
-			{
-				char* szVar = ( char*) p1;
-				const auto& val = ProcessManager::Instance().GetCurrentPAS().getEnv(szVar);
-				if (val.isEmpty()) {
-				  *retVal = -1;
-				} else {
-          char* szVal = ( char*) p2;
-          strcpy(szVal, val.value().c_str());
-          *retVal = 0;
-				}
-			}
-			break ;
-
-		case SYS_CALL_PROCESS_SET_ENV:
-			//P1 - Env Var
-			//P2 - Env Val
-			{
-				char* szVar = ( char*) p1;
-				char* szVal = ( char*) p2;
-
-				*retVal = 0 ;
-				try {
-				  ProcessManager::Instance().GetCurrentPAS().setEnv(szVar, szVal);
-				} catch(const upan::exception& e) {
-				  e.Print();
-				  *retVal = -1;
-				}
 			}
 			break ;
 

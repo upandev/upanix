@@ -150,7 +150,7 @@ void StorageDriveManager::DisplayList()
 	}
 }
 
-byte StorageDriveManager::Change(const upan::string& szDriveName) {
+byte StorageDriveManager::Change(const upan::string& szDriveName, char** retPwd) {
   auto r = GetByDriveName(szDriveName, false);
 	if(r.isBad()) {
     return DeviceDrive_ERR_INVALID_DRIVE_NAME;
@@ -161,7 +161,13 @@ byte StorageDriveManager::Change(const upan::string& szDriveName) {
 	pas.setDriveID(storageDrive.Id());
   pas.pwd(storageDrive.fileSystem().root());
 
-  pas.setEnv("PWD", storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(storageDrive.fileSystem().root()));
+  const upan::string pwd(storageDrive.DriveName() + "@" + storageDrive.fileSystem().fullPath(storageDrive.fileSystem().root()));
+  if (retPwd) {
+    *retPwd = (char*)pas.dmm().allocate(pwd.length() + 1);
+    strcpy(*retPwd, pwd.c_str());
+  } else if (pas.isKernelProcess()) {
+    setenv("PWD", pwd.c_str(), 1);
+  }
 
 	return DeviceDrive_SUCCESS ;
 }

@@ -42,8 +42,7 @@ const upan::string Expand(const upan::string& param)
     for(j = 0; param[j] != '\0' && !iswhitespace(param[j]) && param[j] != '/'; ++j) ;
 
     upan::string var(param.c_str() + 1, j - 1);
-    char val[MAX_ENV_VAL_LEN] = "\0";
-    getenv(var.c_str(), val);
+    const char* val = getenv(var.c_str());
     upan::string temp(param.c_str() + j);
     return upan::string(val) + temp;
   }
