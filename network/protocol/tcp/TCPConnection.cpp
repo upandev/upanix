@@ -78,6 +78,7 @@ void TCPConnection::connect() {
     _sendRecvCond.wait(_sendRecvMutex, &timeout);
 
     if (_state.get() != TCP_ESTABLISHED) {
+      _state.set(TCP_CLOSED);
       throw upan::exception(XLOC, "connect failed - state: %d", _state.get());
     }
   }
