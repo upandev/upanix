@@ -34,7 +34,7 @@ TCPConnection::TCPConnection(TCPHandler& tcpHandler,
                              bool blockingSocket)
   : _tcpHandler(tcpHandler), _srcAddr(srcAddr), _destAddr(destAddr), _socketId(socketId), _blockingSocket(blockingSocket),
     _state(TCP_NEW), _seqNum(1), _ackNum(0), _finSeqNum(0), _sendFin(false), _timeWaitStart(0),
-    _sendStream(64 KB), _recvStream(64 KB), _errorCode(0) {
+    _sendStream(64 KB), _recvStream(64 KB), _errorCode(0), _doneReceiving(false) {
   updateToString();
   KLog::info("TCP connection created for %s", _str.c_str());
 }
@@ -140,6 +140,11 @@ bool TCPConnection::canSend() {
 
 void TCPConnection::recvPacket(upan::shared_ptr<RawNetPacket> rawPacket) {
   upan::mutex_guard g(_sendRecvMutex);
+  if (_doneReceiving) {
+    _recvPackets.clear();
+    return;
+  }
+
   if (_state.get() == TCP_CLOSED ||
       _state.get() == TCP_CLOSE_WAIT ||
       _state.get() == TCP_TIME_WAIT) {
@@ -452,4 +457,15 @@ void TCPConnection::onRecvFin() {
   } else {
     _state.set(TCP_CLOSE_WAIT);
   }
+}
+
+void TCPConnection::doneSending() {
+  upan::mutex_guard g(_sendRecvMutex);
+  _sendFin = true;
+}
+
+void TCPConnection::doneReceiving() {
+  upan::mutex_guard g(_sendRecvMutex);
+  _doneReceiving = true;
+  _recvPackets.clear();
 }

@@ -30,7 +30,8 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int p
   : IODescriptor(pid, fd, O_RDWR),
     _family(family),
     _protocol(protocol),
-    _allowBroadcast(false), _sendTimeoutInMs(0), _recvTimeoutInMs(0) {
+    _allowBroadcast(false), _sendTimeoutInMs(0), _recvTimeoutInMs(0),
+    _shutdownStatus(SHUT_NA) {
 }
 
 void SocketDescriptor::validateSockAddrLen(socklen_t len) const {
@@ -65,6 +66,20 @@ void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct
   validateBuf(buf);
 }
 
+bool SocketDescriptor::_canRead() {
+  if (_shutdownStatus == SHUT_RD || _shutdownStatus == SHUT_RDWR) {
+    return false;
+  }
+  return _canRead_1();
+}
+
+bool SocketDescriptor::_canWrite() {
+  if (_shutdownStatus == SHUT_WR || _shutdownStatus == SHUT_RDWR) {
+    return false;
+  }
+  return _canWrite_1();
+}
+
 void SocketDescriptor::bind(const struct sockaddr& address, socklen_t len) {
   closeCheckAndThrow();
   _bind(address, len);
@@ -83,6 +98,24 @@ void SocketDescriptor::listen(int backlog) {
 int SocketDescriptor::accept(struct sockaddr* addr, socklen_t* len) {
   closeCheckAndThrow();
   return _accept(addr, len);
+}
+
+void SocketDescriptor::shutdown(SOCKET_SHUTDOWN_TYPE type) {
+  closeCheckAndThrow();
+  if (_shutdownStatus == type) {
+    return;
+  }
+
+  if (_shutdownStatus == SHUT_NA) {
+    _shutdownStatus = type;
+  } else {
+    if (_shutdownStatus == SHUT_RDWR) {
+      return;
+    }
+    _shutdownStatus = SHUT_RDWR;
+  }
+
+  _shutdown(type);
 }
 
 ssize_t SocketDescriptor::sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {

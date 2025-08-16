@@ -34,10 +34,10 @@ public:
 
 protected:
   int _read(void* buffer, int len) override;
-  bool _canRead() override;
+  bool _canRead_1() override;
 
   int _write(const void* buffer, int len) override;
-  bool _canWrite() override;
+  bool _canWrite_1() override;
 
   void _bind(const struct sockaddr& address, socklen_t len) override;
   void _connect(const struct sockaddr& address, socklen_t len) override;
@@ -50,6 +50,7 @@ protected:
   ssize_t _sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
   ssize_t _recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
   void _close() override;
+  void _shutdown(SOCKET_SHUTDOWN_TYPE type) override;
 
   int getLastError() const override { return _errorCode; }
   ssize_t sendMessage(const void* buf, size_t n);

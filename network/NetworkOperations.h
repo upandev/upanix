@@ -40,4 +40,5 @@ public:
   void connect(int fd, const struct sockaddr& addr, socklen_t len);
   void listen(int fd, int backlog);
   int accept(int fd, struct sockaddr* addr, socklen_t* len);
+  void shutdown(int fd, SOCKET_SHUTDOWN_TYPE type);
 };

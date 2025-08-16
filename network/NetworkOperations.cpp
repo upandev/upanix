@@ -237,3 +237,8 @@ int NetworkOperations::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
   return descriptor.accept(addr, len);
 }
+
+void NetworkOperations::shutdown(int fd, SOCKET_SHUTDOWN_TYPE type) {
+  auto& descriptor = dynamic_cast<SocketDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd));
+  return descriptor.shutdown(type);
+}

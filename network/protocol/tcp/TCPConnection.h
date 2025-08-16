@@ -75,6 +75,9 @@ public:
   void setAckNum(uint32_t ackNum) { _ackNum = ackNum; }
   int errorCode() const { return _errorCode; }
 
+  void doneSending();
+  void doneReceiving();
+
 private:
   bool allowAppSend() { return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT; }
   bool allowAppRecv() { return _state.get() != TCP_CLOSED; }
@@ -120,4 +123,5 @@ private:
   upan::mutex _sendRecvMutex;
   upan::condition_variable _sendRecvCond;
   int _errorCode;
+  bool _doneReceiving;
 };

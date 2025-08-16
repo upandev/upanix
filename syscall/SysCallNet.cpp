@@ -167,6 +167,20 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
     }
     break;
 
+    case SYS_CALL_SOCKET_SHUTDOWN:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      const auto type = (SOCKET_SHUTDOWN_TYPE)p2;
+      try {
+        NetworkOperations::Instance().shutdown(fd, type);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_GET_HOST_BY_NAME:
     {
       *retVal = 0;

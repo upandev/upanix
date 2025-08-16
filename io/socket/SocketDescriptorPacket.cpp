@@ -36,7 +36,7 @@ int SocketDescriptorPacket::_read(void* buffer, int len) {
   throw upan::exception(XLOC, "read not supported for packet sockets");
 }
 
-bool SocketDescriptorPacket::_canRead() {
+bool SocketDescriptorPacket::_canRead_1() {
   upan::mutex_guard g(_ioSync);
   return !_packetQueue.empty();
 }
@@ -71,8 +71,20 @@ upan::shared_ptr<RawNetPacket> SocketDescriptorPacket::recvPacket() {
   }
 }
 
+void SocketDescriptorPacket::_shutdown(SOCKET_SHUTDOWN_TYPE type) {
+  upan::mutex_guard g(_ioSync);
+  if (type == SHUT_RDWR || type == SHUT_RD) {
+    _packetQueue.clear();
+  }
+}
+
 void SocketDescriptorPacket::recvNotify(const upan::shared_ptr<RawNetPacket>& packet) {
   upan::mutex_guard g(_ioSync);
+
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    //ignore the packets
+    return;
+  }
 
   if (_packetQueue.full()) {
     printf("\nsocket (%d) queue is full - dropping packet", id());

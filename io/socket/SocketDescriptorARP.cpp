@@ -42,6 +42,10 @@ void SocketDescriptorARP::_connect(const struct sockaddr& address, socklen_t len
 }
 
 ssize_t SocketDescriptorARP::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_WR) {
+    throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
+  }
+
   validateSendToParams(buf, flags, addr, len);
   if (!addr) {
     throw upan::exception(XLOC, "sendPacket/destination address is not specified");
@@ -49,12 +53,16 @@ ssize_t SocketDescriptorARP::_sendTo(const void* buf, size_t n, int flags, const
 
   NetworkManager::Instance().getARPSocketResolver().setup(*this, *reinterpret_cast<const struct ether_arp*>(buf));
   const auto& device = NetworkManager::Instance().getDefaultRealDevice();
-  device.value().getARPHandler().send(buf, n, srcAddr(), *addr);
+  device.value().getARPHandler().send((const uint8_t*)buf, n, srcAddr(), *addr);
 
   return n;
 }
 
 ssize_t SocketDescriptorARP::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    return 0;
+  }
+
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getEthernetData();

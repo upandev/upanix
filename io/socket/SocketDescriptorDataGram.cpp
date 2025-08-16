@@ -57,6 +57,10 @@ void SocketDescriptorDataGram::_connect(const struct sockaddr& address, socklen_
 }
 
 ssize_t SocketDescriptorDataGram::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_WR) {
+    throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
+  }
+
   validateFlags(flags);
   validateBuf(buf);
 
@@ -76,11 +80,15 @@ ssize_t SocketDescriptorDataGram::_sendTo(const void* buf, size_t n, int flags, 
     _routeSetupCompleted = true;
   }
 
-  device.getUDPHandler().send(buf, n, srcAddr(), destAddr);
+  device.getUDPHandler().send((const uint8_t*)buf, n, srcAddr(), destAddr);
   return n;
 }
 
 ssize_t SocketDescriptorDataGram::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    return 0;
+  }
+
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const auto& udpHeader = packet->getUDPHeader();

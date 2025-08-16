@@ -79,7 +79,7 @@ int SocketDescriptorLocalDataGram::_read(void* buffer, int len) {
   return _recvFrom(buffer, len, 0, nullptr, nullptr);
 }
 
-bool SocketDescriptorLocalDataGram::_canRead() {
+bool SocketDescriptorLocalDataGram::_canRead_1() {
   upan::mutex_guard g(_ioSync);
   if (!_isBound) {
     return false;
@@ -91,7 +91,7 @@ int SocketDescriptorLocalDataGram::_write(const void* buffer, int len) {
   return _sendTo(buffer, len, 0, nullptr, 0);
 }
 
-bool SocketDescriptorLocalDataGram::_canWrite() {
+bool SocketDescriptorLocalDataGram::_canWrite_1() {
   upan::mutex_guard g(_ioSync);
   if (_isBound) {
     return _messages.size() < MAX_MESSAGE_QUEUE_SIZE;
@@ -109,12 +109,24 @@ bool SocketDescriptorLocalDataGram::_canWrite() {
   }
 }
 
+void SocketDescriptorLocalDataGram::_shutdown(SOCKET_SHUTDOWN_TYPE type) {
+  upan::mutex_guard g(_ioSync);
+  if (type == SHUT_RDWR || type == SHUT_RD) {
+    _messages.clear();
+  }
+}
+
 ssize_t SocketDescriptorLocalDataGram::sendMessage(const void* buf, size_t n) {
   if (!_isBound) {
     throw upan::exception(XLOC, "sendMessage failed - socket %d is not bound", id());
   }
 
   upan::mutex_guard g(_ioSync);
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    //ignore the message
+    return 0;
+  }
+
   if (_messages.size() < MAX_MESSAGE_QUEUE_SIZE) {
     n = upan::min((size_t) MAX_MESSAGE_SIZE, n);
     upan::string msg((const char*) buf, n);
@@ -126,6 +138,10 @@ ssize_t SocketDescriptorLocalDataGram::sendMessage(const void* buf, size_t n) {
 }
 
 ssize_t SocketDescriptorLocalDataGram::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_WR) {
+    throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
+  }
+
   upan::string destPath;
   if (!addr) {
     if (!_isConnected) {
@@ -159,6 +175,10 @@ ssize_t SocketDescriptorLocalDataGram::_sendTo(const void* buf, size_t n, int fl
 }
 
 ssize_t SocketDescriptorLocalDataGram::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    return 0;
+  }
+
   if (!_isBound) {
     throw upan::exception(XLOC, "recvFrom failed - socket %d is not bound", id());
   }

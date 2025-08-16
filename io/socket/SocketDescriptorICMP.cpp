@@ -43,6 +43,10 @@ void SocketDescriptorICMP::_connect(const struct sockaddr& address, socklen_t le
 }
 
 ssize_t SocketDescriptorICMP::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_WR) {
+    throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
+  }
+
   validateFlags(flags);
   validateBuf(buf);
 
@@ -53,12 +57,16 @@ ssize_t SocketDescriptorICMP::_sendTo(const void* buf, size_t n, int flags, cons
   }
   NetworkManager::Instance().getICMPSocketResolver().setup(*this, *reinterpret_cast<const struct icmp*>(buf));
   auto& device = NetworkManager::Instance().getDevice(destAddr, true);
-  device.getICMPHandler().send(buf, n, srcAddr(), destAddr);
+  device.getICMPHandler().send((const uint8_t*)buf, n, srcAddr(), destAddr);
 
   return n;
 }
 
 ssize_t SocketDescriptorICMP::_recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    return 0;
+  }
+
   validateRecvFromParams(buf, flags, addr, len);
   const auto& packet = recvPacket();
   const void* srcBuf = packet->getEthernetData();

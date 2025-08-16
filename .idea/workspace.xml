@@ -33,35 +33,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support for lsservent command">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="pass envp on stack - and the envp is now managed within user process space. libc() process init code will take care of initializing envp. all kernel processes share common envp">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MountManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MountManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/CommandLineParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorARP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorICMP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -710,7 +700,7 @@
       <workItem from="1753486132389" duration="171861000" />
       <workItem from="1754569413792" duration="74040000" />
       <workItem from="1755000339568" duration="27764000" />
-      <workItem from="1755180146522" duration="16896000" />
+      <workItem from="1755180146522" duration="23188000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1055,7 +1045,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="185" />
+    <option name="localTasksCounter" value="186" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1089,7 +1079,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="change protocol param to int to support both ether and IP protocols in socket and network operations. Also, added support for IOCTL system call" />
     <MESSAGE value="use ip, ether and arp headers from library libc/net" />
     <MESSAGE value="1. Implement ARP request and response&#10;2. Implement logic to determine the gateway mac-address using ARP after DHCP init is completed&#10;3. Implement a simple ping command" />
     <MESSAGE value="code cleanup - remove test dhcp code" />
@@ -1114,7 +1103,8 @@
     <MESSAGE value="refactor kernel syslog to a separate class KernelSysLog" />
     <MESSAGE value="1. cross compiler rebuilt with configuration changes to generate crtbeginS.o and crtendS.o&#10;2. Modified upanlibs build configuration to use a linker script and the necessary crt.* and crtbeginS.o and crtendS.o files for all shared libraries including libc.so&#10;3. (2) is done to ensure that the necessary C++ runtime handlers for rtti, exceptions and global object construction and destruction are compiled along with - so, that it is possible to fuse C++ code inside C shared library. This will allow us to implement several standard (posix) libc functions using C++ code behind the scenes&#10;4. process initialization code is triggered via _process_init_relocate - which relocates all dynamic symbols acros exe and loaded shared libraries and returns the list of _init and _fini function pointers for exe and all the loaded shared libraries - which will then be called inside the libc implementation of _process_init_reloacte&#10;5. Provided implementation for __cxa_atexit() and __cxa_finalize() - to ensure the destructors of globally initialized and function static objects are called upon process exit" />
     <MESSAGE value="support for lsservent command" />
-    <option name="LAST_COMMIT_MESSAGE" value="support for lsservent command" />
+    <MESSAGE value="pass envp on stack - and the envp is now managed within user process space. libc() process init code will take care of initializing envp. all kernel processes share common envp" />
+    <option name="LAST_COMMIT_MESSAGE" value="pass envp on stack - and the envp is now managed within user process space. libc() process init code will take care of initializing envp. all kernel processes share common envp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1123,11 +1113,6 @@
           <url>file://$PROJECT_DIR$/process/KernelProcess.cpp</url>
           <line>63</line>
           <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h</url>
-          <line>27</line>
-          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

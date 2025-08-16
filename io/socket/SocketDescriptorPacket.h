@@ -30,10 +30,10 @@ protected:
 
 protected:
   int _read(void* buffer, int len) override;
-  bool _canRead() override;
+  bool _canRead_1() override;
 
   int _write(const void* buffer, int len) override;
-  bool _canWrite() override { return true; }
+  bool _canWrite_1() override { return true; }
 
   void _seek(int seekType, int offset) override { }
   uint32_t _getOffset() const override { return 0; }
@@ -45,6 +45,8 @@ protected:
   int _accept(struct sockaddr* sockaddr, socklen_t* len) override {
     throw upan::exception(XLOC, "accept not supported for packet sockets");
   }
+
+  void _shutdown(SOCKET_SHUTDOWN_TYPE type) override;
 
   virtual bool filterPacket(const upan::shared_ptr<RawNetPacket>& packet) = 0;
   struct sockaddr_in& srcAddr() { return _srcAddr; }

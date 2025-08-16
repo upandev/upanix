@@ -173,6 +173,10 @@ void SocketDescriptorStream::acceptConnection(TCPConnection& tcpConnection) {
 }
 
 int SocketDescriptorStream::_read(void* buffer, int len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
+  }
+
   if (_tcpConnection.isEmpty()) {
     throw upan::exception(XLOC, "read failed - socket %d is not connected", id());
   }
@@ -196,7 +200,7 @@ int SocketDescriptorStream::_read(void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::_canRead() {
+bool SocketDescriptorStream::_canRead_1() {
   if (_tcpConnection.isEmpty()) {
     return false;
   }
@@ -204,6 +208,10 @@ bool SocketDescriptorStream::_canRead() {
 }
 
 int SocketDescriptorStream::_write(const void* buffer, int len) {
+  if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
+    return 0;
+  }
+
   if (_tcpConnection.isEmpty()) {
     throw upan::exception(XLOC, "write failed - socket %d is not connected", id());
   }
@@ -227,11 +235,22 @@ int SocketDescriptorStream::_write(const void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::_canWrite() {
+bool SocketDescriptorStream::_canWrite_1() {
   if (_tcpConnection.isEmpty()) {
     return false;
   }
   return _tcpConnection->canSend();
+}
+
+void SocketDescriptorStream::_shutdown(SOCKET_SHUTDOWN_TYPE type) {
+  if (type == SHUT_RDWR) {
+    _tcpConnection->doneSending();
+    _tcpConnection->doneReceiving();
+  } else if (type == SHUT_WR) {
+    _tcpConnection->doneSending();
+  } else if (type == SHUT_RD) {
+    _tcpConnection->doneReceiving();
+  }
 }
 
 ssize_t SocketDescriptorStream::_sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
