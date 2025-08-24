@@ -33,47 +33,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Bug fix: if connect() fails, the TCP connection state should be set to CLOSED">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/ResourceMutex.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/ResourceMutex.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/RawStorageDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDriveManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCall.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/_SysCallHandler.s" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/_SysCallHandler.s" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,30 +84,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "SHELLCHECK.PATH": "/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck",
-    "Shell Script.run.executor": "Run",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/process",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "Errors",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck&quot;,
+    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/process&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/process" />
@@ -163,11 +125,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -728,7 +685,8 @@
       <workItem from="1754569413792" duration="74040000" />
       <workItem from="1755000339568" duration="27764000" />
       <workItem from="1755180146522" duration="64994000" />
-      <workItem from="1755522546951" duration="101443000" />
+      <workItem from="1755522546951" duration="102764000" />
+      <workItem from="1756039263901" duration="1210000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1073,7 +1031,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="188" />
+    <option name="localTasksCounter" value="191" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1107,8 +1065,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="code cleanup - remove test dhcp code" />
-    <MESSAGE value="implement basic DNS client for host resolution and reverse-host resolution" />
     <MESSAGE value="refactor to create separate header files to contain definitions of the headers structs across different protocols such as UDP, ARP, IPV4 etc." />
     <MESSAGE value="introduced loopback device - created necessary object oriented inheritance hierarchy to separate loopback device from real-network devices" />
     <MESSAGE value="fix issue with resetsyslog" />
@@ -1132,7 +1088,9 @@
     <MESSAGE value="pass envp on stack - and the envp is now managed within user process space. libc() process init code will take care of initializing envp. all kernel processes share common envp" />
     <MESSAGE value="support for shutdown() socket function" />
     <MESSAGE value="Bug fix: if connect() fails, the TCP connection state should be set to CLOSED" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug fix: if connect() fails, the TCP connection state should be set to CLOSED" />
+    <MESSAGE value="major change to use the user-process stack for system calls without having to reserve a dedicated stack space for system calls. This is necessary because when we deliver signals, the signal handler may invoke a system call like dll symbol resolution, which will end up clobbering the system call stack that was possibly in active use by another system call like IO wait - which was interrupted by a signal delivery. So," />
+    <MESSAGE value="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12." />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

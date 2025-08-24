@@ -584,7 +584,7 @@ void SchedulableProcess::prepareToRun() {
 void SchedulableProcess::applyDefaultSignalAction(const Signal& signal) {
   switch(signal.defaultActionType()) {
     case Signal::SA_TERMINATE:
-      setStatus(TERMINATED);
+      Destroy();
       break;
 
     case Signal::SA_IGNORE:
@@ -640,7 +640,7 @@ void SchedulableProcess::deliverPendingSignal() {
           setStatus(RUN);
         } catch (upan::exception& e) {
           KLog::critical("Signal delivery failed for process: %d. Reason: %s", _processID, e.ErrorMsg().c_str());
-          setStatus(TERMINATED);
+          Destroy();
         }
       }
     }
