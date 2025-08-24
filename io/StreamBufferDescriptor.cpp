@@ -42,6 +42,10 @@ int StreamBufferDescriptor::_read(void* buffer, int len) {
       return 0;
     }
     ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, 0);
+    const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+    if (err == ProcessStateInfo::INTERRUPTED) {
+      throw upan::exception(XLOC, "StreamBuffer read interrupted");
+    }
   }
 }
 
@@ -66,6 +70,10 @@ int StreamBufferDescriptor::_write(const void* buffer, int len) {
         return 0;
       }
       ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Write, 0);
+      const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+      if (err == ProcessStateInfo::INTERRUPTED) {
+        throw upan::exception(XLOC, "StreamBuffer write interrupted");
+      }
     }
   }
 }

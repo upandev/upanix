@@ -68,6 +68,7 @@ public:
 private:
   void DeallocateResources() override;
   void DeAllocateGUIFramebuffer();
+  void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) override;
 
 private:
   int _stackBlockId;

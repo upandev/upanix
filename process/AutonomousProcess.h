@@ -54,6 +54,9 @@ public:
   MouseCursorType mouseCursorType() const override { return _mouseCursorType; }
   void setMouseCursorType(MouseCursorType type) { _mouseCursorType = type; }
 
+  void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
+  upan::option<struct sigaction&> getSignalAction(SIGNAL signo) override;
+
 private:
   typedef upan::list<Thread*> ThreadSchedulerList;
   ThreadSchedulerList _threadSchedulerList;
@@ -63,4 +66,7 @@ private:
   IODescriptor::Ptr _uiMouseEventStreamFD;
   bool _isGuiBase;
   MouseCursorType _mouseCursorType;
+
+  typedef upan::map<SIGNAL, struct sigaction> SIGNAL_ACTION_MAP;
+  SIGNAL_ACTION_MAP _signalHandler;
 };

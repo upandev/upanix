@@ -182,7 +182,7 @@ void ElfParser::ReadSymbolTables() {
 void ElfParser::ReadTLS() {
   for(auto i = 0; i < _header->e_phnum; i++) {
     if(_programHeader[i].p_type == ElfProgramHeader::PT_TLS) {
-      _tlsTotalSize = upan::align(_programHeader[i].p_memsz, _programHeader[i].p_align);
+      _tlsTotalSize = upan::align_up(_programHeader[i].p_memsz, _programHeader[i].p_align);
       _tlsInitImageSize = _programHeader[i].p_filesz;
       _tlsInitImage.reset(new uint8_t[_tlsInitImageSize]);
       _bufferedReader->Seek(_programHeader[i].p_offset);

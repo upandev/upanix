@@ -64,6 +64,7 @@ public:
 
 private:
   void DeallocateResources() override;
+  void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) override;
 
 private:
   uint32_t _stackPDAddress;

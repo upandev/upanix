@@ -24,7 +24,6 @@
 #include <Global.h>
 #include <mutex.h>
 #include <FileSystem.h>
-#include <ResourceMutex.h>
 #include <DiskCache.h>
 #include <ustring.h>
 #include <drive.h>
@@ -69,9 +68,6 @@ public:
   RawStorageDrive* CreateRawDisk(const upan::string& name, RawStorageDrive::Types iType, void* pDevice);
   byte RemoveRawDiskEntry(const upan::string& name);
   RawStorageDrive* GetRawDiskByName(const upan::string& name);
-
-  RESOURCE_KEYS GetResourceType(DEVICE_TYPE deviceType);
-  RESOURCE_KEYS GetResourceType(RawStorageDrive::Types diskType);
 
   upan::string rootDriveName();
   void rootDriveName(const upan::string& driveName);

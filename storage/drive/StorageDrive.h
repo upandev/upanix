@@ -24,7 +24,6 @@
 #include <Global.h>
 #include <mutex.h>
 #include <FileSystem.h>
-#include <ResourceMutex.h>
 #include <DiskCache.h>
 #include <ustring.h>
 #include <drive.h>

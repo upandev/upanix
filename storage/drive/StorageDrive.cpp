@@ -128,7 +128,7 @@ void StorageDrive::UnMount() {
   StorageDriveManager::Instance().rootDriveName("");
   KLog::info("drive %s is unmounted", _driveName.c_str());
   ProcessManager::Instance().closeAllFiles(*this);
-  KLog::info("all files across all processes on drive % are closed", _driveName.c_str());
+  KLog::info("all files across all processes on drive %s are closed", _driveName.c_str());
   fileSystem().unmount();
   _mounted = false;
 }

@@ -232,7 +232,7 @@ bool KernelService::Stop(int iServerProcessID)
 		return false ;
 	}
 
-	ProcessManager::Instance().Kill(iServerProcessID) ;
+	ProcessManager::Instance().SendSignal(iServerProcessID, SIGKILL, nullptr);
 
 	return true;
 }

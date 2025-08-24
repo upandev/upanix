@@ -50,8 +50,8 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID, boo
                          : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
   _mainThreadID = _processID;
   _pml4Table = nullptr;
-  Load(argv, envp);
   _totalNoOfPagesForDLL = 0;
+  Load(argv, envp);
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
@@ -74,7 +74,7 @@ void UserProcess::Load(const upan::vector<upan::string>& argv, const upan::vecto
   if((minMemAddr % PAGE_SIZE) != 0)
     throw upan::exception(XLOC, "process min load address %x is not page aligned", minMemAddr);
 
-  uint64_t processImageSize = upan::align(maxMemAddr - minMemAddr, 8);
+  uint64_t processImageSize = upan::align_up(maxMemAddr - minMemAddr, 8);
   _processSpaceSize = processImageSize + DynamicLinkLoader::Instance().dllResolverSize();
 
   _processBase = minMemAddr;
@@ -157,12 +157,12 @@ uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>&
   }
 
   //The stack must be aligned to 16 byte otherwise SSE/SSE2/SSE3 instructions will cause General Protection Fault
-  const uint32_t processEntryStackSize = upan::align(argvD1Size + argvD2Size + envpD1Size + envpD2Size, 16);
+  const uint32_t processEntryStackSize = upan::align_up(argvD1Size + argvD2Size + envpD1Size + envpD2Size, 16);
   if (processEntryStackSize > PROCESS_INIT_STACK_SIZE) {
     throw upan::exception(XLOC, "Startup arguments size is larger than reserved init stack size of %u", PROCESS_INIT_STACK_SIZE);
   }
 
-  const uint64_t virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - processEntryStackSize;
+  const uint64_t virtualStackTopAddress = PROCESS_STACK_TOP_ADDRESS - processEntryStackSize;
   const uintptr_t realStackTopAddress = MemManager::Instance().GetFlatAddressFromPD((uint64_t*)_stackPDAddress, virtualStackTopAddress);
 
   uint32_t pos = argvD1Size;// argv[0] through argv[argc - 1]
@@ -247,7 +247,7 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
     throw upan::exception(XLOC, "Not a PIC - DLL Min Address: %x", minMemAddr);
   }
 
-  const uint32_t uiDLLImageSize = upan::align(maxMemAddr - minMemAddr, 4) ;
+  const uint32_t uiDLLImageSize = upan::align_up(maxMemAddr - minMemAddr, 4) ;
   const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
   const uint32_t uiNoOfPagesForDLL = MemManager::Instance().GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
 
@@ -352,10 +352,14 @@ void UserProcess::DeallocateResources() {
 
 void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
   const auto virtualDLLLoadAddress = PROCESS_DLL_START_ADDRESS + _totalNoOfPagesForDLL * PAGE_SIZE;
-  //printf("\n DLL Addr: %llx, %d", virtualDLLLoadAddress, noOfPagesForDLL);
+  //printf("\n DLL Addr: %llx, %d, %s", virtualDLLLoadAddress, noOfPagesForDLL, dllName.c_str());
   MemManager::Instance().AllocateAddressSpace(pml4Table(), 0x7, virtualDLLLoadAddress, noOfPagesForDLL * PAGE_SIZE);
   _dllInfoMap.insert(DLLInfoMap::value_type(dllName, DLLInfo(_dllInfoMap.size(), virtualDLLLoadAddress, noOfPagesForDLL)));
   _totalNoOfPagesForDLL += noOfPagesForDLL;
+}
+
+void UserProcess::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupSignalStackFrame(_stackPDAddress, taskContext, action, signal);
 }
 
 upan::option<DLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) {

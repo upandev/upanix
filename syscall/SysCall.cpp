@@ -21,11 +21,9 @@
  */
 #include <SysCall.h>
 #include <Cpu.h>
+#include <ProcessConstants.h>
 
-uint64_t SYSCALL_USER_ORIG_RSP = PROCESS_STACK_TOP_ADDRESS - 8 * 1;
-uint64_t SYSCALL_USER_LOCAL_RSP = PROCESS_STACK_TOP_ADDRESS - 8 * 2;
-uint64_t SYSCALL_RETURN_ADDRESS = PROCESS_STACK_TOP_ADDRESS - 8 * 3;
-uint64_t SYSCALL_STACK_TOP = SYSCALL_RETURN_ADDRESS;
+uint64_t PROCESS_SYSCALL_RETURN_ADDRESS = PROCESS_SYSCALL_RESERVE_SPACE;
 
 typedef void Handler(uint64_t* retVal, uint64_t sysCallId, bool doAddrTranslation, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
 typedef bool Check(uint64_t uiSysCallID);
@@ -115,6 +113,6 @@ extern "C" void SysCall_Entry(uint64_t sysCallId, uint64_t p1, uint64_t p2, uint
 	  	break ;
 		}
 	}
-  *((uint64_t*)SYSCALL_RETURN_ADDRESS) = retVal;
+  *((uint64_t*)PROCESS_SYSCALL_RETURN_ADDRESS) = retVal;
 }
 

@@ -95,6 +95,8 @@ private:
   void DeallocateResources() override;
   void DeallocateGUIFramebuffer();
 
+  void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) override;
+
 private:
   uint64_t _processSpaceSize;
   uint32_t _totalNoOfPagesForDLL;

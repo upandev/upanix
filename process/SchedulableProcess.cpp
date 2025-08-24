@@ -27,13 +27,14 @@
 #include <ProcessManager.h>
 #include <DMM.h>
 #include <Cpu.h>
-#include <thread_context.h>
 #include <StorageDriveManager.h>
+#include <KernelRootProcess.h>
+#include "PortCom.h"
 
 int SchedulableProcess::_nextPid = 0;
 
 SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, bool isFGProcess)
-  : _name(name), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr) {
+  : _name(name), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr), _signalQueue(MAX_ACTIVE_SIGNALS) {
   _processID = _nextPid++;
   _parentProcessID = parentID;
   _status = NEW;
@@ -50,10 +51,12 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
       }
     }
     _processGroup = new ProcessGroup(isFGProcess);
+    sigemptyset(&_sigMask);
   } else {
     _driveID = parentProcess.value()._driveID ;
     _pwd = parentProcess.value().pwd();
     _processGroup = parentProcess.value()._processGroup;
+    _sigMask = parentProcess.value()._sigMask;
   }
 
   _processGroup->AddProcess();
@@ -226,9 +229,9 @@ bool SchedulableProcess::hasFilePermission(const FileNode& node, byte mode) cons
 }
 
 void SchedulableProcess::Common::SetStackPDTable(uint64_t *pml4Table, uint64_t value) {
-  auto pml4Index = PML4_INDEX(PROCESS_STACK_TOP_ADDRESS - 1);
+  auto pml4Index = PML4_INDEX(PROCESS_STACK_BASE - 1);
   auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
-  auto pdpIndex = PDP_INDEX(PROCESS_STACK_TOP_ADDRESS - 1);
+  auto pdpIndex = PDP_INDEX(PROCESS_STACK_BASE - 1);
   pdpTable[pdpIndex] = value;
 }
 
@@ -240,10 +243,10 @@ uint64_t SchedulableProcess::Common::AllocateStackSpace() {
   //pre-allocate process stack - user (the initial space for start-args) + call-gate
   //further expansion of user stack beyond initial space for start-args will happen as part of regular page fault handling flow
   const uint64_t stackPDAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
-  const uint64_t processSysCallStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE;
-  const uint64_t processStackBase = processSysCallStackBase - PROCESS_INIT_STACK_SIZE;
+  const uint64_t processSyscallReserveSpaceBase = PROCESS_STACK_BASE - PROCESS_SYSCALL_RESERVE_SPACE;
+  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processSyscallReserveSpaceBase, PROCESS_SYSCALL_RESERVE_SPACE);
+  const uint64_t processStackBase = PROCESS_STACK_TOP_ADDRESS - PROCESS_INIT_STACK_SIZE;
   MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processStackBase, PROCESS_INIT_STACK_SIZE);
-  MemManager::Instance().AllocatePDAddressSpace((uint64_t*)stackPDAddress, 0x7, processSysCallStackBase, PROCESS_SYSCALL_STACK_SIZE);
 
   return stackPDAddress;
 }
@@ -258,13 +261,88 @@ uint64_t SchedulableProcess::Common::KernelVirtualStackBase(int stackBlockId) {
 
 int SchedulableProcess::Common::AllocateKernelStackSpace() {
   int stackBlockId = MemManager::Instance().AllocateKernelStack();
-  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtualStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().AllocateAddressSpace(MEM_PML4_TABLE, 0x3, KernelVirtualStackBase(stackBlockId) - PROCESS_KERNEL_STACK_SIZE, PROCESS_KERNEL_STACK_SIZE);
   return stackBlockId;
 }
 
 void SchedulableProcess::Common::DeallocateKernelStackSpace(int stackBlockId) {
-  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtualStackBase(stackBlockId), PROCESS_KERNEL_STACK_SIZE);
+  MemManager::Instance().DeallocateAddressSpace(MEM_PML4_TABLE, KernelVirtualStackBase(stackBlockId) - PROCESS_KERNEL_STACK_SIZE, PROCESS_KERNEL_STACK_SIZE);
   MemManager::Instance().DeAllocateKernelStack(stackBlockId);
+}
+
+uint64_t SchedulableProcess::Common::CalculateSignalFrameRSP(uint64_t rsp, bool hasSiginfo) {
+  rsp = upan::align_down(rsp, 16);
+  rsp -= 128; //skip red-zone
+  if (hasSiginfo) {
+    rsp -= sizeof(siginfo_t);
+  }
+  rsp -= sizeof(uint64_t); //the signal restorer address
+  return rsp;
+}
+
+void SchedulableProcess::Common::initSignalFrame(uint8_t* signalFrame, uint64_t rsp, TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
+  memcpy(signalFrame, (void*)&action.sa_restorer, sizeof(uint64_t));
+
+  if (action.sa_flags & SA_SIGINFO) {
+    siginfo_t siginfo;
+    siginfo.si_signo = signal.signo();
+    siginfo.si_value = signal.value();
+    switch(signal.signo()) {
+      //TODO: set other info fields based on the signal
+    }
+
+    memcpy(signalFrame + sizeof(uint64_t), (void*)&siginfo, sizeof(siginfo_t));
+    taskContext.rsi = rsp + sizeof(uint64_t);
+    taskContext.interruptState.rip = (uint64_t)action.sa_sigaction;
+  } else {
+    taskContext.interruptState.rip = (uint64_t)action.sa_handler;
+  }
+
+  taskContext.rdi = signal.signo();
+  taskContext.rdx = 0;
+
+  taskContext.interruptState.rsp = rsp;
+  taskContext.interruptState.rflags = 0x202;
+}
+
+void SchedulableProcess::Common::SetupSignalStackFrame(uint64_t stackPDAddress, TaskContext& taskContext,
+                                                       const struct sigaction& action, const Signal& signal) {
+  const uint64_t rsp = CalculateSignalFrameRSP(taskContext.interruptState.rsp, action.sa_flags & SA_SIGINFO);
+
+  if ((PROCESS_STACK_TOP_ADDRESS - rsp) >= PROCESS_STACK_SIZE) {
+    throw upan::exception(XLOC, "out of stack space - can't allocate signal frame");
+  }
+
+  auto ptTable = MemManager::Instance().GetPTTableFromPD((uint64_t*)stackPDAddress, rsp);
+  const auto ptIndex = PT_INDEX(rsp);
+
+  if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+    auto page = MemManager::Instance().AllocatePhysicalPage();
+    ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
+  }
+
+  auto signalFrame = (uint8_t*)MemManager::Instance().GetFlatAddressFromPD((uint64_t*)stackPDAddress, rsp);
+
+  initSignalFrame(signalFrame, rsp, taskContext, action, signal);
+
+  taskContext.interruptState.cs = USER_CODE_SELECTOR | 0x3;
+  taskContext.interruptState.ss = USER_DATA_SELECTOR | 0x3;
+}
+
+void SchedulableProcess::Common::SetupKernelSignalStackFrame(int stackBlockId, TaskContext& taskContext,
+                                                             const struct sigaction& action, const Signal& signal) {
+  const uint64_t rsp = CalculateSignalFrameRSP(taskContext.interruptState.rsp, action.sa_flags & SA_SIGINFO);
+
+  if ((KernelVirtualStackBase(stackBlockId) - rsp) >= PROCESS_KERNEL_STACK_SIZE) {
+    throw upan::exception(XLOC, "out of stack space - can't allocate signal frame");
+  }
+
+  auto signalFrame = (uint8_t*)rsp;
+
+  initSignalFrame(signalFrame, rsp, taskContext, action, signal);
+
+  taskContext.interruptState.cs = SYS_CODE_SELECTOR;
+  taskContext.interruptState.ss = SYS_DATA_SELECTOR;
 }
 
 extern __volatile__ uint64_t SYS_CALL_ID;
@@ -311,12 +389,262 @@ bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
   } else if ((address & 0x7) == 0x7) {
     // we are good - page is already allocated - possibly because of a page fault on same address/page area from another thread.
   } else {
-    /* Crash the Process..... With SegFault Or OutOfMemeory Error*/
-    printf("\n Segmentation/Permission Fault @ Address: 0x%lx", faultyAddress);
+    /* Crash the Process... With SegFault Or OutOfMemory Error*/
+    printf("\n Segmentation/Permission Fault @ Address: 0x%llx", faultyAddress);
     switchPageTable();
     return false;
   }
 
   switchPageTable();
   return true;
+}
+
+//this is always called via ProcessManager::SendSignal - which locks context switch to protect the queue access across context switches
+void SchedulableProcess::queueSignal(SIGNAL signo, const union sigval* value) {
+  if (_signalQueue.full()) {
+    throw upan::exception(XLOC, "signal queue is full - can't deliver signal %d", signo);
+  }
+  _signalQueue.push_back({signo, value});
+}
+
+upan::option<Signal> SchedulableProcess::getSignal() {
+  if (_signalQueue.empty()) {
+    return upan::option<Signal>::empty();
+  }
+  auto signal = _signalQueue.front();
+  _signalQueue.pop_front();
+  return upan::option<Signal>(signal);
+}
+
+bool SchedulableProcess::WakeupProcessOnInterrupt() {
+  const IRQ& irq = *_stateInfo.Irq();
+
+  if(irq == StdIRQ::Instance().NO_IRQ)
+    return true;
+
+  return irq.Consume();
+}
+
+void SchedulableProcess::prepareToRun() {
+  bool interruptedBySignal = false;
+  if (_status == SIGNAL_RETURN) {
+    if (_signalTaskContextStack.empty()) {
+      setStatus(RUN);
+    } else {
+      interruptedBySignal = true;
+
+      const auto& signalTaskContext = _signalTaskContextStack[_signalTaskContextStack.size() - 1];
+      const int signo = signalTaskContext._signal;
+
+      _taskContext = signalTaskContext._context;
+      _sigMask = signalTaskContext._sigMask;
+      setStatus(signalTaskContext._processStatus);
+
+      _signalTaskContextStack.pop_back();
+
+      if (_status == STOPPED && signo == SIGCONT) {
+        setStatus(RUN);
+      }
+    }
+  }
+
+  switch(_status) {
+    case RELEASED:
+      break;
+
+    case TERMINATED: {
+      if (_parentProcessID == ProcessManager::UpanixKernelProcessID()) {
+        Release();
+      }
+    }
+    break;
+
+    case WAIT_SLEEP: {
+      if(PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()
+         || _processID == KernelRootProcess::Instance().scheduleRunnerPid())
+      {
+        _stateInfo.SleepTime(0);
+        _stateInfo.setError(ProcessStateInfo::NO_ERROR);
+        setStatus(RUN);
+      } else if (interruptedBySignal) {
+        _stateInfo.SleepTime(_stateInfo.SleepTime() - PIT::Instance().GetClockCount());
+        _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
+        setStatus(RUN);
+      }
+    }
+    break ;
+
+    case WAIT_INT: {
+      if (WakeupProcessOnInterrupt()) {
+        setStatus(RUN);
+      }
+    }
+    break;
+
+    case WAIT_INT_WITH_TIMEOUT: {
+      if (WakeupProcessOnInterrupt()) {
+        setStatus(RUN);
+      } else {
+        if (PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+          _stateInfo.SleepTime(0);
+          setStatus(RUN);
+        }
+      }
+    }
+    break;
+
+    case WAIT_EVENT: {
+      if(_stateInfo.IsEventCompleted()) {
+        setStatus(RUN);
+      }
+    }
+    break;
+
+    case WAIT_IO_DESCRIPTORS: {
+      const auto& result = iodTable().selectCheck(_stateInfo.GetIODescriptors());
+      if (!result.empty()) {
+        _stateInfo.SetIODescriptors(result);
+        _stateInfo.setError(ProcessStateInfo::NO_ERROR);
+        setStatus(RUN);
+      } else {
+        if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+          _stateInfo.SleepTime(0);
+          _stateInfo.setError(ProcessStateInfo::TIMEOUT);
+          setStatus(RUN);
+        } else if (interruptedBySignal) {
+          _stateInfo.SleepTime(0);
+          _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
+          setStatus(RUN);
+        }
+      }
+    }
+    break;
+
+    case WAIT_CHILD: {
+      if(_stateInfo.WaitChildProcId() < 0) {
+        _stateInfo.WaitChildProcId(NO_PROCESS_ID);
+        setStatus(RUN);
+      } else {
+        auto childProcess = ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId());
+        if(childProcess.isEmpty() || childProcess.value().parentProcessID() != _processID) {
+          removeChildProcessID(_stateInfo.WaitChildProcId());
+          _stateInfo.WaitChildProcId(NO_PROCESS_ID);
+          setStatus(RUN);
+        } else if(childProcess.value().status() == TERMINATED && childProcess.value().parentProcessID() == _processID) {
+          childProcess.value().Release();
+          removeChildProcessID(_stateInfo.WaitChildProcId());
+          _stateInfo.WaitChildProcId(NO_PROCESS_ID);
+          setStatus(RUN);
+        }
+      }
+    }
+    break;
+
+    case WAIT_LOCK: {
+      if(_stateInfo.IsWaitOnLockCompleted()) {
+        setStatus(RUN);
+      }
+    }
+    break;
+
+    case WAIT_QUEUE: {
+      auto& q = ProcessManager::Instance().getWaitQueue(_stateInfo.WaitQueueSpaceId(), _stateInfo.WaitQueueId());
+      if (upan::find(q.begin(), q.end(), _processID) == q.end()) {
+        _stateInfo.WaitQueueId(0);
+        _stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
+        setStatus(RUN);
+      } else {
+        if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+          _stateInfo.SleepTime(0);
+          _stateInfo.setError(ProcessStateInfo::TIMEOUT);
+          setStatus(RUN);
+        } else if (interruptedBySignal) {
+          _stateInfo.SleepTime(0);
+          _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
+          setStatus(RUN);
+        }
+      }
+    }
+    break;
+
+    case WAIT_KERNEL_SERVICE: {
+      if(_stateInfo.IsKernelServiceComplete()) {
+        _stateInfo.KernelServiceComplete(false);
+        setStatus(RUN);
+      }
+    }
+    break;
+
+    case STOPPED:
+    case RUN:
+      break;
+  }
+}
+
+void SchedulableProcess::applyDefaultSignalAction(const Signal& signal) {
+  switch(signal.defaultActionType()) {
+    case Signal::SA_TERMINATE:
+      setStatus(TERMINATED);
+      break;
+
+    case Signal::SA_IGNORE:
+      syslog(LOG_INFO, "Ignoring signal %d sent to process: %d", signal.signo(), _processID);
+      break;
+
+    case Signal::SA_STOP:
+      setStatus(STOPPED);
+      break;
+
+    case Signal::SA_CONTINUE:
+      setStatus(RUN);
+      break;
+  }
+}
+
+void SchedulableProcess::deliverPendingSignal() {
+  if (_status == TERMINATED || _status == RELEASED) {
+    return;
+  }
+
+  auto signalOpt = getSignal();
+  if (signalOpt.isEmpty()) {
+    return;
+  }
+
+  const auto& signal = signalOpt.value();
+
+  //current active signal is not redelivered - it is masked
+  if (!_signalTaskContextStack.empty()) {
+    auto& signalTaskContext = _signalTaskContextStack[_signalTaskContextStack.size() - 1];
+    if (signalTaskContext._signal == signal.signo()) {
+      return;
+    }
+  }
+
+  if (signal.isMaskable()) {
+    if (!sigismember(&_sigMask, signal.signo())) {
+      auto handlerOpt = getSignalAction(signal.signo());
+      if (handlerOpt.isEmpty()) {
+        applyDefaultSignalAction(signal);
+      } else {
+        if (_status == STOPPED && signal.signo() != SIGCONT) {
+          return;
+        }
+        SignalTaskContext signalTaskContext { _taskContext, signal.signo(), _status, _sigMask };
+
+        auto& handler = handlerOpt.value();
+        try {
+          setupSignalStackFrame(_taskContext, handler, signal);
+          _sigMask = handler.sa_mask;
+          _signalTaskContextStack.push_back(signalTaskContext);
+          setStatus(RUN);
+        } catch (upan::exception& e) {
+          KLog::critical("Signal delivery failed for process: %d. Reason: %s", _processID, e.ErrorMsg().c_str());
+          setStatus(TERMINATED);
+        }
+      }
+    }
+  } else {
+    applyDefaultSignalAction(signal);
+  }
 }

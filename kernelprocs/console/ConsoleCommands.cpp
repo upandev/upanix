@@ -2032,6 +2032,14 @@ static void test_tcp_client() {
   close(sd);
 }
 
+void sig_handler(int signum) {
+  printf("\nCaught signal: %d", signum);
+}
+
+void sig_action(int signum, siginfo_t* info, void* context) {
+  printf("\nCaught signal: %d, SigInfo val: %d", signum, info->si_value.sival_int);
+}
+
 void ConsoleCommands_Test() {
   upan::string test;
 
@@ -2039,7 +2047,36 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "tcp-client") {
+  if (test == "sig_handler") {
+    if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+      throw upan::exception(XLOC, "parameter signal number is required");
+    }
+    int signal = atoi(CommandLineParser::Instance().GetParameterAt(1));
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = sig_handler;
+    if (sigaction(signal, &sa, nullptr)) {
+      printf("\nFailed to set signal handler");
+    } else {
+      printf("\nRegistered set signal handler");
+    }
+  } else if (test == "sig_action") {
+    if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+      throw upan::exception(XLOC, "parameter signal number is required");
+    }
+    int signal = atoi(CommandLineParser::Instance().GetParameterAt(1));
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = sig_action;
+
+    struct sigaction old_sa;
+    if (sigaction(signal, &sa, &old_sa)) {
+      printf("\nFailed to set signal action handler");
+    } else {
+      printf("\nRegistered set signal action handler - old_sa: %d", old_sa.sa_flags);
+    }
+  } else if (test == "tcp-client") {
     test_tcp_client();
   } else if (test == "tcp-server") {
     test_tcp_server();
@@ -2140,17 +2177,37 @@ void ConsoleCommands_Test() {
       }
       printf("\n internal uniq ptrs destroyed");
     }
-  }
+  } else if (test == "syscall-stats") {
+    pid_t pid = -1;
+    if (CommandLineParser::Instance().GetNoOfParameters() >= 2) {
+      pid = atoi(CommandLineParser::Instance().GetParameterAt(1));
+    }
+    if (pid == -1) {
+      for (auto& e: get_syscall_stats()) {
+        printf("\n %lu -> ", e.first);
+        int total = 0;
+        for (auto& i: e.second) {
+          printf("%d : %d, ", i.first, i.second);
+          total += i.second;
+        }
+        printf(" -> Total: %d", total);
+      }
+    } else {
+      int col = 0;
 
-//  for(auto& e : get_syscall_stats()) {
-//    printf("\n %lu", e.first);
-//    int total = 0;
-//    for(auto& i : e.second) {
-//      printf("\n   %d -> %d", i.first, i.second);
-//      total += i.second;
-//    }
-//    printf("\n   Total -> %d", total);
-//  }
+      for (auto& e: get_syscall_stats()) {
+        if (col % 5 == 0) {
+          printf("\n");
+        }
+        col++;
+        printf("%lu -> ", e.first);
+        auto i = e.second.find(pid);
+        if (i != e.second.end()) {
+          printf(" %d , ", i->second);
+        }
+      }
+    }
+  }
   //MemManager::Instance().DisplayPageAllocationStats();
   //printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());
 }
@@ -2234,12 +2291,15 @@ void ConsoleCommands_Kill() {
     throw upan::exception(XLOC, "required parameter pid");
   }
 
-  for(int i = 0; i < CommandLineParser::Instance().GetNoOfParameters(); ++i) {
-    int pid = atoi(CommandLineParser::Instance().GetParameterAt(i));
-    if (pid > 2) {
-      ProcessManager::Instance().Kill(pid);
-    }
+  int argCount = CommandLineParser::Instance().GetNoOfParameters();
+  if (argCount != 2) {
+    throw upan::exception(XLOC, "invalid number of parameters: Usage: kill <pid> <signal>");
   }
+
+  pid_t pid = atoi(CommandLineParser::Instance().GetParameterAt(0));
+  auto signo = (SIGNAL)atoi(CommandLineParser::Instance().GetParameterAt(1));
+  const union sigval val = { .sival_int = pid };
+  ProcessManager::Instance().SendSignal(pid, signo, &val);
 }
 
 void ConsoleCommands_ResetMouse() {

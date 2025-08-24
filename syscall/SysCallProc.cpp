@@ -64,9 +64,9 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
 				//ProcessManager_DisableTaskSwitch() ;
 				
-				char* szFile = (char*) p1;
-				char** argv = (char**)p2;
-        char** envp = (char**)p3;
+				auto szFile = (char*) p1;
+				auto argv = (const char**)p2;
+        auto envp = (const char**)p3;
 
 				*retVal = KC::MKernelService().RequestProcessExec(szFile, argv, envp);
 
@@ -143,7 +143,19 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 		case SYS_CALL_PROCESS_SLEEP :
 			// P1 => Exit Status
 			{
-				ProcessManager::Instance().Sleep((unsigned)p1) ;
+        try {
+          ProcessManager::Instance().Sleep((unsigned) p1);
+          Process& process = ProcessManager::Instance().GetCurrentPAS();
+          if (process.stateInfo().getError() == ProcessStateInfo::INTERRUPTED) {
+            *retVal = process.stateInfo().SleepTime();
+            process.stateInfo().SleepTime(0);
+            process.stateInfo().setError(ProcessStateInfo::NO_ERROR);
+          } else {
+            *retVal = 0;
+          }
+        } catch(const upan::exception& e) {
+          *retVal = -1;
+        }
 			}
 			break ;
 
@@ -182,14 +194,38 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       }
       break ;
 
-    case SYS_CALL_PROCESS_KILL:
+    case SYS_CALL_PROCESS_SIGNAL:
     {
       try {
         *retVal = 0;
-        auto pid = (int)p1;
-        auto signal = (int)p2;
-        ProcessManager::Instance().SendSignal(pid, signal);
+        auto pid = (pid_t)p1;
+        auto signo = (SIGNAL)p2;
+        auto value = (const union sigval*)p3;
+        ProcessManager::Instance().SendSignal(pid, signo, value);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
 
+    case SYS_CALL_PROCESS_SET_SIGNAL_RETURN:
+    {
+      try {
+        ProcessManager::Instance().SignalReturn();
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+      }
+    }
+    break;
+    case SYS_CALL_PROCESS_SET_SIGNAL_ACTION:
+    {
+      try {
+        *retVal = 0;
+        auto signo = (SIGNAL)p1;
+        auto newact = (const struct sigaction*)p2;
+        auto oldact = (struct sigaction*)p3;
+        ProcessManager::Instance().SetSignalAction(signo, newact, oldact);
       } catch(const upan::exception& e) {
         KLog::exception(e);
         *retVal = -1;

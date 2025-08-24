@@ -34,7 +34,7 @@ AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, boo
 }
 
 SchedulableProcess& AutonomousProcess::forSchedule() {
-  if (_status == TERMINATED || _status == RELEASED) {
+  if (_status == TERMINATED || _status == RELEASED || _status == STOPPED) {
     return *this;
   }
 
@@ -90,7 +90,7 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
     case Process::TTY: {
       const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
       if (ch == Keyboard_CTRL_C) {
-        ProcessManager::Instance().SendSignal(_processID, SIGINT);
+        kill(_processID, SIGINT);
       } else if (ch != Keyboard_NA_CHAR) {
         iodTable().get(IODescriptorTable::STDIN)->write((void*)&ch, 1);
       }
@@ -100,7 +100,7 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
     case Process::GUI:
       const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
       if (ch == Keyboard_CTRL_C) {
-        ProcessManager::Instance().SendSignal(_processID, SIGINT);
+        kill(_processID, SIGINT);
       } else {
         _uiKeyboardEventStreamFD->write((void*) &data, sizeof(upanui::KeyboardData));
       }
@@ -167,4 +167,51 @@ void AutonomousProcess::setGuiBase(bool val) {
     GraphicsVideo::Instance().removeGuiBase(_processID);
   }
   getGuiFrame().value().touch();
+}
+
+//this is always called via ProcessManager::SetSignalAction - which locks context switch to protect the action map access across context switches
+void AutonomousProcess::setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) {
+  const Signal signal(signo);
+  if (!signal.isMaskable()) {
+    throw upan::exception(XLOC, "can't register signal handler for non-maskable signal: %d", signo);
+  }
+
+  if (newact) {
+    if ((newact->sa_flags & SA_SIGINFO) && !(uint64_t) newact->sa_sigaction) {
+      throw upan::exception(XLOC, "sa_sigaction must be set for if SA_SIGINFO flag is set for signal: %d", signo);
+    }
+    if (!(uint64_t) newact->sa_sigaction && !(uint64_t) newact->sa_handler) {
+      throw upan::exception(XLOC, "sa_handler must be set for signal: %d", signo);
+    }
+  }
+  auto i = _signalHandler.find(signo);
+  if (i != _signalHandler.end()) {
+    if (oldact) {
+      *oldact = i->second;
+    }
+
+    if (!newact) {
+      _signalHandler.erase(i);
+    } else {
+      i->second = *newact;
+    }
+  } else {
+    if (oldact) {
+      oldact->sa_flags = 0;
+      oldact->sa_handler = nullptr;
+      sigemptyset(&oldact->sa_mask);
+    }
+
+    if (newact) {
+      _signalHandler.insert(SIGNAL_ACTION_MAP::value_type(signo, *newact));
+    }
+  }
+}
+
+upan::option<struct sigaction&> AutonomousProcess::getSignalAction(SIGNAL signo) {
+  auto i = _signalHandler.find(signo);
+  if (i == _signalHandler.end()) {
+    return upan::option<struct sigaction&>::empty();
+  }
+  return upan::option<struct sigaction&>(i->second);
 }

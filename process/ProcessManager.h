@@ -31,7 +31,6 @@
 #include <ElfSectionHeader.h>
 #include <PIC.h>
 #include <mutex.h>
-#include <ResourceMutex.h>
 #include <UserProcess.h>
 #include <dtime.h>
 #include <PIT.h>
@@ -63,14 +62,10 @@ class ProcessManager
     void AddToSchedulerList(SchedulableProcess& process);
     void AddToProcessMap(SchedulableProcess& process);
     void RemoveFromProcessMap(SchedulableProcess& process);
-    bool WakeupProcessOnInterrupt(SchedulableProcess& process);
-    bool IsResourceBusy(__volatile__ RESOURCE_KEYS uiType);
-    void SetResourceBusy(RESOURCE_KEYS uiType, bool bVal);
     void Sleep(volatile unsigned int sleepTime);
     void WaitOnInterrupt(const IRQ&);
     void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
     int GetCurProcId();
-    void Kill(int iProcessID);
     void WakeUpFromKSWait(int iProcessID);
     bool IsAlive(int pid);
     bool IsChildAlive(int iChildProcessID);
@@ -85,7 +80,6 @@ class ProcessManager
     int GetWaitQueueSpaceId(Process& process, bool isKernelSpace);
     void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
-    void WaitOnResource(RESOURCE_KEYS uiResourceType);
     void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs);
     void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs);
     void WaitOnKernelService();
@@ -94,7 +88,6 @@ class ProcessManager
     void WaitForEvent();
     void EventCompleted(int pid);
     void ContextSwitch(TaskContext &);
-    void SendSignal(int pid, int signal);
     void closeAllFiles(StorageDrive& storageDrive);
 
     static int GetCurrentProcessID() {
@@ -113,13 +106,18 @@ class ProcessManager
     static bool IsContextSwitch() { return _contextSwitch; }
     static void SetContextSwitch(bool flag) { _contextSwitch = flag; }
 
+    void SendSignal(pid_t pid, SIGNAL signo, const union sigval* value);
+    void SetSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
+    void SignalReturn();
+
+    WaitQueue& getWaitQueue(int spaceId, int queueId) {
+      return _processWaitQueueMap[spaceId][queueId];
+    }
+
   private:
-    void PrepareToRun(SchedulableProcess& process);
     bool DoPollWait();
     bool IsEventCompleted(int pid);
     ProcessStateInfo& GetProcessStateInfo(int pid);
-
-    bool _resourceList[MAX_RESOURCE];
 
     typedef upan::map<int, WaitQueue> WaitQueueMap;
     typedef upan::map<int, WaitQueueMap> ProcessWaitQueueMap;

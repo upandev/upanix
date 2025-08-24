@@ -38,13 +38,11 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
 
   const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
 
-  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtualStackBase(_stackBlockId)
-          + PROCESS_KERNEL_STACK_SIZE
-          - (noOfStackParams + 1) * sizeof(uintptr_t);
+  const uint64_t stackTop = SchedulableProcess::Common::KernelVirtualStackBase(_stackBlockId) - (noOfStackParams + 1) * sizeof(uintptr_t);
 
   //the first stack param is return address - which is pushed as per x86 64 ABI
-  for(int i = 1; i <= noOfStackParams; ++i) {
-    ((uintptr_t*)stackTop)[i] = params[i - 1 + PROCESS_ARGUMENTS_ON_REGS_X86_64];
+  for(int i = 0; i < noOfStackParams; ++i) {
+    ((uintptr_t*)stackTop)[i] = params[i + PROCESS_ARGUMENTS_ON_REGS_X86_64];
   }
 
   if (params.size() >= 1) _taskContext.rdi = params[0];
@@ -109,4 +107,8 @@ void KernelProcess::DeAllocateGUIFramebuffer() {
     KernelDMM::Instance().free((uint64_t)_frame->frameBuffer().buffer());
     GraphicsVideo::Instance().removeFGProcess(_processID);
   }
+}
+
+void KernelProcess::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupKernelSignalStackFrame(_stackBlockId, taskContext, action, signal);
 }

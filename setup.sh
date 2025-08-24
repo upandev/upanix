@@ -52,7 +52,6 @@ export INCLUDE="-I./ \
 -I${UPANIX_HOME}/users \
 -I${UPANIX_HOME}/exeparser \
 -I${UPANIX_HOME}/syscall \
--I${UPANIX_HOME}/resource \
 \
 -I${UPANIX_HOME}/libc/include \
 -I${UPANIX_HOME}/libc/sysdeps/mos/common/ \

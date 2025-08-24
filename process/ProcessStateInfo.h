@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include <ResourceMutex.h>
 #include <atomicop.h>
 #include <pair.h>
 #include "vector.h"
@@ -50,9 +49,6 @@ public:
   int WaitQueueSpaceId() const { return _waitQueueSpaceId; }
   void WaitQueueSpaceId(int space) { _waitQueueSpaceId = space; }
 
-  RESOURCE_KEYS WaitResourceId() const { return _waitResourceId; }
-  void WaitResourceId(const RESOURCE_KEYS id) { _waitResourceId = id; }
-
   const upan::vector<io_descriptor>& GetIODescriptors() const {
     return _ioDescriptors;
   }
@@ -75,23 +71,15 @@ public:
   Error getError() const { return _error; }
   void setError(Error error) { _error = error; }
 
-  void setSignal(int signal) { _signal = signal; }
-  int getSignal() const { return _signal; }
-  void clearSignal() { _signal = 0; }
-  bool hasSignal() const { return _signal != 0; }
-  bool isSignal(int signal) const { return _signal == signal; }
-
 private:
   time_t         _sleepTime;
   const IRQ*     _irq;
   int            _waitChildProcId;
   int            _waitQueueId;
   int            _waitQueueSpaceId;
-  RESOURCE_KEYS  _waitResourceId;
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete ;
   upan::vector<io_descriptor> _ioDescriptors;
-  int            _signal;
   Error          _error;
 
   upan::atomic::integral<int>* _waitLock;

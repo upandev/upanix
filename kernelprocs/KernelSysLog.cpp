@@ -131,6 +131,6 @@ void KernelSysLog::stop() {
   _rootDriveName = "";
   _sysLogger.reset(nullptr);
 
-  ProcessManager::Instance().Kill(_sysLogDaemonPid);
+  ProcessManager::Instance().SendSignal(_sysLogDaemonPid, SIGKILL, nullptr);
   _sysLogDaemonPid = NO_PROCESS_ID;
 }

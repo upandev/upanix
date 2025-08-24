@@ -30,7 +30,7 @@ UserThread::UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t en
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
   //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
   //but a thread function - unlike a typical c function, should exit() instead of return
-  const auto stackTopAddress = PROCESS_STACK_TOP_ADDRESS - PROCESS_SYSCALL_STACK_SIZE - sizeof(uint64_t);
+  const auto stackTopAddress = PROCESS_STACK_TOP_ADDRESS - sizeof(uint64_t);
   _tls.reset(new ThreadLocalStorage(_processID, pml4Table(), parent.tlsp(), 0x7));
 
   _taskContext.rdi = entryAddress;
@@ -52,4 +52,8 @@ void UserThread::DeallocateResources() {
 
 void UserThread::onLoad() {
   SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
+}
+
+void UserThread::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupSignalStackFrame(_stackPDAddress, taskContext, action, signal);
 }

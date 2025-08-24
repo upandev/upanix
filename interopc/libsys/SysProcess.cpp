@@ -87,10 +87,11 @@ void SysProcess_Yield()
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_YIELD, false, 1, 2, 3, 4, 5);
 }
 
-void SysProcess_Sleep(unsigned millisec)
+int SysProcess_Sleep(unsigned millisec)
 {
   uint64_t retStatus ;
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SLEEP, false, millisec, 2, 3, 4, 5);
+  return (int)retStatus;
 }
 
 void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
@@ -152,8 +153,19 @@ int SysProcess_IsKernel() {
   return IsKernel() ? 1 : 0;
 }
 
-int SysProcess_Kill(int pid, int signal) {
+int SysProcess_SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
   uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_KILL, false, pid, signal, 3, 4, 5);
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SIGNAL, false, (uint64_t)pid, (uint64_t)signo, (uint64_t)value, 4, 5);
+  return (int)retStatus;
+}
+
+void SysProcess_SignalReturn() {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SIGNAL_RETURN, false, 1, 2, 3, 4, 5);
+}
+
+int SysProcess_SetSignalAction(int signo, const struct sigaction *act, struct sigaction *oldact) {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SIGNAL_ACTION, false, (uint64_t)signo, (uint64_t)act, (uint64_t)oldact, 4, 5);
   return (int)retStatus;
 }

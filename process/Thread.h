@@ -88,6 +88,14 @@ public:
     _parent.setMouseCursorType(type);
   }
 
+  void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) override {
+    _parent.setSignalAction(signo, newact, oldact);
+  }
+
+  upan::option<struct sigaction&> getSignalAction(SIGNAL signo) override {
+    return _parent.getSignalAction(signo);
+  }
+
 protected:
   AutonomousProcess& _parent;
 };

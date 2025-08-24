@@ -34,6 +34,8 @@
 #include <Process.h>
 #include <InterruptHandlers.h>
 #include <ThreadLocalStorage.h>
+#include <ProcessSignal.h>
+#include <signal.h>
 
 class SchedulableProcess : public Process
 {
@@ -105,6 +107,20 @@ public:
   void yield() override;
   bool CanPreempt();
 
+  //each process and thread have their own signal mask and signal queue
+  const sigset_t& signalMask() const { return _sigMask; }
+  void queueSignal(SIGNAL signo, const union sigval* value);
+  upan::option<Signal> getSignal();
+
+  //signal handlers are common across the process and its threads
+  virtual void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) = 0;
+  virtual upan::option<struct sigaction&> getSignalAction(SIGNAL signo) = 0;
+  virtual void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) = 0;
+
+  void prepareToRun();
+  void deliverPendingSignal();
+  void applyDefaultSignalAction(const Signal& signal);
+
 private:
   static int _nextPid;
 
@@ -113,6 +129,7 @@ private:
   void AllocateInterruptStackSpace();
   void SwitchInterruptStack();
   void DeAllocateInterruptStackSpace();
+  bool WakeupProcessOnInterrupt();
 
 protected:
   virtual void onLoad() = 0;
@@ -129,6 +146,11 @@ protected:
     static uint64_t KernelVirtualStackBase(int stackBlockId);
     static int AllocateKernelStackSpace();
     static void DeallocateKernelStackSpace(int stackBlockId);
+
+    static uint64_t CalculateSignalFrameRSP(uint64_t rsp, bool hasSiginfo);
+    static void initSignalFrame(uint8_t* signalFrame, uint64_t rsp, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
+    static void SetupSignalStackFrame(uint64_t stackPDAddress, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
+    static void SetupKernelSignalStackFrame(int stackBlockId, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
   };
 
 protected:
@@ -150,4 +172,9 @@ protected:
   ProcessIDs _childProcessIDs;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
   upan::vector<uintptr_t> _istStackPages;
+
+  sigset_t _sigMask;
+  static constexpr int MAX_ACTIVE_SIGNALS = 10;
+  upan::queue<Signal> _signalQueue;
+  upan::vector<SignalTaskContext> _signalTaskContextStack;
 };

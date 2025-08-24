@@ -24,7 +24,6 @@
 #include <GraphicsVideo.h>
 #include <ProcessManager.h>
 #include <Cpu.h>
-#include <signal.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -80,7 +79,7 @@ void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
   int fgPid = NO_PROCESS_ID;
   if (ch == Keyboard_CTRL_C && (fgPid = _processGroup->GetFGProcessID()) != NO_PROCESS_ID) {
-    ProcessManager::Instance().SendSignal(fgPid, SIGINT);
+    kill(fgPid, SIGINT);
   } else {
     iodTable().get(IODescriptorTable::STDIN)->write((void*) &ch, 1);
   }

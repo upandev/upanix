@@ -264,28 +264,6 @@ void StorageDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
   pDriveStat->ulUsedSize = 0;
 }
 
-RESOURCE_KEYS StorageDriveManager::GetResourceType(DEVICE_TYPE deviceType)
-{
-	switch(deviceType)
-	{
-		case DEV_FLOPPY: return RESOURCE_FDD;
-		case DEV_ATA_IDE: return RESOURCE_HDD;
-		case DEV_SCSI_USB_DISK: return RESOURCE_USD;
-    default: return RESOURCE_GENERIC_DISK;
-	}
-}
-
-RESOURCE_KEYS StorageDriveManager::GetResourceType(RawStorageDrive::Types diskType)
-{
-	switch(diskType)
-	{
-		case RawStorageDrive::ATA_HARD_DISK: return RESOURCE_HDD;
-		case RawStorageDrive::USB_SCSI_DISK: return RESOURCE_USD;
-	//TODO: FLOPPY falls under this category which should be changed to particular disk type
-    default: return RESOURCE_GENERIC_DISK;
-	}
-}
-
 upan::string StorageDriveManager::rootDriveName() {
   upan::mutex_guard g(_driveListMutex);
   return _rootDriveName;

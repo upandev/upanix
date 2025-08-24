@@ -156,9 +156,9 @@ __attribute__((interrupt)) void isr_12_interrupt_handler(InterruptState* state, 
 
 __attribute__((interrupt)) void isr_13_interrupt_handler(InterruptState* state, uint64_t errorCode) {
   COM1::Instance().Write("\n Interrupt 13: General Protection Fault.");
-  //printf("\n Interrupt State: %llx, %llx, %llx, %llx, %llx\n", state->cs, state->rip, state->ss, state->rsp, state->rflags);
-  //printf("\n Error Code: %llx\n", errorCode);
-  //printf("\n PID: %d", ProcessManager::GetCurrentProcessID());
+//  printf("\n Interrupt State: %llx, %llx, %llx, %llx, %llx\n", state->cs, state->rip, state->ss, state->rsp, state->rflags);
+//  printf("\n Error Code: %llx\n", errorCode);
+//  printf("\n PID: %d", ProcessManager::GetCurrentProcessID());
   ProcessManager_Exit();
 }
 

@@ -148,6 +148,11 @@ upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_desc
   const auto& result = selectCheck(ioDescriptors);
   if (result.empty()) {
     ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, 0);
+    const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
+    if (err == ProcessStateInfo::INTERRUPTED) {
+      //throw upan::exception(XLOC, "IO select interrupted");
+      return {};
+    }
     return ProcessManager::Instance().GetCurrentPAS().stateInfo().GetIODescriptors();
   } else {
     return result;

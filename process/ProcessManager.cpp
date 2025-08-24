@@ -46,12 +46,7 @@ uint32_t ProcessManager::_taskSwitch = 0;
 bool ProcessManager::_contextSwitch = false;
 
 ProcessManager::ProcessManager() {
-  for (bool& i : _resourceList) {
-    i = false;
-  }
-
   _processSchedulerIt = _processSchedulerList.end();
-
   KC::MConsole().LoadMessage("Process Manager Initialization", Success);
 }
 
@@ -120,168 +115,6 @@ void ProcessManager::RemoveFromProcessMap(SchedulableProcess& process) {
   _processMap.erase(process.processID());
 }
 
-void ProcessManager::PrepareToRun(SchedulableProcess& process) {
-  _currentProcessID = process.processID();
-  ProcessStateInfo& stateInfo = process.stateInfo();
-
-	switch(process.status()) {
-	  case RELEASED:
-      break;
-
-	  case TERMINATED:
-	    if (process.parentProcessID() == UpanixKernelProcessID()) {
-	      process.Release();
-	    }
-      break;
-
-  	case WAIT_SLEEP:
-		{
-      if(PIT::Instance().GetClockCount() >= stateInfo.SleepTime()
-        || process.processID() == KernelRootProcess::Instance().scheduleRunnerPid())
-			{
-        stateInfo.SleepTime(0) ;
-				process.setStatus(RUN);
-			}
-			else
-			{
-				if(false)
-				{
-          printf("\n Sleep Time: %u", stateInfo.SleepTime()) ;
-					printf("\n PIT Tick Count: %u", PIT::Instance().GetClockCount()) ;
-					printf("\n") ;
-				}
-			}
-		}
-		break ;
-
-	  case WAIT_INT:
-		{
-			if (WakeupProcessOnInterrupt(process)) {
-			  process.setStatus(RUN);
-			}
-		}
-		break ;
-
-    case WAIT_INT_WITH_TIMEOUT:
-    {
-      if (WakeupProcessOnInterrupt(process)) {
-        process.setStatus(RUN);
-      } else {
-        if (PIT::Instance().GetClockCount() >= stateInfo.SleepTime()) {
-          stateInfo.SleepTime(0);
-          process.setStatus(RUN);
-        }
-      }
-    }
-    break ;
-
-    case WAIT_EVENT:
-    {
-      if(IsEventCompleted(process.processID())) {
-        process.setStatus(RUN);
-      }
-    }
-    break;
-
-    case WAIT_IO_DESCRIPTORS:
-	  {
-	    const auto& result = process.iodTable().selectCheck(process.stateInfo().GetIODescriptors());
-	    if (!result.empty()) {
-        process.stateInfo().SetIODescriptors(result);
-        process.stateInfo().setError(ProcessStateInfo::NO_ERROR);
-        process.setStatus(RUN);
-      } else {
-        if (stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= stateInfo.SleepTime()) {
-          process.stateInfo().SleepTime(0);
-          process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
-          process.setStatus(RUN);
-        } else if (stateInfo.hasSignal() && stateInfo.isSignal(SIGINT)) {
-          process.stateInfo().clearSignal();
-          process.stateInfo().setError(ProcessStateInfo::INTERRUPTED);
-          process.setStatus(RUN);
-        }
-      }
-	  }
-	  break;
-
-	  case WAIT_CHILD:
-		{
-      if(stateInfo.WaitChildProcId() < 0) {
-        stateInfo.WaitChildProcId(NO_PROCESS_ID);
-				process.setStatus(RUN);
-			} else {
-			  auto childProcess = GetSchedulableProcess(stateInfo.WaitChildProcId());
-				if(childProcess.isEmpty() || childProcess.value().parentProcessID() != _currentProcessID) {
-          process.removeChildProcessID(stateInfo.WaitChildProcId());
-          stateInfo.WaitChildProcId(NO_PROCESS_ID);
-					process.setStatus(RUN);
-				} else if(childProcess.value().status() == TERMINATED && childProcess.value().parentProcessID() == _currentProcessID) {
-          childProcess.value().Release();
-          process.removeChildProcessID(stateInfo.WaitChildProcId());
-          stateInfo.WaitChildProcId(NO_PROCESS_ID);
-					process.setStatus(RUN);
-				}
-			}
-		}
-		break ;
-
-    case WAIT_LOCK:
-    {
-      if(stateInfo.IsWaitOnLockCompleted()) {
-        process.setStatus(RUN);
-      }
-    }
-    break;
-
-    case WAIT_QUEUE:
-    {
-      auto& q = _processWaitQueueMap[stateInfo.WaitQueueSpaceId()][stateInfo.WaitQueueId()];
-      if (upan::find(q.begin(), q.end(), process.processID()) == q.end()) {
-        stateInfo.WaitQueueId(0);
-        stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
-        process.setStatus(RUN);
-      } else {
-        if (stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= stateInfo.SleepTime()) {
-          process.stateInfo().SleepTime(0);
-          process.stateInfo().setError(ProcessStateInfo::TIMEOUT);
-          process.setStatus(RUN);
-        } else if (stateInfo.hasSignal() && stateInfo.isSignal(SIGINT)) {
-          process.stateInfo().clearSignal();
-          process.stateInfo().setError(ProcessStateInfo::INTERRUPTED);
-          process.setStatus(RUN);
-        }
-      }
-    }
-    break;
-
-	  case WAIT_RESOURCE:
-		{
-      if(stateInfo.WaitResourceId() == RESOURCE_NIL) {
-				process.setStatus(RUN);
-			} else {
-        if(_resourceList[stateInfo.WaitResourceId()] == false) {
-          stateInfo.WaitResourceId(RESOURCE_NIL);
-					process.setStatus(RUN);
-				}
-			}
-		}
-		break ;
-
-	  case WAIT_KERNEL_SERVICE:
-		{
-      if(stateInfo.IsKernelServiceComplete()) {
-        stateInfo.KernelServiceComplete(false);
-        process.setStatus(RUN);
-			}
-		}
-		break ;
-
-	  case RUN:
-	    break ;
-	}
-  process.stateInfo().clearSignal();
-}
-
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
   Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
   const auto& p = GetSchedulableProcess(GetCurrentProcessID());
@@ -305,7 +138,9 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
       }
 
       auto &process = (*_processSchedulerIt)->forSchedule();
-      PrepareToRun(process);
+      _currentProcessID = process.processID();
+      process.prepareToRun();
+      process.deliverPendingSignal();
 
       if (process.status() == PROCESS_STATUS::RUN) {
         process.Load(taskContext);
@@ -480,20 +315,6 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
   }
 }
 
-void ProcessManager::WaitOnResource(RESOURCE_KEYS resourceKey)
-{
-	if(GetCurProcId() < 0)
-		return ;
-
-  auto& p = GetCurrentPAS();
-  {
-    ProcessSwitchLock lock;
-    p.stateInfo().WaitResourceId(resourceKey);
-    p.setStatus(WAIT_RESOURCE);
-  }
-  p.yield();
-}
-
 void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs) {
   upan::vector<io_descriptor> waitIODescriptors;
   io_descriptor waitIODescriptor;
@@ -632,33 +453,9 @@ void ProcessManager_Exit() {
   p.yield();
 }
 
-bool ProcessManager::IsResourceBusy(__volatile__ RESOURCE_KEYS uiType)
-{
-	return _resourceList[ uiType ] ;
-}
-
-void ProcessManager::SetResourceBusy(RESOURCE_KEYS uiType, bool bVal)
-{
-	_resourceList[ uiType ] = bVal ;
-}
-
 int ProcessManager::GetCurProcId()
 {
 	return IsKernel() ? NO_PROCESS_ID : ProcessManager::GetCurrentProcessID();
-}
-
-void ProcessManager::Kill(int iProcessID) {
-  ProcessSwitchLock lock;
-  GetSchedulableProcess(iProcessID).ifPresent([this, iProcessID](SchedulableProcess& process) {
-    if (process.status() != TERMINATED && process.status() != RELEASED) {
-      if (iProcessID == GetCurProcId()) {
-        process.setStatus(TERMINATED);
-        process.yield();
-      } else {
-        process.Destroy();
-      }
-    }
-  });
 }
 
 void ProcessManager::WakeUpFromKSWait(int iProcessID) {
@@ -680,16 +477,6 @@ void ProcessManager::WaitOnKernelService() {
     p.setStatus(WAIT_KERNEL_SERVICE);
   }
   p.yield();
-}
-
-bool ProcessManager::WakeupProcessOnInterrupt(SchedulableProcess& p)
-{
-  const IRQ& irq = *p.stateInfo().Irq();
-
-	if(irq == StdIRQ::Instance().NO_IRQ)
-		return true ;
-
-	return irq.Consume();
 }
 
 bool ProcessManager::DoPollWait() {
@@ -731,20 +518,29 @@ ProcessStateInfo& ProcessManager::GetProcessStateInfo(int pid) {
       .valueOrElse(_kernelModeStateInfo);
 }
 
-void ProcessManager::SendSignal(int pid, int signal) {
-  ProcessSwitchLock lock;
-  if (signal == SIGKILL || signal == SIGTERM) {
-    Kill(pid);
-  } else if (signal == SIGINT) {
-    GetSchedulableProcess(pid).ifPresent([](SchedulableProcess& process) {
-      process.stateInfo().setSignal(SIGINT);
-    });
-  }
-}
-
 void ProcessManager::closeAllFiles(StorageDrive& storageDrive) {
   ProcessSwitchLock lock;
   for (auto& process : _processMap) {
     process.second->iodTable().closeAllFiles(storageDrive);
   }
 }
+
+void ProcessManager::SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
+  ProcessSwitchLock lock;
+  GetSchedulableProcess(pid).ifPresent([&signo, &value](SchedulableProcess& process) { process.queueSignal(signo, value); });
+}
+
+void ProcessManager::SetSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) {
+  ProcessSwitchLock pLock;
+  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) {
+    process.setSignalAction(signo, newact, oldact);
+  });
+}
+
+void ProcessManager::SignalReturn() {
+  auto& p = GetCurrentPAS();
+  //don't put this under process-switch lock because the process will resume on a completely different RIP after signal return
+  p.setStatus(SIGNAL_RETURN);
+  p.yield();
+}
+
