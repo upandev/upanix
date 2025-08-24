@@ -19,21 +19,11 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/
 .code64
 
-.extern SYSCALL_USER_ORIG_RSP
-.extern SYSCALL_USER_LOCAL_RSP
-.extern SYSCALL_RETURN_ADDRESS
-.extern SYSCALL_STACK_TOP
+.extern PROCESS_SYSCALL_RETURN_ADDRESS
 
 .section .data
 
 TEMP_RSP: .quad 0
-TEMP_RETURN_VALUE: .quad 0
-TEMP_PARAM_1:   .quad 0
-TEMP_PARAM_2:   .quad 0
-TEMP_PARAM_3:   .quad 0
-TEMP_PARAM_4:   .quad 0
-TEMP_PARAM_5:   .quad 0
-TEMP_PARAM_6:   .quad 0
 
 .section .text
 
@@ -96,37 +86,26 @@ _syscall_handler:
 
   _save_regs
 
-  movq SYSCALL_USER_LOCAL_RSP, %rax
-  movq %rsp, (%rax)
-
-  movq SYSCALL_USER_ORIG_RSP, %rax
-  movq TEMP_RSP, %rbx
-  movq %rbx, (%rax)
-
-  movq SYSCALL_STACK_TOP, %rsp
-
-  movq SYSCALL_USER_ORIG_RSP, %rax
-  movq (%rax), %rax
+  movq TEMP_RSP, %rax
   movq (%rax), %rdi
   movq 8(%rax), %rsi
   movq 16(%rax), %rdx
   movq 24(%rax), %rcx
   movq 32(%rax), %r8
   movq 40(%rax), %r9
+  push TEMP_RSP
 
   sti
   call SysCall_Entry
   cli
 
-  movq SYSCALL_USER_LOCAL_RSP, %rax
-  movq (%rax), %rsp
+  pop TEMP_RSP
 
   _restore_regs
 
-  movq SYSCALL_USER_ORIG_RSP, %rax
-  movq (%rax), %rsp
+  movq TEMP_RSP, %rsp
 
-  movq SYSCALL_RETURN_ADDRESS, %rax
+  movq PROCESS_SYSCALL_RETURN_ADDRESS, %rax
   movq (%rax), %rax
 
   sysretq
