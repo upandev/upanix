@@ -153,6 +153,12 @@ int SysProcess_IsKernel() {
   return IsKernel() ? 1 : 0;
 }
 
+int SysProcess_MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset) {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_MASK_SIGNAL, false, (uint64_t)how, (uint64_t)set, (uint64_t)oldset, 4, 5);
+  return (int)retStatus;
+}
+
 int SysProcess_SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
   uint64_t retStatus ;
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SIGNAL, false, (uint64_t)pid, (uint64_t)signo, (uint64_t)value, 4, 5);

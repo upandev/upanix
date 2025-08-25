@@ -194,6 +194,21 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       }
       break ;
 
+    case SYS_CALL_PROCESS_MASK_SIGNAL:
+    {
+      try {
+        *retVal = 0;
+        auto how = (SIG_MASKING_TYPE)p1;
+        auto set = (const sigset_t*)p2;
+        auto oldset = (sigset_t*)p3;
+        ProcessManager::Instance().MaskSignal(how, set, oldset);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_PROCESS_SIGNAL:
     {
       try {

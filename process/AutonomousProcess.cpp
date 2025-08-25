@@ -173,7 +173,9 @@ void AutonomousProcess::setGuiBase(bool val) {
 void AutonomousProcess::setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) {
   const Signal signal(signo);
   if (!signal.isMaskable()) {
-    throw upan::exception(XLOC, "can't register signal handler for non-maskable signal: %d", signo);
+    if (newact && isignoreaction(newact)) {
+      throw upan::exception(XLOC, "can't register signal handler for non-maskable signal: %d", signo);
+    }
   }
 
   if (newact) {

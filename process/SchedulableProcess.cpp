@@ -118,6 +118,19 @@ void SchedulableProcess::Destroy() {
 
   if(_parentProcessID == NO_PROCESS_ID) {
     Release();
+  } else {
+    if (!isChildThread() && !parentProcess.isEmpty()) {
+      auto signalHandler = parentProcess.value().getSignalAction(SIGCHLD);
+      if (signalHandler.isEmpty() || isignoreaction(&signalHandler.value()) || isdefaultaction(&signalHandler.value())) {
+        Release();
+      } else {
+        union sigval sigval {_processID };
+        ProcessManager::Instance().SendSignal(_parentProcessID, SIGCHLD, &sigval);
+        if (signalHandler.value().sa_flags & SA_NOCLDWAIT) {
+          Release();
+        }
+      }
+    }
   }
 }
 
@@ -399,6 +412,40 @@ bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
   return true;
 }
 
+void SchedulableProcess::maskSignal(SIG_MASKING_TYPE how, const sigset_t* set, sigset_t* oldset) {
+  if (oldset) {
+    *oldset = _sigMask;
+  }
+
+  switch(how) {
+    case SIG_BLOCK: {
+      if (set) {
+        for(int i = 0; i < _NSIG_WORDS; ++i) {
+          _sigMask.__val[i] |= set->__val[i];
+        }
+      }
+    }
+    break;
+
+    case SIG_UNBLOCK: {
+      if (set) {
+        for(int i = 0; i < _NSIG_WORDS; ++i) {
+          _sigMask.__val[i] &= ~(set->__val[i]);
+        }
+      }
+    }
+    break;
+
+    case SIG_SETMASK: {
+      _sigMask = *set;
+    }
+    break;
+
+    default:
+      throw upan::exception(XLOC, "invalid signal masking type: %d", how);
+  }
+}
+
 //this is always called via ProcessManager::SendSignal - which locks context switch to protect the queue access across context switches
 void SchedulableProcess::queueSignal(SIGNAL signo, const union sigval* value) {
   if (_signalQueue.full()) {
@@ -624,15 +671,15 @@ void SchedulableProcess::deliverPendingSignal() {
   if (signal.isMaskable()) {
     if (!sigismember(&_sigMask, signal.signo())) {
       auto handlerOpt = getSignalAction(signal.signo());
-      if (handlerOpt.isEmpty()) {
+      if (handlerOpt.isEmpty() || isdefaultaction(&handlerOpt.value())) {
         applyDefaultSignalAction(signal);
       } else {
-        if (_status == STOPPED && signal.signo() != SIGCONT) {
+        auto& handler = handlerOpt.value();
+        if (isignoreaction(&handler) || (_status == STOPPED && signal.signo() != SIGCONT)) {
           return;
         }
         SignalTaskContext signalTaskContext { _taskContext, signal.signo(), _status, _sigMask };
 
-        auto& handler = handlerOpt.value();
         try {
           setupSignalStackFrame(_taskContext, handler, signal);
           _sigMask = handler.sa_mask;

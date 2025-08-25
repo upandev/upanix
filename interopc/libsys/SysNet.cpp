@@ -27,7 +27,7 @@ sock_t SysNet_CreateSocket(SA_FAMILY_TYPE sa_family, SOCKET_TYPE socket_type, in
   return (sock_t)retStatus;
 }
 
-int SysNet_Bind(sock_t fd, struct sockaddr* client_addr, socklen_t len) {
+int SysNet_Bind(sock_t fd, const struct sockaddr* client_addr, socklen_t len) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_BIND, false, (uint64_t)fd, (uint64_t)client_addr, (uint64_t)len, 4, 5);
   return (int)retStatus;

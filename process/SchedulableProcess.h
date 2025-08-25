@@ -109,6 +109,7 @@ public:
 
   //each process and thread have their own signal mask and signal queue
   const sigset_t& signalMask() const { return _sigMask; }
+  void maskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset);
   void queueSignal(SIGNAL signo, const union sigval* value);
   upan::option<Signal> getSignal();
 

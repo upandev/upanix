@@ -106,6 +106,7 @@ class ProcessManager
     static bool IsContextSwitch() { return _contextSwitch; }
     static void SetContextSwitch(bool flag) { _contextSwitch = flag; }
 
+    void MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset);
     void SendSignal(pid_t pid, SIGNAL signo, const union sigval* value);
     void SetSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
     void SignalReturn();

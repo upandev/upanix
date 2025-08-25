@@ -525,6 +525,11 @@ void ProcessManager::closeAllFiles(StorageDrive& storageDrive) {
   }
 }
 
+void ProcessManager::MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset) {
+  ProcessSwitchLock lock;
+  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) { process.maskSignal(how, set, oldset); });
+}
+
 void ProcessManager::SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
   ProcessSwitchLock lock;
   GetSchedulableProcess(pid).ifPresent([&signo, &value](SchedulableProcess& process) { process.queueSignal(signo, value); });

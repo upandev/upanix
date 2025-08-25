@@ -2040,6 +2040,16 @@ void sig_action(int signum, siginfo_t* info, void* context) {
   printf("\nCaught signal: %d, SigInfo val: %d", signum, info->si_value.sival_int);
 }
 
+void sig_child_nowait(int signum, siginfo_t* info, void* context) {
+  printf("\nCaught SIGCHLD for child process: %d", signum, info->si_value.sival_int);
+}
+
+void sig_child_wait(int signum, siginfo_t* info, void* context) {
+  printf("\nCaught SIGCHLD for child process: %d (nowait)", signum, info->si_value.sival_int);
+  waitpid(info->si_value.sival_int);
+  printf("\ndone");
+}
+
 void ConsoleCommands_Test() {
   upan::string test;
 
@@ -2047,7 +2057,41 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "sig_handler") {
+  if (test == "sigchld") {
+    if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+      throw upan::exception(XLOC, "parameter signal number is required");
+    }
+    upan::string option = CommandLineParser::Instance().GetParameterAt(1);
+    if (option == "ignore") {
+      struct sigaction sa;
+      memset(&sa, 0, sizeof(sa));
+      sa.sa_handler = (sa_handler_t )SIG_IGN;
+      sigaction(SIGCHLD, &sa, nullptr);
+      printf("\nSIGCHLD ignored");
+    } else if (option == "default") {
+      struct sigaction sa;
+      memset(&sa, 0, sizeof(sa));
+      sa.sa_handler = (sa_handler_t )SIG_DFL;
+      sigaction(SIGCHLD, &sa, nullptr);
+      printf("\nSIGCHLD default");
+    } else if (option == "nowait") {
+      struct sigaction sa;
+      memset(&sa, 0, sizeof(sa));
+      sa.sa_flags = SA_SIGINFO | SA_NOCLDWAIT;
+      sa.sa_sigaction = sig_child_nowait;
+      sigaction(SIGCHLD, &sa, nullptr);
+      printf("\nSIGCHLD handler with nowait");
+    } else if (option == "wait") {
+      struct sigaction sa;
+      memset(&sa, 0, sizeof(sa));
+      sa.sa_flags = SA_SIGINFO;
+      sa.sa_sigaction = sig_child_wait;
+      sigaction(SIGCHLD, &sa, nullptr);
+      printf("\nSIGCHLD handler with wait");
+    } else {
+      throw upan::exception(XLOC, "invalid option");
+    }
+  } else if (test == "sig_handler") {
     if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
       throw upan::exception(XLOC, "parameter signal number is required");
     }

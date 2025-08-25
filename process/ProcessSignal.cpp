@@ -32,6 +32,11 @@ Signal::DEFAULT_SA_TYPE Signal::defaultActionType() const {
   switch (_signo) {
     case SIGINT:
     case SIGQUIT:
+    case SIGILL:
+    case SIGTRAP:
+    case SIGABRT:
+    case SIGBUS:
+    case SIGFPE:
     case SIGKILL:
     case SIGALRM:
     case SIGTERM:

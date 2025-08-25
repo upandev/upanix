@@ -33,9 +33,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12.">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="destroy process upon receiving signal with terminate action">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessSignal.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessSignal.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -686,7 +695,8 @@
       <workItem from="1755000339568" duration="27764000" />
       <workItem from="1755180146522" duration="64994000" />
       <workItem from="1755522546951" duration="102764000" />
-      <workItem from="1756039263901" duration="1210000" />
+      <workItem from="1756039263901" duration="3276000" />
+      <workItem from="1756045802497" duration="7256000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1031,7 +1041,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="191" />
+    <option name="localTasksCounter" value="192" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1065,7 +1075,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor to create separate header files to contain definitions of the headers structs across different protocols such as UDP, ARP, IPV4 etc." />
     <MESSAGE value="introduced loopback device - created necessary object oriented inheritance hierarchy to separate loopback device from real-network devices" />
     <MESSAGE value="fix issue with resetsyslog" />
     <MESSAGE value="refactored bind and route setup (socket resolver). started with implementation of TCP" />
@@ -1090,7 +1099,8 @@
     <MESSAGE value="Bug fix: if connect() fails, the TCP connection state should be set to CLOSED" />
     <MESSAGE value="major change to use the user-process stack for system calls without having to reserve a dedicated stack space for system calls. This is necessary because when we deliver signals, the signal handler may invoke a system call like dll symbol resolution, which will end up clobbering the system call stack that was possibly in active use by another system call like IO wait - which was interrupted by a signal delivery. So," />
     <MESSAGE value="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12." />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12." />
+    <MESSAGE value="destroy process upon receiving signal with terminate action" />
+    <option name="LAST_COMMIT_MESSAGE" value="destroy process upon receiving signal with terminate action" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
