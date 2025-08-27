@@ -165,9 +165,9 @@ int SysProcess_SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
   return (int)retStatus;
 }
 
-void SysProcess_SignalReturn() {
+void SysProcess_SignalReturn(void* signalContext) {
   uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SIGNAL_RETURN, false, 1, 2, 3, 4, 5);
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SIGNAL_RETURN, false, (uint64_t)signalContext, 2, 3, 4, 5);
 }
 
 int SysProcess_SetSignalAction(int signo, const struct sigaction *act, struct sigaction *oldact) {

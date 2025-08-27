@@ -2041,11 +2041,11 @@ void sig_action(int signum, siginfo_t* info, void* context) {
 }
 
 void sig_child_nowait(int signum, siginfo_t* info, void* context) {
-  printf("\nCaught SIGCHLD for child process: %d", signum, info->si_value.sival_int);
+  printf("\nCaught SIGCHLD for child process: %d (nowait)", signum, info->si_value.sival_int);
 }
 
 void sig_child_wait(int signum, siginfo_t* info, void* context) {
-  printf("\nCaught SIGCHLD for child process: %d (nowait)", signum, info->si_value.sival_int);
+  printf("\nCaught SIGCHLD for child process: %d (wait)", signum, info->si_value.sival_int);
   waitpid(info->si_value.sival_int);
   printf("\ndone");
 }

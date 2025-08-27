@@ -68,7 +68,7 @@ public:
   void Destroy();
   void Release();
   void switchPageTable() const;
-  bool handlePageFault(uint64_t faultyAddress);
+  bool handlePageFault(TaskContext& taskContext, uint64_t faultyAddress);
 
   FILE_USER_TYPE fileUserType(const FileNode&) const override;
   bool hasFilePermission(const FileNode&, byte mode) const override;
@@ -116,7 +116,8 @@ public:
   //signal handlers are common across the process and its threads
   virtual void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) = 0;
   virtual upan::option<struct sigaction&> getSignalAction(SIGNAL signo) = 0;
-  virtual void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) = 0;
+  virtual void setupSignalStackFrame(const struct sigaction& action, const Signal& signal) = 0;
+  void setSignalRestoreContext(SignalTaskContext& signalTaskContext) { _signalRestoreContext = signalTaskContext; }
 
   void prepareToRun();
   void deliverPendingSignal();
@@ -149,9 +150,9 @@ protected:
     static void DeallocateKernelStackSpace(int stackBlockId);
 
     static uint64_t CalculateSignalFrameRSP(uint64_t rsp, bool hasSiginfo);
-    static void initSignalFrame(uint8_t* signalFrame, uint64_t rsp, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
-    static void SetupSignalStackFrame(uint64_t stackPDAddress, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
-    static void SetupKernelSignalStackFrame(int stackBlockId, TaskContext& taskContext, const struct sigaction& action, const Signal& signal);
+    static void initSignalFrame(SchedulableProcess& process, uint64_t rsp, const struct sigaction& action, const Signal& signal);
+    static void SetupSignalStackFrame(SchedulableProcess& process, uint64_t stackPDAddress, const struct sigaction& action, const Signal& signal);
+    static void SetupKernelSignalStackFrame(SchedulableProcess& process, int stackBlockId, const struct sigaction& action, const Signal& signal);
   };
 
 protected:
@@ -177,5 +178,6 @@ protected:
   sigset_t _sigMask;
   static constexpr int MAX_ACTIVE_SIGNALS = 10;
   upan::queue<Signal> _signalQueue;
-  upan::vector<SignalTaskContext> _signalTaskContextStack;
+  SignalTaskContext _signalRestoreContext;
+  uint64_t _pageFaultRSPBackup;
 };

@@ -227,7 +227,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
     case SYS_CALL_PROCESS_SET_SIGNAL_RETURN:
     {
       try {
-        ProcessManager::Instance().SignalReturn();
+        ProcessManager::Instance().SignalReturn(*(SignalTaskContext*)p1);
       } catch(const upan::exception& e) {
         KLog::exception(e);
       }

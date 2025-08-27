@@ -28,7 +28,7 @@
 #include <exception.h>
 #include <stdlib.h>
 
-void MemManager::PageFaultHandler() {
+void MemManager::PageFaultHandler(TaskContext& taskContext) {
 	uint64_t faultyAddress ;
   __asm__ __volatile__("movq %%cr2, %0" : "=rm"(faultyAddress) : ) ;
 
@@ -38,14 +38,19 @@ void MemManager::PageFaultHandler() {
     while(true);
   }
 
-	const int pid = ProcessManager::Instance().GetCurProcId();
-	const auto& process = ProcessManager::Instance().GetSchedulableProcess(pid);
-	if (process.isEmpty()) {
-    printf("\n No active process found for pid: %d", pid);
+  try {
+    const int pid = ProcessManager::Instance().GetCurProcId();
+    const auto& process = ProcessManager::Instance().GetSchedulableProcess(pid);
+    if (process.isEmpty()) {
+      printf("\n No active process found for pid: %d", pid);
+      ProcessManager_Exit();
+    } else if (!process.value().handlePageFault(taskContext, faultyAddress)) {
+      ProcessManager_Exit();
+    }
+  } catch(const upan::exception& e) {
+    KLog::exception(e);
     ProcessManager_Exit();
-	} else if (!process.value().handlePageFault(faultyAddress)) {
-    ProcessManager_Exit();
-	}
+  }
 }
 
 MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {

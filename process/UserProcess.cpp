@@ -358,8 +358,8 @@ void UserProcess::MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::str
   _totalNoOfPagesForDLL += noOfPagesForDLL;
 }
 
-void UserProcess::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
-  SchedulableProcess::Common::SetupSignalStackFrame(_stackPDAddress, taskContext, action, signal);
+void UserProcess::setupSignalStackFrame(const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupSignalStackFrame(*this, _stackPDAddress, action, signal);
 }
 
 upan::option<DLLInfo&> UserProcess::getDLLInfo(const upan::string& dllName) {

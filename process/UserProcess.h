@@ -95,7 +95,7 @@ private:
   void DeallocateResources() override;
   void DeallocateGUIFramebuffer();
 
-  void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) override;
+  void setupSignalStackFrame(const struct sigaction& action, const Signal& signal) override;
 
 private:
   uint64_t _processSpaceSize;

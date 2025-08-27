@@ -109,6 +109,6 @@ void KernelProcess::DeAllocateGUIFramebuffer() {
   }
 }
 
-void KernelProcess::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
-  SchedulableProcess::Common::SetupKernelSignalStackFrame(_stackBlockId, taskContext, action, signal);
+void KernelProcess::setupSignalStackFrame(const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupKernelSignalStackFrame(*this, _stackBlockId, action, signal);
 }

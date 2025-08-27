@@ -58,8 +58,8 @@ extern "C" {
     XHCIManager::Handler();
   }
 
-  void page_fault_interrupt_handler() {
-    MemManager::PageFaultHandler();
+  void page_fault_interrupt_handler(TaskContext* state) {
+    MemManager::PageFaultHandler(*state);
   }
 
   void isr_0x27_interrupt_handler() {

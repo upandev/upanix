@@ -52,6 +52,6 @@ void KernelThread::DeallocateResources() {
   SchedulableProcess::Common::DeallocateKernelStackSpace(_stackBlockId);
 }
 
-void KernelThread::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
-  SchedulableProcess::Common::SetupKernelSignalStackFrame(_stackBlockId, taskContext, action, signal);
+void KernelThread::setupSignalStackFrame(const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupKernelSignalStackFrame(*this, _stackBlockId,action, signal);
 }

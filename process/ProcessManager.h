@@ -109,7 +109,7 @@ class ProcessManager
     void MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset);
     void SendSignal(pid_t pid, SIGNAL signo, const union sigval* value);
     void SetSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
-    void SignalReturn();
+    void SignalReturn(SignalTaskContext& signalContext);
 
     WaitQueue& getWaitQueue(int spaceId, int queueId) {
       return _processWaitQueueMap[spaceId][queueId];

@@ -289,12 +289,23 @@ uint64_t SchedulableProcess::Common::CalculateSignalFrameRSP(uint64_t rsp, bool 
   if (hasSiginfo) {
     rsp -= sizeof(siginfo_t);
   }
+  rsp -= sizeof(SignalTaskContext);
   rsp -= sizeof(uint64_t); //the signal restorer address
   return rsp;
 }
 
-void SchedulableProcess::Common::initSignalFrame(uint8_t* signalFrame, uint64_t rsp, TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
+void SchedulableProcess::Common::initSignalFrame(SchedulableProcess& process, uint64_t rsp, const struct sigaction& action, const Signal& signal) {
+  TaskContext& taskContext = process._taskContext;
+
+  auto signalFrame = (uint8_t*)rsp;
+  int framePos = 0;
+
   memcpy(signalFrame, (void*)&action.sa_restorer, sizeof(uint64_t));
+  framePos += sizeof(uint64_t);
+
+  SignalTaskContext signalTaskContext { taskContext, signal.signo(), process.status(), process.signalMask() };
+  memcpy(signalFrame + framePos, (void*)&signalTaskContext, sizeof(SignalTaskContext));
+  framePos += sizeof(SignalTaskContext);
 
   if (action.sa_flags & SA_SIGINFO) {
     siginfo_t siginfo;
@@ -304,8 +315,9 @@ void SchedulableProcess::Common::initSignalFrame(uint8_t* signalFrame, uint64_t 
       //TODO: set other info fields based on the signal
     }
 
-    memcpy(signalFrame + sizeof(uint64_t), (void*)&siginfo, sizeof(siginfo_t));
-    taskContext.rsi = rsp + sizeof(uint64_t);
+    memcpy(signalFrame + framePos, (void*)&siginfo, sizeof(siginfo_t));
+    taskContext.rsi = rsp + framePos;
+
     taskContext.interruptState.rip = (uint64_t)action.sa_sigaction;
   } else {
     taskContext.interruptState.rip = (uint64_t)action.sa_handler;
@@ -318,12 +330,18 @@ void SchedulableProcess::Common::initSignalFrame(uint8_t* signalFrame, uint64_t 
   taskContext.interruptState.rflags = 0x202;
 }
 
-void SchedulableProcess::Common::SetupSignalStackFrame(uint64_t stackPDAddress, TaskContext& taskContext,
+void SchedulableProcess::Common::SetupSignalStackFrame(SchedulableProcess& process, uint64_t stackPDAddress,
                                                        const struct sigaction& action, const Signal& signal) {
+  TaskContext& taskContext = process._taskContext;
   const uint64_t rsp = CalculateSignalFrameRSP(taskContext.interruptState.rsp, action.sa_flags & SA_SIGINFO);
 
   if ((PROCESS_STACK_TOP_ADDRESS - rsp) >= PROCESS_STACK_SIZE) {
     throw upan::exception(XLOC, "out of stack space - can't allocate signal frame");
+  }
+
+  const uint64_t signalFrameSize = taskContext.interruptState.rsp - rsp;
+  if (signalFrameSize > PAGE_SIZE) {
+    throw upan::exception(XLOC, "signal frame size (%d) > PAGE_SIZE - can't allocate signal frame", signalFrameSize);
   }
 
   auto ptTable = MemManager::Instance().GetPTTableFromPD((uint64_t*)stackPDAddress, rsp);
@@ -334,25 +352,26 @@ void SchedulableProcess::Common::SetupSignalStackFrame(uint64_t stackPDAddress, 
     ptTable[ptIndex] = (page * PAGE_SIZE) | 0x7;
   }
 
-  auto signalFrame = (uint8_t*)MemManager::Instance().GetFlatAddressFromPD((uint64_t*)stackPDAddress, rsp);
-
-  initSignalFrame(signalFrame, rsp, taskContext, action, signal);
+  process.switchPageTable();
+  SwitchStack(process.pml4Table(), stackPDAddress);
+  //auto signalFrame = (uint8_t*)MemManager::Instance().GetFlatAddressFromPD((uint64_t*)stackPDAddress, rsp);
+  initSignalFrame(process, rsp, action, signal);
+  KernelRootProcess::Instance().switchPageTable();
 
   taskContext.interruptState.cs = USER_CODE_SELECTOR | 0x3;
   taskContext.interruptState.ss = USER_DATA_SELECTOR | 0x3;
 }
 
-void SchedulableProcess::Common::SetupKernelSignalStackFrame(int stackBlockId, TaskContext& taskContext,
+void SchedulableProcess::Common::SetupKernelSignalStackFrame(SchedulableProcess& process, int stackBlockId,
                                                              const struct sigaction& action, const Signal& signal) {
+  TaskContext& taskContext = process._taskContext;
   const uint64_t rsp = CalculateSignalFrameRSP(taskContext.interruptState.rsp, action.sa_flags & SA_SIGINFO);
 
   if ((KernelVirtualStackBase(stackBlockId) - rsp) >= PROCESS_KERNEL_STACK_SIZE) {
     throw upan::exception(XLOC, "out of stack space - can't allocate signal frame");
   }
 
-  auto signalFrame = (uint8_t*)rsp;
-
-  initSignalFrame(signalFrame, rsp, taskContext, action, signal);
+  initSignalFrame(process, rsp, action, signal);
 
   taskContext.interruptState.cs = SYS_CODE_SELECTOR;
   taskContext.interruptState.ss = SYS_DATA_SELECTOR;
@@ -360,8 +379,8 @@ void SchedulableProcess::Common::SetupKernelSignalStackFrame(int stackBlockId, T
 
 extern __volatile__ uint64_t SYS_CALL_ID;
 
-bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
-  Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
+bool SchedulableProcess::handlePageFault(TaskContext& taskContext, uint64_t faultyAddress) {
+  KernelRootProcess::Instance().switchPageTable();
 
   const auto virtualPageNo = faultyAddress / PAGE_SIZE;
   if (isKernelProcess()) {
@@ -385,11 +404,26 @@ bool SchedulableProcess::handlePageFault(uint64_t faultyAddress) {
   }
 
   if (!permittedAddressAccess) {
+    union sigval value;
+    value.sival_ptr = (void*)faultyAddress;
+    queueSignal(SIGSEGV, &value);
+
     printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
     printf("\n Sys Call Id: %lu", SYS_CALL_ID);
     printf("\n PID: %d, DMM Flag: %d", _processID, dmm().isDmmFlag());
     switchPageTable();
-    return false;
+
+    //move the process to Preempted state, that will make sure SIGSEGV is delivered before executing the user space code again
+    setStatus(PREEMPTED);
+    //switch stack to user process stack - as the signal frame has to be constructed on the user-stack only
+    __asm__ __volatile__("mov %%rsp, %0;"
+                         "mov %1, %%rsp;"
+                         : "=m"(_pageFaultRSPBackup)
+                         : "r"(taskContext.interruptState.rsp)
+                         : "rsp");
+    __asm__ __volatile__("int $0x20");
+    __asm__ __volatile__("mov %0, %%rsp;" : : "m"(_pageFaultRSPBackup) : "rsp");
+    return true;
   }
 
   auto ptTable = MemManager::Instance().GetPTTable(pml4Table(), faultyAddress);
@@ -475,27 +509,24 @@ bool SchedulableProcess::WakeupProcessOnInterrupt() {
 void SchedulableProcess::prepareToRun() {
   bool interruptedBySignal = false;
   if (_status == SIGNAL_RETURN) {
-    if (_signalTaskContextStack.empty()) {
+    interruptedBySignal = true;
+    const auto signo = _signalRestoreContext._signal;
+
+    _taskContext = _signalRestoreContext._context;
+    _sigMask = _signalRestoreContext._sigMask;
+    sigdelset(&_sigMask, signo);
+    setStatus(_signalRestoreContext._processStatus);
+
+    if (_status == STOPPED && signo == SIGCONT) {
       setStatus(RUN);
-    } else {
-      interruptedBySignal = true;
-
-      const auto& signalTaskContext = _signalTaskContextStack[_signalTaskContextStack.size() - 1];
-      const int signo = signalTaskContext._signal;
-
-      _taskContext = signalTaskContext._context;
-      _sigMask = signalTaskContext._sigMask;
-      setStatus(signalTaskContext._processStatus);
-
-      _signalTaskContextStack.pop_back();
-
-      if (_status == STOPPED && signo == SIGCONT) {
-        setStatus(RUN);
-      }
     }
   }
 
   switch(_status) {
+    case PREEMPTED:
+      setStatus(RUN);
+      break;
+
     case RELEASED:
       break;
 
@@ -657,16 +688,7 @@ void SchedulableProcess::deliverPendingSignal() {
   if (signalOpt.isEmpty()) {
     return;
   }
-
   const auto& signal = signalOpt.value();
-
-  //current active signal is not redelivered - it is masked
-  if (!_signalTaskContextStack.empty()) {
-    auto& signalTaskContext = _signalTaskContextStack[_signalTaskContextStack.size() - 1];
-    if (signalTaskContext._signal == signal.signo()) {
-      return;
-    }
-  }
 
   if (signal.isMaskable()) {
     if (!sigismember(&_sigMask, signal.signo())) {
@@ -678,12 +700,11 @@ void SchedulableProcess::deliverPendingSignal() {
         if (isignoreaction(&handler) || (_status == STOPPED && signal.signo() != SIGCONT)) {
           return;
         }
-        SignalTaskContext signalTaskContext { _taskContext, signal.signo(), _status, _sigMask };
 
         try {
-          setupSignalStackFrame(_taskContext, handler, signal);
+          setupSignalStackFrame(handler, signal);
           _sigMask = handler.sa_mask;
-          _signalTaskContextStack.push_back(signalTaskContext);
+          sigaddset(&_sigMask, signal.signo());
           setStatus(RUN);
         } catch (upan::exception& e) {
           KLog::critical("Signal delivery failed for process: %d. Reason: %s", _processID, e.ErrorMsg().c_str());

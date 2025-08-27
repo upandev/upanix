@@ -92,3 +92,7 @@ void KernelRootProcess::dispatchMouseData(const upanui::MouseData& mouseData) {
 DMM& KernelRootProcess::dmm() {
   return KernelDMM::Instance();
 }
+
+void KernelRootProcess::switchPageTable() {
+  Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
+}

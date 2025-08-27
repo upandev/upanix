@@ -49,7 +49,7 @@ public:
 
 private:
   void DeallocateResources() override;
-  void setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) override;
+  void setupSignalStackFrame(const struct sigaction& action, const Signal& signal) override;
 
 private:
   int _stackBlockId;

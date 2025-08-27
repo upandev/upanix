@@ -116,7 +116,7 @@ void ProcessManager::RemoveFromProcessMap(SchedulableProcess& process) {
 }
 
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
-  Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
+  KernelRootProcess::Instance().switchPageTable();
   const auto& p = GetSchedulableProcess(GetCurrentProcessID());
   if (!p.isEmpty()) {
     auto &currentProcess = p.value();
@@ -542,10 +542,12 @@ void ProcessManager::SetSignalAction(SIGNAL signo, const struct sigaction* newac
   });
 }
 
-void ProcessManager::SignalReturn() {
-  auto& p = GetCurrentPAS();
+void ProcessManager::SignalReturn(SignalTaskContext& signalTaskContext) {
   //don't put this under process-switch lock because the process will resume on a completely different RIP after signal return
-  p.setStatus(SIGNAL_RETURN);
-  p.yield();
+  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) {
+    process.setSignalRestoreContext(signalTaskContext);
+    process.setStatus(SIGNAL_RETURN);
+    process.yield();
+  });
 }
 

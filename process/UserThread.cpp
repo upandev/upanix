@@ -54,6 +54,6 @@ void UserThread::onLoad() {
   SchedulableProcess::Common::SwitchStack(pml4Table(), _stackPDAddress);
 }
 
-void UserThread::setupSignalStackFrame(TaskContext& taskContext, const struct sigaction& action, const Signal& signal) {
-  SchedulableProcess::Common::SetupSignalStackFrame(_stackPDAddress, taskContext, action, signal);
+void UserThread::setupSignalStackFrame(const struct sigaction& action, const Signal& signal) {
+  SchedulableProcess::Common::SetupSignalStackFrame(*this, _stackPDAddress, action, signal);
 }

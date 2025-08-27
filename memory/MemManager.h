@@ -25,6 +25,7 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <ReturnHandler.h>
+#include <InterruptHandlers.h>
 
 extern "C" {
 	void Mem_FlushTLB() ;
@@ -66,7 +67,7 @@ class MemManager
     void UnMapAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
 
 		static void InitPage(uint64_t uiPage) ;
-		static void PageFaultHandler() ;
+		static void PageFaultHandler(TaskContext& taskContext) ;
 
 		inline uint64_t GetRamSize() { return RAM_SIZE; }
 

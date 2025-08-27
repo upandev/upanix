@@ -126,6 +126,7 @@ public:
   }
 
   DMM& dmm() override;
+  void switchPageTable();
 
   upan::option<RootFrame&> getGuiFrame() override {
     return upan::option<RootFrame&>(RootGUIConsole::Instance().frame());
