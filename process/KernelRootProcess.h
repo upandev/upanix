@@ -40,6 +40,7 @@ public:
   void createScheduleRunner();
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void initTLS();
+  void initDevices();
 
   bool isKernelProcess() const override {
     return true;

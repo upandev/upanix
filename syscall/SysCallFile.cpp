@@ -81,7 +81,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			//P2 => Dir Attr
 			{
 				char* szPathAddress = ( char*) p1;
-				unsigned short usType = (sysCallId == SYS_CALL_MKDIR) ? ATTR_TYPE_DIRECTORY : ATTR_TYPE_FILE ;
+				unsigned short usType = (sysCallId == SYS_CALL_MKDIR) ? S_IFDIR : S_IFREG;
 				*retVal = 0 ;
 
         try

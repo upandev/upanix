@@ -97,14 +97,15 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
     }
     break;
 
-    case Process::GUI:
-      const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
+    case Process::GUI: {
+      const auto ch = (uint8_t) upanui::KeyboardMapper::Instance().resolveKey(data);
       if (ch == Keyboard_CTRL_C) {
         kill(_processID, SIGINT);
       } else {
         _uiKeyboardEventStreamFD->write((void*) &data, sizeof(upanui::KeyboardData));
       }
-      break;
+    }
+    break;
 
     case Process::NA:
       break;

@@ -292,7 +292,7 @@ void ConsoleCommands_ClearScreen()
 
 void ConsoleCommands_CreateDirectory()
 {
-  FileOperations::Instance().create((char*)(CommandLineParser::Instance().GetParameterAt(0)), ATTR_TYPE_DIRECTORY, ATTR_DIR_DEFAULT);
+  FileOperations::Instance().create((char*)(CommandLineParser::Instance().GetParameterAt(0)), S_IFDIR, ATTR_DIR_DEFAULT);
   printf("\n DIR Created\n");
 }
 
@@ -367,7 +367,7 @@ void ConsoleCommands_CopyFile()
 
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
-  FileOperations::Instance().create(szDestFile, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT);
+  FileOperations::Instance().create(szDestFile, S_IFREG, ATTR_FILE_DEFAULT);
 
   auto file1 = FileOperations::Instance().open(szDestFile, O_RDWR);
 

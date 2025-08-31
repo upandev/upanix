@@ -50,7 +50,6 @@
 # include <NetworkOperations.h>
 # include <KLog.h>
 # include <LocalDataGramResolver.h>
-# include <KernelSysLog.h>
 
 /**** Global Variable declaration/definition *****/
 bool KERNEL_MODE;
@@ -65,12 +64,12 @@ bool SPECIAL_TASK;
 
   LocalDataGramResolver::Instance();
   KernelRootProcess::Instance().createScheduleRunner();
-  KernelSysLog::Instance().start();
 
 	KC::MKernelService().Spawn() ;
 	KC::MKernelService().Spawn() ;
 
 	KernelRootProcess::Instance().initGuiFrame();
+  KernelRootProcess::Instance().initDevices();
 	//RootGUIConsole::Instance().ClearScreen();
 
   GraphicsVideo::Instance().CreateRefreshTask();

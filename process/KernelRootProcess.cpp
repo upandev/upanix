@@ -24,6 +24,10 @@
 #include <GraphicsVideo.h>
 #include <ProcessManager.h>
 #include <Cpu.h>
+#include <KernelSysLog.h>
+#include <XHCIManager.h>
+#include <StorageDriveManager.h>
+#include <StorageDrive.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -73,6 +77,19 @@ void KernelRootProcess::initGuiFrame() {
 
   RootGUIConsole::Instance().resetFrameBuffer(GraphicsVideo::Instance().allocateFrameBuffer());
   GraphicsVideo::Instance().addFGProcess(NO_PROCESS_ID);
+}
+
+void KernelRootProcess::initDevices() {
+  XHCIManager::Instance().ProbeDevice();
+  StorageDriveManager::Instance().GetByDriveName("usdb", false).onGood([&](StorageDrive& drive) {
+    drive.Mount();
+    FileOperations::Instance().changeDir("usdb@/", nullptr);
+  });
+
+  //Create Log Device
+  //Create Terminal Device
+
+  KernelSysLog::Instance().start();
 }
 
 void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {

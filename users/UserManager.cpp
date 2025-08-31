@@ -41,7 +41,7 @@ UserManager::UserManager() : _userListFileName(upan::string(OSIN_PATH) + ".user.
 void UserManager::CreateNewUserList() {
 	unsigned short usPerm = S_OWNER((ATTR_READ | ATTR_WRITE)) | S_GROUP(ATTR_READ) | S_OTHERS(ATTR_READ);
 
-  FileOperations::Instance().create(_userListFileName, ATTR_TYPE_FILE, usPerm);
+  FileOperations::Instance().create(_userListFileName, S_IFDIR, usPerm);
 
 	InitializeDefaultUserList();
 	WriteUserList();

@@ -167,7 +167,7 @@ uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
   mode = FILE_PERM(mode) ;
   fileType = FILE_TYPE(fileType) ;
 
-  if(!(fileType == ATTR_TYPE_FILE || fileType == ATTR_TYPE_DIRECTORY)) {
+  if(!(S_ISFILE(fileType) || S_ISDIR(fileType))) {
     throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
   }
   return (uint16_t)(fileType | mode);
@@ -193,7 +193,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   FileNodeRef::WriteGuard g1(parentNodeRef);
 
   if (!parentNode.find(newFileName).isEmpty()) {
-    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (FILE_TYPE(fileType) == ATTR_TYPE_FILE ? "file" : "directory"));
+    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (S_ISFILE(fileType) ? "file" : "directory"));
   }
 
   FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
@@ -313,7 +313,7 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mo
       FileTree::NodeTokens dirTokens(fileTokens);
       dirTokens.pop_back();
       const upan::string& fileName = fileTokens.back();
-      create(dirTokens, fileName, ATTR_TYPE_FILE, ATTR_FILE_DEFAULT, cwd, process);
+      create(dirTokens, fileName, S_IFREG, ATTR_FILE_DEFAULT, cwd, process);
       fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
       newFileCreated = true;
     } else {
