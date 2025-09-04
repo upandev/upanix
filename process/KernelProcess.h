@@ -31,7 +31,7 @@
 //But it is a process in that if the parent process dies before child, then child kernel process will continue to execute under the root kernel process
 class KernelProcess : public AutonomousProcess {
 public:
-  KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params);
+  KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params);
 
   bool isKernelProcess() const override {
     return true;
@@ -65,6 +65,10 @@ public:
     return MEM_PML4_TABLE;
   }
 
+  bool isCoreProcess() const {
+    return _isCoreProcess;
+  }
+
 private:
   void DeallocateResources() override;
   void DeAllocateGUIFramebuffer();
@@ -76,4 +80,5 @@ private:
   upan::uniq_ptr<RootFrame> _frame;
   //interop variable
   upanui::GraphicsContext* _graphicsContext;
+  bool _isCoreProcess;
 };

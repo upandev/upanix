@@ -700,5 +700,5 @@ void XHCIController::StartEventHandler() {
   }
   started = true;
   ProcessManager::Instance().CreateKernelProcess("xhci0.eh", (uintptr_t) &XHCIController::EventHandler,
-                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+                                                 ProcessManager::GetCurrentProcessID(), false, false, upan::vector<uintptr_t>());
 }

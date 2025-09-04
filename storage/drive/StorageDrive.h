@@ -55,8 +55,6 @@ private:
 
 public:
   void Format();
-  void Mount();
-  void UnMount();
 
   void Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
   void xRead(byte *bDataBuffer, unsigned uiSector, unsigned uiNoOfSectors);
@@ -95,6 +93,9 @@ public:
   FileSystem& fileSystem() { return _fileSystem; }
 
 private:
+  void Mount();
+  void UnMount();
+
   void RawRead(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
   void RawWrite(unsigned uiStartSector, unsigned uiNoOfSectors, byte *bDataBuffer);
   bool FlushSector(unsigned uiSectorID, const byte *pBuffer);

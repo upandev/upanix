@@ -46,6 +46,10 @@ public:
     return true;
   }
 
+  bool isCoreProcess() const override {
+    return true;
+  }
+
   bool isFGProcessGroup() const override {
     return true;
   }

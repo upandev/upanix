@@ -73,7 +73,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
     case SYS_CALL_UTIL_REBOOT :
 			{
 				*retVal = 0 ;
-				SystemUtil_Reboot() ;
+				KC::MKernelService().RequestSystemReboot();
 			}
 			break ;
 	}

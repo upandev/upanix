@@ -19,24 +19,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include "StorageDriveManager.h"
-# include "drivers/floppy/Floppy.h"
-# include "drivers/ide/ATADrive.h"
-# include "drivers/ide/ATADeviceController.h"
-# include "PartitionManager.h"
-# include "memory/DMM.h"
-# include "util/StringUtil.h"
-# include "process/ProcessManager.h"
-# include "drivers/bus/SCSIHandler.h"
-# include "stdio.h"
-# include "kernel/MountManager.h"
-# include "DiskCache.h"
-# include "util/KernelUtil.h"
-# include "storage/filesystem/FileSystem.h"
-# include "try.h"
-# include "drive.h"
+# include <StorageDriveManager.h>
+# include <drivers/floppy/Floppy.h>
+# include <memory/DMM.h>
+# include <process/ProcessManager.h>
+# include <drivers/bus/SCSIHandler.h>
+# include <storage/filesystem/FileSystem.h>
+# include <try.h>
 
-StorageDriveManager::StorageDriveManager() : _idSequence(0) {
+StorageDriveManager::StorageDriveManager() : _idSequence(0), _rootDrive(upan::option<StorageDrive&>::empty()) {
 }
 
 void StorageDriveManager::Create(const upan::string& driveName,
@@ -93,24 +84,24 @@ void StorageDriveManager::RemoveEntryByCondition(const DriveRemoveClause& remove
 {
   upan::mutex_guard g(_driveListMutex);
 
-  for(auto it = _driveList.begin(); it != _driveList.end();)
-  {
-		if(removeClause(*it))
-		{
-			if((*it)->Mounted())
-        (*it)->UnMount();
+  for(auto it = _driveList.begin(); it != _driveList.end();) {
+		if(removeClause(*it)) {
       delete *it;
       _driveList.erase(it++);
 		}
-    else
+    else {
       ++it;
+    }
 	}
 }
 
 upan::result<StorageDrive&> StorageDriveManager::GetByDriveName(const upan::string& driveName, bool bCheckMount) {
   upan::mutex_guard g(_driveListMutex);
   if (driveName == ROOT_DRIVE_SYN) {
-    return GetByID(ROOT_DRIVE_ID, bCheckMount);
+    if (_rootDrive.isEmpty()) {
+      throw upan::exception(XLOC, "root drive not mounted");
+    }
+    return { _rootDrive.value() };
   }
   auto it = upan::find_if(_driveList.begin(), _driveList.end(), [&driveName, bCheckMount](const StorageDrive* d)
     {
@@ -120,25 +111,31 @@ upan::result<StorageDrive&> StorageDriveManager::GetByDriveName(const upan::stri
     });
   if(it == _driveList.end())
     return upan::result<StorageDrive&>::bad("failed to find drive %s (mounted: %d)", driveName.c_str(), bCheckMount);
-  return upan::result<StorageDrive&>(**it);
+  return { **it };
 }
 
-upan::result<StorageDrive&> StorageDriveManager::GetByID(int iID, bool bCheckMount)
-{	
+upan::result<StorageDrive&> StorageDriveManager::GetByID(int iID, bool bCheckMount) {
   upan::mutex_guard g(_driveListMutex);
-	if(iID == ROOT_DRIVE)
-		iID = ROOT_DRIVE_ID;
-	else if(iID == CURRENT_DRIVE)
-		iID = ProcessManager::Instance().GetCurrentPAS().driveID();
+	if(iID == ROOT_DRIVE) {
+    if (_rootDrive.isEmpty()) {
+      return upan::result<StorageDrive&>::bad(XLOC, "root drive not mounted");
+    }
+    return { _rootDrive.value() };
+  }	else if(iID == CURRENT_DRIVE) {
+    iID = ProcessManager::Instance().GetCurrentPAS().driveID();
+  }
+
   auto it = upan::find_if(_driveList.begin(), _driveList.end(), [iID, bCheckMount](const StorageDrive* d)
     {
       if(d->Id() == iID)
         return d->Mounted() || !bCheckMount;
       return false;
     });
+
   if(it == _driveList.end())
     return upan::result<StorageDrive&>::bad("failed to find drive id %d (mounted: %d)", iID, bCheckMount);
-  return upan::result<StorageDrive&>(**it);
+
+  return { **it };
 }
 
 void StorageDriveManager::DisplayList()
@@ -220,22 +217,41 @@ byte StorageDriveManager::GetList(DriveStat** pDriveList, int* iListSize)
 	return DeviceDrive_SUCCESS ;
 }
 
-void StorageDriveManager::MountDrive(const upan::string& szDriveName)
-{
-  GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC).Mount();
+void StorageDriveManager::MountDrive(const upan::string& szDriveName) {
+  auto& storageDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
+  storageDrive.Mount();
+
+  // Set Process Drive
+  auto& pas = ProcessManager::Instance().GetCurrentPAS();
+  pas.setDriveID(storageDrive.Id());
+  pas.pwd(storageDrive.fileSystem().root());
+
+  // Change To Root Directory
+  FileOperations::Instance().changeDir(FS_ROOT_DIR, nullptr);
+
+  if (_rootDrive.isEmpty()) {
+    _rootDrive = upan::option<StorageDrive&>(storageDrive);
+  }
 }
 
 void StorageDriveManager::UnMountDrive(const upan::string& szDriveName) {
   StorageDrive& storageDrive = GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC);
 
-	bool bKernel = IsKernel() ? true : IsKernelProcess(ProcessManager::GetCurrentProcessID()) ;
-	if(!bKernel) {
-		if(storageDrive.Id() == ProcessManager::Instance().GetCurrentPAS().driveID()) {
-      throw upan::exception(XLOC, "can't unmount current drive: %s", szDriveName.c_str());
-    }
-	}
+  if (!_rootDrive.isEmpty() && _rootDrive.value().Id() == storageDrive.Id()) {
+    _rootDrive = upan::option<StorageDrive&>::empty();
+  }
 
   storageDrive.UnMount();
+
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+  if(process.isKernelProcess()) {
+    process.setDriveID(CURRENT_DRIVE);
+    process.pwd(FileNodeRef());
+  } else {
+    if(storageDrive.Id() == ProcessManager::Instance().GetCurrentPAS().driveID()) {
+      throw upan::exception(XLOC, "can't unmount current drive: %s", szDriveName.c_str());
+    }
+  }
 }
 
 void StorageDriveManager::FormatDrive(const upan::string& szDriveName)
@@ -264,12 +280,22 @@ void StorageDriveManager::GetCurrentDriveStat(DriveStat* pDriveStat)
   pDriveStat->ulUsedSize = 0;
 }
 
-upan::string StorageDriveManager::rootDriveName() {
-  upan::mutex_guard g(_driveListMutex);
-  return _rootDriveName;
+void StorageDriveManager::SetRootDrive(const upan::string& szDriveName) {
+  _rootDrive = upan::option<StorageDrive&>(GetByDriveName(szDriveName, false).goodValueOrThrow(XLOC));
 }
 
-void StorageDriveManager::rootDriveName(const upan::string& name) {
+void StorageDriveManager::Close() {
   upan::mutex_guard g(_driveListMutex);
-  _rootDriveName = name;
+  _rootDrive = upan::option<StorageDrive&>::empty();
+
+  for(auto drive : _driveList) {
+    upan::trycall([&]() {
+      if (drive->Mounted()) {
+        drive->UnMount();
+      }
+    }).onBad([&](upan::error& e) {
+      printf("Failed to UnMount Drive (%s): %s\n", drive->DriveName().c_str(), e.Msg().c_str());
+    });
+    drive->StopReleaseCacheTask(true);
+  }
 }

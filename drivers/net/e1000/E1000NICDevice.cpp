@@ -374,5 +374,5 @@ void E1000NICDevice::StartEventHandler() {
   }
   started = true;
   ProcessManager::Instance().CreateKernelProcess("e1000nic.eh", (uintptr_t) &E1000NICDevice::EventHandler,
-                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+                                                 ProcessManager::GetCurrentProcessID(), false, false, upan::vector<uintptr_t>());
 }

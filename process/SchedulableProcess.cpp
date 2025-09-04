@@ -21,7 +21,6 @@
  */
 
 #include <SchedulableProcess.h>
-#include <MountManager.h>
 #include <UserManager.h>
 #include <ProcessGroup.h>
 #include <ProcessManager.h>
@@ -29,7 +28,7 @@
 #include <Cpu.h>
 #include <StorageDriveManager.h>
 #include <KernelRootProcess.h>
-#include "PortCom.h"
+#include <StorageDrive.h>
 
 int SchedulableProcess::_nextPid = 0;
 
@@ -42,18 +41,17 @@ SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, b
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
 
   if(parentProcess.isEmpty()) {
-    _driveID = ROOT_DRIVE_ID ;
-    if(_driveID != CURRENT_DRIVE)
-    {
-      StorageDrive& diskDrive = StorageDriveManager::Instance().GetByID(_driveID, false).goodValueOrThrow(XLOC);
-      if(diskDrive.Mounted()) {
-        _pwd = diskDrive.fileSystem().root();
+    _driveID = CURRENT_DRIVE;
+    StorageDriveManager::Instance().GetRootDrive().ifPresent([&](StorageDrive& drive) {
+      _driveID = drive.Id();
+      if (drive.Mounted()) {
+        _pwd = drive.fileSystem().root();
       }
-    }
+    });
     _processGroup = new ProcessGroup(isFGProcess);
     sigemptyset(&_sigMask);
   } else {
-    _driveID = parentProcess.value()._driveID ;
+    _driveID = parentProcess.value()._driveID;
     _pwd = parentProcess.value().pwd();
     _processGroup = parentProcess.value()._processGroup;
     _sigMask = parentProcess.value()._sigMask;
@@ -661,9 +659,14 @@ void SchedulableProcess::prepareToRun() {
 
 void SchedulableProcess::applyDefaultSignalAction(const Signal& signal) {
   switch(signal.defaultActionType()) {
-    case Signal::SA_TERMINATE:
-      Destroy();
-      break;
+    case Signal::SA_TERMINATE: {
+      if (isCoreProcess()) {
+        KLog::warn("Can't terminate core process: %s (%d)", _name.c_str(), _processID);
+      } else {
+        Destroy();
+      }
+    }
+    break;
 
     case Signal::SA_IGNORE:
       syslog(LOG_INFO, "Ignoring signal %d sent to process: %d", signal.signo(), _processID);

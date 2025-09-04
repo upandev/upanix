@@ -50,6 +50,10 @@ public:
     return _processID != _mainThreadID;
   }
 
+  bool isCoreProcess() const override {
+    return false;
+  }
+
   //thread synchronization mutex
   virtual upan::option<upan::mutex&> pageAllocMutex() {
     return upan::option<upan::mutex&>::empty();

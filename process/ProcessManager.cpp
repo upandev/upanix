@@ -26,7 +26,6 @@
 #include <DMM.h>
 #include <KernelService.h>
 #include <UserManager.h>
-#include <MountManager.h>
 #include <StringUtil.h>
 #include <ProcessConstants.h>
 #include <KernelUtil.h>
@@ -355,9 +354,9 @@ bool ProcessManager::IsChildAlive(int iChildProcessID) {
 }
 
 int ProcessManager::CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID,
-                                        byte bIsFGProcess, const upan::vector<uintptr_t>& params) {
+                                        bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params) {
   try {
-    upan::uniq_ptr<SchedulableProcess> newPAS(new KernelProcess(name, uiTaskAddress, iParentProcessID, bIsFGProcess, params));
+    upan::uniq_ptr<SchedulableProcess> newPAS(new KernelProcess(name, uiTaskAddress, iParentProcessID, isFGProcess, isCoreProcess, params));
     int pid = newPAS->processID();
     AddToSchedulerList(*newPAS.release());
     return pid;
@@ -549,5 +548,53 @@ void ProcessManager::SignalReturn(SignalTaskContext& signalTaskContext) {
     process.setStatus(SIGNAL_RETURN);
     process.yield();
   });
+}
+
+void ProcessManager::stopProcesses(upan::function<bool, SchedulableProcess&> stopCondition) {
+  {
+    ProcessSwitchLock lock;
+    for (auto& e : _processMap) {
+      auto& process = *e.second;
+      if (stopCondition(process)) {
+        printf("\n sending SIGTERM to %s (%d)", process.name().c_str(), process.processID());
+        SendSignal(process.processID(), SIGTERM, nullptr);
+      }
+    }
+  }
+
+  printf("\n waiting for all processes to terminate...");
+  sleepms(100);
+  for (int i = 0; i < 20; ++i) {
+    {
+      ProcessSwitchLock lock;
+      for (auto& e : _processMap) {
+        auto& process = *e.second;
+        if (stopCondition(process)) {
+          sleepms(100);
+          continue;
+        }
+      }
+    }
+  }
+
+  {
+    ProcessSwitchLock lock;
+    for (auto& e : _processMap) {
+      auto& process = *e.second;
+      if (stopCondition(process)) {
+        printf("\n force terminating %s (%d)", process.name().c_str(), process.processID());
+        process.setStatus(TERMINATED);
+        process.yield();
+      }
+    }
+  }
+}
+
+void ProcessManager::stopUserProcesses() {
+  stopProcesses([](SchedulableProcess& process) { return !process.isKernelProcess() && !process.isChildThread(); });
+}
+
+void ProcessManager::stopKernelProcesses() {
+  stopProcesses([](SchedulableProcess& process) { return process.isKernelProcess() && !process.isCoreProcess() && !process.isChildThread(); });
 }
 

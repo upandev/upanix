@@ -43,22 +43,17 @@ class KernelService
         virtual void Execute() = 0 ;
 
 				inline int GetRequestProcessID() { return m_iRequestProcessID ; }	
-		} ;
+		};
 
 	private:
 		upan::list<Request*> m_qRequest ;
 		upan::mutex m_mutexQRequest ;
 
-		upan::list<int> m_lServerList ;
-		upan::mutex m_mutexServer ;
-
-
 	public:
 		KernelService() { }
 		~KernelService() { }
 
-		int Spawn() ;
-		bool Stop(int iServerProcessID) ;
+		int Spawn();
 
 		// RequestFactory
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
@@ -66,6 +61,7 @@ class KernelService
 		int RequestProcessExec(const upan::string& fileName, const char** argv, const char** envp) ;
 		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
+    void RequestSystemReboot();
 
 	private:
     [[noreturn]] static void Server(KernelService* pService) ;
@@ -136,6 +132,11 @@ class KernelService
 		  ProcessGUIFramebufferAllocate(UserProcess& userProcess) : _userProcess(userProcess) {}
 		  void Execute() override;
 		};
+
+    class SystemReboot : public Request {
+    public:
+      void Execute() override;
+    };
 } ;
 
 #endif

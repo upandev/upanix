@@ -23,20 +23,11 @@
 # include <Floppy.h>
 # include <ATADrive.h>
 # include <ATADeviceController.h>
-# include <PartitionManager.h>
-# include <DMM.h>
-# include <StringUtil.h>
 # include <ProcessManager.h>
 # include <SCSIHandler.h>
-# include <stdio.h>
-# include <MountManager.h>
 # include <DiskCache.h>
-# include <KernelUtil.h>
 # include <FileSystem.h>
 # include <try.h>
-# include <drive.h>
-# include <logger.h>
-# include <KernelRootProcess.h>
 # include <StorageDriveManager.h>
 
 static unsigned uiTotalFloppyDiskReads = 0;
@@ -97,8 +88,7 @@ StorageDrive::StorageDrive(int id,
     _rawDisk(rawDisk),
     _fsType(FS_UNKNOWN),
     _mounted(false),
-    _fileSystem(*this, uiMaxSectorsInFreePoolCache)
-{
+    _fileSystem(*this, uiMaxSectorsInFreePoolCache) {
   StartReleaseCacheTask();
 }
 
@@ -117,7 +107,6 @@ void StorageDrive::Mount() {
   }
   fileSystem().mount();
   _mounted = true;
-  StorageDriveManager::Instance().rootDriveName(_driveName);
   KLog::info("drive %s is mounted", _driveName.c_str());
 }
 
@@ -125,12 +114,12 @@ void StorageDrive::UnMount() {
 	if(!Mounted()) {
     throw upan::exception(XLOC, "drive %s is not mounted", _driveName.c_str());
   }
-  StorageDriveManager::Instance().rootDriveName("");
   KLog::info("drive %s is unmounted", _driveName.c_str());
   ProcessManager::Instance().closeAllFiles(*this);
   KLog::info("all files across all processes on drive %s are closed", _driveName.c_str());
   fileSystem().unmount();
   _mounted = false;
+  KLog::info("Unmounting Drive: %-20s [ Done ]", _driveName.c_str());
 }
 
 void StorageDrive::Read(unsigned uiStartSector, unsigned uiNoOfSectors, byte* bDataBuffer)
@@ -399,11 +388,11 @@ void StorageDrive::StartReleaseCacheTask()
 	upan::vector<uintptr_t> params;
 	params.push_back((uintptr_t)this);
   ProcessManager::Instance().CreateKernelProcess(dcfName, (uintptr_t) &DiskCache_TaskFlushCache,
-                                                           ProcessManager::Instance().GetCurProcId(), false, params);
+                                                           ProcessManager::Instance().GetCurProcId(), false, false, params);
 
   const upan::string dcrName = upan::string("dcr-") + DriveName();
   ProcessManager::Instance().CreateKernelProcess(dcrName, (uintptr_t) &DiskCache_TaskReleaseCache,
-                                                 ProcessManager::Instance().GetCurProcId(), false, params);
+                                                 ProcessManager::Instance().GetCurProcId(), false, false, params);
 }
 
 void StorageDrive::ReleaseCache()

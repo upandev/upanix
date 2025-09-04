@@ -26,6 +26,7 @@
 #include <StorageDriveManager.h>
 #include <SocketDescriptor.h>
 #include <interopc.h>
+#include <StorageDrive.h>
 
 KernelSysLog& KernelSysLog::Instance() {
   static KernelSysLog instance;
@@ -62,13 +63,14 @@ void KernelSysLog::setupClientConnection() {
 }
 
 void KernelSysLog::handleRootDriveChange() {
-  upan::string curRootDriveName = StorageDriveManager::Instance().rootDriveName();
-  if (_rootDriveName != curRootDriveName) {
+  auto curRootDrive = StorageDriveManager::Instance().GetRootDrive();
+  if (curRootDrive.isEmpty() && !_rootDriveName.empty()) {
     _sysLogger->closeFile();
-    _rootDriveName = curRootDriveName;
-    if (!_rootDriveName.empty()) {
-      _sysLogger->openFile(_rootDriveName + "@/var/log/sys.log");
-    }
+    _rootDriveName = "";
+  } else if (_rootDriveName != curRootDrive.value().DriveName()) {
+    _sysLogger->closeFile();
+    _rootDriveName = curRootDrive.value().DriveName();
+    _sysLogger->openFile(_rootDriveName + "@/var/log/sys.log");
   }
 }
 
@@ -119,7 +121,7 @@ void KernelSysLog::start() {
   upan::vector<uintptr_t> params;
   params.push_back((uintptr_t)this);
   _sysLogDaemonPid = ProcessManager::Instance().CreateKernelProcess("ksyslogd", (uintptr_t)&(KernelSysLogProcess),
-                                                 NO_PROCESS_ID, false, params);
+                                                 NO_PROCESS_ID, false, true, params);
 }
 
 void KernelSysLog::stop() {

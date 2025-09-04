@@ -39,7 +39,6 @@
 #include <RTC.h>
 #include <MultiBoot.h>
 #include <SystemUtil.h>
-#include <MountManager.h>
 #include <EHCIManager.h>
 #include <XHCIManager.h>
 #include <BTree.h>
@@ -133,7 +132,6 @@ static void ConsoleCommands_SetXHCIEventMode();
 static void ConsoleCommands_ShowRawDiskList() ;
 static void ConsoleCommands_InitFloppyController() ;
 static void ConsoleCommands_InitATAController() ;
-static void ConsoleCommands_InitMountManager() ;
 static void ConsoleCommands_InitNetwork();
 static void ConsoleCommands_PrintKPIs();
 static void ConsoleCommands_Test() ;
@@ -213,7 +211,6 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
 	{ "showdisk",	&ConsoleCommands_ShowRawDiskList },
 	{ "initfdc",	&ConsoleCommands_InitFloppyController },
 	{ "initata",	&ConsoleCommands_InitATAController },
-	{ "initmntmgr",	&ConsoleCommands_InitMountManager },
   { "kpi",	&ConsoleCommands_PrintKPIs },
 	{ "testg",		&ConsoleCommands_TestGraphics },
 	{ "test",		&ConsoleCommands_Test },
@@ -268,16 +265,14 @@ void ConsoleCommands_ShowDrive()
 	StorageDriveManager::Instance().DisplayList() ;
 }
 
-void ConsoleCommands_MountDrive()
-{
-  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC).Mount();
+void ConsoleCommands_MountDrive() {
+  StorageDriveManager::Instance().MountDrive(CommandLineParser::Instance().GetParameterAt(0));
   printf("\nDrive Mounted");
 }
 
-void ConsoleCommands_UnMountDrive()
-{
-  StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC).UnMount();
-  printf("\nDrive UnMounted");
+void ConsoleCommands_UnMountDrive() {
+  StorageDriveManager::Instance().UnMountDrive(CommandLineParser::Instance().GetParameterAt(0));
+  printf("\nDrive Unmounted");
 }
 
 void ConsoleCommands_FormatDrive()
@@ -455,7 +450,7 @@ void ConsoleCommands_DeleteUser()
 }
 
 void ConsoleCommands_OpenSession() {
-	const int pid = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
+	const int pid = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, false, upan::vector<uintptr_t>());
 	ProcessManager::Instance().WaitOnChild(pid) ;
 }
 
@@ -666,13 +661,12 @@ void ConsoleCommands_Clone()
 {
 	extern void Console_StartUpanixConsole() ;
   const int pid = ProcessManager::Instance().CreateKernelProcess("console_1", (uintptr_t) &Console_StartUpanixConsole,
-                                                 ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>()) ;
+                                                 ProcessManager::GetCurrentProcessID(), true, false, upan::vector<uintptr_t>()) ;
 	ProcessManager::Instance().WaitOnChild(pid) ;
 }
 
-void ConsoleCommands_Reboot()
-{
-	SystemUtil_Reboot() ;
+void ConsoleCommands_Reboot() {
+	KC::MKernelService().RequestSystemReboot();
 }
 
 void ConsoleCommands_Date()
@@ -716,10 +710,8 @@ void ConsoleCommands_ListProcess()
 	ProcessManager::Instance().FreeProcListMem(pPS, uiSize) ;
 }
 
-void ConsoleCommands_ChangeRootDrive()
-{
-  auto& storageDrive = StorageDriveManager::Instance().GetByDriveName(CommandLineParser::Instance().GetParameterAt(0), false).goodValueOrThrow(XLOC);
-	MountManager_SetRootDrive(&storageDrive) ;
+void ConsoleCommands_ChangeRootDrive() {
+  StorageDriveManager::Instance().SetRootDrive(CommandLineParser::Instance().GetParameterAt(0));
 }
 
 void ConsoleCommands_Echo()
@@ -871,14 +863,6 @@ void ConsoleCommands_InitATAController()
   ATADeviceController_Initialize() ;
 }
 
-void ConsoleCommands_InitMountManager()
-{
-	if(!MountManager_GetInitStatus())
-		MountManager_Initialize() ;
-	else
-		printf("\n MountManager already initialized") ;
-}
-
 class DragMouseHandler : public upanui::MouseEventHandler {
   void onEvent(upanui::UIObject& uiObject, const upanui::MouseEvent& event) override {
     const upanui::MouseData& data = event.getData();
@@ -929,7 +913,7 @@ public:
           upan::vector<uintptr_t> params;
           params.push_back(100);
           params.push_back(100);
-          ProcessManager::Instance().CreateKernelProcess(it->second, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, params);
+          ProcessManager::Instance().CreateKernelProcess(it->second, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, false, params);
         }
       } else if (data.leftButtonState() == upanui::MouseData::PRESSED) {
         il->select(!il->isSelected());
@@ -1696,42 +1680,42 @@ void ConsoleCommands_TestGraphics() {
   pname += upan::string::to_string(testg_id++);
   switch(type) {
     case 1: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_canvas, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_canvas, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 2: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_line, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_process_line, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 3: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_clock, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_clock, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 4: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_flag, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_test_flag, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 5: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_window_app, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_window_app, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 6: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_text_editor, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_text_editor, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 7: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 8: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_desktop, NO_PROCESS_ID, true, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_desktop, NO_PROCESS_ID, true, false, params);
     }
     break;
 
@@ -2261,7 +2245,7 @@ void ConsoleCommands_Testv() {
   params.push_back(0);
   params.push_back(0);
   upan::string pname("photos");
-  ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_photos, NO_PROCESS_ID, true, params);
+  ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_photos, NO_PROCESS_ID, true, false, params);
 }
 
 void ConsoleCommands_TestNet() {

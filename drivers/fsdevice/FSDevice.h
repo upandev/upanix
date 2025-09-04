@@ -19,16 +19,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _MOUNT_MANAGER_H_
-#define _MOUNT_MANAGER_H_
+#pragma once
 
-#include <StorageDrive.h>
+#include <FileNodeRef.h>
 
-void MountManager_Initialize() ;
-bool MountManager_GetInitStatus() ;
-void MountManager_MountDrives() ;
-const char* MountManager_GetRootDriveName() ;
-int MountManager_GetRootDriveID() ;
-void MountManager_SetRootDrive(StorageDrive* pDiskDrive) ;
+class FSDevice {
+public:
+  virtual ~FSDevice() {}
 
-#endif
+private:
+  FileNodeRef _fileNodeRef;
+};

@@ -21,11 +21,11 @@
  */
 # include <KernelService.h>
 # include <DMM.h>
-# include <DynamicLinkLoader.h>
 # include <UserManager.h>
 # include <GenericUtil.h>
 # include <MemManager.h>
 # include <file_util.h>
+# include <SystemUtil.h>
 
 KernelService::DLLAllocCopy::DLLAllocCopy(unsigned uiNoOfPages, const upan::string& dllName) : _noOfPagesForDLL(uiNoOfPages), _dllName(dllName) {
 }
@@ -87,6 +87,10 @@ void KernelService::ThreadExec::Execute() {
 
 void KernelService::ProcessGUIFramebufferAllocate::Execute() {
   _userProcess.allocateGUIFramebuffer();
+}
+
+void KernelService::SystemReboot::Execute() {
+  SystemUtil_Reboot();
 }
 
 bool KernelService::RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName)
@@ -157,6 +161,10 @@ void KernelService::RequestProcessGUIFramebufferAllocate(UserProcess& userProces
   delete request;
 }
 
+void KernelService::RequestSystemReboot() {
+  AddRequest(new KernelService::SystemReboot());
+}
+
 void KernelService::AddRequest(Request* pRequest)
 {
   upan::mutex_guard g(m_mutexQRequest);
@@ -198,10 +206,7 @@ KernelService::Request* KernelService::GetRequest()
 	}
 }
 
-int KernelService::Spawn()
-{
-  upan::mutex_guard g(m_mutexServer);
-
+int KernelService::Spawn() {
 	static const char* szKS = "kers-" ;
 	static int iID = 0 ;
 
@@ -212,28 +217,10 @@ int KernelService::Spawn()
 	upan::vector<uintptr_t> params;
 	params.push_back((uintptr_t)this);
 	int pid = ProcessManager::Instance().CreateKernelProcess(szName, (uintptr_t) &(KernelService::Server),
-                                                          ProcessManager::GetCurrentProcessID(), false, params);
+                                                          ProcessManager::GetCurrentProcessID(), false, true, params);
 	if(pid < 0) {
-		printf("\n Failed to create Kernel Service Process %s", szName.c_str()) ;
-	} else {
-    m_lServerList.push_back(pid);
-  }
-
-	return pid ;
-}
-
-bool KernelService::Stop(int iServerProcessID)
-{
-  upan::mutex_guard g(m_mutexServer);
-
-	if(!m_lServerList.erase(iServerProcessID))
-	{
-		printf("\n Invalid KernelService ProcessID %d", iServerProcessID) ;
-		return false ;
+		throw upan::exception(XLOC, "Failed to create Kernel Service Process %s", szName.c_str()) ;
 	}
 
-	ProcessManager::Instance().SendSignal(iServerProcessID, SIGKILL, nullptr);
-
-	return true;
+	return pid;
 }
-

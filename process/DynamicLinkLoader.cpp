@@ -25,7 +25,6 @@
 #include <ElfRelocationSection.h>
 #include <ElfSymbolTable.h>
 #include <ElfDynamicSection.h>
-#include <MountManager.h>
 #include <GenericUtil.h>
 
 using namespace ElfSectionHeader ;

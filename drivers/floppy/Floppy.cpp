@@ -472,7 +472,7 @@ void Floppy_Initialize()
 			Floppy_bRequestMotorOff[i] = false ;
 		}
 
-    KernelUtil::ScheduleTimedTask("fmoncont", 5000, *new FloppyMotorController()) ;
+    KernelUtil::ScheduleTimedTask("fmoncont", 5000, *new FloppyMotorController(), true);
 	}
 
 	Floppy_bInitStatus = bInitStatus ;

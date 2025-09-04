@@ -26,7 +26,6 @@
 #include <UserThread.h>
 #include <ProcessManager.h>
 #include <DynamicLinkLoader.h>
-#include <MountManager.h>
 #include <UserManager.h>
 #include <ElfParser.h>
 #include <ElfRelocationSection.h>

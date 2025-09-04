@@ -42,6 +42,7 @@ public:
   enum UIType { NA, TTY, GUI, REDIRECT_TTY };
 
   virtual bool isKernelProcess() const = 0;
+  virtual bool isCoreProcess() const = 0;
   virtual bool isFGProcessGroup() const = 0;
   virtual int driveID() const = 0;
   virtual uint64_t getProcessBase() const = 0;

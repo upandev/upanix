@@ -59,34 +59,40 @@ bool SPECIAL_TASK;
 /***********************************************/
 
 [[noreturn]] void UpanixMain_KernelProcess() {
-	//MountManager_MountDrives() ;
-	ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
+  try {
+    //MountManager_MountDrives() ;
+    ProcessManager::setUpanixKernelProcessID(ProcessManager::GetCurrentProcessID());
 
-  LocalDataGramResolver::Instance();
-  KernelRootProcess::Instance().createScheduleRunner();
+    LocalDataGramResolver::Instance();
+    KernelRootProcess::Instance().createScheduleRunner();
 
-	KC::MKernelService().Spawn() ;
-	KC::MKernelService().Spawn() ;
+    KC::MKernelService().Spawn();
+    KC::MKernelService().Spawn();
 
-	KernelRootProcess::Instance().initGuiFrame();
-  KernelRootProcess::Instance().initDevices();
-	//RootGUIConsole::Instance().ClearScreen();
+    KernelRootProcess::Instance().initGuiFrame();
+    //RootGUIConsole::Instance().ClearScreen();
+    GraphicsVideo::Instance().CreateRefreshTask();
 
-  GraphicsVideo::Instance().CreateRefreshTask();
+    KernelRootProcess::Instance().initDevices();
 
-  KC::MConsole().StartCursorBlink();
+    KC::MConsole().StartCursorBlink();
 
-  KeyboardHandler::Instance().StartDispatcher();
-  PS2MouseDriver::Instance().StartDispatcher();
+    KeyboardHandler::Instance().StartDispatcher();
+    PS2MouseDriver::Instance().StartDispatcher();
 
-  KernelRootProcess::Instance().setProcessGroup(ProcessManager::Instance().GetCurrentPAS().processGroup());
+    KernelRootProcess::Instance().setProcessGroup(ProcessManager::Instance().GetCurrentPAS().processGroup());
 
-	while(true) {
-    const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
-                                                                   ProcessManager::GetCurrentProcessID(), true, upan::vector<uintptr_t>());
+    while (true) {
+      const int pid = ProcessManager::Instance().CreateKernelProcess("console", (uintptr_t) &Console_StartUpanixConsole,
+                                                                     ProcessManager::GetCurrentProcessID(), true, true,
+                                                                     upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
-    ProcessManager::Instance().WaitOnChild(pid);
+      ProcessManager::Instance().WaitOnChild(pid);
+    }
+  } catch(const upan::exception& ex) {
+    ex.Print();
   }
+
 	ProcessManager_Exit() ;
 }
 
@@ -255,7 +261,7 @@ void UpanixMain() {
   openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
   KLog::info("Kernel Root TLS is Initialized");
 
-	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
+	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, true, upan::vector<uintptr_t>());
 
   SetKernelMode(false);
 	ProcessManager::Instance().EnableTaskSwitch();

@@ -28,6 +28,7 @@
 #include <XHCIManager.h>
 #include <StorageDriveManager.h>
 #include <StorageDrive.h>
+#include <FSDeviceManager.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -50,7 +51,7 @@ KernelRootProcess::KernelRootProcess() :
 
 void KernelRootProcess::createScheduleRunner() {
   _scheduleRunnerPid = ProcessManager::Instance().CreateKernelProcess(".sr", (uintptr_t) &schedule_runner_process,
-                                                 ProcessManager::GetCurrentProcessID(), false, upan::vector<uintptr_t>());
+                                                 ProcessManager::GetCurrentProcessID(), false,true, upan::vector<uintptr_t>());
 }
 
 void KernelRootProcess::initTLS() {
@@ -81,12 +82,8 @@ void KernelRootProcess::initGuiFrame() {
 
 void KernelRootProcess::initDevices() {
   XHCIManager::Instance().ProbeDevice();
-  StorageDriveManager::Instance().GetByDriveName("usdb", false).onGood([&](StorageDrive& drive) {
-    drive.Mount();
-    FileOperations::Instance().changeDir("usdb@/", nullptr);
-  });
-
-  //Create Log Device
+  StorageDriveManager::Instance().MountDrive("usdb");
+  FSDeviceManager::Instance().createSocketDevice(SYS_LOG_PATH);
   //Create Terminal Device
 
   KernelSysLog::Instance().start();

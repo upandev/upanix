@@ -110,7 +110,7 @@ upan::string FileTree::getFullPath(FileTree::Node& node) {
 
 class DirSectorBlock {
 public:
-  DirSectorBlock() : _sectorId(EOC) {
+  explicit DirSectorBlock() : _sectorId(EOC) {
     for (auto& node : _nodes) {
       node = nullptr;
     }

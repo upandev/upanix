@@ -28,8 +28,8 @@
 #include <PortCom.h>
 #include <KernelRootProcess.h>
 
-KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, const upan::vector<uintptr_t>& params)
-  : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr) {
+KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params)
+  : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID), _graphicsContext(nullptr), _isCoreProcess(isCoreProcess) {
   _mainThreadID = _processID;
   _processBase = 0;
 

@@ -49,7 +49,7 @@ public:
   uint32_t StartSectorID() const { return _startSectorID; }
 
   bool IsDirectory() const { return S_ISDIR(_attribute); }
-  bool IsFile() const { return S_ISFILE(_attribute); }
+  bool IsFile() const { return !S_ISDIR(_attribute); }
   bool IsDeleted() const { return FILE_TYPE(_attribute) == ATTR_DELETED_DIR; }
 
   void Size(uint32_t s) { _size = s; }

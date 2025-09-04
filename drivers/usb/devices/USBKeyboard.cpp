@@ -205,7 +205,7 @@ USBKeyboard::USBKeyboard(USBDevice& device, int interfaceIndex) : _device(device
   for(uint32_t i = 0; i < _device.GetInterruptQueueSize(); ++i)
     _reports[i] = new ((void*)(reportAddress + i * STD_USB_KB_REPORT_LEN)) byte[STD_USB_KB_REPORT_LEN];
 
-  KernelUtil::ScheduleTimedTask("USB KB Poller", 50, *this);
+  KernelUtil::ScheduleTimedTask("USB KB Poller", 50, *this, true);
 }
 
 USBKeyboard::~USBKeyboard() {

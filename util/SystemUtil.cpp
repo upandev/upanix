@@ -20,37 +20,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <SystemUtil.h>
-# include <DMM.h>
-# include <PS2KeyboardDriver.h>
 # include <RTC.h>
-# include <dtime.h>
-# include <stdio.h>
 # include <mdate.h>
 # include <ProcessManager.h>
-# include <DiskCache.h>
-# include <try.h>
 # include <StorageDrive.h>
 # include <PS2Controller.h>
 # include <StorageDriveManager.h>
 
-void SystemUtil_Reboot()
-{
-  for(auto pDiskDrive : StorageDriveManager::Instance().DiskDriveList())
-  {
-		if(pDiskDrive->Mounted())
-		{
-			printf("\n UnMounting Drive: %-20s", pDiskDrive->DriveName().c_str());
-      const auto& result = upan::trycall([&]() { pDiskDrive->UnMount(); });
-			pDiskDrive->StopReleaseCacheTask(true);
-      pDiskDrive->FlushAllDirtyCacheSectors();
-      if(result.isBad())
-				printf("\n Failed to UnMount Drive\n") ;
-      else
-				printf("[ Done ]") ;
-		}
-	}
-	ProcessManager::Instance().Sleep(2000) ;
-  PS2Controller::Instance().Reboot() ;
+void SystemUtil_Reboot() {
+  ProcessManager::Instance().stopUserProcesses();
+  StorageDriveManager::Instance().Close();
+  ProcessManager::Instance().stopKernelProcesses();
+	ProcessManager::Instance().Sleep(2000);
+  PS2Controller::Instance().Reboot();
 }
 
 time_t SystemUtil_GetTimeOfDay()

@@ -69,7 +69,8 @@ class ProcessManager
     void WakeUpFromKSWait(int iProcessID);
     bool IsAlive(int pid);
     bool IsChildAlive(int iChildProcessID);
-    int CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID, byte bIsFGProcess, const upan::vector<uintptr_t>& params);
+    int CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID,
+                            bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params);
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID,
                const upan::vector<upan::string>& argv,
                const upan::vector<upan::string>& envp);
@@ -115,7 +116,11 @@ class ProcessManager
       return _processWaitQueueMap[spaceId][queueId];
     }
 
+    void stopUserProcesses();
+    void stopKernelProcesses();
+
   private:
+    void stopProcesses(upan::function<bool, SchedulableProcess&> stopCondition);
     bool DoPollWait();
     bool IsEventCompleted(int pid);
     ProcessStateInfo& GetProcessStateInfo(int pid);

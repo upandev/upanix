@@ -69,15 +69,16 @@ public:
   byte RemoveRawDiskEntry(const upan::string& name);
   RawStorageDrive* GetRawDiskByName(const upan::string& name);
 
-  upan::string rootDriveName();
-  void rootDriveName(const upan::string& driveName);
+  upan::option<StorageDrive&> GetRootDrive() { return _rootDrive; }
+  void SetRootDrive(const upan::string& driveName);
 
-  const upan::list<StorageDrive*>& DiskDriveList() const { return _driveList; }
   const upan::list<RawStorageDrive*>& RawDiskDriveList() const { return _rawDiskList; }
+  void Close();
+
 private:
   upan::mutex _driveListMutex;
   upan::list<StorageDrive*> _driveList;
   upan::list<RawStorageDrive*> _rawDiskList;
   int _idSequence;
-  upan::string _rootDriveName;
+  upan::option<StorageDrive&> _rootDrive;
 };

@@ -125,7 +125,7 @@ void SessionManager_SetSessionIDMap(int key, int pid)
 void SessionManager_SwitchToSession(int key)
 {
 	if(SessionManager_List[key] == NO_PROCESS_ID) {
-    SessionManager_List[key] = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, upan::vector<uintptr_t>());
+    SessionManager_List[key] = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, true, upan::vector<uintptr_t>());
     return ;
 	}
 

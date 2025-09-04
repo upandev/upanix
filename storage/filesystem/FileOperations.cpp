@@ -23,11 +23,10 @@
 # include <FileDescriptor.h>
 # include <FileSystem.h>
 # include <ProcessManager.h>
-# include <MountManager.h>
-# include <DMM.h>
 # include <StringUtil.h>
 # include <StorageDriveManager.h>
 # include <FileNodeRef.h>
+# include <StorageDrive.h>
 
 bool FileOperations_ReadLine(int fd, upan::string& line)
 {
