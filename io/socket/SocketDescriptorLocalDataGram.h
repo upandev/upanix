@@ -29,8 +29,8 @@ class SocketDescriptorLocalDataGram : public SocketDescriptor {
 public:
   SocketDescriptorLocalDataGram(int pid, int fd, SA_FAMILY_TYPE family);
 
-  const upan::string& boundPath() const { return _boundPath; }
-  const upan::string& connectedPath() const { return _connectedPath; }
+  const upan::string& srcPath() const { return _srcPath; }
+  const upan::string& destPath() const { return _destPath; }
 
 protected:
   int _read(void* buffer, int len) override;
@@ -53,14 +53,17 @@ protected:
   void _shutdown(SOCKET_SHUTDOWN_TYPE type) override;
 
   int getLastError() const override { return _errorCode; }
-  ssize_t sendMessage(const void* buf, size_t n);
+  ssize_t sendMessage(const void* buf, size_t n, const upan::string& srcPath);
 
 private:
-  upan::list<upan::string> _messages;
-  upan::string _boundPath;
-  upan::string _connectedPath;
-  upan::string _waitingPath;
-  bool _isWaitingToWrite;
+  struct Message {
+    upan::string _msg;
+    upan::string _srcPath;
+  };
+
+  upan::list<Message> _messages;
+  upan::string _srcPath;
+  upan::string _destPath;
   bool _isConnected;
   bool _isBound;
   int _errorCode;

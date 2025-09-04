@@ -37,7 +37,7 @@ void LocalDataGramResolver::setup(SocketDescriptorLocalDataGram& socket, const u
 
 void LocalDataGramResolver::release(SocketDescriptorLocalDataGram& socket) {
   upan::mutex_guard g(_mutex);
-  auto it = _socketBindMap.find(socket.boundPath());
+  auto it = _socketBindMap.find(socket.srcPath());
   if (it != _socketBindMap.end()) {
     _socketBindMap.erase(it);
   }

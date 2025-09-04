@@ -27,11 +27,12 @@
 
 static constexpr int MAX_MESSAGE_QUEUE_SIZE = 256;
 static constexpr int MAX_MESSAGE_SIZE = 2048;
+static upan::string EPHEMERAL_ADDRESS_PATH_PREFIX("@");
+static int EPHEMERAL_ADDRESS_ID = 0;
 
 SocketDescriptorLocalDataGram::SocketDescriptorLocalDataGram(int pid, int fd, SA_FAMILY_TYPE family)
   : SocketDescriptor(pid, fd, family, 0),
-    _isWaitingToWrite(false), _isConnected(false), _isBound(false),
-    _errorCode(0) {
+    _isConnected(false), _isBound(false), _errorCode(0) {
 }
 
 void SocketDescriptorLocalDataGram::_close() {
@@ -61,16 +62,27 @@ void SocketDescriptorLocalDataGram::_bind(const struct sockaddr& address, sockle
     throw upan::exception(XLOC, "bind failed - socket %d is already bound", id());
   }
   const upan::string& path = extractPath(address, len);
+  LocalDataGramResolver::Instance().release(*this);
   LocalDataGramResolver::Instance().setup(*this, path);
-  _boundPath = path;
+  _srcPath = path;
   _isBound = true;
 }
 
 void SocketDescriptorLocalDataGram::_connect(const struct sockaddr& address, socklen_t len) {
-  _connectedPath = extractPath(address, len);
-  const auto& dest = LocalDataGramResolver::Instance().resolve(_connectedPath);
+  if (_isConnected) {
+    throw upan::exception(XLOC, "connect failed - socket %d is already connected", id());
+  }
+
+  const upan::string& path = extractPath(address, len);
+  const auto& dest = LocalDataGramResolver::Instance().resolve(path);
   if (dest.isEmpty()) {
-    throw upan::exception(XLOC, "connect failed - socket %d can't find the destination %s", id(), _connectedPath.c_str());
+    throw upan::exception(XLOC, "connect failed - socket %d can't find the destination %s", id(), path.c_str());
+  }
+  _destPath = path;
+
+  if (_srcPath.empty()) {
+    _srcPath = EPHEMERAL_ADDRESS_PATH_PREFIX + upan::string::to_string(EPHEMERAL_ADDRESS_ID++);
+    LocalDataGramResolver::Instance().setup(*this, _srcPath);
   }
   _isConnected = true;
 }
@@ -81,9 +93,6 @@ int SocketDescriptorLocalDataGram::_read(void* buffer, int len) {
 
 bool SocketDescriptorLocalDataGram::_canRead_1() {
   upan::mutex_guard g(_ioSync);
-  if (!_isBound) {
-    return false;
-  }
   return !_messages.empty();
 }
 
@@ -93,19 +102,14 @@ int SocketDescriptorLocalDataGram::_write(const void* buffer, int len) {
 
 bool SocketDescriptorLocalDataGram::_canWrite_1() {
   upan::mutex_guard g(_ioSync);
-  if (_isBound) {
-    return _messages.size() < MAX_MESSAGE_QUEUE_SIZE;
+  if (_destPath.empty()) {
+    return true;
   } else {
-    if (_isWaitingToWrite || _isConnected) {
-      const upan::string& destPath = _isWaitingToWrite ? _waitingPath : _connectedPath;
-      const auto& dest = LocalDataGramResolver::Instance().resolve(destPath);
-      if (dest.isEmpty()) {
-        return false;
-      }
-      return dest.value().canWrite();
-    } else {
-      return true;
+    const auto& dest = LocalDataGramResolver::Instance().resolve(_destPath);
+    if (dest.isEmpty()) {
+      return false;
     }
+    return dest.value().canWrite();
   }
 }
 
@@ -116,11 +120,7 @@ void SocketDescriptorLocalDataGram::_shutdown(SOCKET_SHUTDOWN_TYPE type) {
   }
 }
 
-ssize_t SocketDescriptorLocalDataGram::sendMessage(const void* buf, size_t n) {
-  if (!_isBound) {
-    throw upan::exception(XLOC, "sendMessage failed - socket %d is not bound", id());
-  }
-
+ssize_t SocketDescriptorLocalDataGram::sendMessage(const void* buf, size_t n, const upan::string& srcPath) {
   upan::mutex_guard g(_ioSync);
   if (shutdownStatus() == SHUT_RDWR || shutdownStatus() == SHUT_RD) {
     //ignore the message
@@ -130,7 +130,7 @@ ssize_t SocketDescriptorLocalDataGram::sendMessage(const void* buf, size_t n) {
   if (_messages.size() < MAX_MESSAGE_QUEUE_SIZE) {
     n = upan::min((size_t) MAX_MESSAGE_SIZE, n);
     upan::string msg((const char*) buf, n);
-    _messages.push_back(msg);
+    _messages.push_back({ msg, srcPath} );
     return n;
   }
 
@@ -142,32 +142,33 @@ ssize_t SocketDescriptorLocalDataGram::_sendTo(const void* buf, size_t n, int fl
     throw upan::exception(XLOC, "socket is shutdown for write - can't send data");
   }
 
-  upan::string destPath;
   if (!addr) {
     if (!_isConnected) {
       throw upan::exception(XLOC, "sendPacket failed - socket %d is not connected", id());
     }
-    destPath = _connectedPath;
   } else {
-    destPath = extractPath(*addr, len);
+    const auto& destPath = extractPath(*addr, len);
+    if (_isConnected) {
+      if (destPath != _destPath) {
+        throw upan::exception(XLOC, "sendPacket failed - socket %d is connected to %s, can't send to %s", id(), _destPath.c_str(), destPath.c_str());
+      }
+    } else {
+      _destPath = destPath;
+    }
   }
 
-  auto dest = LocalDataGramResolver::Instance().resolve(destPath);
+  auto dest = LocalDataGramResolver::Instance().resolve(_destPath);
   if (dest.isEmpty()) {
-    throw upan::exception(XLOC, "sendPacket failed - socket %d can't find the destination %s", id(), destPath.c_str());
+    throw upan::exception(XLOC, "sendPacket failed - socket %d can't find the destination %s", id(), _destPath.c_str());
   }
 
   while (true) {
-    ssize_t r = dest.value().sendMessage(buf, n);
+    ssize_t r = dest.value().sendMessage(buf, n, _srcPath);
     if (r < 0) {
       if (getMode() & O_WR_NONBLOCK || getMode() & O_NONBLOCK) {
         return 0;
       }
-      _waitingPath = destPath;
-      _isWaitingToWrite = true;
       ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Write, 0);
-      _isWaitingToWrite = false;
-      _waitingPath = "";
       const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
       if (err == ProcessStateInfo::INTERRUPTED) {
         throw upan::exception(XLOC, "local DGRAM write interrupted");
@@ -183,26 +184,26 @@ ssize_t SocketDescriptorLocalDataGram::_recvFrom(void* buf, size_t n, int flags,
     return 0;
   }
 
-  if (!_isBound) {
-    throw upan::exception(XLOC, "recvFrom failed - socket %d is not bound", id());
+  if (_srcPath.empty()) {
+    throw upan::exception(XLOC, "recvFrom failed - socket %d doesn't have an address", id());
   }
 
   while(true) {
     {
       upan::mutex_guard g(_ioSync);
       if (!_messages.empty()) {
-        const upan::string& msg = _messages.front();
+        const Message& msg = _messages.front();
         _messages.pop_front();
 
-        n = upan::min((size_t)msg.length(), n);
-        memcpy(buf, msg.c_str(), n);
+        n = upan::min((size_t)msg._msg.length(), n);
+        memcpy(buf, msg._msg.c_str(), n);
 
         if (addr && len && *len == sizeof(struct sockaddr_un)) {
           struct sockaddr_un* addrUn = (struct sockaddr_un*) addr;
           addrUn->sun_family = AF_LOCAL;
 
-          memcpy(addrUn->sun_path, _boundPath.c_str(), _boundPath.length());
-          addrUn->sun_path[_boundPath.length()] = '\0';
+          memcpy(addrUn->sun_path, msg._srcPath.c_str(), msg._srcPath.length());
+          addrUn->sun_path[msg._srcPath.length()] = '\0';
 
           *len = sizeof(struct sockaddr_un);
         }
