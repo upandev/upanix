@@ -44,8 +44,16 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
     throw upan::exception(XLOC, "socket device already exists for path: %s", path.c_str());
   }
 
-  if (!FileOperations::Instance().fileExists(_rootPrefix + path)) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFSOCK, 0766);
+  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
+  if (fileStat.isEmpty()) {
+    FileOperations::Instance().create(_rootPrefix + path, S_IFSOCK, 0744);
+  } else {
+    if (S_ISSOCK(fileStat.value().st_mode) == false) {
+      throw upan::exception(XLOC, "a non socket file already exists at path: %s", path.c_str());
+    }
+    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, O_RDWR)) {
+      throw upan::exception(XLOC, "permission denied to access socket device at path: %s", path.c_str());
+    }
   }
 
   _devices[path].reset(new FSSocketDevice(path));

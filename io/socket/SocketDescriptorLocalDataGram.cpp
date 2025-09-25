@@ -33,6 +33,8 @@ static int EPHEMERAL_ADDRESS_ID = 0;
 SocketDescriptorLocalDataGram::SocketDescriptorLocalDataGram(int pid, int fd, SA_FAMILY_TYPE family)
   : SocketDescriptor(pid, fd, family, 0),
     _isConnected(false), _isBound(false), _errorCode(0) {
+  _srcPath = EPHEMERAL_ADDRESS_PATH_PREFIX + upan::string::to_string(EPHEMERAL_ADDRESS_ID++);
+  LocalDataGramResolver::Instance().setup(*this, _srcPath);
 }
 
 void SocketDescriptorLocalDataGram::_close() {
@@ -79,11 +81,6 @@ void SocketDescriptorLocalDataGram::_connect(const struct sockaddr& address, soc
     throw upan::exception(XLOC, "connect failed - socket %d can't find the destination %s", id(), path.c_str());
   }
   _destPath = path;
-
-  if (_srcPath.empty()) {
-    _srcPath = EPHEMERAL_ADDRESS_PATH_PREFIX + upan::string::to_string(EPHEMERAL_ADDRESS_ID++);
-    LocalDataGramResolver::Instance().setup(*this, _srcPath);
-  }
   _isConnected = true;
 }
 

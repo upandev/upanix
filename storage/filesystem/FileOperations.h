@@ -42,7 +42,7 @@ public:
   void remove(const upan::string& filePath) ;
   bool fileExists(const upan::string& filePath);
   bool directoryExists(const upan::string& filePath);
-  struct stat stats(const upan::string& filePath);
+  upan::option<struct stat> stats(const upan::string& filePath);
   void getpwd(char** pwd);
   upan::string getcwd();
   void changeDir(const upan::string& dirPath, char** retPwd);

@@ -33,11 +33,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="set file and directory type in file-system attribute as per posix">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="make Local DGRAM socket bidirectional with ephemeral address created for message sending client">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSSocketDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSSocketDevice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,11 +133,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -701,6 +702,10 @@
       <workItem from="1756571201032" duration="13101000" />
       <workItem from="1756649522047" duration="20221000" />
       <workItem from="1756805287195" duration="16698000" />
+      <workItem from="1757046919278" duration="5000" />
+      <workItem from="1757046932323" duration="6306000" />
+      <workItem from="1757199703386" duration="1000" />
+      <workItem from="1758811114899" duration="1000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1045,7 +1050,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="195" />
+    <option name="localTasksCounter" value="196" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1079,7 +1084,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More TCP implementation. The approach is not correct. Working on the correct implementation in next commit" />
     <MESSAGE value="refactor the directory structure" />
     <MESSAGE value="refactor MemPool" />
     <MESSAGE value="TCP layer implementation for client" />
@@ -1104,7 +1108,8 @@
     <MESSAGE value="1. implemented sigprocmask system call&#10;2. child process to send SIGCHLD to parent upon exit&#10;3. test cases for SIGCHLD scenarios" />
     <MESSAGE value="1. Signal task context is stored on the stack - right after the signal restorer (return) RIP (signal return IP -&gt; signal task context -&gt; siginfo_t)&#10;2. Page fault handler takes the task context, delivers SIGSEGV if page-fault can't be served and then uses the rsp from task context to switch over to user-stack space because signal delivery/signal frame construction has to be happen on user stack while page fault handler is running in its own IST stack. Saves the IST stack in a process state variable. In case if SIGSEGV handler returns back through regular signal return (without longjmp to a safe place) then we will restore the stack back to interrupt handler stack and return back to original page faulting place - which could potentially lead to recursion unless the SIGSEGV handler has made the failing memmory location available. In any case, the default action for SIGSEGV is to terminate the process if there is no user defined SIGSEGV handler." />
     <MESSAGE value="set file and directory type in file-system attribute as per posix" />
-    <option name="LAST_COMMIT_MESSAGE" value="set file and directory type in file-system attribute as per posix" />
+    <MESSAGE value="make Local DGRAM socket bidirectional with ephemeral address created for message sending client" />
+    <option name="LAST_COMMIT_MESSAGE" value="make Local DGRAM socket bidirectional with ephemeral address created for message sending client" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

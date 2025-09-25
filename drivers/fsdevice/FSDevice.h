@@ -25,8 +25,11 @@
 
 class FSDevice {
 public:
+  explicit FSDevice(const upan::string& path) : _path(path) {}
   virtual ~FSDevice() {}
 
+  const upan::string& path() const { return _path; }
+
 private:
-  FileNodeRef _fileNodeRef;
+  const upan::string _path;
 };

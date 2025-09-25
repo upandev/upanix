@@ -25,8 +25,5 @@
 
 class FSSocketDevice : public FSDevice {
 public:
-  explicit FSSocketDevice(const upan::string& path) : _path(path) {}
-
-private:
-  const upan::string _path;
+  explicit FSSocketDevice(const upan::string& path) : FSDevice(path) {}
 };

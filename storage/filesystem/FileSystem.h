@@ -32,6 +32,7 @@
 #include <FileTree.h>
 #include <FileNodeRef.h>
 #include <FSConstants.h>
+#include <option.h>
 
 class StorageDrive;
 class Process;
@@ -71,7 +72,7 @@ public:
   FileNodeRef open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process);
   void truncate(FileNodeRef fileNodeRef);
   FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
-  struct stat stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
+  upan::option<struct stat> stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   struct stat stats(FileNodeRef fileNodeRef);
   struct stat stats(const FileNode& node);
   upan::string fullPath(FileNodeRef fileNodeRef);

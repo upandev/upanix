@@ -289,7 +289,12 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           const char* filePath = (const char*) p1;
           auto fileStat = (struct stat*) p2;
-          *fileStat = FileOperations::Instance().stats(filePath);
+          const auto& r = FileOperations::Instance().stats(filePath);
+          if (r.isEmpty()) {
+            *retVal = -1;
+          } else {
+            *fileStat = r.value();
+          }
         } catch(const upan::exception& ex) {
           ex.Print();
 					*retVal = -1 ;

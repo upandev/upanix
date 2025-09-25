@@ -383,12 +383,12 @@ FileNodeRef FileSystem::exists(const FileTree::NodeTokens& fileTokens, const Fil
   return _fileTree.getFileNodeRef(fileTokens, cwd);
 }
 
-struct stat FileSystem::stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd) {
+upan::option<struct stat> FileSystem::stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd) {
   FileNodeRef fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   if (fileNodeRef.empty()) {
-    throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
+    return upan::option<struct stat>::empty();
   }
-  return stats(fileNodeRef);
+  return upan::option<struct stat>(stats(fileNodeRef));
 }
 
 struct stat FileSystem::stats(FileNodeRef fileNodeRef) {

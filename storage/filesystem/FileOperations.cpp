@@ -178,7 +178,7 @@ upan::string FileOperations::getcwd() {
   return diskDrive.fileSystem().fullPath(process.pwd());
 }
 
-struct stat FileOperations::stats(const upan::string& filePath) {
+upan::option<struct stat> FileOperations::stats(const upan::string& filePath) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
