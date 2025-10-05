@@ -65,7 +65,7 @@ public:
     return MEM_PML4_TABLE;
   }
 
-  bool isCoreProcess() const {
+  bool isCoreProcess() const override {
     return _isCoreProcess;
   }
 
@@ -80,5 +80,5 @@ private:
   upan::uniq_ptr<RootFrame> _frame;
   //interop variable
   upanui::GraphicsContext* _graphicsContext;
-  bool _isCoreProcess;
+  const bool _isCoreProcess;
 };

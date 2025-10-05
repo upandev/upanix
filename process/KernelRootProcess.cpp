@@ -81,12 +81,15 @@ void KernelRootProcess::initGuiFrame() {
 }
 
 void KernelRootProcess::initDevices() {
-  XHCIManager::Instance().ProbeDevice();
-  StorageDriveManager::Instance().MountDrive("usdb");
-  FSDeviceManager::Instance().createSocketDevice(SYS_LOG_PATH);
-  //Create Terminal Device
+  try {
+    XHCIManager::Instance().ProbeDevice();
+    StorageDriveManager::Instance().MountDrive("usdb");
+    //Create Terminal Device
 
-  KernelSysLog::Instance().start();
+    KernelSysLog::Instance().start();
+  } catch(upan::exception& ex) {
+    ex.Print();
+  }
 }
 
 void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {

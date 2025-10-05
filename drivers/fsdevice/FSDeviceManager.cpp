@@ -59,7 +59,7 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
   _devices[path].reset(new FSSocketDevice(path));
 }
 
-void FSDeviceManager::removeLogDevice(const upan::string& path) {
+void FSDeviceManager::removeDevice(const upan::string& path) {
   auto i = _devices.find(path);
   if (i == _devices.end()) {
     return;

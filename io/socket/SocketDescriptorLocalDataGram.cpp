@@ -24,6 +24,7 @@
 #include <SocketDescriptorLocalDataGram.h>
 #include <LocalDataGramResolver.h>
 #include <ProcessManager.h>
+#include <FSDeviceManager.h>
 
 static constexpr int MAX_MESSAGE_QUEUE_SIZE = 256;
 static constexpr int MAX_MESSAGE_SIZE = 2048;
@@ -38,6 +39,10 @@ SocketDescriptorLocalDataGram::SocketDescriptorLocalDataGram(int pid, int fd, SA
 }
 
 void SocketDescriptorLocalDataGram::_close() {
+  if (_isBound) {
+    FSDeviceManager::Instance().removeDevice(_srcPath);
+  }
+  LocalDataGramResolver::Instance().release(*this);
 }
 
 static upan::string extractPath(const struct sockaddr& address, socklen_t len) {
@@ -64,6 +69,7 @@ void SocketDescriptorLocalDataGram::_bind(const struct sockaddr& address, sockle
     throw upan::exception(XLOC, "bind failed - socket %d is already bound", id());
   }
   const upan::string& path = extractPath(address, len);
+  FSDeviceManager::Instance().createSocketDevice(path);
   LocalDataGramResolver::Instance().release(*this);
   LocalDataGramResolver::Instance().setup(*this, path);
   _srcPath = path;

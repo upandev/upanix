@@ -37,7 +37,7 @@ public:
 
   upan::shared_ptr<FSDevice> getDevice(const upan::string& path);
   void createSocketDevice(const upan::string& path);
-  void removeLogDevice(const upan::string& path);
+  void removeDevice(const upan::string& path);
 
 private:
   const upan::string _rootPrefix;
