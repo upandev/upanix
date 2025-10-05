@@ -67,7 +67,7 @@ void KernelSysLog::handleRootDriveChange() {
   if (curRootDrive.isEmpty() && !_rootDriveName.empty()) {
     _sysLogger->closeFile();
     _rootDriveName = "";
-  } else if (_rootDriveName != curRootDrive.value().DriveName()) {
+  } else if (!curRootDrive.isEmpty() && _rootDriveName != curRootDrive.value().DriveName()) {
     _sysLogger->closeFile();
     _rootDriveName = curRootDrive.value().DriveName();
     _sysLogger->openFile(_rootDriveName + "@/var/log/sys.log");
@@ -109,7 +109,7 @@ static void KernelSysLogProcess(KernelSysLog* kernelSysLog) {
   } catch(...) {
     KLog::critical("unknown error in ksyslogd");
   }
-
+  printf("\n ksyslogd: aborting!!\n");
   ProcessManager_Exit();
 }
 
