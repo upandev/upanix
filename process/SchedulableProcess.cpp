@@ -29,6 +29,7 @@
 #include <StorageDriveManager.h>
 #include <KernelRootProcess.h>
 #include <StorageDrive.h>
+#include <FSDeviceManager.h>
 
 int SchedulableProcess::_nextPid = 0;
 
@@ -592,6 +593,29 @@ void SchedulableProcess::prepareToRun() {
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
         }
+      }
+    }
+    break;
+
+    case WAIT_TERMINAL_IO: {
+      const auto& waitInfo = _stateInfo.GetTerminalIOWaitInfo();
+      const auto& terminalDevice = FSDeviceManager::Instance().getTerminalDevice(waitInfo._path);
+      if (terminalDevice.isEmpty()) {
+        _stateInfo.SleepTime(0);
+        _stateInfo.setError(ProcessStateInfo::NO_ERROR);
+        setStatus(RUN);
+      } else if (terminalDevice->isReady(waitInfo._waitType)) {
+        _stateInfo.SleepTime(0);
+        _stateInfo.setError(ProcessStateInfo::NO_ERROR);
+        setStatus(RUN);
+      } else if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+        _stateInfo.SleepTime(0);
+        _stateInfo.setError(ProcessStateInfo::TIMEOUT);
+        setStatus(RUN);
+      } else if (interruptedBySignal) {
+        _stateInfo.SleepTime(0);
+        _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
+        setStatus(RUN);
       }
     }
     break;

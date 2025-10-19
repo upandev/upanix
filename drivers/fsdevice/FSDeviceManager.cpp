@@ -24,6 +24,7 @@
 #include <StorageDrive.h>
 #include <FileOperations.h>
 #include <FSSocketDevice.h>
+#include <FSTerminalDevice.h>
 
 FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@") {
 }
@@ -39,9 +40,17 @@ upan::shared_ptr<FSDevice> FSDeviceManager::getDevice(const upan::string& path) 
   return i->second;
 }
 
+upan::shared_ptr<FSSocketDevice> FSDeviceManager::getSocketDevice(const upan::string& path) {
+  return getDevice(path).cast<FSSocketDevice>();
+}
+
+upan::shared_ptr<FSTerminalDevice> FSDeviceManager::getTerminalDevice(const upan::string& path) {
+  return getDevice(path).cast<FSTerminalDevice>();
+}
+
 void FSDeviceManager::createSocketDevice(const upan::string& path) {
   if (_devices.exists(path)) {
-    throw upan::exception(XLOC, "socket device already exists for path: %s", path.c_str());
+    throw upan::exception(XLOC, "device already exists for path: %s", path.c_str());
   }
 
   const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);

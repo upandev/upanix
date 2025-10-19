@@ -23,8 +23,9 @@
 
 #include <atomicop.h>
 #include <pair.h>
-#include "vector.h"
-#include "mosstd.h"
+#include <vector.h>
+#include <mosstd.h>
+#include <FSTerminalDevice.h>
 
 class IRQ;
 
@@ -56,6 +57,13 @@ public:
     _ioDescriptors = ioDescriptors;
   }
 
+  const FSTerminalDevice::WaitInfo& GetTerminalIOWaitInfo() const {
+    return _terminalIOWaitInfo;
+  }
+  void SetTerminalIOWaitInfo(const FSTerminalDevice::WaitInfo& waitInfo) {
+    _terminalIOWaitInfo = waitInfo;
+  }
+
   bool IsKernelServiceComplete() const { return _kernelServiceComplete; }
   void KernelServiceComplete(const bool v) { _kernelServiceComplete = v; }
 
@@ -80,6 +88,7 @@ private:
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete ;
   upan::vector<io_descriptor> _ioDescriptors;
+  FSTerminalDevice::WaitInfo _terminalIOWaitInfo;
   Error          _error;
 
   upan::atomic::integral<int>* _waitLock;

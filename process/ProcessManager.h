@@ -34,6 +34,7 @@
 #include <UserProcess.h>
 #include <dtime.h>
 #include <PIT.h>
+#include <FSTerminalDevice.h>
 
 void ProcessManager_Exit();
 
@@ -82,6 +83,7 @@ class ProcessManager
     void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
     void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs);
+    void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs);
     void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs);
     void WaitOnKernelService();
     bool IsKernelProcess(int iProcessID);

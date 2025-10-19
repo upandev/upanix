@@ -33,14 +33,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="check access permissions when opening local dgram socket file">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="socket dgram file device is created upon socket dgram bind() and the socket dgram local resolver is uninitialized when the dgram socket is deleted/destroyed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,6 +130,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -704,7 +709,8 @@
       <workItem from="1757199703386" duration="1000" />
       <workItem from="1758811114899" duration="3524000" />
       <workItem from="1758888906115" duration="2174000" />
-      <workItem from="1759448246864" duration="20249000" />
+      <workItem from="1759448246864" duration="39441000" />
+      <workItem from="1760227127137" duration="18463000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1049,7 +1055,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="197" />
+    <option name="localTasksCounter" value="199" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1083,8 +1089,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor MemPool" />
-    <MESSAGE value="TCP layer implementation for client" />
     <MESSAGE value="support signal - for now, basic SIGINT support on pressing Ctrl+C with default action to break the wait on mutex-wait-queue using condition-variables and wait on IO descriptors" />
     <MESSAGE value="support for TCP server side flow control - with listen and accept" />
     <MESSAGE value="bug fix - register SysIO system call handler" />
@@ -1108,7 +1112,9 @@
     <MESSAGE value="set file and directory type in file-system attribute as per posix" />
     <MESSAGE value="make Local DGRAM socket bidirectional with ephemeral address created for message sending client" />
     <MESSAGE value="check access permissions when opening local dgram socket file" />
-    <option name="LAST_COMMIT_MESSAGE" value="check access permissions when opening local dgram socket file" />
+    <MESSAGE value="Bug Fix: change root drive only if current drive is available in kernel syslogd" />
+    <MESSAGE value="socket dgram file device is created upon socket dgram bind() and the socket dgram local resolver is uninitialized when the dgram socket is deleted/destroyed" />
+    <option name="LAST_COMMIT_MESSAGE" value="socket dgram file device is created upon socket dgram bind() and the socket dgram local resolver is uninitialized when the dgram socket is deleted/destroyed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

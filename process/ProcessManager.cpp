@@ -35,9 +35,7 @@
 #include <syscalldefs.h>
 #include <KernelProcess.h>
 #include <UserThread.h>
-#include <Cpu.h>
 #include <KernelRootProcess.h>
-#include "signal.h"
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
@@ -321,6 +319,27 @@ void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t tim
   waitIODescriptor._ioType = waitType;
   waitIODescriptors.push_back(waitIODescriptor);
   WaitOnIODescriptors(waitIODescriptors, timeoutInMs);
+}
+
+void ProcessManager::WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs) {
+  if(GetCurProcId() < 0)
+    return ;
+  auto& p = GetCurrentPAS();
+  {
+    ProcessSwitchLock lock;
+    FSTerminalDevice::WaitInfo waitInfo;
+    waitInfo._path = path;
+    waitInfo._waitType = waitType;
+    p.stateInfo().SetTerminalIOWaitInfo(waitInfo);
+    p.stateInfo().setError(ProcessStateInfo::NO_ERROR);
+    if (timeoutInMs) {
+      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    } else {
+      p.stateInfo().SleepTime(0);
+    }
+    p.setStatus(WAIT_TERMINAL_IO);
+  }
+  p.yield();
 }
 
 void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs) {

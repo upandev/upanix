@@ -25,6 +25,8 @@
 #include <shared_ptr.h>
 #include <FSDevice.h>
 
+class FSSocketDevice;
+class FSTerminalDevice;
 class FSDeviceManager {
 private:
   FSDeviceManager();
@@ -36,6 +38,8 @@ public:
   }
 
   upan::shared_ptr<FSDevice> getDevice(const upan::string& path);
+  upan::shared_ptr<FSSocketDevice> getSocketDevice(const upan::string& path);
+  upan::shared_ptr<FSTerminalDevice> getTerminalDevice(const upan::string& path);
   void createSocketDevice(const upan::string& path);
   void removeDevice(const upan::string& path);
 
