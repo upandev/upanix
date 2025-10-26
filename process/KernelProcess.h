@@ -41,10 +41,6 @@ public:
 
   KernelThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
 
-  IODescriptorTable& iodTable() override {
-    return _iodTable;
-  }
-
   DMM& dmm() override;
 
   void initGuiFrame() override;
@@ -76,7 +72,6 @@ private:
 
 private:
   int _stackBlockId;
-  IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   //interop variable
   upanui::GraphicsContext* _graphicsContext;

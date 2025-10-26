@@ -40,7 +40,8 @@ public:
   void createScheduleRunner();
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void initTLS();
-  void initDevices();
+  void initTerminalDevice();
+  void initFSDevices();
 
   bool isKernelProcess() const override {
     return true;
@@ -158,10 +159,26 @@ public:
 
   ThreadLocalSpace& tlsp() { return *_tlsp; }
 
+  void setSID() override {}
+  upan::shared_ptr<FSTerminalDevice> controllingTerminal() override {
+    return _controllingTerminal;
+  }
+
+  upan::shared_ptr<FSTerminalDevice> ownerControllingTerminal() override {
+    return _controllingTerminal;
+  }
+
+  void setControllingTerminal(upan::shared_ptr<FSTerminalDevice> terminalDevice) override {
+    _controllingTerminal = terminalDevice;
+  }
+
 private:
   IODescriptorTable _iodTable;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
   int _scheduleRunnerPid;
   ProcessGroup* _processGroup;
+  upan::shared_ptr<FSTerminalDevice> _controllingTerminal;
+  int _terminalMasterFD;
+  int _terminalSlaveFD;
 };

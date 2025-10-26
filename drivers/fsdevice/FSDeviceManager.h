@@ -41,9 +41,11 @@ public:
   upan::shared_ptr<FSSocketDevice> getSocketDevice(const upan::string& path);
   upan::shared_ptr<FSTerminalDevice> getTerminalDevice(const upan::string& path);
   void createSocketDevice(const upan::string& path);
+  int createTerminalDevice(int flags);
   void removeDevice(const upan::string& path);
 
 private:
   const upan::string _rootPrefix;
+  upan::atomic::integral<int> _nextTerminalId;
   upan::map<upan::string, upan::shared_ptr<FSDevice>> _devices;
 };

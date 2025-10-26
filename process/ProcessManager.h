@@ -92,6 +92,7 @@ class ProcessManager
     void EventCompleted(int pid);
     void ContextSwitch(TaskContext &);
     void closeAllFiles(StorageDrive& storageDrive);
+    void updateAllIODescriptorRedirections(pid_t pid, int srcFD, IODescriptor::Ptr targetDesc);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;

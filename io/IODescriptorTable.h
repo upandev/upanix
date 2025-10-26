@@ -40,16 +40,18 @@ public:
     STDIN = 0,
     STDOUT = 1,
     STDERR = 2,
-    KSYSLOG = 3,
+    TERMINAL_MASTER = 3,
+    KSYSLOG = 4,
   } STD_DESCRIPTORS;
 
   typedef upan::map<int, IODescriptor::Ptr> IODMap;
 
-  IODescriptorTable(int pid, int parentPid);
+  explicit IODescriptorTable(int pid);
   ~IODescriptorTable() noexcept;
 
   IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
   void free(int fd);
+  void updateRedirections(int srcFD, IODescriptor::Ptr targetDesc);
   void dup2(int oldFD, int newFD);
   IODescriptor::Ptr getRealNonDupped(int fd);
   IODescriptor::Ptr get(int fd);

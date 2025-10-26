@@ -24,6 +24,7 @@
 #include <FSDevice.h>
 #include <queue.h>
 
+class Process;
 class FSTerminalDevice : public FSDevice {
 public:
   typedef enum {
@@ -43,18 +44,18 @@ public:
     TERMINAL_IO_TYPES _waitType;
   } WaitInfo;
 
-  FSTerminalDevice(const upan::string& path, int inBufSize, int outBufSize);
+  FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize);
 
   bool isReady(TERMINAL_IO_TYPES ioType) const;
   bool canReadInStream() const;
   bool canWriteInStream() const;
   int readInStream(void* buffer, int len);
-  int writeInStream(void* buffer, int len);
+  int writeInStream(const void* buffer, int len);
 
   bool canReadOutStream() const;
   bool canWriteOutStream() const;
   int readOutStream(void* buffer, int len);
-  int writeOutStream(void* buffer, int len);
+  int writeOutStream(const void* buffer, int len);
 
 private:
   typedef enum {
@@ -78,6 +79,7 @@ private:
   };
 
 private:
+  Process& _owner;
   StreamBuffer _inBuffer;
   StreamBuffer _outBuffer;
   Mode _mode;

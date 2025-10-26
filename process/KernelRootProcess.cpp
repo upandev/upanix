@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <fcntl.h>
 #include <KernelRootProcess.h>
 #include <GraphicsVideo.h>
 #include <ProcessManager.h>
@@ -28,7 +29,9 @@
 #include <XHCIManager.h>
 #include <StorageDriveManager.h>
 #include <StorageDrive.h>
-#include <FSDeviceManager.h>
+#include <RedirectDescriptor.h>
+#include <SocketDescriptorLocalDataGram.h>
+#include <StreamBufferDescriptor.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -45,8 +48,18 @@ KernelRootProcess& KernelRootProcess::Instance() {
 }
 
 KernelRootProcess::KernelRootProcess() :
-  _iodTable(NO_PROCESS_ID, NO_PROCESS_ID),
+  _iodTable(NO_PROCESS_ID),
   _scheduleRunnerPid(NO_PROCESS_ID), _processGroup(nullptr) {
+  //first 4 descriptors must be stdin, stdout, stderr and ksyslog - hence create it before redirecting stdin and stdout to terminal descriptor
+  auto stdinFD = _iodTable.allocate([](int fd) {
+    return new StreamBufferDescriptor(NO_PROCESS_ID, fd, 128, O_WR_NONBLOCK); });
+
+  auto stdoutFD = _iodTable.allocate([](int fd) {
+    return new StreamBufferDescriptor(NO_PROCESS_ID, fd, 128, O_WR_NONBLOCK); });
+
+  _iodTable.allocate([&stdoutFD](int fd) { return new RedirectDescriptor(NO_PROCESS_ID, fd, stdoutFD); });
+  _iodTable.allocate([&stdinFD](int fd) { return new RedirectDescriptor(NO_PROCESS_ID, fd, stdinFD); });
+  _iodTable.allocate([](int fd) { return new SocketDescriptorLocalDataGram(NO_PROCESS_ID, fd, AF_LOCAL); });
 }
 
 void KernelRootProcess::createScheduleRunner() {
@@ -76,16 +89,42 @@ void KernelRootProcess::initGuiFrame() {
   }
   initialized = true;
 
-  RootGUIConsole::Instance().resetFrameBuffer(GraphicsVideo::Instance().allocateFrameBuffer());
-  GraphicsVideo::Instance().addFGProcess(NO_PROCESS_ID);
+  try {
+    RootGUIConsole::Instance().resetFrameBuffer(GraphicsVideo::Instance().allocateFrameBuffer());
+    GraphicsVideo::Instance().addFGProcess(NO_PROCESS_ID);
+  } catch(upan::exception& ex) {
+    ex.Print();
+  }
 }
 
-void KernelRootProcess::initDevices() {
+void KernelRootProcess::initTerminalDevice() {
+  SetKernelRootMode(true);
+  try {
+    _terminalMasterFD = posix_openpt(O_RDWR);
+    char name[PATH_MAX];
+    if (ptsname_r(_terminalMasterFD, name, PATH_MAX) < 0) {
+      throw upan::exception(XLOC, "ptsname_r failed");
+    }
+
+    _terminalSlaveFD = open(name, O_RDWR);
+    if (_terminalSlaveFD < 0) {
+      throw upan::exception(XLOC, "open failed");
+    }
+
+    dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
+    dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
+  } catch(...) {
+    SetKernelRootMode(false);
+    throw;
+  }
+  SetKernelRootMode(false);
+}
+
+void KernelRootProcess::initFSDevices() {
   try {
     XHCIManager::Instance().ProbeDevice();
     StorageDriveManager::Instance().MountDrive("usdb");
-    //Create Terminal Device
-
+    initTerminalDevice();
     KernelSysLog::Instance().start();
   } catch(upan::exception& ex) {
     ex.Print();
@@ -98,7 +137,7 @@ void KernelRootProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   if (ch == Keyboard_CTRL_C && (fgPid = _processGroup->GetFGProcessID()) != NO_PROCESS_ID) {
     kill(fgPid, SIGINT);
   } else {
-    iodTable().get(IODescriptorTable::STDIN)->write((void*) &ch, 1);
+    iodTable().get(IODescriptorTable::TERMINAL_MASTER)->write((void*) &ch, 1);
   }
 }
 

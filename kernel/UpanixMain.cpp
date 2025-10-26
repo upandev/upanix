@@ -73,7 +73,7 @@ bool SPECIAL_TASK;
     //RootGUIConsole::Instance().ClearScreen();
     GraphicsVideo::Instance().CreateRefreshTask();
 
-    KernelRootProcess::Instance().initDevices();
+    KernelRootProcess::Instance().initFSDevices();
 
     KC::MConsole().StartCursorBlink();
 
@@ -231,6 +231,11 @@ void Initialize() {
     SessionManager_Initialize() ;
 
     Console::Instance();
+
+    KernelRootProcess::Instance().initTLS();
+    //Now that the TLS is initialized for KernelRoot, getpid() can get the PID from the thread local space
+    openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
+    KLog::info("Kernel Root TLS is Initialized");
   }
   catch(const upan::exception& ex)
   {
@@ -256,11 +261,6 @@ void UpanixMain() {
   SetKernelRootMode(false);
 
   Initialize();
-  KernelRootProcess::Instance().initTLS();
-  //Now that the TLS is initialized for KernelRoot, getpid() can get the PID from the thread local space
-  openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
-  KLog::info("Kernel Root TLS is Initialized");
-
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, true, upan::vector<uintptr_t>());
 
   SetKernelMode(false);

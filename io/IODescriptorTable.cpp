@@ -25,24 +25,11 @@
 #include <RedirectDescriptor.h>
 #include <StreamBufferDescriptor.h>
 #include <NullDescriptor.h>
-#include <SocketDescriptorLocalDataGram.h>
 #include <StorageDrive.h>
 
 constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
-IODescriptorTable::IODescriptorTable(int pid, int parentPid) : _pid(pid), _descIdCounter(0) {
-  if (pid == NO_PROCESS_ID) {
-    allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
-    auto stdoutFD = allocate([pid](int fd) { return new StreamBufferDescriptor(pid, fd, 4096, O_WR_NONBLOCK); });
-    allocate([pid, &stdoutFD](int fd) { return new RedirectDescriptor(pid, fd, stdoutFD); });
-    allocate([pid](int fd) { return new SocketDescriptorLocalDataGram(pid, fd, AF_LOCAL); });
-  } else {
-    auto& parentProcess = ProcessManager::Instance().GetProcess(parentPid).value();
-    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDIN)); });
-    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDOUT)); });
-    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(STDERR)); });
-    allocate([&](int fd) { return new RedirectDescriptor(pid, fd, parentProcess.iodTable().get(KSYSLOG)); });
-  }
+IODescriptorTable::IODescriptorTable(int pid) : _pid(pid), _descIdCounter(0) {
 }
 
 IODescriptorTable::~IODescriptorTable() noexcept {
@@ -136,12 +123,25 @@ void IODescriptorTable::free(int fd) {
   _iodMap.erase(e);
 }
 
+void IODescriptorTable::updateRedirections(int srcFD, IODescriptor::Ptr targetDesc) {
+  upan::mutex_guard g(_ioMutex);
+  for(auto& x : _iodMap) {
+    auto d = x.second.cast<RedirectDescriptor>();
+    if (!d.isEmpty() && d->getParentDescriptor()->id() == srcFD) {
+      d->changeRedirection(targetDesc);
+    }
+  }
+}
+
 void IODescriptorTable::dup2(int oldFD, int newFD) {
   upan::mutex_guard g(_ioMutex);
   auto oldF = get(oldFD);
   auto newF = get(newFD);
+
+  IODescriptor::Ptr targetF(new RedirectDescriptor(_pid, newFD, oldF));
+  ProcessManager::Instance().updateAllIODescriptorRedirections(_pid, newFD, targetF);
   free(newFD);
-  _iodMap.insert(IODMap::value_type(newFD, new RedirectDescriptor(_pid, newFD, oldF)));
+  _iodMap.insert(IODMap::value_type(newFD, targetF));
 }
 
 upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_descriptor>& ioDescriptors) {

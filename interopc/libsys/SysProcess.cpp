@@ -175,3 +175,9 @@ int SysProcess_SetSignalAction(int signo, const struct sigaction *act, struct si
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SIGNAL_ACTION, false, (uint64_t)signo, (uint64_t)act, (uint64_t)oldact, 4, 5);
   return (int)retStatus;
 }
+
+int SysProcess_SetSID() {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_SID, false, 1, 2, 3, 4, 5);
+  return (int)retStatus;
+}

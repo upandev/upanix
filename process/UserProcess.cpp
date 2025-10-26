@@ -46,7 +46,7 @@ using namespace ElfDynamicSection;
 UserProcess::UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
                          const upan::vector<upan::string>& argv,
                          const upan::vector<upan::string>& envp)
-                         : AutonomousProcess(name, parentID, isFGProcess), _iodTable(_processID, parentID) {
+                         : AutonomousProcess(name, parentID, isFGProcess) {
   _mainThreadID = _processID;
   _pml4Table = nullptr;
   _totalNoOfPagesForDLL = 0;

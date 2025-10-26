@@ -176,7 +176,7 @@ FileTree::Node::Node(Node* parent, const FileNode& fileNode, uint32_t sectorId, 
         _startSectorId(fileNode.StartSectorID()),
         _sectorId(sectorId),
         _sectorOffset(sectorOffset),
-        _isFile(fileNode.IsFile()),
+        _attribute(fileNode.Attribute()),
         _size(fileNode.Size()),
         _refCount(0) {
 }

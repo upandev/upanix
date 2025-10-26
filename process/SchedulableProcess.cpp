@@ -107,8 +107,9 @@ void SchedulableProcess::Destroy() {
   _processGroup->RemoveFromFGProcessList(_processID);
   _processGroup->RemoveProcess();
 
-  if(_processGroup->Size() == 0)
+  if(_processGroup->Size() == 0) {
     delete _processGroup;
+  }
 
   dmm().releaseLocks(_processID);
   pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
@@ -130,6 +131,10 @@ void SchedulableProcess::Destroy() {
         }
       }
     }
+  }
+
+  if (!ownerControllingTerminal().isEmpty()) {
+    FSDeviceManager::Instance().removeDevice(ownerControllingTerminal()->path());
   }
 }
 

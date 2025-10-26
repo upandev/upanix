@@ -40,6 +40,11 @@ void ProcessGroup::PutOnFGProcessList(int iProcessID)
   _fgProcessList.push_front(iProcessID);
 }
 
+bool ProcessGroup::IsOnFGProcessList(int iProcessID) {
+  auto i = upan::find_if( _fgProcessList.begin(), _fgProcessList.end(), [iProcessID](int i){ return i == iProcessID; });
+  return i != _fgProcessList.end();
+}
+
 void ProcessGroup::RemoveFromFGProcessList(int iProcessID)
 {
   _fgProcessList.erase(iProcessID);

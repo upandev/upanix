@@ -23,6 +23,8 @@
 # include <SysCallFile.h>
 # include <StorageDrive.h>
 # include <KernelUtil.h>
+# include <FSDeviceManager.h>
+# include <TerminalMasterDescriptor.h>
 
 bool SysCallIO_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_IO_START && sysCallId < SYS_CALL_IO_END) ;
@@ -54,5 +56,35 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
         }
       }
       break;
+
+    case SYS_CALL_IO_OPENPT:
+    {
+      *retVal = 0;
+      auto flags = (int)p1;
+      try {
+        *retVal = FSDeviceManager::Instance().createTerminalDevice(flags);
+      } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_IO_PTS_NAME:
+    {
+      *retVal = 0;
+      auto fd = (int)p1;
+      auto name = (char*)p2;
+      auto len = (int)p3;
+      try {
+        strncpy(name,
+                ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd).cast<TerminalMasterDescriptor>()->name().c_str(),
+                len);
+      } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
 	}
 }

@@ -57,6 +57,19 @@ public:
   void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
   upan::option<struct sigaction&> getSignalAction(SIGNAL signo) override;
 
+  IODescriptorTable& iodTable() override {
+    return _iodTable;
+  }
+
+  void setSID() override;
+  upan::shared_ptr<FSTerminalDevice> controllingTerminal() override;
+  upan::shared_ptr<FSTerminalDevice> ownerControllingTerminal() override {
+    return _terminalDevice;
+  }
+  void setControllingTerminal(upan::shared_ptr<FSTerminalDevice> terminalDevice) override {
+    _terminalDevice = terminalDevice;
+  }
+
 private:
   typedef upan::list<Thread*> ThreadSchedulerList;
   ThreadSchedulerList _threadSchedulerList;
@@ -69,4 +82,6 @@ private:
 
   typedef upan::map<SIGNAL, struct sigaction> SIGNAL_ACTION_MAP;
   SIGNAL_ACTION_MAP _signalHandler;
+  IODescriptorTable _iodTable;
+  upan::shared_ptr<FSTerminalDevice> _terminalDevice;
 };

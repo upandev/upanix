@@ -113,6 +113,11 @@ public:
   virtual bool isGuiBase() const = 0;
   virtual void setGuiBase(bool) = 0;
 
+  virtual void setSID() = 0;
+  virtual upan::shared_ptr<FSTerminalDevice> controllingTerminal() = 0;
+  virtual upan::shared_ptr<FSTerminalDevice> ownerControllingTerminal() = 0;
+  virtual void setControllingTerminal(upan::shared_ptr<FSTerminalDevice>) = 0;
+
   virtual MouseCursorType mouseCursorType() const = 0;
   virtual void setMouseCursorType(MouseCursorType) = 0;
 

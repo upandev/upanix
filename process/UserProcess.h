@@ -56,10 +56,6 @@ public:
     return _pml4Table;
   }
 
-  IODescriptorTable& iodTable() override {
-    return _iodTable;
-  }
-
   upan::option<upan::mutex&> pageAllocMutex() override {
     return upan::option<upan::mutex&>(_pageFaultMutex);
   }
@@ -105,7 +101,6 @@ private:
   upan::mutex _pageFaultMutex;
   upan::mutex _dllMutex;
   upan::mutex _addressSpaceMutex;
-  IODescriptorTable _iodTable;
   upan::uniq_ptr<RootFrame> _frame;
   ELFInfo _elfInfo;
   RELOCATE_INFO_DLL_MAP _relocateInfoDLLMap;

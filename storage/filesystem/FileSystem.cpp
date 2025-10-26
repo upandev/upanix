@@ -167,7 +167,7 @@ uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
   mode = FILE_PERM(mode) ;
   fileType = FILE_TYPE(fileType) ;
 
-  if(!(S_ISFILE(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType))) {
+  if(!(S_ISFILE(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
     throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
   }
   return (uint16_t)(fileType | mode);

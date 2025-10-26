@@ -96,6 +96,22 @@ public:
     return _parent.getSignalAction(signo);
   }
 
+  void setSID() override {
+    _parent.setSID();
+  }
+
+  upan::shared_ptr<FSTerminalDevice> controllingTerminal() override {
+    return _parent.controllingTerminal();
+  }
+
+  upan::shared_ptr<FSTerminalDevice> ownerControllingTerminal() override {
+    return _parent.ownerControllingTerminal();
+  }
+
+  void setControllingTerminal(upan::shared_ptr<FSTerminalDevice> terminalDevice) override {
+    _parent.setControllingTerminal(terminalDevice);
+  }
+
 protected:
   AutonomousProcess& _parent;
 };

@@ -5,42 +5,39 @@
  *  I am making my contributions/submissions to this project solely in
  *  my personal capacity and am not conveying any rights to any
  *  intellectual property of any third parties.
- *                                                                          
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *                                                                          
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *                                                                          
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-# include <SysCall.h>
 
-int SysIO_Close(int fd) {
-  uint64_t retStatus ;
-  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CLOSE, false, fd, 2, 3, 4, 5);
-  return retStatus ;
+#include <TerminalDescriptor.h>
+
+TerminalDescriptor::TerminalDescriptor(int pid, int fd, const upan::shared_ptr<FSTerminalDevice>& terminalDevice)
+  : IODescriptor(pid, fd, O_RDWR), _terminalDevice(terminalDevice) {
 }
 
-int SysIO_Ctl(int fd, uint64_t cmd, uint64_t arg) {
-  uint64_t retStatus;
-  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CTL, false, fd, cmd, arg, 4, 5);
-  return retStatus;
+int TerminalDescriptor::_read(void* buffer, int len) {
+  return _terminalDevice->readInStream(buffer, len);
 }
 
-int SysIO_OpenPT(int flags) {
-  uint64_t retStatus;
-  SysCallIO_Handle(&retStatus, SYS_CALL_IO_OPENPT, false, flags, 2, 3, 4, 5);
-  return retStatus;
+bool TerminalDescriptor::_canRead() {
+  return _terminalDevice->canReadInStream();
 }
 
-int SysIO_GetPTSName(int fd, char* name, int len) {
-  uint64_t retStatus;
-  SysCallIO_Handle(&retStatus, SYS_CALL_IO_PTS_NAME, false, (uint64_t)fd, (uint64_t)name, (uint64_t)len, 4, 5);
-  return retStatus;
+int TerminalDescriptor::_write(const void* buffer, int len) {
+  return _terminalDevice->writeOutStream(buffer, len);
+}
+
+bool TerminalDescriptor::_canWrite() {
+  return _terminalDevice->canWriteOutStream();
 }

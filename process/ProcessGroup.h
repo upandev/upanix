@@ -38,6 +38,7 @@ class ProcessGroup
     bool IsFGProcessGroup() const;
 
     void PutOnFGProcessList(int iProcessID);
+    bool IsOnFGProcessList(int iProcessID);
     void RemoveFromFGProcessList(int iProcessID);
     void AddProcess();
     void RemoveProcess();

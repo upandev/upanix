@@ -52,8 +52,13 @@ public:
     uint32_t startSectorId() const { return _startSectorId; }
     uint8_t sectorOffset() const { return _sectorOffset; }
     uint32_t sectorId() const { return _sectorId; }
-    bool isFile() const { return _isFile; };
-    bool isDirectory() const { return !isFile(); }
+    bool isDirectory() const { return S_ISDIR(_attribute); }
+    bool isFile() const { return !isDirectory(); }
+    bool isRegularFile() const { return S_ISFILE(_attribute); }
+    bool isChrFile() const { return S_ISCHR(_attribute); }
+    bool isSockFile() const { return S_ISSOCK(_attribute); }
+    bool isDeleted() const { return FILE_TYPE(_attribute) == ATTR_DELETED_DIR; }
+    uint16_t attribute() const { return _attribute; }
     uint32_t size() const { return _size; }
     Node* parent() { return _parent; }
 
@@ -78,8 +83,8 @@ public:
     upan::string _name;
     uint32_t _startSectorId;
     uint32_t _sectorId;
-    const uint8_t _sectorOffset:6;
-    uint8_t _isFile:1;
+    const uint8_t _sectorOffset;
+    uint16_t _attribute;
     uint32_t _size;
     upan::atomic::integral<int> _refCount;
     upan::rwlock _rwlock;

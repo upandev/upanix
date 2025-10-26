@@ -233,6 +233,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       }
     }
     break;
+
     case SYS_CALL_PROCESS_SET_SIGNAL_ACTION:
     {
       try {
@@ -241,6 +242,19 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         auto newact = (const struct sigaction*)p2;
         auto oldact = (struct sigaction*)p3;
         ProcessManager::Instance().SetSignalAction(signo, newact, oldact);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_PROCESS_SET_SID:
+    {
+      try {
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        *retVal = process.processID();
+        process.setSID();
       } catch(const upan::exception& e) {
         KLog::exception(e);
         *retVal = -1;

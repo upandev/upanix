@@ -25,8 +25,11 @@
 #include <FileOperations.h>
 #include <FSSocketDevice.h>
 #include <FSTerminalDevice.h>
+#include <ProcessManager.h>
+#include <TerminalMasterDescriptor.h>
+#include <RedirectDescriptor.h>
 
-FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@") {
+FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@"), _nextTerminalId(0) {
 }
 
 //function to update file node ref across all devices when file system is mounted - which means creating the file node references that are missing
@@ -50,7 +53,7 @@ upan::shared_ptr<FSTerminalDevice> FSDeviceManager::getTerminalDevice(const upan
 
 void FSDeviceManager::createSocketDevice(const upan::string& path) {
   if (_devices.exists(path)) {
-    throw upan::exception(XLOC, "device already exists for path: %s", path.c_str());
+    throw upan::exception(XLOC, "socket device already exists for path: %s", path.c_str());
   }
 
   const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
@@ -66,6 +69,45 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
   }
 
   _devices[path].reset(new FSSocketDevice(path));
+}
+
+int FSDeviceManager::createTerminalDevice(int flags) {
+  upan::string path("/dev/pts");
+  path += upan::string::to_string(_nextTerminalId.inc());
+
+  if (_devices.exists(path)) {
+    throw upan::exception(XLOC, "tty device already exists for path: %s", path.c_str());
+  }
+
+  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
+  if (fileStat.isEmpty()) {
+    FileOperations::Instance().create(_rootPrefix + path, S_IFCHR, 0620);
+  } else {
+    if (S_ISCHR(fileStat.value().st_mode) == false) {
+      throw upan::exception(XLOC, "a non tty file already exists at path: %s", path.c_str());
+    }
+    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, flags)) {
+      throw upan::exception(XLOC, "permission denied to access tty device at path: %s", path.c_str());
+    }
+  }
+
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  _devices[path].reset(new FSTerminalDevice(process, path, 4096, 4096));
+  upan::shared_ptr<FSTerminalDevice> terminalDevice = _devices[path].cast<FSTerminalDevice>();
+
+  auto masterDesc = process.iodTable().allocate([&](int fd) {
+    return new TerminalMasterDescriptor(process.processID(), fd, terminalDevice);
+  });
+
+  if (process.ownerControllingTerminal().isEmpty()) {
+    if (!(flags & O_NOCTTY)) {
+      process.setControllingTerminal(terminalDevice);
+      process.iodTable().get(IODescriptorTable::TERMINAL_MASTER).cast<RedirectDescriptor>()->changeRedirection(masterDesc);
+    }
+  }
+
+  return masterDesc->id();
 }
 
 void FSDeviceManager::removeDevice(const upan::string& path) {

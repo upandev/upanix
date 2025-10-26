@@ -24,9 +24,10 @@
 #include <ProcessConstants.h>
 #include <KernelComponents.h>
 #include <ProcessManager.h>
+#include <PCSound.h>
 
-FSTerminalDevice::FSTerminalDevice(const upan::string& path, int inBufSize, int outBufSize)
-  : FSDevice(path),
+FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize)
+  : FSDevice(path), _owner(owner),
     _inBuffer(inBufSize, SB_IN, path), _outBuffer(outBufSize, SB_OUT, path),
     _mode(CANONICAL), _echo(true) {
 }
@@ -58,8 +59,8 @@ int FSTerminalDevice::readInStream(void* buffer, int len) {
   return _inBuffer.read(buffer, len, true);
 }
 
-int FSTerminalDevice::writeInStream(void* buffer, int len) {
-  return _inBuffer.write(buffer, len, true);
+int FSTerminalDevice::writeInStream(const void* buffer, int len) {
+  return _inBuffer.write(buffer, len, false);
 }
 
 bool FSTerminalDevice::canReadOutStream() const {
@@ -67,14 +68,18 @@ bool FSTerminalDevice::canReadOutStream() const {
 }
 
 bool FSTerminalDevice::canWriteOutStream() const {
-  return _outBuffer.canWrite();
+    return _outBuffer.canWrite();
 }
 
 int FSTerminalDevice::readOutStream(void* buffer, int len) {
   return _outBuffer.read(buffer, len, true);
 }
 
-int FSTerminalDevice::writeOutStream(void* buffer, int len) {
+int FSTerminalDevice::writeOutStream(const void* buffer, int len) {
+  if (_owner.processID() == NO_PROCESS_ID) {
+    KC::MConsole().nMessage((char*) buffer, len, upanui::CharStyle::WHITE_ON_BLACK());
+    return len;
+  }
   return _outBuffer.write(buffer, len, true);
 }
 
@@ -95,6 +100,7 @@ int FSTerminalDevice::StreamBuffer::read(void* buffer, int len, bool block) {
       }
     }
     if (!block) {
+      PCSound::Instance().Beep();
       return 0;
     }
 
@@ -122,6 +128,7 @@ int FSTerminalDevice::StreamBuffer::write(const void* buffer, int len, bool bloc
       }
     }
     if (!block) {
+      PCSound::Instance().Beep();
       return 0;
     }
 

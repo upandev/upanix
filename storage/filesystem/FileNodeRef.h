@@ -37,8 +37,12 @@ public:
   bool empty() { return _node == nullptr; }
 
   uint32_t startSectorId() { return nodev().startSectorId(); }
-  bool isFile() { return nodev().isFile(); }
   bool isDirectory() { return nodev().isDirectory(); }
+  bool isFile() { return nodev().isFile(); }
+  bool isRegularFile() { return nodev().isRegularFile(); }
+  bool isChrFile() { return nodev().isChrFile(); }
+  bool isSockFile() { return nodev().isSockFile(); }
+  uint16_t attribute() { return nodev().attribute(); }
 
 private:
   FileTree::Node& nodev() {

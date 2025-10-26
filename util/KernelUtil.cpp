@@ -28,6 +28,9 @@
 #include <RealNetworkDevice.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <TerminalDescriptor.h>
+#include <TerminalMasterDescriptor.h>
+#include <RedirectDescriptor.h>
 
 void KernelUtil::Wait(__volatile__ unsigned uiTimeInMilliSec)
 {
@@ -113,6 +116,19 @@ void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
       auto& defaultDevice = NetworkManager::Instance().getDefaultRealDevice().value();
       auto& device = NetworkManager::Instance().getDeviceByName(req->ifr_name).valueOrElse(defaultDevice);
       req->ifr_ifindex = device.id();
+    }
+    break;
+
+    case TIOCSCTTY:
+    {
+      auto& process = ProcessManager::Instance().GetCurrentPAS();
+      auto terminalDevice = process.iodTable().getRealNonDupped(fd).cast<TerminalDescriptor>()->terminalDevice();
+      auto masterDesc = process.iodTable().allocate([&](int fd) {
+        return new TerminalMasterDescriptor(process.processID(), fd, terminalDevice);
+      });
+
+      process.setControllingTerminal(terminalDevice);
+      process.iodTable().get(IODescriptorTable::TERMINAL_MASTER).cast<RedirectDescriptor>()->changeRedirection(masterDesc);
     }
     break;
   }

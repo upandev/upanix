@@ -27,6 +27,8 @@
 # include <StorageDriveManager.h>
 # include <FileNodeRef.h>
 # include <StorageDrive.h>
+# include <TerminalDescriptor.h>
+# include <FSDeviceManager.h>
 
 bool FileOperations_ReadLine(int fd, upan::string& line)
 {
@@ -118,8 +120,19 @@ upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath
     return {};
   }
 
-  return process.iodTable().allocate([&](int fd) {
-    return new FileDescriptor(process.processID(), fd, mode, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
+  return process.iodTable().allocate([&](int fd) -> IODescriptor* {
+    if (fileNodeRef.isRegularFile()) {
+      return new FileDescriptor(process.processID(), fd, mode, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
+    } else if (fileNodeRef.isChrFile()) {
+      const auto& fullPath = storageDrive.fileSystem().fullPath(fileNodeRef);
+      auto terminalDevice = FSDeviceManager::Instance().getTerminalDevice(fullPath);
+      if (terminalDevice.isEmpty()) {
+        throw upan::exception(XLOC, "failed to open terminal device file because no terminal device found for %s", fullPath.c_str());
+      }
+      return new TerminalDescriptor(process.processID(), fd, terminalDevice);
+    } else {
+      throw upan::exception(XLOC, "unsupported file type %s", FILE_TYPE(fileNodeRef.attribute()));
+    }
   });
 }
 

@@ -25,12 +25,22 @@
 #include <StreamBufferDescriptor.h>
 #include <ProcessManager.h>
 #include <GraphicsVideo.h>
-#include <signal.h>
+#include <FSDeviceManager.h>
+#include <RedirectDescriptor.h>
 
 AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess)
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
     _uiType(Process::UIType::NA), _uiKeyboardEventStreamFD(nullptr), _uiMouseEventStreamFD(nullptr),
-    _isGuiBase(false) {
+    _isGuiBase(false), _iodTable(_processID) {
+
+  auto& parentIODTable = ProcessManager::Instance().GetProcess(parentID)
+          .valueOrThrow(XLOC, "failed to create process as parent process not found")
+          .iodTable();
+  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDIN)); });
+  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDOUT)); });
+  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDERR)); });
+  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::TERMINAL_MASTER)); });
+  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::KSYSLOG)); });
 }
 
 SchedulableProcess& AutonomousProcess::forSchedule() {
@@ -92,7 +102,7 @@ void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
       if (ch == Keyboard_CTRL_C) {
         kill(_processID, SIGINT);
       } else if (ch != Keyboard_NA_CHAR) {
-        iodTable().get(IODescriptorTable::STDIN)->write((void*)&ch, 1);
+        iodTable().get(IODescriptorTable::TERMINAL_MASTER)->write((void*)&ch, 1);
       }
     }
     break;
@@ -217,4 +227,41 @@ upan::option<struct sigaction&> AutonomousProcess::getSignalAction(SIGNAL signo)
     return upan::option<struct sigaction&>::empty();
   }
   return upan::option<struct sigaction&>(i->second);
+}
+
+void AutonomousProcess::setSID() {
+  if (_processGroup) {
+    auto isFGProcess = _processGroup->IsOnFGProcessList(_processID);
+    auto isFGProcessGroup = _processGroup->IsFGProcessGroup();
+
+    if (isFGProcess) {
+      _processGroup->RemoveFromFGProcessList(_processID);
+    }
+    _processGroup->RemoveProcess();
+    if (_processGroup->Size() == 0) {
+      delete _processGroup;
+    }
+
+    _processGroup = new ProcessGroup(isFGProcessGroup);
+    _processGroup->AddProcess();
+    if (isFGProcess) {
+      _processGroup->PutOnFGProcessList(_processID);
+    }
+  }
+
+  if (!_terminalDevice.isEmpty()) {
+    FSDeviceManager::Instance().removeDevice(_terminalDevice->path());
+    _terminalDevice.reset(nullptr);
+  }
+}
+
+upan::shared_ptr<FSTerminalDevice> AutonomousProcess::controllingTerminal() {
+  if (_terminalDevice.isEmpty()) {
+    auto parentProcess =  ProcessManager::Instance().GetProcess(_parentProcessID);
+    if (parentProcess.isEmpty()) {
+      return {};
+    }
+    return parentProcess.value().controllingTerminal();
+  }
+  return _terminalDevice;
 }

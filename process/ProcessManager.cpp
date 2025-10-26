@@ -543,6 +543,19 @@ void ProcessManager::closeAllFiles(StorageDrive& storageDrive) {
   }
 }
 
+void ProcessManager::updateAllIODescriptorRedirections(pid_t pid, int srcFD, IODescriptor::Ptr targetDesc) {
+  ProcessSwitchLock lock;
+  Process& process = GetProcess(pid).valueOrThrow(XLOC, upan::error("failed to find process with pid %d", pid).Msg());
+  process.iodTable().updateRedirections(srcFD, targetDesc);
+  if (pid == NO_PROCESS_ID) {
+    for (auto& p : _processMap) {
+      if (!p.second->isChildThread()) {
+        p.second->iodTable().updateRedirections(srcFD, targetDesc);
+      }
+    }
+  }
+}
+
 void ProcessManager::MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset) {
   ProcessSwitchLock lock;
   GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) { process.maskSignal(how, set, oldset); });
