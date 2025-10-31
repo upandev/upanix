@@ -1969,7 +1969,7 @@ static void test_tcp_server() {
 }
 
 static void test_tcp_client() {
-  const upan::string& host = "192.168.50.208";
+  const upan::string host = "192.168.50.208";
   const int server_port = 12345;
   char message[1024] = "Hello, TCP Server!";
 
