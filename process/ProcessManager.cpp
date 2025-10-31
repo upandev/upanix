@@ -277,7 +277,7 @@ void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutI
 
   //isKernelSpace = true => condition_variable used in kernel code that includes syscall code that is executed by user processes/threads
   //In this space, the mutex and condition_variables are shared across processes/threads. Therefore, we need to use a global WaitQueueMap. The Space here is NO_PROCESS_ID => global
-  //For condition_variables used withing a user process/thread, the mutex and condition_variables are shared within the process and its threads.
+  //For condition_variables used within a user process/thread, the mutex and condition_variables are shared within the process and its threads.
   //Therefore, the WaitQueue is local to that particular process. The space here is the PID of the main thread
 
   auto& p = GetCurrentPAS();

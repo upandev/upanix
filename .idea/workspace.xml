@@ -33,41 +33,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support for terminal device with a separate wait type for terminal IO">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="added support for terminal device descriptors and initializing the root terminal">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessGroup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessGroup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessGroup.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessGroup.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallIO.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -738,7 +708,7 @@
       <workItem from="1758888906115" duration="2174000" />
       <workItem from="1759448246864" duration="39441000" />
       <workItem from="1760227127137" duration="65760000" />
-      <workItem from="1761431049908" duration="10570000" />
+      <workItem from="1761431049908" duration="36865000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1083,7 +1053,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="200" />
+    <option name="localTasksCounter" value="201" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1117,7 +1087,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="support for TCP server side flow control - with listen and accept" />
     <MESSAGE value="bug fix - register SysIO system call handler" />
     <MESSAGE value="set disk format=raw" />
     <MESSAGE value="support getsockopt()&#10;libc header refactoring" />
@@ -1142,7 +1111,8 @@
     <MESSAGE value="Bug Fix: change root drive only if current drive is available in kernel syslogd" />
     <MESSAGE value="socket dgram file device is created upon socket dgram bind() and the socket dgram local resolver is uninitialized when the dgram socket is deleted/destroyed" />
     <MESSAGE value="support for terminal device with a separate wait type for terminal IO" />
-    <option name="LAST_COMMIT_MESSAGE" value="support for terminal device with a separate wait type for terminal IO" />
+    <MESSAGE value="added support for terminal device descriptors and initializing the root terminal" />
+    <option name="LAST_COMMIT_MESSAGE" value="added support for terminal device descriptors and initializing the root terminal" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -657,13 +657,16 @@ void SchedulableProcess::prepareToRun() {
       if (upan::find(q.begin(), q.end(), _processID) == q.end()) {
         _stateInfo.WaitQueueId(0);
         _stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
+        _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else {
         if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+          q.erase(upan::find(q.begin(), q.end(), _processID));
           _stateInfo.SleepTime(0);
           _stateInfo.setError(ProcessStateInfo::TIMEOUT);
           setStatus(RUN);
         } else if (interruptedBySignal) {
+          q.erase(upan::find(q.begin(), q.end(), _processID));
           _stateInfo.SleepTime(0);
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
