@@ -33,11 +33,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="added support for terminal device descriptors and initializing the root terminal">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix the bug where string reference was taken to local string literal (char*)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/DynamicLinkLoader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -708,7 +707,7 @@
       <workItem from="1758888906115" duration="2174000" />
       <workItem from="1759448246864" duration="39441000" />
       <workItem from="1760227127137" duration="65760000" />
-      <workItem from="1761431049908" duration="36865000" />
+      <workItem from="1761431049908" duration="66136000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1053,7 +1052,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="201" />
+    <option name="localTasksCounter" value="203" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1087,8 +1086,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="bug fix - register SysIO system call handler" />
-    <MESSAGE value="set disk format=raw" />
     <MESSAGE value="support getsockopt()&#10;libc header refactoring" />
     <MESSAGE value="Refactor to use shared_ptr for IO descriptors in IO descriptor-table" />
     <MESSAGE value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
@@ -1112,7 +1109,9 @@
     <MESSAGE value="socket dgram file device is created upon socket dgram bind() and the socket dgram local resolver is uninitialized when the dgram socket is deleted/destroyed" />
     <MESSAGE value="support for terminal device with a separate wait type for terminal IO" />
     <MESSAGE value="added support for terminal device descriptors and initializing the root terminal" />
-    <option name="LAST_COMMIT_MESSAGE" value="added support for terminal device descriptors and initializing the root terminal" />
+    <MESSAGE value="clear wait queue after a process times out or gets interrupted while waiting on condition variable" />
+    <MESSAGE value="fix the bug where string reference was taken to local string literal (char*)" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix the bug where string reference was taken to local string literal (char*)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

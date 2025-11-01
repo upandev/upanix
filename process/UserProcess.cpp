@@ -146,13 +146,13 @@ uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>&
   const uint32_t argvD1Size = argv.size() * sizeof(uintptr_t); // address of char* entry (second dimension) of argv array
   uint32_t argvD2Size = 0;
   for(const auto& i : argv) {
-    argvD2Size += i.length();
+    argvD2Size += i.length() + 1;
   }
 
   const uint32_t envpD1Size = (envp.size() +  1) * sizeof(uintptr_t); // no. of envp entries + 1 for null terminator
   uint32_t envpD2Size = 0;
   for(const auto& e : envp) {
-    envpD2Size += e.length();
+    envpD2Size += e.length() + 1;
   }
 
   //The stack must be aligned to 16 byte otherwise SSE/SSE2/SSE3 instructions will cause General Protection Fault
@@ -179,7 +179,7 @@ uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>&
   const uint64_t realEnvpStackTopAddress = realStackTopAddress + pos;
   const uint64_t virtualEnvpStackTopAddress = virtualStackTopAddress + pos;
 
-  pos += envpD1Size;
+  pos = envpD1Size;
   for(int i = 0; i < envp.size(); i++) {
     const uint64_t realArgAddress = realEnvpStackTopAddress + pos;
     const uint64_t virtualArgAddress = virtualEnvpStackTopAddress + pos;
