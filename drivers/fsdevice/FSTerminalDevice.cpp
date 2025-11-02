@@ -29,7 +29,7 @@
 FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize)
   : FSDevice(path), _owner(owner),
     _inBuffer(inBufSize, SB_IN, path), _outBuffer(outBufSize, SB_OUT, path),
-    _mode(CANONICAL), _echo(true) {
+    _directKernelConsole(false), _mode(CANONICAL), _echo(true) {
 }
 
 bool FSTerminalDevice::isReady(TERMINAL_IO_TYPES ioType) const {
@@ -76,7 +76,7 @@ int FSTerminalDevice::readOutStream(void* buffer, int len) {
 }
 
 int FSTerminalDevice::writeOutStream(const void* buffer, int len) {
-  if (_owner.processID() == NO_PROCESS_ID) {
+  if (_owner.processID() == NO_PROCESS_ID && _directKernelConsole) {
     KC::MConsole().nMessage((char*) buffer, len, upanui::CharStyle::WHITE_ON_BLACK());
     return len;
   }

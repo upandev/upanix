@@ -19,39 +19,45 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _UPANIX_SHELL_H_
-#define _UPANIX_SHELL_H_
+#pragma once
 
 # include <Global.h>
 # include <ustring.h>
+# include <ithread.h>
 
 void Console_StartUpanixConsole();
 
-class Console
-{
+class Console {
 private:
   Console();
+public:
   Console(const Console&) = delete;
   Console& operator=(const Console&) = delete;
 
 public:
-  static Console& Instance()
-  {
+  static Console& Instance() {
     static Console _instance;
     return _instance;
   }
   void Start();
 
+  class ConsoleOutHandler : public upan::thread {
+  public:
+    explicit ConsoleOutHandler(Console& console);
+  private:
+    void run() override;
+  private:
+    Console& _console;
+  };
 private:
+  void ProcessInput(const uint8_t* input, int len);
   void ClearCommandLine();
   void DisplayCommandLine();
-  void BuildCommand();
   void ProcessCommand();
   void ExecuteCommand(const char* szCommandLine);
 
   const upan::string _prompt;
-  uint32_t _currentCommandPos ;
+  uint32_t _currentCommandPos;
   char* _commandLine;
+  ConsoleOutHandler _ioHandler;
 };
-
-#endif

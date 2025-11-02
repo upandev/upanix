@@ -57,6 +57,8 @@ public:
   int readOutStream(void* buffer, int len);
   int writeOutStream(const void* buffer, int len);
 
+  void setDirectKernelConsole(bool directKernelConsole) { _directKernelConsole = directKernelConsole; }
+
 private:
   typedef enum {
     SB_IN,
@@ -82,6 +84,7 @@ private:
   Process& _owner;
   StreamBuffer _inBuffer;
   StreamBuffer _outBuffer;
+  bool _directKernelConsole;
   Mode _mode;
   bool _echo;
 };

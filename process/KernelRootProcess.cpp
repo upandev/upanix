@@ -111,6 +111,7 @@ void KernelRootProcess::initTerminalDevice() {
       throw upan::exception(XLOC, "open failed");
     }
 
+    _controllingTerminal->setDirectKernelConsole(true);
     dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
     dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
   } catch(...) {
