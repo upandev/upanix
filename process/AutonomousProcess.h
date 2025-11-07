@@ -71,6 +71,9 @@ public:
   }
 
 private:
+  void sendKeyboardDataToControllingTerminal(const upanui::KeyboardData& data);
+
+private:
   typedef upan::list<Thread*> ThreadSchedulerList;
   ThreadSchedulerList _threadSchedulerList;
   ThreadSchedulerList::iterator _nextThreadIt;

@@ -33,13 +33,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Bug fix in argv and envp initialization at the time of creating user process">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="kernel console IO works through terminal device">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,11 +127,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -710,7 +703,8 @@
       <workItem from="1758888906115" duration="2174000" />
       <workItem from="1759448246864" duration="39441000" />
       <workItem from="1760227127137" duration="65760000" />
-      <workItem from="1761431049908" duration="77721000" />
+      <workItem from="1761431049908" duration="90207000" />
+      <workItem from="1762174471968" duration="10587000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1055,7 +1049,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="204" />
+    <option name="localTasksCounter" value="205" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1089,7 +1083,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactor to use shared_ptr for IO descriptors in IO descriptor-table" />
     <MESSAGE value="refactor descriptor to template pattern to handle closed descriptor scenario in a generic way across all descriptor types" />
     <MESSAGE value="1. refactor to create a separate SocketDescriptor class for ARP and ICMP. DGRAM, ARP and ICMP all derive from SocketDescriptorPacket base class.&#10;2. Fix a bug in UDP socket receiver to calculate the data length properly after ntohs() conversion.&#10;3. Reduce retry interval in DHCP client from 1 minute to 5 seconds upon any errors in receiving response from DHCP server." />
     <MESSAGE value="support for AF_LOCAL/AF_UNIX sockets - that inturn enables the support for syslog(). introduced interopc - to group all kernel overrides to libc that includes system calls and other overrides. Close all open files across all processes when filesystem is unmounted" />
@@ -1114,7 +1107,8 @@
     <MESSAGE value="clear wait queue after a process times out or gets interrupted while waiting on condition variable" />
     <MESSAGE value="fix the bug where string reference was taken to local string literal (char*)" />
     <MESSAGE value="Bug fix in argv and envp initialization at the time of creating user process" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug fix in argv and envp initialization at the time of creating user process" />
+    <MESSAGE value="kernel console IO works through terminal device" />
+    <option name="LAST_COMMIT_MESSAGE" value="kernel console IO works through terminal device" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

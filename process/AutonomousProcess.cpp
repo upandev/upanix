@@ -94,25 +94,32 @@ void AutonomousProcess::DestroyThreads() {
   _threadSchedulerList.clear();
 }
 
+void AutonomousProcess::sendKeyboardDataToControllingTerminal(const upanui::KeyboardData& data) {
+  const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
+  if (ch == Keyboard_CTRL_C) {
+    kill(_processID, SIGINT);
+  } else if (ch != Keyboard_NA_CHAR) {
+    iodTable().get(IODescriptorTable::TERMINAL_MASTER)->write((void*)&ch, 1);
+  }
+}
+
 void AutonomousProcess::dispatchKeyboardData(const upanui::KeyboardData& data) {
   switch (_uiType) {
     case Process::REDIRECT_TTY:
-    case Process::TTY: {
-      const auto ch = (uint8_t)upanui::KeyboardMapper::Instance().resolveKey(data);
-      if (ch == Keyboard_CTRL_C) {
-        kill(_processID, SIGINT);
-      } else if (ch != Keyboard_NA_CHAR) {
-        iodTable().get(IODescriptorTable::TERMINAL_MASTER)->write((void*)&ch, 1);
-      }
-    }
-    break;
+    case Process::TTY:
+      sendKeyboardDataToControllingTerminal(data);
+      break;
 
     case Process::GUI: {
-      const auto ch = (uint8_t) upanui::KeyboardMapper::Instance().resolveKey(data);
-      if (ch == Keyboard_CTRL_C) {
-        kill(_processID, SIGINT);
+      if (controllingTerminal().isEmpty()) {
+        const auto ch = (uint8_t) upanui::KeyboardMapper::Instance().resolveKey(data);
+        if (ch == Keyboard_CTRL_C) {
+          kill(_processID, SIGINT);
+        } else {
+          _uiKeyboardEventStreamFD->write((void*) &data, sizeof(upanui::KeyboardData));
+        }
       } else {
-        _uiKeyboardEventStreamFD->write((void*) &data, sizeof(upanui::KeyboardData));
+        sendKeyboardDataToControllingTerminal(data);
       }
     }
     break;

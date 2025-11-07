@@ -1523,8 +1523,8 @@ public:
   }
 
   void execute(const upan::string& cmdLine) override {
-    _terminal->insertCommandOutput("Hello!\nWorld\n");
-    _terminal->insertCommandOutput(cmdLine + " -> Executed!");
+//    _terminal->insertCommandOutput("Hello!\nWorld\n");
+//    _terminal->insertCommandOutput(cmdLine + " -> Executed!");
   }
 
 private:
