@@ -26,9 +26,6 @@
 #include <set.h>
 #include <ustring.h>
 
-#define COMMAND_LINE_SIZE 70
-#define MAX_COMMAND_LINE_ENTRIES 20
-
 class CommandLineParser
 {
 private:
@@ -40,7 +37,7 @@ public:
     return _instance;
   }
 
-  void Parse(const char* szCommandLine);
+  void Parse(const upan::string& commandLine);
 
   const char* GetCommand() const;
   int GetNoOfParameters() const { return _params.size(); }

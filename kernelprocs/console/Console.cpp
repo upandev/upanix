@@ -31,14 +31,9 @@ void Console_StartUpanixConsole() {
   Console::Instance().Start();
 }
 
-Console::Console() : _currentCommandPos(0), _ioHandler(*this) {
-  _commandLine = new char[COMMAND_LINE_SIZE];
+Console::Console() : _ioHandler(*this) {
 	ConsoleCommands_Init() ;
   KC::MConsole().LoadMessage("Console Initialization", Success);
-}
-
-void Console::ClearCommandLine() {
-  memset(_commandLine, 0, COMMAND_LINE_SIZE) ;
 }
 
 void Console::DisplayCommandLine() {
@@ -101,9 +96,9 @@ void Console::ProcessInput(const uint8_t* buffer, int len) {
       case Keyboard_CAPS_LOCK:
         break;
       case Keyboard_BACKSPACE:
-        if (_currentCommandPos > 0) {
-          _currentCommandPos--;
-          int x = _commandLine[_currentCommandPos] == '\t' ? 4 : 1;
+        if (!_commandLine.empty()) {
+          int x = _commandLine.back() == '\t' ? 4 : 1;
+          _commandLine.pop_back();
           KC::MConsole().MoveCursor(-x);
           KC::MConsole().ClearLine(upanui::ConsoleBuffer::START_CURSOR_POS);
         }
@@ -117,34 +112,25 @@ void Console::ProcessInput(const uint8_t* buffer, int len) {
         break;
 
       case Keyboard_ENTER:
-        ProcessCommand();
+        ExecuteCommand();
         DisplayCommandLine();
         break;
 
-      default:
-
-        if (_currentCommandPos != COMMAND_LINE_SIZE) {
-          //TODO: putchar()
-          printf("%c", ch);
-          _commandLine[_currentCommandPos++] = ch;
-        }
+      default: {
+        putc(ch, stdout);
+        _commandLine += ch;
+      }
     }
   }
 }
 
-void Console::ProcessCommand() {
-  _commandLine[_currentCommandPos] = '\0' ;
-  _currentCommandPos = 0 ;
-  ExecuteCommand(_commandLine);
-  ClearCommandLine() ;
-}
-
-void Console::ExecuteCommand(const char* szCommandLine)
-{
-  CommandLineParser::Instance().Parse(szCommandLine);
+void Console::ExecuteCommand() {
+  CommandLineParser::Instance().Parse(_commandLine);
   auto command = CommandLineParser::Instance().GetCommand();
-  if(command)
+  if(command) {
     ConsoleCommands_ExecuteInternalCommand(command);
+  }
+  _commandLine.clear();
 }
 
 Console::ConsoleOutHandler::ConsoleOutHandler(Console& console) : _console(console) {

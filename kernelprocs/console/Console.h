@@ -51,13 +51,10 @@ public:
   };
 private:
   void ProcessInput(const uint8_t* input, int len);
-  void ClearCommandLine();
   void DisplayCommandLine();
-  void ProcessCommand();
-  void ExecuteCommand(const char* szCommandLine);
+  void ExecuteCommand();
 
   const upan::string _prompt;
-  uint32_t _currentCommandPos;
-  char* _commandLine;
+  upan::string _commandLine;
   ConsoleOutHandler _ioHandler;
 };

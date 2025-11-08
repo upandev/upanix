@@ -44,3 +44,15 @@ int SysIO_GetPTSName(int fd, char* name, int len) {
   SysCallIO_Handle(&retStatus, SYS_CALL_IO_PTS_NAME, false, (uint64_t)fd, (uint64_t)name, (uint64_t)len, 4, 5);
   return retStatus;
 }
+
+int SysIO_TCGetAttr(int fd, struct termios *termios_p) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_TC_GET_ATTR, false, (uint64_t)fd, (uint64_t)termios_p, 3, 4 ,5);
+  return retStatus;
+}
+
+int SysIO_TCSetAttr(int fd, termios_actions action, const struct termios *termios_p) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_TC_SET_ATTR, false, (uint64_t)fd, (uint64_t)action, (uint64_t)termios_p, 4 ,5);
+  return retStatus;
+}

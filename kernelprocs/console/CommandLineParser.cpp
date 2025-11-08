@@ -65,18 +65,17 @@ void CommandLineParser_Copy(int index, const char* src, int len, void* np)
   }
 }
 
-void CommandLineParser::Parse(const char* szCommandLine)
-{
+void CommandLineParser::Parse(const upan::string& commandLine) {
   _command = "";
   _options.clear();
   _params.clear();
   int d = 0;
 
-  strtok_c(szCommandLine,
-      &CommandLineParser_TokenCompare,
-      &CommandLineParser_GroupToken,
-      &CommandLineParser_Copy,
-      &d, NULL) ;
+  strtok_c(commandLine.c_str(),
+           &CommandLineParser_TokenCompare,
+           &CommandLineParser_GroupToken,
+           &CommandLineParser_Copy,
+           &d, nullptr);
 }
 
 const char* CommandLineParser::GetCommand() const
