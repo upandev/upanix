@@ -60,7 +60,26 @@ int FSTerminalDevice::readInStream(void* buffer, int len) {
 }
 
 int FSTerminalDevice::writeInStream(const void* buffer, int len) {
-  return _inBuffer.write(buffer, len, false);
+  const int n = _inBuffer.write(buffer, len, false);
+  if (_echo && n > 0) {
+    for (int i = 0; i < n; ++i) {
+      auto ch = ((uint8_t*)buffer)[i];
+      switch (ch) {
+        case Keyboard_F1:
+        case Keyboard_F2:
+        case Keyboard_F3:
+        case Keyboard_F4:
+        case Keyboard_F5:
+        case Keyboard_F6:
+        case Keyboard_F7:
+        case Keyboard_F8:
+        case Keyboard_BACKSPACE:
+          break;
+        default:
+          writeOutStream(&ch, 1);
+      }
+    }
+  }
 }
 
 bool FSTerminalDevice::canReadOutStream() const {

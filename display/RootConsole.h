@@ -32,6 +32,7 @@ public:
   static void Create();
 
   void LoadMessage(const char* loadMessage, ReturnCode result);
+  void PutChar(char ch, const upanui::CharStyle& style);
   void Message(const char* message, const upanui::CharStyle& style);
   void nMessage(const char* message, int n, const upanui::CharStyle& style);
   void MoveCursor(int pos);

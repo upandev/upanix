@@ -308,7 +308,7 @@ void ConsoleCommands_ListDirContent() {
 
   int i = 0;
 	for (auto& s : fileStats) {
-		if(!(i % 3)) {
+		if(!(i % 3) && i != 0) {
       printf("\n");
     }
     printf("%-20s", s._name) ;
@@ -700,12 +700,13 @@ void ConsoleCommands_ListProcess()
 	PS* pPS = ProcessManager::Instance().GetProcList(uiSize);
 	
 	unsigned i ;
-	for(i = 0; i < uiSize; i++)
-	{
-		printf("\n %-7d%-5d%-5d%-18s%-5d%-10s", pPS[i].pid, pPS[i].iParentProcessID, pPS[i].iProcessGroupID,
+	for(i = 0; i < uiSize; i++) {
+    if (i != 0) {
+      putchar('\n');
+    }
+		printf("%-7d%-5d%-5d%-18s%-5d%-10s", pPS[i].pid, pPS[i].iParentProcessID, pPS[i].iProcessGroupID,
            get_proc_status_desc(pPS[i].status), pPS[i].iUserID, pPS[i].pname) ;
 	}
-  printf("\n");
 
 	ProcessManager::Instance().FreeProcListMem(pPS, uiSize) ;
 }
@@ -717,7 +718,7 @@ void ConsoleCommands_ChangeRootDrive() {
 void ConsoleCommands_Echo()
 {
   if(CommandLineParser::Instance().GetNoOfParameters())
-    printf("\n%s", CommandLineParser::Instance().GetParameterAt(0)) ;
+    printf("%s", CommandLineParser::Instance().GetParameterAt(0)) ;
 }
 
 void ConsoleCommands_Export()
@@ -760,8 +761,13 @@ void ConsoleCommands_ProbeXHCIUSB()
 }
 
 void ConsoleCommands_ListNetworkDevices() {
+  bool first = true;
   for(const auto d : NetworkManager::Instance().devices()) {
-    printf("\n");
+    if (first) {
+      first = false;
+    } else {
+      printf("\n");
+    }
     d->print();
   }
 
@@ -789,7 +795,7 @@ void ConsoleCommands_ARPing() {
   struct in_addr addr {};
   inet_aton(param.c_str(), &addr);
   const MACAddress mac = device.getARPClient().resolveMacAddress(addr.s_addr);
-  printf("\nMAC: %s", mac.str().c_str());
+  printf("MAC: %s", mac.str().c_str());
 }
 
 void ConsoleCommands_InitNetwork() {
@@ -815,7 +821,7 @@ void ConsoleCommands_ShowRawDiskList()
   unsigned uiCount = CommandLineParser::Instance().GetNoOfParameters() ;
 	RawStorageDrive* pDisk = NULL ;
 
-	printf("\n%-15s %-18s %-10s %-15s %-10s", "Name", "Type", "Sec-Size", "Tot-Sectors", "Size (MB)") ;
+	printf("%-15s %-18s %-10s %-15s %-10s", "Name", "Type", "Sec-Size", "Tot-Sectors", "Size (MB)") ;
 	printf("\n-----------------------------------------------------------------------") ;
 
 	class LamdaDisplay
@@ -855,7 +861,7 @@ void ConsoleCommands_InitFloppyController()
 	if(!Floppy_GetInitStatus())
 		Floppy_Initialize() ;
 	else
-		printf("\n Floppy Controller already initialized") ;
+		printf("Floppy Controller already initialized") ;
 }
 
 void ConsoleCommands_InitATAController()
@@ -1870,11 +1876,17 @@ void aThread(void* x) {
 void ConsoleCommands_PrintKPIs() {
   if (CommandLineParser::Instance().GetNoOfParameters() >= 1) {
     const upan::string& name = CommandLineParser::Instance().GetParameterAt(0);
-    printf("\navg(%s): %lf (%d)", name.c_str(), upan::metrics::instance().avg(name), upan::metrics::instance().count(name));
+    printf("avg(%s): %lf (%d)", name.c_str(), upan::metrics::instance().avg(name), upan::metrics::instance().count(name));
   } else {
     const auto& names = upan::metrics::instance().kpis();
+    bool first = true;
     for(const auto& e : names) {
-      printf("\navg(%s): %lf (%d)", e.c_str(), upan::metrics::instance().avg(e), upan::metrics::instance().count(e));
+      if (first) {
+        first = false;
+      } else {
+        putchar('\n');
+      }
+      printf("avg(%s): %lf (%d)", e.c_str(), upan::metrics::instance().avg(e), upan::metrics::instance().count(e));
     }
   }
 }

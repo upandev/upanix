@@ -54,6 +54,10 @@ void RootConsole::LoadMessage(const char* loadMessage, ReturnCode result) {
     Message("[ FAILED ]", upanui::CharStyle(ColorPalettes::CP16::FG_RED, ColorPalettes::CP16::BG_WHITE));
 }
 
+void RootConsole::PutChar(const char ch, const upanui::CharStyle& style) {
+  _consoleBuffer.character(ch, style);
+}
+
 void RootConsole::Message(const char *message, const upanui::CharStyle& style) {
   _consoleBuffer.message(message, style);
 }

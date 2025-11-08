@@ -60,10 +60,8 @@ void Console::Start() {
     while (true) {
       select(waitFDs, readyFDs);
       for (int i = 0; readyFDs[i]._fd >= 0; ++i) {
-        int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
-        if (n) {
-          ProcessInput(buffer, n);
-        }
+        const int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
+        OnKeyboardInput(buffer, n);
       }
     }
   } catch (upan::exception& e) {
@@ -72,13 +70,11 @@ void Console::Start() {
   }
 }
 
-void Console::ProcessInput(const uint8_t* buffer, int len) {
+void Console::OnKeyboardInput(const uint8_t* buffer, int len) {
   for (int i = 0; i < len; ++i) {
-    int ch = buffer[i];
+    const auto ch = buffer[i];
+
     switch (ch) {
-      case Keyboard_LEFT_ALT:
-      case Keyboard_LEFT_CTRL:
-        break;
       case Keyboard_F1:
       case Keyboard_F2:
       case Keyboard_F3:
@@ -89,37 +85,24 @@ void Console::ProcessInput(const uint8_t* buffer, int len) {
       case Keyboard_F8:
         SessionManager_SwitchToSession(SessionManager_KeyToSessionIDMap(ch));
         break;
-      case Keyboard_F9:
-      case Keyboard_F10:
-        break;
 
-      case Keyboard_CAPS_LOCK:
-        break;
       case Keyboard_BACKSPACE:
         if (!_commandLine.empty()) {
           int x = _commandLine.back() == '\t' ? 4 : 1;
           _commandLine.pop_back();
-          KC::MConsole().MoveCursor(-x);
-          KC::MConsole().ClearLine(upanui::ConsoleBuffer::START_CURSOR_POS);
+          for(int j = 0; j < x; ++j) {
+            putchar(Keyboard_BACKSPACE);
+          }
         }
         break;
-
-      case Keyboard_LEFT_SHIFT:
-      case Keyboard_RIGHT_SHIFT:
-        break;
-
-      case Keyboard_ESC:
-        break;
-
       case Keyboard_ENTER:
         ExecuteCommand();
         DisplayCommandLine();
         break;
-
-      default: {
-        putc(ch, stdout);
-        _commandLine += ch;
-      }
+      default:
+        if (!is_command_key(ch) || ch == Keyboard_TAB) {
+          _commandLine += ch;
+        }
     }
   }
 }
@@ -154,14 +137,57 @@ void Console::ConsoleOutHandler::run() {
       select(waitFDs, readyFDs);
 
       for (int i = 0; readyFDs[i]._fd >= 0; ++i) {
-        int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
-        if (n) {
-          KC::MConsole().nMessage((const char*) buffer, n, upanui::CharStyle::WHITE_ON_BLACK());
-        }
+        const int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
+        ProcessInput(buffer, n);
       }
     }
   } catch (upan::exception& e) {
     KernelRootProcess::Instance().controllingTerminal()->setDirectKernelConsole(true);
     e.Print();
+  }
+}
+
+void Console::ConsoleOutHandler::ProcessInput(const uint8_t* buffer, int len) {
+  for (int i = 0; i < len; ++i) {
+    const auto ch = buffer[i];
+    switch (ch) {
+      case Keyboard_LEFT_ALT:
+      case Keyboard_LEFT_CTRL:
+        break;
+      case Keyboard_F1:
+      case Keyboard_F2:
+      case Keyboard_F3:
+      case Keyboard_F4:
+      case Keyboard_F5:
+      case Keyboard_F6:
+      case Keyboard_F7:
+      case Keyboard_F8:
+      case Keyboard_F9:
+      case Keyboard_F10:
+        break;
+
+      case Keyboard_CAPS_LOCK:
+        break;
+      case Keyboard_BACKSPACE:
+        KC::MConsole().MoveCursor(-1);
+        KC::MConsole().ClearLine(upanui::ConsoleBuffer::START_CURSOR_POS);
+        break;
+
+      case Keyboard_LEFT_SHIFT:
+      case Keyboard_RIGHT_SHIFT:
+      case Keyboard_KEY_UP:
+      case Keyboard_KEY_DOWN:
+        break;
+
+      case Keyboard_ESC:
+        break;
+
+      case Keyboard_ENTER:
+        KC::MConsole().PutChar('\n', upanui::CharStyle::WHITE_ON_BLACK());
+        break;
+
+      default:
+        KC::MConsole().PutChar(ch, upanui::CharStyle::WHITE_ON_BLACK());
+    }
   }
 }

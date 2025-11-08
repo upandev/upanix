@@ -46,11 +46,12 @@ public:
     explicit ConsoleOutHandler(Console& console);
   private:
     void run() override;
+    void ProcessInput(const uint8_t* input, int len);
   private:
     Console& _console;
   };
 private:
-  void ProcessInput(const uint8_t* input, int len);
+  void OnKeyboardInput(const uint8_t* buffer, int len);
   void DisplayCommandLine();
   void ExecuteCommand();
 
