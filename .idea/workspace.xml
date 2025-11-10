@@ -33,14 +33,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="add system call constructs for TC get/set attr (implemention pending).&#10;change console command line to use upan::string">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use terminal default ECHO behavior">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootConsole.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootConsole.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootConsole.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/Console.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/Console.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/display/RootGUIConsole.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootGUIConsole.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -709,7 +705,7 @@
       <workItem from="1761431049908" duration="90207000" />
       <workItem from="1762174471968" duration="11340000" />
       <workItem from="1762524961665" duration="520000" />
-      <workItem from="1762551416602" duration="17500000" />
+      <workItem from="1762551416602" duration="38409000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1054,7 +1050,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="207" />
+    <option name="localTasksCounter" value="208" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1088,7 +1084,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="support for AF_LOCAL/AF_UNIX sockets - that inturn enables the support for syslog(). introduced interopc - to group all kernel overrides to libc that includes system calls and other overrides. Close all open files across all processes when filesystem is unmounted" />
     <MESSAGE value="refactor kernel syslog to a separate class KernelSysLog" />
     <MESSAGE value="1. cross compiler rebuilt with configuration changes to generate crtbeginS.o and crtendS.o&#10;2. Modified upanlibs build configuration to use a linker script and the necessary crt.* and crtbeginS.o and crtendS.o files for all shared libraries including libc.so&#10;3. (2) is done to ensure that the necessary C++ runtime handlers for rtti, exceptions and global object construction and destruction are compiled along with - so, that it is possible to fuse C++ code inside C shared library. This will allow us to implement several standard (posix) libc functions using C++ code behind the scenes&#10;4. process initialization code is triggered via _process_init_relocate - which relocates all dynamic symbols acros exe and loaded shared libraries and returns the list of _init and _fini function pointers for exe and all the loaded shared libraries - which will then be called inside the libc implementation of _process_init_reloacte&#10;5. Provided implementation for __cxa_atexit() and __cxa_finalize() - to ensure the destructors of globally initialized and function static objects are called upon process exit" />
     <MESSAGE value="support for lsservent command" />
@@ -1113,7 +1108,8 @@
     <MESSAGE value="kernel console IO works through terminal device" />
     <MESSAGE value="GUI process with controlling terminal receives keyboard input sent to terminal master FD" />
     <MESSAGE value="add system call constructs for TC get/set attr (implemention pending).&#10;change console command line to use upan::string" />
-    <option name="LAST_COMMIT_MESSAGE" value="add system call constructs for TC get/set attr (implemention pending).&#10;change console command line to use upan::string" />
+    <MESSAGE value="use terminal default ECHO behavior" />
+    <option name="LAST_COMMIT_MESSAGE" value="use terminal default ECHO behavior" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

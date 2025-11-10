@@ -181,6 +181,7 @@ private:
 
     bool isKeyboardFocusable() const override { return true; }
     void setKeyboardFocusable(bool) override {}
+    void setFocus() override {}
 
   private:
     RootFrame& _frame;
