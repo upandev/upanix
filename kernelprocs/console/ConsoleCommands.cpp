@@ -303,17 +303,16 @@ void ConsoleCommands_ListDirContent() {
   if(CommandLineParser::Instance().GetNoOfParameters())
     szListDirName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  FileStats fileStats;
-  FileOperations::Instance().listDir(szListDirName, fileStats);
-
+  auto dirp = opendir(szListDirName);
   int i = 0;
-	for (auto& s : fileStats) {
+  while (auto s = readdir(dirp)) {
 		if(!(i % 3) && i != 0) {
       printf("\n");
     }
-    printf("%-20s", s._name) ;
+    printf("%-20s", s->d_name) ;
     ++i;
 	}
+  closedir(dirp);
 }
 
 void ConsoleCommands_ReadFileContent()
@@ -947,15 +946,14 @@ private:
 void graphics_photos(int x, int y) {
   const upan::string listDirPath("usdb@/pictures/family/");
 
-  FileStats fileStats;
-  FileOperations::Instance().listDir(listDirPath, fileStats);
+  auto dirp = opendir(listDirPath.c_str());
   FileOperations::Instance().changeDir(listDirPath, nullptr);
 
   upan::vector<upanui::Image*> images;
-  for (const auto& s : fileStats) {
-    if (S_ISFILE(s._stat.st_mode)) {
-      const auto fileSize = s._stat.st_size;
-      auto file = FileOperations::Instance().open(s._name, O_RDONLY);
+  while (auto s = readdir(dirp)) {
+    if (S_ISFILE(s->d_stat.st_mode)) {
+      const auto fileSize = s->d_stat.st_size;
+      auto file = FileOperations::Instance().open(s->d_name, O_RDONLY);
       file->seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file->read(buffer.get(), fileSize);
@@ -965,6 +963,7 @@ void graphics_photos(int x, int y) {
       close(file->id());
     }
   }
+  closedir(dirp);
 
   if (images.empty()) {
     printf("\n No images found");

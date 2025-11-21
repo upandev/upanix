@@ -49,5 +49,3 @@ typedef enum
   USER_GROUP,
   USER_OTHERS
 } FILE_USER_TYPE;
-
-typedef upan::vector<struct stat_ex> FileStats;

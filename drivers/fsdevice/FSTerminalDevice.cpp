@@ -29,7 +29,8 @@
 FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize)
   : FSDevice(path), _owner(owner),
     _inBuffer(inBufSize, SB_IN, path), _outBuffer(outBufSize, SB_OUT, path),
-    _directKernelConsole(false), _mode(CANONICAL), _echo(true) {
+    _directKernelConsole(false) {
+  _termios.c_lflag = ICANON | ECHO |  ISIG;
 }
 
 bool FSTerminalDevice::isReady(TERMINAL_IO_TYPES ioType) const {
@@ -61,7 +62,7 @@ int FSTerminalDevice::readInStream(void* buffer, int len) {
 
 int FSTerminalDevice::writeInStream(const void* buffer, int len) {
   const int n = _inBuffer.write(buffer, len, false);
-  if (_echo && n > 0) {
+  if ((_termios.c_lflag & ECHO) && n > 0) {
     for (int i = 0; i < n; ++i) {
       auto ch = ((uint8_t*)buffer)[i];
       switch (ch) {

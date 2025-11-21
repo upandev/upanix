@@ -25,6 +25,7 @@
 # include <KernelUtil.h>
 # include <FSDeviceManager.h>
 # include <TerminalMasterDescriptor.h>
+# include <TerminalDescriptor.h>
 
 bool SysCallIO_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_IO_START && sysCallId < SYS_CALL_IO_END) ;
@@ -86,5 +87,41 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
       }
     }
     break;
-	}
+
+    case SYS_CALL_IO_TC_GET_ATTR:
+    {
+      *retVal = 0;
+      auto fd = (int)p1;
+      auto termios_p = (struct termios*)p2;
+      try {
+        if (termios_p) {
+          auto& process = ProcessManager::Instance().GetCurrentPAS();
+          auto terminalDevice = process.iodTable().getRealNonDupped(fd).cast<TerminalDescriptor>()->terminalDevice();
+          *termios_p = terminalDevice->getTermios();
+        }
+      } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_IO_TC_SET_ATTR:
+    {
+      *retVal = 0;
+      auto fd = (int)p1;
+      auto termios_p = (struct termios*)p2;
+      try {
+        if (termios_p) {
+          auto& process = ProcessManager::Instance().GetCurrentPAS();
+          auto terminalDevice = process.iodTable().getRealNonDupped(fd).cast<TerminalDescriptor>()->terminalDevice();
+          terminalDevice->setTermios(*termios_p);
+        }
+      } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+  }
 }

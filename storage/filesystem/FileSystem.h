@@ -33,6 +33,7 @@
 #include <FileNodeRef.h>
 #include <FSConstants.h>
 #include <option.h>
+#include <dirent.h>
 
 class StorageDrive;
 class Process;
@@ -77,7 +78,8 @@ public:
   struct stat stats(const FileNode& node);
   upan::string fullPath(FileNodeRef fileNodeRef);
   bool hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process);
-  void listDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, FileStats& fileStats);
+  FileNodeRef openDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, DIR& dir);
+  void readDir(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, Process& process, DIR& dir);
   int read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* dataBuffer, int size);
   int write(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, const uint8_t* dataBuffer, int size);
   void updateTime(FileNodeRef fileNodeRef, uint8_t timeType);

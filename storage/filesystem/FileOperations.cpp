@@ -136,6 +136,18 @@ upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath
   });
 }
 
+upan::shared_ptr<IODescriptor> FileOperations::openInMemoryTerminalDevice(const upan::string& filePath) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  return process.iodTable().allocate([&](int fd) -> IODescriptor* {
+    auto terminalDevice = FSDeviceManager::Instance().getTerminalDevice(filePath);
+    if (terminalDevice.isEmpty()) {
+      throw upan::exception(XLOC, "failed to open in-memory terminal device file because no terminal device found for %s", filePath.c_str());
+    }
+    return new TerminalDescriptor(process.processID(), fd, terminalDevice);
+  });
+}
+
 void FileOperations::create(const upan::string& filePath, uint16_t fileType, uint16_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
@@ -229,27 +241,39 @@ void FileOperations::changeDir(const upan::string& dirPath, char** retPwd) {
   }
 }
 
-void FileOperations::listDir(const upan::string& filePath, FileStats& fileStats) {
+DIR* FileOperations::opendir(const upan::string& dirPath) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
   FileTree::NodeTokens fileTokens;
+  auto& storageDrive = parseFilePath(dirPath, process, cwd, fileTokens);
+  upan::uniq_ptr<DIR> dirp((DIR*)process.dmm().allocate(sizeof(DIR)));
+  auto fileNodeRef = storageDrive.fileSystem().openDir(fileTokens, cwd, process, *dirp);
+  if (fileNodeRef.empty()) {
+    return nullptr;
+  }
 
-  auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
-  storageDrive.fileSystem().listDir(fileTokens, cwd, process, fileStats);
+  auto ioDescriptor = process.iodTable().allocate([&](int fd) -> IODescriptor* {
+      return new FileDescriptor(process.processID(), fd, O_RDONLY, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
+  });
+
+  dirp->fd = ioDescriptor->id();
+  return dirp.release();
 }
 
-void FileOperations::listDir(const upan::string& filePath, struct stat_ex** fileStatsArray, int* size) {
-  FileStats fileStats;
-  listDir(filePath, fileStats);
-
+void FileOperations::readdir(DIR* dirp) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
-  *fileStatsArray = (struct stat_ex*)process.dmm().allocate(fileStats.size() * sizeof(struct stat_ex));
+  auto fileDescriptor = process.iodTable().getRealNonDupped(dirp->fd).cast<FileDescriptor>();
+  fileDescriptor->diskDrive().fileSystem().readDir(fileDescriptor->fileNodeRef(), *fileDescriptor, process, *dirp);
+}
 
-  for (int i = 0; i < fileStats.size(); ++i) {
-    (*fileStatsArray)[i] = fileStats[i];
+void FileOperations::closedir(DIR* dirp) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+  if (dirp) {
+    process.iodTable().free(dirp->fd);
   }
-  *size = fileStats.size();
+  process.dmm().free((uintptr_t)dirp->data);
+  process.dmm().free((uintptr_t)dirp);
 }
 
 bool FileOperations::fileAccess(const upan::string& filePath, uint8_t mode) {

@@ -448,7 +448,7 @@ bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8
   return process.hasFilePermission(fileNode, mode);
 }
 
-void FileSystem::listDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, FileStats& fileStats) {
+FileNodeRef FileSystem::openDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, DIR& dir) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   if (fileNodeRef.empty()) {
     throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
@@ -460,39 +460,65 @@ void FileSystem::listDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd
 
   _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
   auto& mainFileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+  if (mainFileNode.IsFile()) {
+    throw upan::exception(XLOC, "%s is not a directory", node.name().c_str());
+  }
 
   if (!process.hasFilePermission(mainFileNode, O_RDONLY)) {
     throw upan::exception(XLOC, "insufficient permission to read %s", node.name().c_str());
   }
 
-  struct stat_ex var_stat;
-  if (mainFileNode.IsFile()) {
-    strcpy(var_stat._name, mainFileNode.Name());
-    var_stat._stat = stats(mainFileNode);
-    fileStats.push_back(var_stat);
+  dir.d_stat = stats(mainFileNode);
+  dir.size = 0;
+  dir.index = 0;
+  dir.data = nullptr;
+
+  return fileNodeRef;
+}
+
+void FileSystem::readDir(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, Process& process, DIR& dir) {
+  FileNodeRef::ReadGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  uint32_t currentSectorId = fdEntry.getLastReadSectorNo();
+  const int dirSize = node.size();
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+
+  const int offset = fdEntry.getOffset();
+  const int remaining = dirSize - offset;
+  const int allocCount = upan::min(remaining, (int)FileSystem::DIR_ENTRIES_PER_SECTOR);
+  fdEntry.setOffset(offset + allocCount);
+
+  if (allocCount == 0 || currentSectorId == EOC) {
+    dir.index = 0;
+    dir.size = 0;
+    process.dmm().free((uintptr_t) dir.data);
+    dir.data = nullptr;
+    return;
   } else {
-    const auto dirSize = node.size();
-    uint32_t dirCount = 0;
-    uint32_t currentSectorId = node.startSectorId();
+    dir.index = 0;
+    dir.size = allocCount;
+    process.dmm().free((uintptr_t) dir.data);
+    dir.data = (struct dirent*) process.dmm().allocate(sizeof(struct dirent) * allocCount);
+  }
 
-    while (currentSectorId != EOC) {
-      _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
+  int dirCount = 0;
+  while (currentSectorId != EOC && dirCount < allocCount) {
+    _diskDrive.xRead(sectorBuffer, currentSectorId, 1);
 
-      for (uint8_t sectorOffset = 0; sectorOffset < FileSystem::DIR_ENTRIES_PER_SECTOR; ++sectorOffset) {
-        auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[sectorOffset];
-        if (!fileNode.IsDeleted()) {
-          ++dirCount;
-          if (dirCount > dirSize) {
-            break;
-          }
+    for (int sectorOffset = 0; sectorOffset < FileSystem::DIR_ENTRIES_PER_SECTOR; ++sectorOffset) {
+      auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[sectorOffset];
 
-          strcpy(var_stat._name, fileNode.Name());
-          var_stat._stat = stats(fileNode);
-          fileStats.push_back(var_stat);
-        }
+      if (!fileNode.IsDeleted() && dirCount < allocCount) {
+        dir.data[dirCount].d_stat = stats(fileNode);
+        strcpy(dir.data[dirCount].d_name, fileNode.Name());
+        dir.data[dirCount].d_ino = 0;
+        ++dirCount;
       }
-      currentSectorId = _diskDrive.fileSystem().getSectorEntryValue(currentSectorId);
     }
+
+    currentSectorId = getSectorEntryValue(currentSectorId);
+    fdEntry.setLastReadSectorNo(currentSectorId);
   }
 }
 

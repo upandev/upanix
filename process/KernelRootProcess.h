@@ -41,6 +41,7 @@ public:
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void initTLS();
   void initTerminalDevice();
+  void initInMemoryTerminalDevice();
   void initFSDevices();
 
   bool isKernelProcess() const override {
@@ -170,6 +171,12 @@ public:
 
   void setControllingTerminal(upan::shared_ptr<FSTerminalDevice> terminalDevice) override {
     _controllingTerminal = terminalDevice;
+  }
+
+  void setDirectKernelConsole(bool val) {
+    if (!_controllingTerminal.isEmpty()) {
+      _controllingTerminal->setDirectKernelConsole(val);
+    }
   }
 
 private:

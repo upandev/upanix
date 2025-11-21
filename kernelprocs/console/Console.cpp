@@ -132,7 +132,7 @@ void Console::ConsoleOutHandler::run() {
   const int MAX_BUFFER_SIZE = 1024;
   auto buffer = (uint8_t*) malloc(MAX_BUFFER_SIZE);
   try {
-    KernelRootProcess::Instance().controllingTerminal()->setDirectKernelConsole(false);
+    KernelRootProcess::Instance().setDirectKernelConsole(false);
     while (true) {
       select(waitFDs, readyFDs);
 
@@ -142,7 +142,7 @@ void Console::ConsoleOutHandler::run() {
       }
     }
   } catch (upan::exception& e) {
-    KernelRootProcess::Instance().controllingTerminal()->setDirectKernelConsole(true);
+    KernelRootProcess::Instance().setDirectKernelConsole(true);
     e.Print();
   }
 }

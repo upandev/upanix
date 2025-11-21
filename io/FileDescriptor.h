@@ -45,6 +45,7 @@ public:
 
   void setOffset(uint32_t offset) { _offset = offset; }
   StorageDrive& diskDrive() { return _diskDrive; }
+  FileNodeRef fileNodeRef() const { return _fileNodeRef; }
 
 private:
   int _read(void* buffer, int len) override;

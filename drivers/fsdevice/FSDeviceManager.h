@@ -42,7 +42,11 @@ public:
   upan::shared_ptr<FSTerminalDevice> getTerminalDevice(const upan::string& path);
   void createSocketDevice(const upan::string& path);
   int createTerminalDevice(int flags);
+  int createKernelRootInMemoryTerminalDevice(const upan::string& path);
   void removeDevice(const upan::string& path);
+
+private:
+  int createTerminalDevice(int flags, const upan::string& path);
 
 private:
   const upan::string _rootPrefix;

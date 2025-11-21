@@ -26,6 +26,7 @@
 #include <FileDescriptor.h>
 #include <mutex.h>
 #include <FileNodeRef.h>
+#include <dirent.h>
 
 class IODescriptor;
 class Process;
@@ -39,6 +40,7 @@ public:
 
   void create(const upan::string& filePath, uint16_t fileType, uint16_t mode);
   upan::shared_ptr<IODescriptor> open(const upan::string& filePath, const uint8_t mode);
+  upan::shared_ptr<IODescriptor> openInMemoryTerminalDevice(const upan::string& filePath);
   void remove(const upan::string& filePath) ;
   bool fileExists(const upan::string& filePath);
   bool directoryExists(const upan::string& filePath);
@@ -46,8 +48,9 @@ public:
   void getpwd(char** pwd);
   upan::string getcwd();
   void changeDir(const upan::string& dirPath, char** retPwd);
-  void listDir(const upan::string& filePath, FileStats& fileStats);
-  void listDir(const upan::string& filePath, struct stat_ex** fileStatsArray, int* size);
+  DIR* opendir(const upan::string& dirPath);
+  void readdir(DIR* dirp);
+  void closedir(DIR* dirp);
   bool fileAccess(const upan::string& filePath, uint8_t mode);
   void dup2(int oldFD, int newFD);
 

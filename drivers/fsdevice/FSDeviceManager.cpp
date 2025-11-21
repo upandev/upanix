@@ -91,6 +91,17 @@ int FSDeviceManager::createTerminalDevice(int flags) {
     }
   }
 
+  return createTerminalDevice(flags, path);
+}
+
+int FSDeviceManager::createKernelRootInMemoryTerminalDevice(const upan::string& path) {
+  if (_devices.exists(path)) {
+    throw upan::exception(XLOC, "tty device already exists for path: %s", path.c_str());
+  }
+  return createTerminalDevice(O_RDWR, path);
+}
+
+int FSDeviceManager::createTerminalDevice(int flags, const upan::string& path) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   _devices[path].reset(new FSTerminalDevice(process, path, 4096, 4096));

@@ -23,6 +23,7 @@
 
 #include <FSDevice.h>
 #include <queue.h>
+#include <termios.h>
 
 class Process;
 class FSTerminalDevice : public FSDevice {
@@ -58,6 +59,8 @@ public:
   int writeOutStream(const void* buffer, int len);
 
   void setDirectKernelConsole(bool directKernelConsole) { _directKernelConsole = directKernelConsole; }
+  const struct termios& getTermios() const { return _termios; }
+  void setTermios(const struct termios& termios) { _termios = termios; }
 
 private:
   typedef enum {
@@ -85,6 +88,5 @@ private:
   StreamBuffer _inBuffer;
   StreamBuffer _outBuffer;
   bool _directKernelConsole;
-  Mode _mode;
-  bool _echo;
+  struct termios _termios;
 };

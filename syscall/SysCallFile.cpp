@@ -113,25 +113,44 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			}
 			break ;
 
-		case SYS_CALL_GET_DIR_LIST :
-			// P1 => Dir Path
-			// P2 => Ret Dir Content List Address
-			// P3 => Ret Dir Content List Size Address
-			{
-				const char* dirPath = (char*) p1;
-				auto** retStats = (struct stat_ex**) p2;
-				int* retSize = ( int*) p3;
-				*retVal = 0 ;
-
+    case SYS_CALL_FILE_OPEN_DIR:
+      {
+        auto dirPath = (const char*)p1;
         try {
-          FileOperations::Instance().listDir(dirPath, retStats, retSize);
+          *retVal = (uintptr_t)FileOperations::Instance().opendir(dirPath);
         } catch(const upan::exception& ex) {
           ex.Print();
-          *retVal = -1 ;
+          *retVal = NULL;
         }
-			}
-			break ;
-		
+      }
+      break;
+
+    case SYS_CALL_FILE_READ_DIR:
+      {
+        *retVal = 0;
+        auto dirp = (DIR*)p1;
+        try {
+          FileOperations::Instance().readdir(dirp);
+        } catch(const upan::exception& ex) {
+          ex.Print();
+          *retVal = -1;
+        }
+      }
+      break;
+
+    case SYS_CALL_FILE_CLOSE_DIR:
+      {
+        *retVal = 0;
+        auto dirp = (DIR*)p1;
+        try {
+          FileOperations::Instance().closedir(dirp);
+        } catch(const upan::exception& ex) {
+          ex.Print();
+          *retVal = -1;
+        }
+      }
+      break;
+
 		case SYS_CALL_FILE_OPEN:
 			// P1 => File Name / Path
 			// P2 => Mode

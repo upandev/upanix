@@ -32,6 +32,7 @@
 #include <RedirectDescriptor.h>
 #include <SocketDescriptorLocalDataGram.h>
 #include <StreamBufferDescriptor.h>
+#include <FSDeviceManager.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -111,7 +112,28 @@ void KernelRootProcess::initTerminalDevice() {
       throw upan::exception(XLOC, "open failed");
     }
 
-    _controllingTerminal->setDirectKernelConsole(true);
+    setDirectKernelConsole(true);
+    dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
+    dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
+  } catch(...) {
+    SetKernelRootMode(false);
+    throw;
+  }
+  SetKernelRootMode(false);
+}
+
+void KernelRootProcess::initInMemoryTerminalDevice() {
+  SetKernelRootMode(true);
+  try {
+    const upan::string path = "/dev/root_ptsm";
+    _terminalMasterFD = FSDeviceManager::Instance().createKernelRootInMemoryTerminalDevice(path);
+
+    _terminalSlaveFD = FileOperations::Instance().openInMemoryTerminalDevice(path)->id();
+    if (_terminalSlaveFD < 0) {
+      throw upan::exception(XLOC, "open failed");
+    }
+
+    setDirectKernelConsole(true);
     dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
     dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
   } catch(...) {
@@ -125,10 +147,11 @@ void KernelRootProcess::initFSDevices() {
   try {
     XHCIManager::Instance().ProbeDevice();
     StorageDriveManager::Instance().MountDrive("usdb");
-    initTerminalDevice();
     KernelSysLog::Instance().start();
+    initTerminalDevice();
   } catch(upan::exception& ex) {
     ex.Print();
+    initInMemoryTerminalDevice();
   }
 }
 

@@ -49,15 +49,6 @@ int SysFS_DeleteDirectory(const char* szDirPath)
 	return retStatus ;
 }
 
-int SysFS_GetDirContent(const char* szDirPath, FileNode** pDirList, int* iListSize)
-{
-  uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_GET_DIR_LIST, false, (uint64_t) szDirPath, (uint64_t) pDirList,
-                     (uint64_t) iListSize,
-                     4, 5);
-	return retStatus ;
-}
-
 int SysFS_CreateFile(const char* szDirPath, unsigned short usAttribute)
 {
   uint64_t retStatus ;
@@ -134,12 +125,6 @@ int SysFS_FileStatFD(int iFD, struct stat* pFileStat)
 	return retStatus ;
 }
 
-int SysFS_GetDirContent(const char* szDirPath, struct stat_ex** dirList, int* size) {
-  uint64_t retStatus;
-  SysCallFile_Handle(&retStatus, SYS_CALL_GET_DIR_LIST, false, (uint64_t)szDirPath, (uint64_t)dirList, (uint64_t)size, 4, 5);
-  return retStatus;
-}
-
 int SysFS_FileAccess(const char* szFileName, int mode) {
   uint64_t retStatus;
   SysCallFile_Handle(&retStatus, SYS_CALL_FILE_ACCESS, false, (uint64_t)szFileName, (uint64_t)mode, 3, 4, 5);
@@ -150,4 +135,22 @@ int SysFS_Dup2(int oldFD, int newFD) {
   uint64_t retStatus;
   SysCallFile_Handle(&retStatus, SYS_CALL_FILE_DUP2, false, (uint64_t)oldFD, (uint64_t)newFD, 3, 4, 5);
   return retStatus;
+}
+
+DIR* SysFS_OpenDir(const char* szDirPath) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN_DIR, false, (uint64_t)szDirPath, 2, 3, 4, 5);
+  return reinterpret_cast<DIR*>(retStatus);
+}
+
+struct dirent* SysFS_ReadDir(DIR* dirp) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_READ_DIR, false, (uint64_t)dirp, 2, 3, 4, 5);
+  return reinterpret_cast<struct dirent*>(retStatus);
+}
+
+int SysFS_CloseDir(DIR* dirp) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_CLOSE_DIR, false, (uint64_t)dirp, 2, 3, 4, 5);
+  return (int)retStatus;
 }
