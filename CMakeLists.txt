@@ -192,6 +192,7 @@ add_dependencies(${TARGET_BIN} interrupt_handlers)
 add_dependencies(${TARGET_BIN} syscall_handler)
 
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libcxxrt.a)
+target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libupthread.a)
 target_link_libraries(${TARGET_BIN} mcpp)
 target_link_libraries(${TARGET_BIN} ints)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libgcceh.a)
