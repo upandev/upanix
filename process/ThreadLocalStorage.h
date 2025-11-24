@@ -27,7 +27,7 @@
 
 class ThreadLocalStorage {
 public:
-  ThreadLocalStorage(int pid, uint64_t* pml4Table, ThreadLocalSpace& tlsp, uint8_t pageFlag);
+  ThreadLocalStorage(int pid, bool isThread, uint64_t* pml4Table, ThreadLocalSpace& tlsp, uint8_t pageFlag);
   ~ThreadLocalStorage();
 
   void update();

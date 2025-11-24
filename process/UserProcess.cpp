@@ -118,7 +118,7 @@ void UserProcess::Load(const upan::vector<upan::string>& argv, const upan::vecto
 
   LoadDLLs();
 
-  _tls.reset(new ThreadLocalStorage(_processID, _pml4Table, tlsp(), 0x7));
+  _tls.reset(new ThreadLocalStorage(_processID, false, _pml4Table, tlsp(), 0x7));
 
   CopyElfImage(bProcessImage.get(), _processSpaceSize, _processBase);
 

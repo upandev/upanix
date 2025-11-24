@@ -34,7 +34,7 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   _processBase = 0;
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
-  _tls.reset(new ThreadLocalStorage(_processID, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
+  _tls.reset(new ThreadLocalStorage(_processID, false, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
 
   const auto noOfStackParams = params.size() > PROCESS_ARGUMENTS_ON_REGS_X86_64 ? params.size() - PROCESS_ARGUMENTS_ON_REGS_X86_64 : 0;
 

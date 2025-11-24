@@ -29,7 +29,7 @@ KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintpt
   : Thread(parent) {
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
-  _tls.reset(new ThreadLocalStorage(_processID, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
+  _tls.reset(new ThreadLocalStorage(_processID, true, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));
 
   //we know number of params to thread function is only 3 which is less than PROCESS_ARGUMENTS_ON_REGS_X86_64 (6)
   //so, there is no need to use stack for passing any arguments

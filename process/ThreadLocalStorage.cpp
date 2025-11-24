@@ -23,7 +23,7 @@
 #include <ThreadLocalStorage.h>
 #include <MemManager.h>
 
-ThreadLocalStorage::ThreadLocalStorage(int pid, uint64_t* pml4Table,
+ThreadLocalStorage::ThreadLocalStorage(int pid, bool isThread, uint64_t* pml4Table,
                                        ThreadLocalSpace& tlsp, uint8_t pageFlag)
                                        : _pml4Table(pml4Table), _tlsp(tlsp), _pageFlag(pageFlag) {
   auto pml4Index = PML4_INDEX(THREAD_LOCAL_META_SPACE_ADDRESS);
@@ -45,6 +45,7 @@ ThreadLocalStorage::ThreadLocalStorage(int pid, uint64_t* pml4Table,
   //base address (self) relative to which the thread local variable offsets are calculated by the linker
   _tcb->_self = THREAD_LOCAL_META_SPACE_ADDRESS;
   _tcb->_tlms._pid = pid;
+  _tcb->_tlms._is_thread = isThread;
   //the size of dtv itself is used as the generation-id
   _tcb->_dtv[0] = 0;
 
