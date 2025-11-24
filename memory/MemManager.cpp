@@ -43,13 +43,13 @@ void MemManager::PageFaultHandler(TaskContext& taskContext) {
     const auto& process = ProcessManager::Instance().GetSchedulableProcess(pid);
     if (process.isEmpty()) {
       printf("\n No active process found for pid: %d", pid);
-      ProcessManager_Exit();
+      ProcessManager_Exit(0);
     } else if (!process.value().handlePageFault(taskContext, faultyAddress)) {
-      ProcessManager_Exit();
+      ProcessManager_Exit(0);
     }
   } catch(const upan::exception& e) {
     KLog::exception(e);
-    ProcessManager_Exit();
+    ProcessManager_Exit(0);
   }
 }
 

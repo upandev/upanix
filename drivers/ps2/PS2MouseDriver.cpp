@@ -189,7 +189,7 @@ static void Mouse_Event_Dispatcher() {
   } catch(upan::exception& e) {
     printf("\n Error in Mouse event dispatcher: %s", e.Error().Msg().c_str());
   }
-  ProcessManager_Exit();
+  ProcessManager_Exit(0);
 }
 
 void PS2MouseDriver::StartDispatcher() {

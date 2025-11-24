@@ -93,7 +93,7 @@ bool SPECIAL_TASK;
     ex.Print();
   }
 
-	ProcessManager_Exit() ;
+  ProcessManager_Exit(0);
 }
 
 extern "C" void _cxx_global_init();

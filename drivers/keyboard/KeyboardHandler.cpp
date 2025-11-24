@@ -119,7 +119,7 @@ static void Keyboard_Event_Dispatcher() {
   } catch(upan::exception& e) {
     printf("\n Error in KB event dispatcher: %s", e.Error().Msg().c_str());
   }
-  ProcessManager_Exit();
+  ProcessManager_Exit(0);
 }
 
 void KeyboardHandler::StartDispatcher() {

@@ -110,7 +110,7 @@ static void KernelSysLogProcess(KernelSysLog* kernelSysLog) {
     KLog::critical("unknown error in ksyslogd");
   }
   printf("\n ksyslogd: aborting!!\n");
-  ProcessManager_Exit();
+  ProcessManager_Exit(0);
 }
 
 void KernelSysLog::start() {

@@ -128,7 +128,8 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
     case SYS_CALL_PROCESS_EXIT :
 			// P1 => Exit Status
 			{
-				ProcessManager_Exit() ;
+        auto status = (int) p1;
+        ProcessManager_Exit(status);
 			}
 			break ;
 

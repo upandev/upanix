@@ -87,7 +87,7 @@ void KernelUtil::SystemTimer(unsigned timeInMilliSec, TimerTask* task)
 	{
 		ProcessManager::Instance().Sleep(timeInMilliSec) ;
   } while(task->TimerTrigger()) ;
-	ProcessManager_Exit();
+  ProcessManager_Exit(0);
 }
 
 void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {

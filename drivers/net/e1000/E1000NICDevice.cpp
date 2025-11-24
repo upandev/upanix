@@ -364,7 +364,7 @@ void E1000NICDevice::EventHandler() {
       KLog::exception(e);
     }
   }
-  ProcessManager_Exit();
+  ProcessManager_Exit(0);
 }
 
 void E1000NICDevice::StartEventHandler() {

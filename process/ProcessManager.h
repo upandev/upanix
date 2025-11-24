@@ -36,7 +36,7 @@
 #include <PIT.h>
 #include <FSTerminalDevice.h>
 
-void ProcessManager_Exit();
+void ProcessManager_Exit(int exitStatus);
 
 class AutonomousProcess;
 

@@ -653,7 +653,7 @@ void ConsoleCommands_WaitPID()
 
 void ConsoleCommands_Exit()
 {
-	ProcessManager_Exit() ;
+  ProcessManager_Exit(0);
 }
 
 void ConsoleCommands_Clone()
@@ -2394,7 +2394,7 @@ void ConsoleCommands_Ping() {
   icmp_hdr->icmp_seq = htons(_icmp_seq++);
 
   struct timeval start, end;
-  gettimeofday(&start);
+  gettimeofday(&start, NULL);
   memcpy(icmp_hdr->icmp_data, &start, sizeof(start));
   memset(icmp_hdr->icmp_data + sizeof(start), 0xA5, PACKET_SIZE - sizeof(struct icmp) - sizeof(start));
 
@@ -2412,7 +2412,7 @@ void ConsoleCommands_Ping() {
     throw upan::exception(XLOC, "failed to receive packet");
   }
 
-  gettimeofday(&end);
+  gettimeofday(&end, NULL);
 
   auto ip_hdr = (struct ip*) packet;
   int ip_hdr_len = ip_hdr->ip_hl << 2;

@@ -153,7 +153,7 @@ public:
     throw upan::exception(XLOC, "KernelRootProcess is always GuiBase process - can't modify this flag");
   }
 
-  MouseCursorType mouseCursorType() const override { return MouseCursorType::NORMAL; }
+  MouseCursorType mouseCursorType() const override { return MouseCursorType::MOUSECURSOR_NORMAL; }
   void setMouseCursorType(MouseCursorType type) override {
     throw upan::exception(XLOC, "setMouseCursorType() unsupported");
   }

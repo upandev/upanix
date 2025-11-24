@@ -462,12 +462,13 @@ bool ProcessManager::IsKernelProcess(int iProcessID) {
 	return GetSchedulableProcess(iProcessID).value().isKernelProcess();
 }
 
-void ProcessManager_Exit() {
+void ProcessManager_Exit(int exitStatus) {
   if (IsKernel()) {
     __asm__ __volatile__("HLT");
   }
   auto& p = ProcessManager::Instance().GetCurrentPAS();
   p.setStatus(TERMINATED);
+  p.stateInfo().setExitStatus(exitStatus);
   p.yield();
 }
 

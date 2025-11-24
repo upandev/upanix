@@ -79,6 +79,9 @@ public:
   Error getError() const { return _error; }
   void setError(Error error) { _error = error; }
 
+  int getExitStatus() const { return _exitStatus; }
+  void setExitStatus(int existStatus) { _exitStatus = existStatus; }
+
 private:
   time_t         _sleepTime;
   const IRQ*     _irq;
@@ -90,6 +93,7 @@ private:
   upan::vector<io_descriptor> _ioDescriptors;
   FSTerminalDevice::WaitInfo _terminalIOWaitInfo;
   Error          _error;
+  int            _exitStatus;
 
   upan::atomic::integral<int>* _waitLock;
   int _newVal;

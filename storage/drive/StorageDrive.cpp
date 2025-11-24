@@ -49,7 +49,7 @@ static void DiskCache_TaskFlushCache(StorageDrive* pDiskDrive, unsigned uiParam2
 		ProcessManager::Instance().Sleep(200) ;
 	} while(!pDiskDrive->StopReleaseCacheTask());
 
-	ProcessManager_Exit() ;
+  ProcessManager_Exit(0);
 }
 
 static void DiskCache_TaskReleaseCache(StorageDrive* pDiskDrive, unsigned uiParam2)
@@ -60,7 +60,7 @@ static void DiskCache_TaskReleaseCache(StorageDrive* pDiskDrive, unsigned uiPara
 		ProcessManager::Instance().Sleep(50) ;
 	} while(!pDiskDrive->StopReleaseCacheTask());
 
-	ProcessManager_Exit() ;
+  ProcessManager_Exit(0);
 }
 
 StorageDrive::StorageDrive(int id,
