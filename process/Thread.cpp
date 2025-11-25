@@ -25,7 +25,6 @@
 
 Thread::Thread(AutonomousProcess& parent) : SchedulableProcess("", parent.processID(), false), _parent(parent) {
   _name = _parent.name() + "_T" + upan::string::to_string(_processID);
-  _mainThreadID = _parent.processID();
   _processBase = _parent.getProcessBase();
   _userID = _parent.userID();
 }

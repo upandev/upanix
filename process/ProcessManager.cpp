@@ -144,7 +144,7 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
         process.switchPageTable();
         ++_processSchedulerIt;
         break;
-      } else if (!process.isChildThread() && process.status() == RELEASED) {
+      } else if (!process.isThread() && process.status() == RELEASED) {
         _processSchedulerList.erase(_processSchedulerIt++);
         RemoveFromProcessMap(process);
         delete &process;
@@ -267,10 +267,6 @@ void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVa
   p.yield();
 }
 
-int ProcessManager::GetWaitQueueSpaceId(Process& process, bool isKernelSpace) {
-  return isKernelSpace ? NO_PROCESS_ID : dynamic_cast<SchedulableProcess&>(process).mainThreadID();
-}
-
 void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace) {
   if(GetCurProcId() < 0)
     return ;
@@ -283,7 +279,7 @@ void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutI
   auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    const int spaceId = GetWaitQueueSpaceId(p, isKernelSpace);
+    const int spaceId = isKernelSpace ? NO_PROCESS_ID : p.processSpaceID();
     _processWaitQueueMap[spaceId][id].push_back(p.processID());
     p.stateInfo().WaitQueueId(id);
     p.stateInfo().WaitQueueSpaceId(spaceId);
@@ -305,7 +301,7 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
   auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    const int spaceId = GetWaitQueueSpaceId(p, isKernelSpace);
+    const int spaceId = isKernelSpace ? NO_PROCESS_ID : p.processSpaceID();
     auto& wq = _processWaitQueueMap[spaceId][id];
     if (all) { wq.clear(); }
     else { wq.pop_front(); }
@@ -550,7 +546,7 @@ void ProcessManager::updateAllIODescriptorRedirections(pid_t pid, int srcFD, IOD
   process.iodTable().updateRedirections(srcFD, targetDesc);
   if (pid == NO_PROCESS_ID) {
     for (auto& p : _processMap) {
-      if (!p.second->isChildThread()) {
+      if (!p.second->isThread()) {
         p.second->iodTable().updateRedirections(srcFD, targetDesc);
       }
     }
@@ -624,10 +620,10 @@ void ProcessManager::stopProcesses(upan::function<bool, SchedulableProcess&> sto
 }
 
 void ProcessManager::stopUserProcesses() {
-  stopProcesses([](SchedulableProcess& process) { return !process.isKernelProcess() && !process.isChildThread(); });
+  stopProcesses([](SchedulableProcess& process) { return !process.isKernelProcess() && !process.isThread(); });
 }
 
 void ProcessManager::stopKernelProcesses() {
-  stopProcesses([](SchedulableProcess& process) { return process.isKernelProcess() && !process.isCoreProcess() && !process.isChildThread(); });
+  stopProcesses([](SchedulableProcess& process) { return process.isKernelProcess() && !process.isCoreProcess() && !process.isThread(); });
 }
 

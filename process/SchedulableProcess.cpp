@@ -119,7 +119,7 @@ void SchedulableProcess::Destroy() {
   if(_parentProcessID == NO_PROCESS_ID) {
     Release();
   } else {
-    if (!isChildThread() && !parentProcess.isEmpty()) {
+    if (!isThread() && !parentProcess.isEmpty()) {
       auto signalHandler = parentProcess.value().getSignalAction(SIGCHLD);
       if (signalHandler.isEmpty() || isignoreaction(&signalHandler.value()) || isdefaultaction(&signalHandler.value())) {
         Release();

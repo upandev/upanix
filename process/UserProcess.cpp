@@ -47,7 +47,6 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID, boo
                          const upan::vector<upan::string>& argv,
                          const upan::vector<upan::string>& envp)
                          : AutonomousProcess(name, parentID, isFGProcess) {
-  _mainThreadID = _processID;
   _pml4Table = nullptr;
   _totalNoOfPagesForDLL = 0;
   Load(argv, envp);

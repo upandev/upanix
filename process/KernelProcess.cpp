@@ -30,7 +30,6 @@
 
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params)
   : AutonomousProcess(name, parentID, isFGProcess), _graphicsContext(nullptr), _isCoreProcess(isCoreProcess) {
-  _mainThreadID = _processID;
   _processBase = 0;
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();

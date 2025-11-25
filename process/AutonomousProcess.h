@@ -32,6 +32,8 @@ public:
   virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) = 0;
 
   SchedulableProcess& forSchedule() override;
+  bool isThread() const override { return false; }
+
   void DestroyThreads() override;
   void addToThreadScheduler(Thread& thread);
   void dispatchKeyboardData(const upanui::KeyboardData& data) override;

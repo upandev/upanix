@@ -46,10 +46,6 @@ public:
   SchedulableProcess(const upan::string& name, int parentID, bool isFGProcess);
   virtual ~SchedulableProcess() = 0;
 
-  bool isChildThread() const override {
-    return _processID != _mainThreadID;
-  }
-
   bool isCoreProcess() const override {
     return false;
   }
@@ -82,7 +78,7 @@ public:
 
   int processID() const override { return _processID; }
   int parentProcessID() const override { return _parentProcessID; }
-  int mainThreadID() const { return _mainThreadID; }
+  int processSpaceID() const override { return isThread() ? _parentProcessID : _processID; }
 
   void setParentProcessID(int parentProcessID) { _parentProcessID = parentProcessID; }
 
@@ -162,7 +158,6 @@ protected:
 protected:
   upan::string _name;
   int _processID;
-  int _mainThreadID;
   int _parentProcessID;
   uint64_t _processBase;
   PROCESS_STATUS _status;

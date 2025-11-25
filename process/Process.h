@@ -47,12 +47,13 @@ public:
   virtual int driveID() const = 0;
   virtual uint64_t getProcessBase() const = 0;
   virtual int userID() const = 0;
-  virtual bool isChildThread() const = 0;
+  virtual bool isThread() const = 0;
 
   virtual DMM& dmm() = 0;
 
   virtual int processID() const = 0;
   virtual int parentProcessID() const = 0;
+  virtual int processSpaceID() const = 0;
 
   virtual FILE_USER_TYPE fileUserType(const FileNode&) const = 0;
   virtual bool hasFilePermission(const FileNode&, byte mode) const = 0;

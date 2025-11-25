@@ -44,41 +44,16 @@ public:
   void initInMemoryTerminalDevice();
   void initFSDevices();
 
-  bool isKernelProcess() const override {
-    return true;
-  }
-
-  bool isCoreProcess() const override {
-    return true;
-  }
-
-  bool isFGProcessGroup() const override {
-    return true;
-  }
-
-  int processID() const override {
-    return NO_PROCESS_ID;
-  }
-
-  int parentProcessID() const override {
-    return NO_PROCESS_ID;
-  }
-
-  int driveID() const override {
-    return ROOT_DRIVE;
-  }
-
-  uint64_t getProcessBase() const override {
-    return 0;
-  }
-
-  int userID() const override {
-    return ROOT_USER_ID;
-  }
-
-  bool isChildThread() const override {
-    return false;
-  }
+  bool isKernelProcess() const override { return true; }
+  bool isCoreProcess() const override { return true; }
+  bool isFGProcessGroup() const override { return true; }
+  int processID() const override { return NO_PROCESS_ID; }
+  int parentProcessID() const override { return NO_PROCESS_ID; }
+  int processSpaceID() const override { return NO_PROCESS_ID; }
+  int driveID() const override { return ROOT_DRIVE; }
+  uint64_t getProcessBase() const override { return 0; }
+  int userID() const override { return ROOT_USER_ID; }
+  bool isThread() const override { return false; }
 
   IODescriptorTable& iodTable() override {
     return _iodTable;

@@ -28,6 +28,8 @@ class Thread : public SchedulableProcess {
 public:
   Thread(AutonomousProcess& parent);
 
+  bool isThread() const override { return true; }
+
   IODescriptorTable& iodTable() override {
     return _parent.iodTable();
   }

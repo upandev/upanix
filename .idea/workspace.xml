@@ -33,31 +33,19 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="link to upan pthread library">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="set a flag in thread local storage block to indicate if the process is a regular process or a thread">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/keyboard/KeyboardHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/net/e1000/E1000NICDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/ps2/PS2MouseDriver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/KernelSysLog.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Thread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -789,7 +777,8 @@
       <workItem from="1763823618468" duration="169000" />
       <workItem from="1763865630318" duration="3123000" />
       <workItem from="1763903618782" duration="1930000" />
-      <workItem from="1763939329228" duration="3086000" />
+      <workItem from="1763939329228" duration="4736000" />
+      <workItem from="1763980815215" duration="2783000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1134,7 +1123,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="211" />
+    <option name="localTasksCounter" value="214" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1168,10 +1157,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="pass envp on stack - and the envp is now managed within user process space. libc() process init code will take care of initializing envp. all kernel processes share common envp" />
-    <MESSAGE value="support for shutdown() socket function" />
-    <MESSAGE value="Bug fix: if connect() fails, the TCP connection state should be set to CLOSED" />
-    <MESSAGE value="major change to use the user-process stack for system calls without having to reserve a dedicated stack space for system calls. This is necessary because when we deliver signals, the signal handler may invoke a system call like dll symbol resolution, which will end up clobbering the system call stack that was possibly in active use by another system call like IO wait - which was interrupted by a signal delivery. So," />
     <MESSAGE value="Implemented Signal support&#10;1. The signal action/handler is common for a process and its threads&#10;2. select/IO wait will return empty modified descriptor list when interrupted by a signal&#10;3. Kernel process/thread stack has been refactored to make the kernel-stack-base the starting point of the kernel stack top&#10;4. Removed dedicated stack space for system calls. Instead, keep one reserved page for system calls - per thread - that is currently used for storing the system call return value - to be copied from C/C++ code over to the rax register in the SysCallHandler.s assembly code&#10;5. Refactored to remove RESOURCE based wait/event&#10;6. Refactored to move prepareToRun() from ProcessManager to SchedulableProcess&#10;7. Each thread will have its own signal queue&#10;8. signals are delivered to a specific PID/TID&#10;9. signal frame is built on top of existing process stack&#10;10. wait-queue, wait-io, sleep are interrupted upon receiving a handled signal&#10;11. Signal stack frame has to be carefully setup on the specific thread's/process's stack frame - this is particularly important for user processes because each user process/thread have their own stack PD table&#10;12." />
     <MESSAGE value="destroy process upon receiving signal with terminate action" />
     <MESSAGE value="1. implemented sigprocmask system call&#10;2. child process to send SIGCHLD to parent upon exit&#10;3. test cases for SIGCHLD scenarios" />
@@ -1193,14 +1178,18 @@
     <MESSAGE value="send keyboard input to a GUI process only if it is the owner of a controlling terminal" />
     <MESSAGE value="support for dirent system call.&#10;support for in-memory terminal device - to be used only by kernel if storage initialization or filesystem mount fails at start-up for some reason" />
     <MESSAGE value="link to upan pthread library" />
-    <option name="LAST_COMMIT_MESSAGE" value="link to upan pthread library" />
+    <MESSAGE value="capture process exit status" />
+    <MESSAGE value="add a test tcp client and server on the host" />
+    <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
+    <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
+    <option name="LAST_COMMIT_MESSAGE" value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/process/KernelProcess.cpp</url>
-          <line>61</line>
+          <line>60</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
