@@ -69,75 +69,6 @@ SchedulableProcess::~SchedulableProcess() {
   delete &_stateInfo;
 }
 
-// 1. KernelProcess can have child processes of type either KernelProcess or KernelThread or UserProcess
-// 2. KernelThread can have a child KernelProcess or KernelThread or UserProcess
-// 3. UserProcess can have a child UserProcess or UserThread
-// 4. UserThread can have a child UserProcess or UserThread
-// 5. Thread created by another Thread will have its parent set to the parent of the creator Thread (which will be an AutonomousProcess - main thread)
-// 6. If a parent process (Kernel or User) is terminated then
-//   a. all terminated child processes are released and all non-terminated child processes are redirected to the parent of the current process
-//   b. all child threads are destroyed and released
-// 7. If a child thread terminates then
-//   a. all terminated child processes are released and all non-terminated child processes are redirected to main thread process
-//   b. as per (5), there can't be any child threads under another child thread
-void SchedulableProcess::Destroy() {
-  setStatus(TERMINATED);
-
-  DestroyThreads();
-
-  // child processes of this process (if any) will be redirected to the parent of the current process
-  auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(_parentProcessID);
-  for(auto pid : _childProcessIDs) {
-    ProcessManager::Instance().GetSchedulableProcess(pid).ifPresent([&parentProcess](SchedulableProcess &p) {
-      if (p.status() == TERMINATED) {
-        p.Release();
-      } else {
-        parentProcess.ifPresent([&p](SchedulableProcess& pp) {
-          p.setParentProcessID(pp.processID());
-          pp.addChildProcessID(p.processID());
-        });
-      }
-    });
-  }
-
-  // Deallocate Resources
-  Deallocate();
-
-  // Release From Process Group
-  _processGroup->RemoveFromFGProcessList(_processID);
-  _processGroup->RemoveProcess();
-
-  if(_processGroup->Size() == 0) {
-    delete _processGroup;
-  }
-
-  dmm().releaseLocks(_processID);
-  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-
-  //TODO: release all the mutex held by the process or an individual thread
-
-  if(_parentProcessID == NO_PROCESS_ID) {
-    Release();
-  } else {
-    if (!isThread() && !parentProcess.isEmpty()) {
-      auto signalHandler = parentProcess.value().getSignalAction(SIGCHLD);
-      if (signalHandler.isEmpty() || isignoreaction(&signalHandler.value()) || isdefaultaction(&signalHandler.value())) {
-        Release();
-      } else {
-        union sigval sigval {_processID };
-        ProcessManager::Instance().SendSignal(_parentProcessID, SIGCHLD, &sigval);
-        if (signalHandler.value().sa_flags & SA_NOCLDWAIT) {
-          Release();
-        }
-      }
-    }
-  }
-
-  if (!ownerControllingTerminal().isEmpty()) {
-    FSDeviceManager::Instance().removeDevice(ownerControllingTerminal()->path());
-  }
-}
-
 void SchedulableProcess::Release() {
   setStatus(RELEASED);
 }
@@ -636,6 +567,7 @@ void SchedulableProcess::prepareToRun() {
           _stateInfo.WaitChildProcId(NO_PROCESS_ID);
           setStatus(RUN);
         } else if(childProcess.value().status() == TERMINATED && childProcess.value().parentProcessID() == _processID) {
+          _stateInfo.setExitStatus(childProcess.value().stateInfo().getExitStatus());
           childProcess.value().Release();
           removeChildProcessID(_stateInfo.WaitChildProcId());
           _stateInfo.WaitChildProcId(NO_PROCESS_ID);

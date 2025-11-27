@@ -59,7 +59,7 @@ class KernelService
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
     uint64_t RequestFlatAddress(uint64_t uiAddress) ;
 		int RequestProcessExec(const upan::string& fileName, const char** argv, const char** envp) ;
-		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg);
+		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg, bool joinable);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
     void RequestSystemReboot();
 
@@ -115,10 +115,11 @@ class KernelService
       uintptr_t _entryAddress;
 		  void* _arg;
 		  int _threadID;
+      bool _joinable;
 
 		public:
-		  ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
-		    : _threadCaller(threadCaller), _entryAddress(entryAddress), _arg(arg), _threadID(-1) {}
+		  ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable)
+		    : _threadCaller(threadCaller), _entryAddress(entryAddress), _arg(arg), _threadID(-1), _joinable(joinable) {}
 		  void Execute() override;
 		  int GetThreadID() const {
 		    return _threadID;

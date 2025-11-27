@@ -29,12 +29,13 @@ class AutonomousProcess : public SchedulableProcess {
 public:
   AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess);
 
-  virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) = 0;
+  virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) = 0;
 
   SchedulableProcess& forSchedule() override;
   bool isThread() const override { return false; }
 
-  void DestroyThreads() override;
+  void Destroy() override;
+  void DestroyThreads();
   void addToThreadScheduler(Thread& thread);
   void dispatchKeyboardData(const upanui::KeyboardData& data) override;
   void dispatchMouseData(const upanui::MouseData& mouseData) override;

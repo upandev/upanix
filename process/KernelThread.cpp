@@ -25,8 +25,8 @@
 #include <MemManager.h>
 #include <KernelRootProcess.h>
 
-KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
-  : Thread(parent) {
+KernelThread::KernelThread(KernelProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable)
+  : Thread(parent, joinable) {
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();
   _tls.reset(new ThreadLocalStorage(_processID, true, pml4Table(), KernelRootProcess::Instance().tlsp(), 0x3));

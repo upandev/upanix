@@ -89,7 +89,7 @@ private:
   int            _waitQueueId;
   int            _waitQueueSpaceId;
   upan::atomic::integral<bool> _eventCompleted;
-  bool           _kernelServiceComplete ;
+  bool           _kernelServiceComplete;
   upan::vector<io_descriptor> _ioDescriptors;
   FSTerminalDevice::WaitInfo _terminalIOWaitInfo;
   Error          _error;

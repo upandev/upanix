@@ -62,8 +62,8 @@ KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, in
   parentProcess.ifPresent([this](SchedulableProcess& p) { p.addChildProcessID(_processID); });
 }
 
-KernelThread& KernelProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
-  return *new KernelThread(*this, threadCaller, entryAddress, arg);
+KernelThread& KernelProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) {
+  return *new KernelThread(*this, threadCaller, entryAddress, arg, joinable);
 }
 
 void KernelProcess::DeallocateResources() {

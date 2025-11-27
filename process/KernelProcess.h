@@ -39,7 +39,7 @@ public:
 
   void onLoad() override {}
 
-  KernelThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
+  KernelThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) override;
 
   DMM& dmm() override;
 

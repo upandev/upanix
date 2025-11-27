@@ -23,8 +23,24 @@
 #include <Thread.h>
 #include <AutonomousProcess.h>
 
-Thread::Thread(AutonomousProcess& parent) : SchedulableProcess("", parent.processID(), false), _parent(parent) {
+Thread::Thread(AutonomousProcess& parent, bool joinable) : SchedulableProcess("", parent.processID(), false), _parent(parent), _joinable(joinable) {
   _name = _parent.name() + "_T" + upan::string::to_string(_processID);
   _processBase = _parent.getProcessBase();
   _userID = _parent.userID();
+}
+
+void Thread::Destroy() {
+  setStatus(TERMINATED);
+
+  // Deallocate Resources
+  Deallocate();
+
+  dmm().releaseLocks(_processID);
+  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
+
+  //TODO: release all the mutex held by the process or an individual thread
+
+  if(_parentProcessID == NO_PROCESS_ID || !_joinable) {
+    Release();
+  }
 }

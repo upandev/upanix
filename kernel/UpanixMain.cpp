@@ -87,7 +87,8 @@ bool SPECIAL_TASK;
                                                                      ProcessManager::GetCurrentProcessID(), true, true,
                                                                      upan::vector<uintptr_t>());
 //	SessionManager_SetSessionIDMap(SessionManager_KeyToSessionIDMap(Keyboard_F1), pid) ;
-      ProcessManager::Instance().WaitOnChild(pid);
+      int exitStatus;
+      ProcessManager::Instance().WaitOnChild(pid, exitStatus);
     }
   } catch(const upan::exception& ex) {
     ex.Print();

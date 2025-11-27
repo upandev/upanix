@@ -26,9 +26,11 @@
 
 class Thread : public SchedulableProcess {
 public:
-  Thread(AutonomousProcess& parent);
+  Thread(AutonomousProcess& parent, bool joinable);
 
   bool isThread() const override { return true; }
+  void Destroy() override;
+  bool isJoinable() const { return _joinable; }
 
   IODescriptorTable& iodTable() override {
     return _parent.iodTable();
@@ -116,4 +118,5 @@ public:
 
 protected:
   AutonomousProcess& _parent;
+  bool _joinable;
 };

@@ -75,9 +75,9 @@ class ProcessManager
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID,
                const upan::vector<upan::string>& argv,
                const upan::vector<upan::string>& envp);
-    int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg);
+    int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg, bool joinable);
     bool IsDMMOn(int iProcessID);
-    void WaitOnChild(int iChildProcessID);
+    int WaitOnChild(int iChildProcessID, int& exitStatus);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
     void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);

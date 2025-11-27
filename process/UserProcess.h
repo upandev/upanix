@@ -41,7 +41,7 @@ public:
   }
 
   void onLoad() override;
-  UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) override;
+  UserThread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) override;
 
   void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) override;
   const ELFInfo& getELFInfo() const override {

@@ -105,7 +105,8 @@ __OnlyLogin:
 		if(!SessionManager_LoadShell(&iShellProcessID))
 			goto __OnlyLogin ;
 
-		ProcessManager::Instance().WaitOnChild(iShellProcessID) ;
+    int exitStatus;
+    ProcessManager::Instance().WaitOnChild(iShellProcessID, exitStatus);
 	}	
 }
 

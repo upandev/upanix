@@ -233,21 +233,28 @@ void ProcessManager::WaitForEvent()
   p.yield();
 }
 
-void ProcessManager::WaitOnChild(int iChildProcessID)
-{
+int ProcessManager::WaitOnChild(int iChildProcessID, int& exitStatus) {
 	if(GetCurProcId() < 0)
-		return ;
+		return -1;
 
 	if(iChildProcessID < 0 || iChildProcessID >= MAX_NO_PROCESS)
-		return ;
+		return -1;
 
 	auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
+    auto childProcess = GetSchedulableProcess(iChildProcessID);
+    if (childProcess.isEmpty()
+      || childProcess.value().parentProcessID() != p.processID()
+      || (childProcess.value().isThread() && dynamic_cast<Thread&>(childProcess.value()).isJoinable() == false)) {
+      return -1;
+    }
     p.stateInfo().WaitChildProcId(iChildProcessID);
     p.setStatus(WAIT_CHILD);
   }
   p.yield();
+  exitStatus = p.stateInfo().getExitStatus();
+  return 0;
 }
 
 void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal) {
@@ -401,10 +408,10 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
 //2: Lock FileDescriptor Table access
 //3: Lock process heap access
 //4: DLL service
-int ProcessManager::CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg) {
+int ProcessManager::CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg, bool joinable) {
   try {
     AutonomousProcess& parent = ProcessManager::Instance().GetThreadParentProcess(parentID);
-    upan::uniq_ptr<SchedulableProcess> threadPAS(&parent.CreateThread(threadCaller, threadEntryAddress, arg));
+    upan::uniq_ptr<SchedulableProcess> threadPAS(&parent.CreateThread(threadCaller, threadEntryAddress, arg, joinable));
     int threadID = threadPAS->processID();
     AddToProcessMap(*threadPAS.release());
     return threadID;

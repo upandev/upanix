@@ -75,16 +75,19 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			break ;
 
 	  case SYS_CALL_THREAD_EXEC :
-	    // P1 => thread entry point
-	    // P2 => thread (input) arg
+	    // P1 => thread caller
+      // P2 => thread entry point
+	    // P3 => thread (input) arg
+      // P4 => joinable
       {
-        *retVal = KC::MKernelService().RequestThreadExec(p1, p2, (void*)p3) ;
+        *retVal = KC::MKernelService().RequestThreadExec(p1, p2, (void*) p3, (bool)p4);
       }
       break;
 		case SYS_CALL_PROCESS_WAIT_PID :
-			// P1 => PID	
+			// P1 => PID
 			{
-				ProcessManager::Instance().WaitOnChild((int)p1) ;
+        auto exitStatus = (int*)p2;
+				*retVal = ProcessManager::Instance().WaitOnChild((int) p1, *exitStatus);
 			}
 			break ;
 

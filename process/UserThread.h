@@ -27,7 +27,7 @@ class UserProcess;
 
 class UserThread : public Thread {
 public:
-  UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg);
+  UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable);
 
   bool isKernelProcess() const override {
     return false;

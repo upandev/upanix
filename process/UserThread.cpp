@@ -25,8 +25,8 @@
 #include <PortCom.h>
 
 //thread must have a parent
-UserThread::UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg)
-  : Thread(parent) {
+UserThread::UserThread(UserProcess& parent, uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable)
+  : Thread(parent, joinable) {
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
   //call return address, unused - the thread function is a typical c function and expects the return address to be the first entry on top of call stack
   //but a thread function - unlike a typical c function, should exit() instead of return

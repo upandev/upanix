@@ -450,7 +450,8 @@ void ConsoleCommands_DeleteUser()
 
 void ConsoleCommands_OpenSession() {
 	const int pid = ProcessManager::Instance().CreateKernelProcess("session", (uintptr_t) &SessionManager_StartSession, NO_PROCESS_ID, true, false, upan::vector<uintptr_t>());
-	ProcessManager::Instance().WaitOnChild(pid) ;
+  int exitStatus;
+  ProcessManager::Instance().WaitOnChild(pid, exitStatus);
 }
 
 RawStorageDrive* ConsoleCommands_CheckDiskParam()
@@ -638,7 +639,8 @@ void ConsoleCommands_LoadExe() {
   if (iChildProcessID < 0) {
     printf("\n Load User Process Failed: %d", iChildProcessID);
   } else if (!runInBG) {
-    ProcessManager::Instance().WaitOnChild(iChildProcessID);
+    int exitStatus;
+    ProcessManager::Instance().WaitOnChild(iChildProcessID, exitStatus);
   }
 }
 
@@ -647,8 +649,10 @@ void ConsoleCommands_WaitPID()
   int pid = atoi(CommandLineParser::Instance().GetParameterAt(0));
   if(pid <= 0)
     printf("\n Invalid PID : %d", pid);
-  else
-    ProcessManager::Instance().WaitOnChild(pid);
+  else {
+    int exitStatus;
+    ProcessManager::Instance().WaitOnChild(pid, exitStatus);
+  }
 }
 
 void ConsoleCommands_Exit()
@@ -661,7 +665,8 @@ void ConsoleCommands_Clone()
 	extern void Console_StartUpanixConsole() ;
   const int pid = ProcessManager::Instance().CreateKernelProcess("console_1", (uintptr_t) &Console_StartUpanixConsole,
                                                  ProcessManager::GetCurrentProcessID(), true, false, upan::vector<uintptr_t>()) ;
-	ProcessManager::Instance().WaitOnChild(pid) ;
+  int exitStatus;
+  ProcessManager::Instance().WaitOnChild(pid, exitStatus);
 }
 
 void ConsoleCommands_Reboot() {
@@ -2041,7 +2046,8 @@ void sig_child_nowait(int signum, siginfo_t* info, void* context) {
 
 void sig_child_wait(int signum, siginfo_t* info, void* context) {
   printf("\nCaught SIGCHLD for child process: %d (wait)", signum, info->si_value.sival_int);
-  waitpid(info->si_value.sival_int);
+  int exitStatus;
+  waitpid(info->si_value.sival_int, &exitStatus, 0);
   printf("\ndone");
 }
 
@@ -2181,8 +2187,9 @@ void ConsoleCommands_Test() {
     t2.start();
     printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
 
-    waitpid(t1.pid());
-    waitpid(t2.pid());
+    int exitStatus;
+    waitpid(t1.pid(), &exitStatus, 0);
+    waitpid(t2.pid(), &exitStatus, 0);
   } else if (test == "smart_ptr") {
     printf("\nshared ptr test....");
     {

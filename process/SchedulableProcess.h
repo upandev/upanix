@@ -63,10 +63,11 @@ public:
     return _processGroup->IsFGProcessGroup();
   }
 
+
   void Load(TaskContext& taskState);
   void Store(const TaskContext& taskState);
-  void Destroy();
   void Release();
+  virtual void Destroy() = 0;
   void switchPageTable() const;
   bool handlePageFault(TaskContext& taskContext, uint64_t faultyAddress);
 
@@ -127,7 +128,6 @@ private:
   static int _nextPid;
 
 private:
-  void Deallocate();
   void AllocateInterruptStackSpace();
   void SwitchInterruptStack();
   void DeAllocateInterruptStackSpace();
@@ -136,7 +136,7 @@ private:
 protected:
   virtual void onLoad() = 0;
   virtual void DeallocateResources() = 0;
-  virtual void DestroyThreads() {}
+  void Deallocate();
 
   class Common {
   public:

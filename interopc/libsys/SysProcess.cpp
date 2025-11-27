@@ -69,10 +69,10 @@ int SysProcess_Exec(const char* szFileName, int iNoOfArgs, char *const szArgList
 	return iProcessID ;
 }
 
-void SysProcess_WaitPID(int iProcessID)
-{
+int SysProcess_WaitPID(pid_t pid, int *status, int options) {
   uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_PID, false, (uint64_t) iProcessID, 2, 3, 4, 5);
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_PID, false, (uint64_t)pid, (uint64_t)status, (uint64_t)options, 4, 5);
+  return (int)retStatus;
 }
 
 void SysProcess_Exit(int iExitStatus)
@@ -137,10 +137,15 @@ int SysProcess_IsProcessAlive(int pid) {
   return retStatus ;
 }
 
-int SysProcess_ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg) {
+int SysProcess_ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) {
   uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_THREAD_EXEC, false, threadCaller, entryAddress, (uintptr_t) arg, 4, 5);
+  SysCallProc_Handle(&retStatus, SYS_CALL_THREAD_EXEC, false, threadCaller, entryAddress, (uintptr_t) arg, (uint64_t)joinable, 5);
   return retStatus ;
+}
+
+int SysProcess_ThreadDetach(int threadId) {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_THREAD_DETACH, false, threadId, 2, 3, 4, 5);
 }
 
 int SysProcess_IsChildAlive(int iProcessID) {

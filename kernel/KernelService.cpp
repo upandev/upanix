@@ -82,7 +82,9 @@ void KernelService::ProcessExec::Execute() {
 }
 
 void KernelService::ThreadExec::Execute() {
-  _threadID = ProcessManager::Instance().CreateThreadTask(GetRequestProcessID(), _threadCaller, _entryAddress, _arg);
+  _threadID = ProcessManager::Instance().CreateThreadTask(GetRequestProcessID(), _threadCaller,
+                                                          _entryAddress, _arg,
+                                                          _joinable);
 }
 
 void KernelService::ProcessGUIFramebufferAllocate::Execute() {
@@ -143,8 +145,8 @@ int KernelService::RequestProcessExec(const upan::string& fileName, const char**
 	return iNewProcId ;
 }
 
-int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg) {
-  auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg);
+int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg, bool joinable) {
+  auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg, joinable);
 
   AddRequest(pRequest) ;
   ProcessManager::Instance().WaitOnKernelService() ;
