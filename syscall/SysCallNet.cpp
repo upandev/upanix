@@ -225,5 +225,22 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       }
     }
     break;
+
+    case SYS_CALL_SOCKET_PAIR:
+    {
+      const auto family = (SA_FAMILY_TYPE)p1;
+      const auto type = (SOCKET_TYPE)p2;
+      const auto protocol = (int)p3;
+      const auto sv = (int*)p4;
+
+      try {
+        *retVal = 0;
+        NetworkOperations::Instance().createSocketPair(family, type, protocol, sv);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
 	}
 }

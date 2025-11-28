@@ -32,6 +32,7 @@ public:
   static NetworkOperations& Instance();
 
   int createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol);
+  void createSocketPair(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol, int sv[2]);
   void bind(sock_t fd, const struct sockaddr& address, socklen_t len);
   void setSockOpt(sock_t fd, int level, SOCKET_OPTION option, const void* optval, socklen_t len);
   void getSockOpt(sock_t fd, int level, SOCKET_OPTION option, void* optval, socklen_t* len);

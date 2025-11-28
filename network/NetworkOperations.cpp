@@ -28,6 +28,8 @@
 #include <SocketDescriptorARP.h>
 #include <SocketDescriptorICMP.h>
 #include <SocketDescriptorLocalDataGram.h>
+#include <SocketDescriptorStreamBuffer.h>
+#include <SocketDescriptorDataGramBuffer.h>
 
 NetworkOperations::NetworkOperations() {
 }
@@ -110,6 +112,46 @@ int NetworkOperations::createSocket(SA_FAMILY_TYPE family, SOCKET_TYPE socketTyp
     });
 
     return sd->id();
+  }
+}
+
+
+void NetworkOperations::createSocketPair(SA_FAMILY_TYPE family, SOCKET_TYPE socketType, int protocol, int sv[2]) {
+  if (family != AF_LOCAL) {
+    throw upan::exception(XLOC, "unsupported socket family: %d - for creating socket pair", family);
+  }
+
+  Process& process = ProcessManager::Instance().GetCurrentPAS();
+  if (socketType == SOCK_STREAM) {
+    auto s1 = process.iodTable().allocate([&](int fd) -> SocketDescriptorStreamBuffer* {
+      return new SocketDescriptorStreamBuffer(process.processID(), fd, 2048, O_RDWR);
+    }).cast<SocketDescriptorStreamBuffer>();
+
+    auto s2 = process.iodTable().allocate([&](int fd) -> SocketDescriptorStreamBuffer* {
+      return new SocketDescriptorStreamBuffer(process.processID(), fd, 2048, O_RDWR);
+    }).cast<SocketDescriptorStreamBuffer>();
+
+    s1->setPeer(s2);
+    s2->setPeer(s1);
+
+    sv[0] = s1->id();
+    sv[1] = s2->id();
+  } else if (socketType == SOCK_DGRAM) {
+    auto s1 = process.iodTable().allocate([&](int fd) -> SocketDescriptorDataGramBuffer* {
+      return new SocketDescriptorDataGramBuffer(process.processID(), fd, 2048, O_RDWR);
+    }).cast<SocketDescriptorDataGramBuffer>();
+
+    auto s2 = process.iodTable().allocate([&](int fd) -> SocketDescriptorDataGramBuffer* {
+      return new SocketDescriptorDataGramBuffer(process.processID(), fd, 2048, O_RDWR);
+    }).cast<SocketDescriptorDataGramBuffer>();
+
+    s1->setPeer(s2);
+    s2->setPeer(s1);
+
+    sv[0] = s1->id();
+    sv[1] = s2->id();
+  } else {
+    throw upan::exception(XLOC, "unsupported socket type: %d - for creating socket pair", socketType);
   }
 }
 

@@ -33,32 +33,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="get rid of mainThreadID - instead introduce processSpaceID() which will be the main process ID - common for all threads in a process - to be used in wait-queue">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support detach/joinable for threads">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/session/SessionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/toolchain.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/toolchain.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,37 +91,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck&quot;,
-    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/io/terminal&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHELLCHECK.PATH": "/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck",
+    "Shell Script.run.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/io/socket",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "Errors",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/io/socket" />
       <recent name="$PROJECT_DIR$/io/terminal" />
       <recent name="$PROJECT_DIR$/drivers/fsdevice" />
       <recent name="$PROJECT_DIR$/process" />
       <recent name="$PROJECT_DIR$/kernelprocs" />
-      <recent name="$PROJECT_DIR$/interopc" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/interopc" />
@@ -148,6 +132,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -793,7 +782,8 @@
       <workItem from="1763939329228" duration="4736000" />
       <workItem from="1763980815215" duration="6322000" />
       <workItem from="1764109616916" duration="5493000" />
-      <workItem from="1764125812248" duration="14166000" />
+      <workItem from="1764125812248" duration="15658000" />
+      <workItem from="1764286936342" duration="17689000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1138,7 +1128,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="215" />
+    <option name="localTasksCounter" value="216" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1172,7 +1162,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="destroy process upon receiving signal with terminate action" />
     <MESSAGE value="1. implemented sigprocmask system call&#10;2. child process to send SIGCHLD to parent upon exit&#10;3. test cases for SIGCHLD scenarios" />
     <MESSAGE value="1. Signal task context is stored on the stack - right after the signal restorer (return) RIP (signal return IP -&gt; signal task context -&gt; siginfo_t)&#10;2. Page fault handler takes the task context, delivers SIGSEGV if page-fault can't be served and then uses the rsp from task context to switch over to user-stack space because signal delivery/signal frame construction has to be happen on user stack while page fault handler is running in its own IST stack. Saves the IST stack in a process state variable. In case if SIGSEGV handler returns back through regular signal return (without longjmp to a safe place) then we will restore the stack back to interrupt handler stack and return back to original page faulting place - which could potentially lead to recursion unless the SIGSEGV handler has made the failing memmory location available. In any case, the default action for SIGSEGV is to terminate the process if there is no user defined SIGSEGV handler." />
     <MESSAGE value="set file and directory type in file-system attribute as per posix" />
@@ -1197,7 +1186,8 @@
     <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
     <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
     <MESSAGE value="get rid of mainThreadID - instead introduce processSpaceID() which will be the main process ID - common for all threads in a process - to be used in wait-queue" />
-    <option name="LAST_COMMIT_MESSAGE" value="get rid of mainThreadID - instead introduce processSpaceID() which will be the main process ID - common for all threads in a process - to be used in wait-queue" />
+    <MESSAGE value="support detach/joinable for threads" />
+    <option name="LAST_COMMIT_MESSAGE" value="support detach/joinable for threads" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

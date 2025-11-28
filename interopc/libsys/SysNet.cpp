@@ -99,3 +99,9 @@ void SysNet_FreeHostInfo(struct hostent* hostinfo) {
   uint64_t retStatus;
   SysCallNet_Handle(&retStatus, SYS_CALL_FREE_HOST_INFO, false, (uint64_t)hostinfo, 2, 3, 4, 5);
 }
+
+int SysNet_SocketPair(SA_FAMILY_TYPE domain, SOCKET_TYPE type, int protocol, int sv[2]) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_PAIR, false, (uint64_t)domain, (uint64_t)type, (uint64_t)protocol, (uint64_t)sv, 5);
+  return (int) retStatus;
+}
