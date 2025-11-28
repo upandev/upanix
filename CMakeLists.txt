@@ -25,6 +25,9 @@ set(TARGET_BIN "upanix.elf")
 set(UPANLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../upanlibs)
 set(UPANLIB_OUT_DIR ${UPANLIB_SOURCE_DIR}/out)
 
+set(UPANEXLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../upanexlibs)
+set(UPANEXLIB_OUT_DIR ${UPANEXLIB_SOURCE_DIR}/out)
+
 set(ENABLE_CXX_RT ON)
 	
 set(EXCEPTION_SUP " -fno-exceptions -fno-rtti")
@@ -145,6 +148,14 @@ include_directories(${UPANLIB_SOURCE_DIR}/libupanui/image/bmp)
 include_directories(${UPANLIB_SOURCE_DIR}/libupanui/image/png)
 include_directories(${UPANLIB_SOURCE_DIR}/libupanui/interop/includes)
 
+include_directories(${UPANLIB_SOURCE_DIR}/libupthread/include)
+
+include_directories(${UPANEXLIB_SOURCE_DIR}/libupanssl)
+include_directories(${UPANEXLIB_SOURCE_DIR}/libupanssl/include)
+include_directories(${UPANEXLIB_SOURCE_DIR}/libupanssl/providers/implementations/include)
+include_directories(${UPANEXLIB_SOURCE_DIR}/libupanssl/providers/common/include)
+include_directories(${UPANEXLIB_SOURCE_DIR}/libupanssl/providers/fips/include)
+
 add_custom_target(osutils COMMAND make WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/osutils)
 add_custom_target(boot COMMAND make boot_elf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/boot)
 add_custom_target(mem COMMAND make WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/memory)
@@ -201,6 +212,12 @@ target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libustd.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libm.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libc.a)
 target_link_libraries(${TARGET_BIN} ${UPANLIB_OUT_DIR}/libgccucore.a)
+target_link_libraries(${TARGET_BIN} ${UPANEXLIB_OUT_DIR}/libssl.a)
+target_link_libraries(${TARGET_BIN} ${UPANEXLIB_OUT_DIR}/libcrypto.a)
 
 set_source_files_properties(${OTHER_OBJS} PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 
+add_custom_command(TARGET ${TARGET_BIN} POST_BUILD
+		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:${TARGET_BIN}> $<TARGET_FILE:${TARGET_BIN}>.debug
+		COMMAND ${CMAKE_STRIP} --strip-unneeded $<TARGET_FILE:${TARGET_BIN}>
+		COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:${TARGET_BIN}>.debug $<TARGET_FILE:${TARGET_BIN}>)
