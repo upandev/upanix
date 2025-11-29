@@ -20,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <sys/un.h>
 #include <NetworkOperations.h>
 #include <exception.h>
 #include <ProcessManager.h>
@@ -253,6 +254,75 @@ void NetworkOperations::getSockOpt(sock_t fd, int level, SOCKET_OPTION option, v
     default:
       throw upan::exception(XLOC, "unsupported socket option: %d", option);
   }
+}
+
+void NetworkOperations::getSockName(sock_t fd, struct sockaddr& addr, socklen_t& len) {
+  auto descriptor = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
+
+  void* srcAddr = nullptr;
+  socklen_t srcLen;
+
+  auto socketDescriptorPacket = descriptor.cast<SocketDescriptorPacket>();
+  if (!socketDescriptorPacket.isEmpty()) {
+    srcAddr = (void*) &socketDescriptorPacket->srcAddr();
+    srcLen = sizeof(struct sockaddr_in);
+  } else {
+    auto socketDescriptorStream = descriptor.cast<SocketDescriptorStream>();
+    if (!socketDescriptorStream.isEmpty()) {
+      srcAddr = (void*) &socketDescriptorStream->srcAddr();
+      srcLen = sizeof(struct sockaddr_in);
+    } else {
+      auto socketDescriptorLocalDataGram = descriptor.cast<SocketDescriptorLocalDataGram>();
+      if (!socketDescriptorLocalDataGram.isEmpty()) {
+        srcAddr = (void*) &socketDescriptorLocalDataGram->srcAddr();
+        srcLen = sizeof(struct sockaddr_un);
+      } else {
+        if (!descriptor.cast<SocketDescriptorStreamBuffer>().isEmpty() || !descriptor.cast<SocketDescriptorDataGramBuffer>().isEmpty()) {
+          addr.sa_family = AF_LOCAL;
+          addr.sa_data[0] = '\0';
+          len = sizeof(struct sockaddr_un);
+          return;
+        }
+      }
+    }
+  }
+
+  if (srcAddr == nullptr) {
+    throw upan::exception(XLOC, "getsockname failed: invalid socket descriptor");
+  }
+
+  if (len < srcLen) {
+    throw upan::exception(XLOC, "getsockname failed: addr len %d is smaller than %d", len, srcLen);
+  }
+  memcpy(&addr, srcAddr, srcLen);
+  len = srcLen;
+}
+
+void NetworkOperations::getPeerName(sock_t fd, struct sockaddr& addr, socklen_t& len) {
+  auto descriptor = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped(fd);
+
+  auto socketDescriptorStream = descriptor.cast<SocketDescriptorStream>();
+  if (!socketDescriptorStream.isEmpty()) {
+    if (socketDescriptorStream->isConnected()) {
+      const auto destLen = sizeof(struct sockaddr_in);
+      if (len < destLen) {
+        throw upan::exception(XLOC, "getpeername failed: addr len %d is smaller than %d", len, destLen);
+      }
+      len = destLen;
+      memcpy(&addr, &socketDescriptorStream->destAddr(), len);
+      return;
+    } else {
+      throw upan::exception(XLOC, "getpeername failed: socket is not connected");
+    }
+  } else if (!descriptor.cast<SocketDescriptorStreamBuffer>().isEmpty() ||
+             !descriptor.cast<SocketDescriptorDataGramBuffer>().isEmpty()) {
+    addr.sa_family = AF_LOCAL;
+    addr.sa_data[0] = '\0';
+    len = sizeof(struct sockaddr_un);
+    return;
+  }
+
+  throw upan::exception(XLOC, "getpeername failed: invalid socket descriptor");
 }
 
 ssize_t NetworkOperations::sendTo(int fd, const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {

@@ -264,3 +264,7 @@ ssize_t SocketDescriptorStream::_recvFrom(void* buf, size_t n, int flags, struct
 int SocketDescriptorStream::getLastError() const {
   return _tcpConnection.isEmpty() ? 0 : _tcpConnection->errorCode();
 }
+
+bool SocketDescriptorStream::isConnected() {
+  return !_tcpConnection.isEmpty() && _tcpConnection->state() == TCPConnection::TCP_ESTABLISHED;
+}

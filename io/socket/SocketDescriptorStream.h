@@ -34,6 +34,7 @@ public:
 
   const struct sockaddr_in& srcAddr() { return _srcAddr; }
   const struct sockaddr_in& destAddr() { return _destAddr; }
+  bool isConnected();
 
 private:
   int _read(void* buffer, int len) override;

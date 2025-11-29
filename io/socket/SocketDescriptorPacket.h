@@ -25,6 +25,9 @@
 #include <SocketDescriptor.h>
 
 class SocketDescriptorPacket : public SocketDescriptor {
+public:
+  struct sockaddr_in& srcAddr() { return _srcAddr; }
+
 protected:
   SocketDescriptorPacket(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
 
@@ -49,7 +52,6 @@ protected:
   void _shutdown(SOCKET_SHUTDOWN_TYPE type) override;
 
   virtual bool filterPacket(const upan::shared_ptr<RawNetPacket>& packet) = 0;
-  struct sockaddr_in& srcAddr() { return _srcAddr; }
   upan::shared_ptr<RawNetPacket> recvPacket();
   void recvNotify(const upan::shared_ptr<RawNetPacket>& packet);
   const struct sockaddr_in& extractDestAddr(const struct sockaddr& addr, socklen_t len, bool portRequired);

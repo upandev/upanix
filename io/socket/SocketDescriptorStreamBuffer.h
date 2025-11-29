@@ -19,26 +19,34 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
 #pragma once
 
-#include <SocketDescriptorPacket.h>
-#include <TCPConnection.h>
+#include <IODescriptor.h>
+#include <uniq_ptr.h>
+#include <queue.h>
+#include <mutex.h>
 
-class SocketDescriptorDataGram : public SocketDescriptorPacket {
+class SocketDescriptorStreamBuffer : public IODescriptor {
 public:
-  SocketDescriptorDataGram(int pid, int fd, SA_FAMILY_TYPE family, int protocol);
+  SocketDescriptorStreamBuffer(int pid, int id, uint32_t bufSize, uint32_t mode);
+  void setPeer(upan::shared_ptr<SocketDescriptorStreamBuffer> peer) {
+    _peer = peer;
+  }
+  int send(const void* buffer, int len);
+  bool canSend();
 
 private:
-  void _bind(const struct sockaddr& address, socklen_t len) override;
-  void _connect(const struct sockaddr& address, socklen_t len) override;
-  ssize_t _sendTo(const void* buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) override;
-  ssize_t _recvFrom(void* buf, size_t n, int flags, struct sockaddr* addr, socklen_t* len) override;
-  void _close() override;
-
-  bool filterPacket(const upan::shared_ptr<RawNetPacket>& rawPacket) override;
-  friend class UDPSocketResolver;
+  int _read(void* buffer, int len) override;
+  bool _canRead() override;
+  int _write(const void* buffer, int len) override;
+  bool _canWrite() override;
+  void _seek(int seekType, int offset) override {}
+  uint32_t _getOffset() const override { return 0; }
+  void _close() override {}
 
 private:
-  bool _routeSetupCompleted;
-  struct sockaddr_in _destAddr;
+  upan::shared_ptr<SocketDescriptorStreamBuffer> _peer;
+  upan::queue<uint8_t> _queue;
+  upan::mutex _ioSync;
 };

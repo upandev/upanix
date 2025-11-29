@@ -20,7 +20,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <sys/un.h>
 #include <SocketDescriptorLocalDataGram.h>
 #include <LocalDataGramResolver.h>
 #include <ProcessManager.h>
@@ -36,6 +35,8 @@ SocketDescriptorLocalDataGram::SocketDescriptorLocalDataGram(int pid, int fd, SA
     _isConnected(false), _isBound(false), _errorCode(0) {
   _srcPath = EPHEMERAL_ADDRESS_PATH_PREFIX + upan::string::to_string(EPHEMERAL_ADDRESS_ID++);
   LocalDataGramResolver::Instance().setup(*this, _srcPath);
+  _srcAddr.sun_family = AF_LOCAL;
+  strcpy(_srcAddr.sun_path, _srcPath.c_str());
 }
 
 void SocketDescriptorLocalDataGram::_close() {
@@ -73,6 +74,8 @@ void SocketDescriptorLocalDataGram::_bind(const struct sockaddr& address, sockle
   LocalDataGramResolver::Instance().release(*this);
   LocalDataGramResolver::Instance().setup(*this, path);
   _srcPath = path;
+  _srcAddr.sun_family = AF_LOCAL;
+  strcpy(_srcAddr.sun_path, _srcPath.c_str());
   _isBound = true;
 }
 

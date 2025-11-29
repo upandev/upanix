@@ -23,12 +23,14 @@
 #pragma once
 
 #include <list.h>
+#include <sys/un.h>
 #include <SocketDescriptor.h>
 
 class SocketDescriptorLocalDataGram : public SocketDescriptor {
 public:
   SocketDescriptorLocalDataGram(int pid, int fd, SA_FAMILY_TYPE family);
 
+  const sockaddr_un& srcAddr() const { return _srcAddr; }
   const upan::string& srcPath() const { return _srcPath; }
   const upan::string& destPath() const { return _destPath; }
 
@@ -61,6 +63,7 @@ private:
     upan::string _srcPath;
   };
 
+  sockaddr_un _srcAddr;
   upan::list<Message> _messages;
   upan::string _srcPath;
   upan::string _destPath;

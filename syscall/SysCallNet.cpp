@@ -85,6 +85,42 @@ void SysCallNet_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslat
       }
       break;
 
+    case SYS_CALL_SOCKET_GET_NAME:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      auto addr = (struct sockaddr*)p2;
+      auto len = (socklen_t*)p3;
+      try {
+        if (addr == nullptr || len == nullptr) {
+          throw upan::exception(XLOC, "getsockname: invalid (null) parameters");
+        }
+        NetworkOperations::Instance().getSockName(fd, *addr, *len);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_SOCKET_PEER_NAME:
+    {
+      *retVal = 0;
+      const auto fd = (sock_t)p1;
+      auto addr = (struct sockaddr*)p2;
+      auto len = (socklen_t*)p3;
+      try {
+        if (addr == nullptr || len == nullptr) {
+          throw upan::exception(XLOC, "getpeername: invalid (null) parameters");
+        }
+        NetworkOperations::Instance().getPeerName(fd, *addr, *len);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_SOCKET_SEND_TO:
     {
       *retVal = 0;

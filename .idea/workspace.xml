@@ -33,16 +33,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support detach/joinable for threads">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implement socketpair system call">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysNet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/NetworkOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/NetworkOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallNet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallNet.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolchain.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/toolchain.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -783,7 +788,7 @@
       <workItem from="1763980815215" duration="6322000" />
       <workItem from="1764109616916" duration="5493000" />
       <workItem from="1764125812248" duration="15658000" />
-      <workItem from="1764286936342" duration="17689000" />
+      <workItem from="1764286936342" duration="25582000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1128,7 +1133,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="216" />
+    <option name="localTasksCounter" value="218" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1162,8 +1167,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="1. implemented sigprocmask system call&#10;2. child process to send SIGCHLD to parent upon exit&#10;3. test cases for SIGCHLD scenarios" />
-    <MESSAGE value="1. Signal task context is stored on the stack - right after the signal restorer (return) RIP (signal return IP -&gt; signal task context -&gt; siginfo_t)&#10;2. Page fault handler takes the task context, delivers SIGSEGV if page-fault can't be served and then uses the rsp from task context to switch over to user-stack space because signal delivery/signal frame construction has to be happen on user stack while page fault handler is running in its own IST stack. Saves the IST stack in a process state variable. In case if SIGSEGV handler returns back through regular signal return (without longjmp to a safe place) then we will restore the stack back to interrupt handler stack and return back to original page faulting place - which could potentially lead to recursion unless the SIGSEGV handler has made the failing memmory location available. In any case, the default action for SIGSEGV is to terminate the process if there is no user defined SIGSEGV handler." />
     <MESSAGE value="set file and directory type in file-system attribute as per posix" />
     <MESSAGE value="make Local DGRAM socket bidirectional with ephemeral address created for message sending client" />
     <MESSAGE value="check access permissions when opening local dgram socket file" />
@@ -1187,7 +1190,9 @@
     <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
     <MESSAGE value="get rid of mainThreadID - instead introduce processSpaceID() which will be the main process ID - common for all threads in a process - to be used in wait-queue" />
     <MESSAGE value="support detach/joinable for threads" />
-    <option name="LAST_COMMIT_MESSAGE" value="support detach/joinable for threads" />
+    <MESSAGE value="add dependency for openssl library and also enhance build to strip the debug symbols out into a separate file" />
+    <MESSAGE value="implement socketpair system call" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement socketpair system call" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

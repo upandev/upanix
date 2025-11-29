@@ -45,6 +45,18 @@ int SysNet_GetSockOpt(sock_t fd, int level, SOCKET_OPTION option, void* optval, 
   return (int) retStatus;
 }
 
+int SysNet_GetSockName(sock_t fd, struct sockaddr *addr, socklen_t *addrlen) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_GET_NAME, false, (uint64_t)fd, (uint64_t)addr, (uint64_t)addrlen, 4, 5);
+  return (int) retStatus;
+}
+
+int SysNet_GetPeerName(sock_t fd, struct sockaddr *addr, socklen_t *addrlen) {
+  uint64_t retStatus;
+  SysCallNet_Handle(&retStatus, SYS_CALL_SOCKET_PEER_NAME, false, (uint64_t)fd, (uint64_t)addr, (uint64_t)addrlen, 4, 5);
+  return (int) retStatus;
+}
+
 int SysNet_SendTo(int fd, const void *buf, size_t n, int flags, const struct sockaddr* addr, socklen_t len) {
   uint64_t retStatus;
   uint64_t ext_param[] = { (uint64_t)addr, (uint64_t)len };
