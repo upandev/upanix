@@ -358,7 +358,9 @@ void ConsoleCommands_CopyFile()
 
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
   auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
-
+  if (file.isEmpty()) {
+    throw upan::exception(XLOC, "%s: File not found", szFileName);
+  }
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
   FileOperations::Instance().create(szDestFile, S_IFREG, ATTR_FILE_DEFAULT);
@@ -959,6 +961,9 @@ void graphics_photos(int x, int y) {
     if (S_ISFILE(s->d_stat.st_mode)) {
       const auto fileSize = s->d_stat.st_size;
       auto file = FileOperations::Instance().open(s->d_name, O_RDONLY);
+      if (file.isEmpty()) {
+        continue;
+      }
       file->seek(SEEK_SET, 0);
       upan::uniq_ptr<char[]> buffer(new char[fileSize]);
       file->read(buffer.get(), fileSize);
@@ -1634,6 +1639,9 @@ void graphics_desktop(int x, int y) {
 
     const upan::string desktopImageFile("usdb@/desktop/desktop.png");
     auto file = FileOperations::Instance().open(desktopImageFile, O_RDONLY);
+    if (file.isEmpty()) {
+      throw upan::exception(XLOC, "Failed to open desktop image file: %s", desktopImageFile.c_str());
+    }
     auto fileSize = file->getStat().st_size;
 
     upan::uniq_ptr<uint8_t[]> buffer(new uint8_t[fileSize]);
@@ -2032,6 +2040,105 @@ static void test_tcp_client() {
   close(sd);
 }
 
+static void test_tcp_tls_server() {
+  struct sockaddr_in address;
+  char buffer[TEST_TCP_SERVER_BUFFER_SIZE] = {0};
+
+  auto sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket() failed");
+  }
+
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = INADDR_ANY; // 0.0.0.0
+  address.sin_port = htons(TEST_TCP_SERVER_PORT);
+
+  if (bind(sd, (struct sockaddr*) &address, sizeof(address)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "bind() failed");
+  }
+
+  if (listen(sd, 1) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "listen() failed");
+  }
+
+  printf("\nServer is listening on port %d...", TEST_TCP_SERVER_PORT);
+
+  // Accept a connection
+  socklen_t addrlen;
+  auto new_sd = accept(sd, (struct sockaddr*) &address, (socklen_t*) &addrlen);
+  if (new_sd < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "accept() failed");
+  }
+
+  int n = recv(new_sd, buffer, TEST_TCP_SERVER_BUFFER_SIZE - 1, 0);
+  if (n >= 0) {
+    buffer[n] = '\0'; // Null-terminate
+    printf("\nReceived: %s", buffer);
+  }
+
+  strcpy(buffer, "Hello from Upanix server!");
+  ssize_t bytes_sent = send(new_sd, buffer, strlen(buffer), 0);
+  if (bytes_sent < 0) {
+    throw upan::exception(XLOC, "send() failed");
+  } else {
+    printf("\nSent %d bytes: %s", bytes_sent, buffer);
+  }
+
+  close(new_sd);
+  close(sd);
+}
+
+static void test_tcp_tls_client() {
+  const upan::string host = "192.168.50.208";
+  const int server_port = 12345;
+  char message[1024] = "Hello, TCP Server!";
+
+  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sd < 0) {
+    throw upan::exception(XLOC, "socket() failed");
+  }
+
+  struct timeval timeout {};
+  timeout.tv_sec = 5;
+  timeout.tv_usec = 0;
+  if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "failed to set socket option: SO_RCVTIMEO");
+  }
+
+  struct sockaddr_in server_addr;
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(server_port);
+  server_addr.sin_addr.s_addr = upan::net::inet_strton(host.c_str());
+
+  if (connect(sd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    close(sd);
+    throw upan::exception(XLOC, "connect() failed");
+  }
+
+  printf("\nConnected to %s:%d", host.c_str(), server_port);
+
+  ssize_t bytes_sent = send(sd, message, strlen(message), 0);
+  if (bytes_sent < 0) {
+    throw upan::exception(XLOC, "send() failed");
+  } else {
+    printf("\nSent %d bytes: %s", bytes_sent, message);
+  }
+
+  // 5. Receive response
+  ssize_t bytes_received = recv(sd, message, 1024 - 1, 0);
+  if (bytes_received > 0) {
+    message[bytes_received] = '\0';
+    printf("\nReceived from server: %s", message);
+  }
+
+  close(sd);
+}
+
 void sig_handler(int signum) {
   printf("\nCaught signal: %d", signum);
 }
@@ -2125,6 +2232,10 @@ void ConsoleCommands_Test() {
     test_tcp_client();
   } else if (test == "tcp-server") {
     test_tcp_server();
+  } else if (test == "tcp-tls-client") {
+    test_tcp_tls_client();
+  } else if (test == "tcp-tls-server") {
+    test_tcp_tls_server();
   } else if (test == "config") {
       upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
 

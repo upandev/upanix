@@ -32,6 +32,9 @@ to ensure some non zero byte request is there within file size limit*/
 
 BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet, unsigned uiBufferSize) : m_uiOffSet(uiOffSet), m_szBuffer(nullptr) {
   _file = FileOperations::Instance().open(szFileName.c_str(), O_RDONLY);
+  if (_file.isEmpty()) {
+    throw upan::exception(XLOC, "Failed to open file %s", szFileName.c_str());
+  }
 
   try
   {
