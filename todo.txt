@@ -1,3 +1,7 @@
+6 Dec 2025
+- there is a potential memory leak on every user process load and exit
+- fix issue with keyboard input corrupting or crashing the console at start-up before console prompt
+
 13 Jul 2025
 - fix issue with reset-syslog -> done
 - fix issue with using malloc vs dmm().allocate for gethostbyname() -> unable to reproduce
