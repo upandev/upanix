@@ -28,6 +28,7 @@
 #include <RealNetworkDevice.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <openssl/sha.h>
 #include <TerminalDescriptor.h>
 #include <TerminalMasterDescriptor.h>
 #include <RedirectDescriptor.h>
@@ -134,4 +135,49 @@ void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
   }
 
   throw upan::exception(XLOC, "unsupported IOCTL cmd: %ul", cmd);
+}
+
+static inline uint64_t rdtsc() {
+  uint32_t lo, hi;
+  __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
+  return ((uint64_t)hi << 32) | lo;
+}
+
+// Collect `count` samples into out[32], hashed
+void entropy_jitter_collect(uint8_t out[32], size_t count) {
+  uint64_t last = rdtsc();
+  uint8_t pool[512];
+  size_t pool_pos = 0;
+
+  for (size_t i = 0; i < count; i++) {
+    uint64_t t1 = rdtsc();
+    uint64_t delta = t1 - last;
+    last = t1;
+
+    // Mix delta into pool
+    memcpy(pool + pool_pos, &delta, sizeof(delta));
+    pool_pos += sizeof(delta);
+
+    // When pool is full, hash it
+    if (pool_pos == sizeof(pool)) {
+      SHA256(pool, sizeof(pool), out);
+      pool_pos = 0;
+      memcpy(pool, out, 32); // feedback
+      pool_pos = 32;
+    }
+  }
+
+  // Final hash
+  SHA256(pool, pool_pos, out);
+}
+
+void KernelUtil::GetEntropy(void* buffer, size_t length) {
+  uint8_t hash[32];
+  size_t pos = 0;
+  while (pos < length) {
+    entropy_jitter_collect(hash, 1024); // 1024 samples
+    size_t c = (length - pos < 32) ? (length - pos) : 32;
+    memcpy((uint8_t*)buffer + pos, hash, c);
+    pos += c;
+  }
 }

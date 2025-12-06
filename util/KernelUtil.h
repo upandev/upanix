@@ -19,12 +19,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _KERNEL_UTIL_H_
-#define _KERNEL_UTIL_H_
+#pragma once
 
 class IRQ;
-class KernelUtil
-{
+class KernelUtil {
 	typedef int KernelUtilTimerFunc() ;
 
 	public:
@@ -38,9 +36,8 @@ class KernelUtil
     };
     static void ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask&, bool isCoreProcess);
     static void IOCtl(int fd, uint64_t cmd, uint64_t arg);
+    static void GetEntropy(void* buffer, size_t size);
 
 	private:
     static void SystemTimer(unsigned timeInMilliSec, TimerTask* task) ;
 } ;
-
-#endif
