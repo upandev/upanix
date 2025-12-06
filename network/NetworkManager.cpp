@@ -20,7 +20,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <stdio.h>
-
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <ussl.h>
 #include <IrqManager.h>
 #include <PCIBusHandler.h>
 #include <E1000NICDevice.h>
@@ -37,8 +39,8 @@ NetworkManager::NetworkManager() : _interfaceId(0), _defaultRealDevice(nullptr),
 }
 
 void NetworkManager::Initialize() {
-  for(auto pPCIEntry : PCIBusHandler::Instance().PCIEntries())   {
-    if(pPCIEntry->bHeaderType & PCI_HEADER_BRIDGE) {
+  for (auto pPCIEntry: PCIBusHandler::Instance().PCIEntries()) {
+    if (pPCIEntry->bHeaderType & PCI_HEADER_BRIDGE) {
       continue;
     }
     Probe(*pPCIEntry);
@@ -60,6 +62,18 @@ void NetworkManager::Initialize() {
   }
 
   _tcpStreamWorker.start();
+
+  initializeSSL();
+}
+
+void NetworkManager::initializeSSL() {
+  try {
+    upan::net::ssl_context::instance().initializeServerCtx();
+    upan::net::ssl_context::instance().initializeClientCtx();
+    printf("\n SSL context initialized");
+  } catch(upan::exception& e) {
+    e.Print();
+  }
 }
 
 void NetworkManager::addTCPConnection(upan::shared_ptr<TCPConnection>& connection) {

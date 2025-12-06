@@ -26,6 +26,7 @@
 #include <map.h>
 #include <uniq_ptr.h>
 #include <ithread.h>
+#include <openssl/ssl.h>
 #include <SocketDescriptor.h>
 #include <TCPSocketResolver.h>
 #include <DNSClient.h>
@@ -94,6 +95,7 @@ public:
   ARPSocketResolver& getARPSocketResolver() { return _arpSocketResolver; }
 
 private:
+  void initializeSSL();
   void Probe(const PCIEntry& pciEntry);
 
   upan::mutex _nMutex;
