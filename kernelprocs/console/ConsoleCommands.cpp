@@ -22,6 +22,8 @@
 
 #include <net/ip_icmp.h>
 #include <arpa/inet.h>
+#include <openssl/err.h>
+#include <ussl.h>
 #include <ConsoleCommands.h>
 #include <CommandLineParser.h>
 #include <Floppy.h>
@@ -322,7 +324,9 @@ void ConsoleCommands_ReadFileContent()
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
 
   auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
-
+  if (file.isEmpty()) {
+    throw upan::exception(XLOC, "%s: File not found", szFileName);
+  }
   printf("\n");
 	while(true) {
     int n = file->read(bDataBuffer, 512);
@@ -1939,6 +1943,7 @@ public:
 };
 
 #define TEST_TCP_SERVER_PORT 8080
+#define TEST_TCP_TLS_SERVER_PORT 8443
 #define TEST_TCP_SERVER_BUFFER_SIZE 1024
 
 static void test_tcp_server() {
@@ -2042,7 +2047,6 @@ static void test_tcp_client() {
 
 static void test_tcp_tls_server() {
   struct sockaddr_in address;
-  char buffer[TEST_TCP_SERVER_BUFFER_SIZE] = {0};
 
   auto sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
@@ -2051,7 +2055,7 @@ static void test_tcp_tls_server() {
 
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY; // 0.0.0.0
-  address.sin_port = htons(TEST_TCP_SERVER_PORT);
+  address.sin_port = htons(TEST_TCP_TLS_SERVER_PORT);
 
   if (bind(sd, (struct sockaddr*) &address, sizeof(address)) < 0) {
     close(sd);
@@ -2063,7 +2067,7 @@ static void test_tcp_tls_server() {
     throw upan::exception(XLOC, "listen() failed");
   }
 
-  printf("\nServer is listening on port %d...", TEST_TCP_SERVER_PORT);
+  printf("\nTLS Server is listening on port %d...", TEST_TCP_TLS_SERVER_PORT);
 
   // Accept a connection
   socklen_t addrlen;
@@ -2073,28 +2077,29 @@ static void test_tcp_tls_server() {
     throw upan::exception(XLOC, "accept() failed");
   }
 
-  int n = recv(new_sd, buffer, TEST_TCP_SERVER_BUFFER_SIZE - 1, 0);
-  if (n >= 0) {
-    buffer[n] = '\0'; // Null-terminate
-    printf("\nReceived: %s", buffer);
-  }
+  SSL *ssl = SSL_new(upan::net::ssl_context::instance().getServerCtx());
+  SSL_set_fd(ssl, new_sd);
 
-  strcpy(buffer, "Hello from Upanix server!");
-  ssize_t bytes_sent = send(new_sd, buffer, strlen(buffer), 0);
-  if (bytes_sent < 0) {
-    throw upan::exception(XLOC, "send() failed");
+  if (SSL_accept(ssl) <= 0) {
+    ERR_print_errors_fp(stderr);
   } else {
-    printf("\nSent %d bytes: %s", bytes_sent, buffer);
+    char buffer[1024] = {0};
+    SSL_read(ssl, buffer, sizeof(buffer));
+    printf("Client says: %s\n", buffer);
+
+    const char msg[] = "Hello from Upanix TLS Server!";
+    SSL_write(ssl, msg, strlen(msg) + 1);
   }
 
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
   close(new_sd);
   close(sd);
 }
 
 static void test_tcp_tls_client() {
-  const upan::string host = "192.168.50.208";
-  const int server_port = 12345;
-  char message[1024] = "Hello, TCP Server!";
+  const upan::string host = "192.168.50.174";
+  const int server_port = 8443;
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
@@ -2122,20 +2127,22 @@ static void test_tcp_tls_client() {
 
   printf("\nConnected to %s:%d", host.c_str(), server_port);
 
-  ssize_t bytes_sent = send(sd, message, strlen(message), 0);
-  if (bytes_sent < 0) {
-    throw upan::exception(XLOC, "send() failed");
+  SSL *ssl = SSL_new(upan::net::ssl_context::instance().getClientCtx());
+  SSL_set_fd(ssl, sd);
+
+  if (SSL_connect(ssl) <= 0) {
+    ERR_print_errors_fp(stderr);
   } else {
-    printf("\nSent %d bytes: %s", bytes_sent, message);
+    char buffer[1024] = "Hello from Upanix TLS Client!";
+    SSL_write(ssl, buffer, strlen(buffer) + 1);
+
+    buffer[0] = '\0';
+    SSL_read(ssl, buffer, sizeof(buffer));
+    printf("\nTLS Server replied: %s\n", buffer);
   }
 
-  // 5. Receive response
-  ssize_t bytes_received = recv(sd, message, 1024 - 1, 0);
-  if (bytes_received > 0) {
-    message[bytes_received] = '\0';
-    printf("\nReceived from server: %s", message);
-  }
-
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
   close(sd);
 }
 
