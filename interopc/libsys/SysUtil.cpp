@@ -44,3 +44,9 @@ uint32_t SysUtil_GetTimeSinceBoot() {
   SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_BTIME, false, 1, 2, 3, 4, 5);
   return retStatus ;
 }
+
+int SysUtil_GetEntropy(void* buffer, size_t length) {
+  uint64_t retStatus;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_GET_ENTROPY, false, (uint64_t)buffer, (uint64_t)length, 3, 4, 5);
+  return retStatus;
+}

@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _SYSTEM_UTIL_H_
-#define _SYSTEM_UTIL_H_
+#pragma once
 
 #include <Global.h>
 #include <RTC.h>
@@ -29,5 +28,3 @@
 void SystemUtil_Reboot() ;
 time_t SystemUtil_GetTimeOfDay();
 void SystemUtil_GetRTCTimeFromTime(RTCDateTime* rtcDateTime, const struct timeval* tv) ;
-
-#endif

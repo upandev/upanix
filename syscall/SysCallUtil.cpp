@@ -23,6 +23,7 @@
 # include <SysCallUtil.h>
 # include <SystemUtil.h>
 # include <RTC.h>
+# include <KernelUtil.h>
 
 bool SysCallUtil_IsPresent(uint64_t sysCallId)
 {
@@ -69,6 +70,15 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         }
       }
       break ;
+
+    case SYS_CALL_UTIL_GET_ENTROPY:
+    {
+      auto buffer = (void*)p1;
+      auto length = (size_t)p2;
+      KernelUtil::GetEntropy(buffer, length);
+      *retVal = 0;
+    }
+    break;
 
     case SYS_CALL_UTIL_REBOOT :
 			{
