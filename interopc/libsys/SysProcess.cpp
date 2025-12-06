@@ -146,6 +146,7 @@ int SysProcess_ThreadExec(uintptr_t threadCaller, uintptr_t entryAddress, void* 
 int SysProcess_ThreadDetach(int threadId) {
   uint64_t retStatus ;
   SysCallProc_Handle(&retStatus, SYS_CALL_THREAD_DETACH, false, threadId, 2, 3, 4, 5);
+  return retStatus;
 }
 
 int SysProcess_IsChildAlive(int iProcessID) {

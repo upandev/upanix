@@ -30,13 +30,11 @@ int SysMemory_AlignedAlloc(void** addr, uint32_t alignment, uint32_t uiSizeInByt
   return 0;
 }
 
-int SysMemory_Free(void* uiAddress)
-{
+int SysMemory_Free(void* uiAddress) {
   KernelDMM::Instance().free((uintptr_t)uiAddress);
   return 0;
 }
 
-int SysMemory_GetAllocSize(void* address, size_t* size)
-{
+int SysMemory_GetAllocSize(void* address, size_t* size) {
   return KernelDMM::Instance().getAllocSize((uintptr_t)address, size);
 }
