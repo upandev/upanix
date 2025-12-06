@@ -58,6 +58,7 @@ void DMM::validateAlignParam(uint32_t alignment) const {
 
 uintptr_t DMM::_allocate(uint32_t sizeInBytes, uint32_t alignment) {
   validateAlignParam(alignment);
+  if (alignment == 0) alignment = 16;
   _dmmFlag = true;
 
   //Dedicated Head FileNode. This will avoid Back Loop at Head
