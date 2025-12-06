@@ -18,6 +18,7 @@ int main() {
     struct sockaddr_in serv = {0};
     serv.sin_family = AF_INET;
     serv.sin_port = htons(8443);
+    //inet_pton(AF_INET, "192.168.50.76", &serv.sin_addr);
     inet_pton(AF_INET, "127.0.0.1", &serv.sin_addr);
 
     connect(sockfd, (struct sockaddr*)&serv, sizeof(serv));
