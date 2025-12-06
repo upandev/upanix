@@ -19,6 +19,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+
+#include <signal.h>
 #include <Console.h>
 #include <KeyboardHandler.h>
 #include <CommandLineParser.h>
@@ -40,7 +42,19 @@ void Console::DisplayCommandLine() {
   printf("\nupanix:%s > ", getenv("PWD"));
 }
 
+static void sig_int_handler(int signum) {
+  //no-op
+}
+
 void Console::Start() {
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = sig_int_handler;
+  if (sigaction(SIGINT, &sa, nullptr)) {
+    printf("\nFailed to set signal handler");
+  } else {
+    printf("\nRegistered set signal handler");
+  }
   KC::MConsole().RefreshScreen();
   DisplayCommandLine();
   _ioHandler.start();
