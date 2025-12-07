@@ -339,7 +339,7 @@ void E1000NICDevice::HandleEvent() {
   if(_eventQueue.empty()) {
     ProcessManager::Instance().WaitOnInterrupt(*_irq);
   } else {
-    const auto& data = _eventQueue.front();
+    auto data = _eventQueue.front();
     _eventQueue.pop_front();
 
     if (data._icrVal & ICR_RECEIVE) {

@@ -642,7 +642,7 @@ void XHCIController::HandleEvent() {
     ProcessManager::Instance().WaitOnInterrupt(*XHCIManager::Instance().irq());
   } else {
     while(!_eventQueue.empty()) {
-      const auto& data = _eventQueue.front();
+      auto data = _eventQueue.front();
       _eventQueue.pop_front();
 
       switch (data._resultType) {

@@ -146,7 +146,7 @@ upanui::MouseData PS2MouseDriver::GetMouseData(const upanui::MouseData& prevMous
         }
       }
     } else {
-      const auto &data = _qBuffer.front();
+      auto data = _qBuffer.front();
       _qBuffer.pop_front();
       return data;
     }

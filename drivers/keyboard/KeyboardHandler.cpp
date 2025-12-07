@@ -49,9 +49,9 @@ upan::option<upanui::KeyboardData> KeyboardHandler::GetCharInNonBlockMode() {
 upan::option<upanui::KeyboardData> KeyboardHandler::GetFromQueueBuffer() {
   if(_qBuffer.empty())
     return upan::option<upanui::KeyboardData>::empty();
-  const auto& data = _qBuffer.front();
+  upan::option<upanui::KeyboardData> data(_qBuffer.front());
   _qBuffer.pop_front();
-  return upan::option<upanui::KeyboardData>(data);
+  return data;
 }
 
 bool KeyboardHandler::Process(const KeyboardKeys key, const bool isKeyReleased) {
