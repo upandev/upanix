@@ -35,6 +35,7 @@
 #include <dtime.h>
 #include <PIT.h>
 #include <FSTerminalDevice.h>
+#include <sys/resource.h>
 
 void ProcessManager_Exit(int exitStatus);
 
@@ -81,9 +82,9 @@ class ProcessManager
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
     void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
-    void WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs);
+    void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs);
     void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs);
-    void WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs);
+    void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs);
     void WaitOnKernelService();
     bool IsKernelProcess(int iProcessID);
     bool ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor);
@@ -92,6 +93,7 @@ class ProcessManager
     void ContextSwitch(TaskContext &);
     void closeAllFiles(StorageDrive& storageDrive);
     void updateAllIODescriptorRedirections(pid_t pid, int srcFD, IODescriptor::Ptr targetDesc);
+    void getProcessRUsage(RUSAGE_ID who, struct rusage& ru);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;

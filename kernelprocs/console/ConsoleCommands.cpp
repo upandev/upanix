@@ -22,6 +22,7 @@
 
 #include <net/ip_icmp.h>
 #include <arpa/inet.h>
+#include <sys/wait.h>
 #include <openssl/err.h>
 #include <ussl.h>
 #include <ConsoleCommands.h>

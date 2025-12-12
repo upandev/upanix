@@ -190,7 +190,7 @@ int SocketDescriptorStream::_read(void* buffer, int len) {
       return 0;
     }
 
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getRecvTimeout());
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Read, getRecvTimeout());
     const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (r == ProcessStateInfo::TIMEOUT) {
       throw upan::exception(XLOC, "socket receive timed-out");
@@ -225,7 +225,7 @@ int SocketDescriptorStream::_write(const void* buffer, int len) {
       return 0;
     }
 
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getSendTimeout());
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Read, getSendTimeout());
     const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (r == ProcessStateInfo::TIMEOUT) {
       throw upan::exception(XLOC, "socket receive timed-out");

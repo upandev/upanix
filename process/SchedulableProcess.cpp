@@ -96,6 +96,8 @@ void SchedulableProcess::Load(TaskContext& taskContext) {
 //  ptTable[ptIndex] = (_threadContextPageNumber * PAGE_SIZE) | (isKernelProcess() ? 0x3 : 0x7);
 
   taskContext = _taskContext;
+  const auto mode = (taskContext.interruptState.cs & 0x3) == 0x3 ? ProcessStat::CaptureMode::USER_MODE : ProcessStat::CaptureMode::KERNEL_MODE;
+  captureTime(mode);
 }
 
 void SchedulableProcess::Deallocate() {
@@ -133,6 +135,7 @@ void SchedulableProcess::switchPageTable() const {
 
 void SchedulableProcess::Store(const TaskContext& taskContext) {
   _taskContext = taskContext;
+  captureTime(ProcessStat::CaptureMode::NA);
 }
 
 FILE_USER_TYPE SchedulableProcess::fileUserType(const FileNode &node) const

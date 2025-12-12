@@ -174,7 +174,7 @@ ssize_t SocketDescriptorLocalDataGram::_sendTo(const void* buf, size_t n, int fl
       if (getMode() & O_WR_NONBLOCK || getMode() & O_NONBLOCK) {
         return 0;
       }
-      ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Write, 0);
+      ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Write, 0);
       const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
       if (err == ProcessStateInfo::INTERRUPTED) {
         throw upan::exception(XLOC, "local DGRAM write interrupted");
@@ -221,7 +221,7 @@ ssize_t SocketDescriptorLocalDataGram::_recvFrom(void* buf, size_t n, int flags,
     if (getMode() & O_RD_NONBLOCK || getMode() & O_NONBLOCK) {
       return 0;
     }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, 0);
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Read, 0);
     const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (err == ProcessStateInfo::INTERRUPTED) {
       throw upan::exception(XLOC, "local DGRAM read interrupted");

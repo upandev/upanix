@@ -43,7 +43,7 @@ int SocketDescriptorDataGramBuffer::_read(void* buffer, int len) {
     if (getMode() & O_RD_NONBLOCK || getMode() & O_NONBLOCK) {
       return 0;
     }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, 0);
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Read, 0);
     const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (err == ProcessStateInfo::INTERRUPTED) {
       throw upan::exception(XLOC, "StreamBuffer read interrupted");
@@ -78,7 +78,7 @@ int SocketDescriptorDataGramBuffer::send(const void* buffer, int len) {
     if (getMode() & O_WR_NONBLOCK || getMode() & O_NONBLOCK) {
       return 0;
     }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Write, 0);
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Write, 0);
     const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (err == ProcessStateInfo::INTERRUPTED) {
       throw upan::exception(XLOC, "StreamBuffer write interrupted");

@@ -44,6 +44,16 @@ public:
     KSYSLOG = 4,
   } STD_DESCRIPTORS;
 
+  typedef enum {
+    IO_Read,
+    IO_Write
+  } IO_OP_TYPES ;
+
+  typedef struct {
+    int _fd;
+    IO_OP_TYPES _ioType;
+  } io_descriptor;
+
   typedef upan::map<int, IODescriptor::Ptr> IODMap;
 
   explicit IODescriptorTable(int pid);
@@ -57,7 +67,7 @@ public:
   IODescriptor::Ptr get(int fd);
   void setupStreamedStdio();
   void setupNullStdio();
-  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors);
+  upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors, struct timeval* timeout, int& retCode);
   upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
   void closeAllFiles(StorageDrive&);
 

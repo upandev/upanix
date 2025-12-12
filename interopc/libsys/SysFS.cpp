@@ -84,10 +84,10 @@ int SysFS_FileWrite(int fd, const void* buf, int len)
 	return retStatus ;
 }
 
-void SysFS_FileSelect(io_descriptor* waitIODescriptors, io_descriptor* readyIODescriptors) {
+int SysFS_FileSelect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_SELECT, false, (uint64_t) waitIODescriptors,
-                     (uint64_t) readyIODescriptors, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_SELECT, false, (uint64_t)nfds, (uint64_t)readfds, (uint64_t)writefds, (uint64_t)exceptfds, (uint64_t)timeout);
+  return (int)retStatus;
 }
 
 int SysFS_FileSeek(int fd, int offSet, int seekType)

@@ -80,6 +80,24 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
     }
     break;
 
+    case SYS_CALL_UTIL_GET_RUSAGE:
+    {
+      *retVal = 0;
+
+      auto who = (RUSAGE_ID)p1;
+      auto ru = (struct rusage*)p2;
+      try {
+        if (!ru) {
+          *retVal = -1;
+        } else {
+          ProcessManager::Instance().getProcessRUsage(who, *ru);
+        }
+      } catch(upan::exception& e) {
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_UTIL_REBOOT :
 			{
 				*retVal = 0 ;

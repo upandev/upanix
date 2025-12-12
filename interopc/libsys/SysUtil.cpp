@@ -50,3 +50,9 @@ int SysUtil_GetEntropy(void* buffer, size_t length) {
   SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_GET_ENTROPY, false, (uint64_t)buffer, (uint64_t)length, 3, 4, 5);
   return retStatus;
 }
+
+int SysUtil_GetResourceUsage(RUSAGE_ID who, struct rusage* ru) {
+  uint64_t retStatus;
+  SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_GET_RUSAGE, false, (uint64_t)who, (uint64_t)ru, 3, 4, 5);
+  return retStatus;
+}

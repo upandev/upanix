@@ -19,28 +19,23 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
+#pragma once
 
-#include <Thread.h>
-#include <AutonomousProcess.h>
+#include <sys/resource.h>
 
-Thread::Thread(AutonomousProcess& parent, bool joinable) : SchedulableProcess("", parent.processID(), false), _parent(parent), _joinable(joinable) {
-  _name = _parent.name() + "_T" + upan::string::to_string(_processID);
-  _processBase = _parent.getProcessBase();
-  _userID = _parent.userID();
-}
+class ProcessStat {
+public:
+  enum CaptureMode { USER_MODE, KERNEL_MODE, NA };
+  ProcessStat();
+  void captureTime(CaptureMode captureMode);
+  void addChildRUsage(ProcessStat& childRUsage);
 
-void Thread::Destroy() {
-  setStatus(TERMINATED);
-  captureTime(ProcessStat::CaptureMode::NA);
-  // Deallocate Resources
-  Deallocate();
+  struct rusage& rusage() { return _rusage; }
+  struct rusage& childrenRUsage() { return _childrenRusage; }
 
-  dmm().releaseLocks(_processID);
-  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-
-  //TODO: release all the mutex held by the process or an individual thread
-
-  if(_parentProcessID == NO_PROCESS_ID || !_joinable) {
-    Release();
-  }
-}
+private:
+  time_t _previousCaptureTime;
+  CaptureMode _previousCaptureMode;
+  struct rusage _rusage;
+  struct rusage _childrenRusage;
+};

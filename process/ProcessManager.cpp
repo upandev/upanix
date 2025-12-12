@@ -36,6 +36,7 @@
 #include <KernelProcess.h>
 #include <UserThread.h>
 #include <KernelRootProcess.h>
+#include <ProcessStat.h>
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
@@ -315,9 +316,9 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
   }
 }
 
-void ProcessManager::WaitOnIODescriptor(int fd, IO_OP_TYPES waitType, time_t timeoutInMs) {
-  upan::vector<io_descriptor> waitIODescriptors;
-  io_descriptor waitIODescriptor;
+void ProcessManager::WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs) {
+  upan::vector<IODescriptorTable::io_descriptor> waitIODescriptors;
+  IODescriptorTable::io_descriptor waitIODescriptor;
   waitIODescriptor._fd = fd;
   waitIODescriptor._ioType = waitType;
   waitIODescriptors.push_back(waitIODescriptor);
@@ -345,7 +346,7 @@ void ProcessManager::WaitOnTerminalIO(const upan::string& path, FSTerminalDevice
   p.yield();
 }
 
-void ProcessManager::WaitOnIODescriptors(const upan::vector<io_descriptor>& waitIODescriptors, time_t timeoutInMs) {
+void ProcessManager::WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs) {
   if(GetCurProcId() < 0)
     return ;
   auto& p = GetCurrentPAS();
@@ -634,3 +635,14 @@ void ProcessManager::stopKernelProcesses() {
   stopProcesses([](SchedulableProcess& process) { return process.isKernelProcess() && !process.isCoreProcess() && !process.isThread(); });
 }
 
+void ProcessManager::getProcessRUsage(RUSAGE_ID who, struct rusage& ru) {
+  ProcessSwitchLock lock;
+  auto& p = GetCurrentPAS();
+  if (who == RUSAGE_SELF) {
+    ru = p.processStat().rusage();
+  } else if (who == RUSAGE_CHILDREN) {
+    ru = p.processStat().childrenRUsage();
+  } else {
+    throw upan::exception(XLOC, "invalid rusage id: %d", who);
+  }
+}

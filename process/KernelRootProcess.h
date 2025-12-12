@@ -87,15 +87,19 @@ public:
     throw upan::exception(XLOC, "pwd(FileNodeRef&) unsupported");
   }
 
-  ProcessStateInfo& stateInfo() {
+  ProcessStateInfo& stateInfo() override {
     throw upan::exception(XLOC, "stateInfo() unsupported");
   }
 
-  PROCESS_STATUS status() const {
+  ProcessStat& processStat() override {
+    throw upan::exception(XLOC, "processStat() unsupported");
+  }
+
+  PROCESS_STATUS status() const override {
     throw upan::exception(XLOC, "status() unsupported");
   }
 
-  PROCESS_STATUS setStatus(PROCESS_STATUS status) {
+  PROCESS_STATUS setStatus(PROCESS_STATUS status) override {
     throw upan::exception(XLOC, "setStatus() unsupported");
   }
 
@@ -106,6 +110,8 @@ public:
   void setProcessGroup(ProcessGroup* processGroup) override {
     _processGroup = processGroup;
   }
+
+  void captureTime(ProcessStat::CaptureMode) override {}
 
   DMM& dmm() override;
   void switchPageTable();

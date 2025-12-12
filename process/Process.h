@@ -33,6 +33,7 @@
 #include <MouseData.h>
 #include <GraphicsContext.h>
 #include <DMM.h>
+#include <ProcessStat.h>
 
 class ProcessGroup;
 class IODescriptorTable;
@@ -63,6 +64,7 @@ public:
   virtual FileNodeRef pwd() const = 0;
   virtual void pwd(const FileNodeRef&) = 0;
   virtual ProcessStateInfo& stateInfo() = 0;
+  virtual ProcessStat& processStat() = 0;
   virtual PROCESS_STATUS status() const = 0;
   virtual PROCESS_STATUS setStatus(PROCESS_STATUS status) = 0;
   virtual ProcessGroup* processGroup() = 0;
@@ -72,6 +74,8 @@ public:
   virtual upan::option<upan::mutex&> dllMutex() {
     throw upan::exception(XLOC, "dllMutex unsupported");
   }
+
+  virtual void captureTime(ProcessStat::CaptureMode) = 0;
 
   virtual void MapDLLPagesToProcess(uint32_t noOfPagesForDLL, const upan::string& dllName) {
     throw upan::exception(XLOC, "MapDLLPagesToProcess unsupported");

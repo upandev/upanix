@@ -231,25 +231,43 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			}
 			break ;
 
-	  case SYS_CALL_FILE_SELECT:
-	    // P1 => Input IO Descriptors to wait on
-	    // P2 => Output IO Descriptors that are ready
-	    {
-	      io_descriptor* in_waitIODescriptors = ( io_descriptor*) p1;
-	      io_descriptor* out_readyIODescriptors = ( io_descriptor*) p2;
+	  case SYS_CALL_FILE_SELECT: {
+        const auto nfds = (int) p1;
+        fd_set* readfds = (fd_set*) p2;
+        fd_set* writefds = (fd_set*) p3;
+        fd_set* exceptfds = (fd_set*) p4;
+        struct timeval* timeout = (struct timeval*) p5;
 
-	      upan::vector<io_descriptor> waitIODescriptors;
-	      for(int i = 0; in_waitIODescriptors[i]._fd >= 0; ++i) {
-	        waitIODescriptors.push_back(in_waitIODescriptors[i]);
-	      }
+        upan::vector<IODescriptorTable::io_descriptor> waitIODescriptors;
+        for (int i = 0; i < nfds; ++i) {
+          if (readfds && FD_ISSET(i, readfds)) {
+            waitIODescriptors.push_back({i, IODescriptorTable::IO_OP_TYPES::IO_Read});
+          }
+          if (writefds && FD_ISSET(i, writefds)) {
+            waitIODescriptors.push_back({i, IODescriptorTable::IO_OP_TYPES::IO_Write});
+          }
+        }
 
-	      const auto& readyIODescriptors = ProcessManager::Instance().GetCurrentPAS().iodTable().select(waitIODescriptors);
-	      int i;
-	      for(i = 0; i < readyIODescriptors.size(); ++i) {
-	        out_readyIODescriptors[i] = readyIODescriptors[i];
-	      }
-	      out_readyIODescriptors[i]._fd = -1;
-	    }
+        if (readfds) FD_ZERO(readfds);
+        if (writefds) FD_ZERO(writefds);
+        if (exceptfds) FD_ZERO(exceptfds);
+
+        if (waitIODescriptors.empty()) {
+          *retVal = -1;
+        } else {
+          int retCode = 0;
+          const auto& readyIODescriptors = ProcessManager::Instance().GetCurrentPAS().iodTable().select(waitIODescriptors, timeout, retCode);
+          for(auto& d : readyIODescriptors) {
+            if (readfds && d._ioType == IODescriptorTable::IO_OP_TYPES::IO_Read) {
+              FD_SET(d._fd, readfds);
+            }
+            if (writefds && d._ioType == IODescriptorTable::IO_OP_TYPES::IO_Write) {
+              FD_SET(d._fd, writefds);
+            }
+          }
+          *retVal = retCode;
+        }
+      }
 	    break;
 		case SYS_CALL_FILE_SEEK:
 			// P1 => File Desc

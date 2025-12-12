@@ -99,6 +99,8 @@ upan::map<uint64_t, upan::map<int, int>>& get_syscall_stats() {
 
 extern "C" void SysCall_Entry(uint64_t sysCallId, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5) {
   get_syscall_stats()[sysCallId][getpid()]++;
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+  process.captureTime(ProcessStat::CaptureMode::KERNEL_MODE);
   //printf("\n System Call Params: %lu, %llx, %llx, %llx, %llx, %llx\n", sysCallId, p1, p2, p3, p4, p5);
   SYS_CALL_ID = sysCallId;
 	uint64_t retVal = 0;
@@ -113,6 +115,7 @@ extern "C" void SysCall_Entry(uint64_t sysCallId, uint64_t p1, uint64_t p2, uint
 	  	break ;
 		}
 	}
+  process.captureTime(ProcessStat::CaptureMode::USER_MODE);
   *((uint64_t*)PROCESS_SYSCALL_RETURN_ADDRESS) = retVal;
 }
 

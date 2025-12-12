@@ -25,6 +25,7 @@
 #include <pair.h>
 #include <vector.h>
 #include <mosstd.h>
+#include <IODescriptorTable.h>
 #include <FSTerminalDevice.h>
 
 class IRQ;
@@ -50,10 +51,10 @@ public:
   int WaitQueueSpaceId() const { return _waitQueueSpaceId; }
   void WaitQueueSpaceId(int space) { _waitQueueSpaceId = space; }
 
-  const upan::vector<io_descriptor>& GetIODescriptors() const {
+  const upan::vector<IODescriptorTable::io_descriptor>& GetIODescriptors() const {
     return _ioDescriptors;
   }
-  void SetIODescriptors(const upan::vector<io_descriptor>& ioDescriptors) {
+  void SetIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& ioDescriptors) {
     _ioDescriptors = ioDescriptors;
   }
 
@@ -90,7 +91,7 @@ private:
   int            _waitQueueSpaceId;
   upan::atomic::integral<bool> _eventCompleted;
   bool           _kernelServiceComplete;
-  upan::vector<io_descriptor> _ioDescriptors;
+  upan::vector<IODescriptorTable::io_descriptor> _ioDescriptors;
   FSTerminalDevice::WaitInfo _terminalIOWaitInfo;
   Error          _error;
   int            _exitStatus;

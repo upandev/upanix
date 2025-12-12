@@ -61,7 +61,7 @@ upan::shared_ptr<RawNetPacket> SocketDescriptorPacket::recvPacket() {
     if (getMode() & O_NONBLOCK) {
       return {};
     }
-    ProcessManager::Instance().WaitOnIODescriptor(id(), IO_OP_TYPES::IO_Read, getRecvTimeout());
+    ProcessManager::Instance().WaitOnIODescriptor(id(), IODescriptorTable::IO_OP_TYPES::IO_Read, getRecvTimeout());
     const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (r == ProcessStateInfo::TIMEOUT) {
       throw upan::exception(XLOC, "socket receive timed-out");

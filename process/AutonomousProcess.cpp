@@ -85,11 +85,14 @@ void AutonomousProcess::addToThreadScheduler(Thread& thread) {
 //   b. all child threads are destroyed and released
 void AutonomousProcess::Destroy() {
   setStatus(TERMINATED);
+  captureTime(ProcessStat::CaptureMode::NA);
 
   DestroyThreads();
 
   // child processes of this process (if any) will be redirected to the parent of the current process
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(_parentProcessID);
+  parentProcess.ifPresent([&](SchedulableProcess& p) { processStat().addChildRUsage(_processStat); });
+
   for(auto pid : _childProcessIDs) {
     ProcessManager::Instance().GetSchedulableProcess(pid).ifPresent([&parentProcess](SchedulableProcess &p) {
       if (p.status() == TERMINATED) {

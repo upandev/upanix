@@ -26,6 +26,7 @@
 #include <StreamBufferDescriptor.h>
 #include <NullDescriptor.h>
 #include <StorageDrive.h>
+#include "errno_values.h"
 
 constexpr int PROC_SYS_MAX_OPEN_FILES = 4096;
 
@@ -144,22 +145,29 @@ void IODescriptorTable::dup2(int oldFD, int newFD) {
   _iodMap.insert(IODMap::value_type(newFD, targetF));
 }
 
-upan::vector<io_descriptor> IODescriptorTable::select(const upan::vector<io_descriptor>& ioDescriptors) {
+upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::select(const upan::vector<io_descriptor>& ioDescriptors, struct timeval* timeout, int& retCode) {
+  retCode = 0;
   const auto& result = selectCheck(ioDescriptors);
   if (result.empty()) {
-    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, 0);
+    const time_t timeoutInMs = timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : 0;
+    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, timeoutInMs);
     const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (err == ProcessStateInfo::INTERRUPTED) {
       //throw upan::exception(XLOC, "IO select interrupted");
+      retCode = -EINTR;
+      return {};
+    } else if (err == ProcessStateInfo::TIMEOUT) {
+      retCode = 0;
       return {};
     }
     return ProcessManager::Instance().GetCurrentPAS().stateInfo().GetIODescriptors();
   } else {
+    retCode = result.size();
     return result;
   }
 }
 
-upan::vector<io_descriptor> IODescriptorTable::selectCheck(const upan::vector<io_descriptor>& ioDescriptors) {
+upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::selectCheck(const upan::vector<io_descriptor>& ioDescriptors) {
   upan::vector<io_descriptor> result;
   for(const auto& ioDescriptor : ioDescriptors) {
     auto d = get(ioDescriptor._fd);

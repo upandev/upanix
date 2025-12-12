@@ -28,6 +28,7 @@
 #include <SessionManager.h>
 #include <IODescriptorTable.h>
 #include <KernelRootProcess.h>
+#include <sys/select.h>
 
 void Console_StartUpanixConsole() {
   Console::Instance().Start();
@@ -59,24 +60,20 @@ void Console::Start() {
   DisplayCommandLine();
   _ioHandler.start();
 
-  io_descriptor waitFDs[2];
-  waitFDs[0]._fd = IODescriptorTable::STDIN;
-  waitFDs[0]._ioType = IO_OP_TYPES::IO_Read;
-
-  waitFDs[1]._fd = -1;
-
-  io_descriptor readyFDs[2];
-  readyFDs[0]._fd = -1;
+  fd_set readfds;
+  const int nfds = IODescriptorTable::STDIN + 1;
 
   const int MAX_BUFFER_SIZE = 1024;
   auto buffer = (uint8_t*) malloc(MAX_BUFFER_SIZE);
   try {
     while (true) {
-      select(waitFDs, readyFDs);
-      for (int i = 0; readyFDs[i]._fd >= 0; ++i) {
-        const int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
-        OnKeyboardInput(buffer, n);
-      }
+      FD_ZERO(&readfds);
+      FD_SET(IODescriptorTable::STDIN, &readfds);
+      if (select(nfds, &readfds, NULL, NULL, NULL) >= 1)
+        if (FD_ISSET(IODescriptorTable::STDIN, &readfds)) {
+          const int n = read(IODescriptorTable::STDIN, buffer, MAX_BUFFER_SIZE);
+          OnKeyboardInput(buffer, n);
+        }
     }
   } catch (upan::exception& e) {
     e.Print();
@@ -134,25 +131,22 @@ Console::ConsoleOutHandler::ConsoleOutHandler(Console& console) : _console(conso
 }
 
 void Console::ConsoleOutHandler::run() {
-  io_descriptor waitFDs[2];
-  waitFDs[0]._fd = IODescriptorTable::TERMINAL_MASTER;
-  waitFDs[0]._ioType = IO_OP_TYPES::IO_Read;
-
-  waitFDs[1]._fd = -1;
-
-  io_descriptor readyFDs[2];
-  readyFDs[0]._fd = -1;
+  fd_set readfds;
+  const int nfds = IODescriptorTable::TERMINAL_MASTER + 1;
 
   const int MAX_BUFFER_SIZE = 1024;
   auto buffer = (uint8_t*) malloc(MAX_BUFFER_SIZE);
   try {
     KernelRootProcess::Instance().setDirectKernelConsole(false);
     while (true) {
-      select(waitFDs, readyFDs);
+      FD_ZERO(&readfds);
+      FD_SET(IODescriptorTable::TERMINAL_MASTER, &readfds);
 
-      for (int i = 0; readyFDs[i]._fd >= 0; ++i) {
-        const int n = read(readyFDs[i]._fd, buffer, MAX_BUFFER_SIZE);
-        ProcessInput(buffer, n);
+      if (select(nfds, &readfds, NULL, NULL, NULL) >= 1) {
+        if (FD_ISSET(IODescriptorTable::TERMINAL_MASTER, &readfds)) {
+          const int n = read(IODescriptorTable::TERMINAL_MASTER, buffer, MAX_BUFFER_SIZE);
+          ProcessInput(buffer, n);
+        }
       }
     }
   } catch (upan::exception& e) {

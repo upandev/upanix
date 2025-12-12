@@ -36,6 +36,7 @@
 #include <ThreadLocalStorage.h>
 #include <ProcessSignal.h>
 #include <signal.h>
+#include <ProcessStat.h>
 
 class SchedulableProcess : public Process
 {
@@ -62,7 +63,6 @@ public:
   bool isFGProcessGroup() const override {
     return _processGroup->IsFGProcessGroup();
   }
-
 
   void Load(TaskContext& taskState);
   void Store(const TaskContext& taskState);
@@ -96,7 +96,11 @@ public:
   ProcessGroup* processGroup() override { return _processGroup; }
   void setProcessGroup(ProcessGroup* processGroup) override { _processGroup = processGroup; }
 
+  void captureTime(ProcessStat::CaptureMode mode) override {
+    _processStat.captureTime(mode);
+  }
   ProcessStateInfo& stateInfo() override { return _stateInfo; }
+  ProcessStat& processStat() override { return _processStat; }
 
   FileNodeRef pwd() const override { return _pwd; }
   void pwd(const FileNodeRef& pwd) { _pwd = pwd; }
@@ -179,4 +183,5 @@ protected:
   upan::queue<Signal> _signalQueue;
   SignalTaskContext _signalRestoreContext;
   uint64_t _pageFaultRSPBackup;
+  ProcessStat _processStat;
 };
