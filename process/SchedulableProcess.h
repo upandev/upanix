@@ -72,7 +72,7 @@ public:
   bool handlePageFault(TaskContext& taskContext, uint64_t faultyAddress);
 
   FILE_USER_TYPE fileUserType(const FileNode&) const override;
-  bool hasFilePermission(const FileNode&, byte mode) const override;
+  bool hasFilePermission(const FileNode&, int mode) const override;
 
   uint64_t getProcessBase() const override { return _processBase; }
   upan::string name() const { return _name; }

@@ -201,7 +201,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
   auto& parentFileNode = reinterpret_cast<FileNode*>(parentDirBuffer)[parentNode.sectorOffset()];
 
-  if(!process.hasFilePermission(parentFileNode, O_RDWR)) {
+  if(!process.hasFilePermission(parentFileNode, W_OK)) {
     throw upan::exception(XLOC, "insufficient permission to create file: %s", newFileName.c_str());
   }
 
@@ -266,7 +266,7 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
   auto& parentFileNode = reinterpret_cast<FileNode*>(parentDirBuffer)[parentNode.sectorOffset()];
 
-  if(!process.hasFilePermission(parentFileNode, O_RDWR)) {
+  if(!process.hasFilePermission(parentFileNode, R_OK | W_OK)) {
     throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
   }
 
@@ -316,6 +316,9 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, 
       FileTree::NodeTokens dirTokens(fileTokens);
       dirTokens.pop_back();
       const upan::string& fileName = fileTokens.back();
+      if (FILE_TYPE(mode) == 0) {
+        mode = ATTR_FILE_DEFAULT;
+      }
       create(dirTokens, fileName, mode, cwd, process);
       fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
       newFileCreated = true;
@@ -338,7 +341,7 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, 
   _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
 
-  if(!process.hasFilePermission(fileNode, flags)) {
+  if(!process.hasFilePermission(fileNode, tofileaccessmode(flags))) {
     throw upan::exception(XLOC, "insufficient permission to open file %s", node.name().c_str());
   }
 
@@ -431,7 +434,7 @@ upan::string FileSystem::fullPath(FileNodeRef fileNodeRef) {
   return _fileTree.getFullPath(fileNodeRef.nodev());
 }
 
-bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process) {
+bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, int mode, const FileNodeRef& cwd, Process& process) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   if (fileNodeRef.empty()) {
     throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
@@ -467,7 +470,7 @@ FileNodeRef FileSystem::openDir(const FileTree::NodeTokens& fileTokens, FileNode
     throw upan::exception(XLOC, "%s is not a directory", node.name().c_str());
   }
 
-  if (!process.hasFilePermission(mainFileNode, O_RDONLY)) {
+  if (!process.hasFilePermission(mainFileNode, R_OK)) {
     throw upan::exception(XLOC, "insufficient permission to read %s", node.name().c_str());
   }
 

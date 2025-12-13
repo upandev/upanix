@@ -51,7 +51,7 @@ public:
   DIR* opendir(const upan::string& dirPath);
   void readdir(DIR* dirp);
   void closedir(DIR* dirp);
-  bool fileAccess(const upan::string& filePath, uint8_t mode);
+  bool fileAccess(const upan::string& filePath, int mode);
   void dup2(int oldFD, int newFD);
 
 private:

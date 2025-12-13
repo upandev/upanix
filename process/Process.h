@@ -57,7 +57,7 @@ public:
   virtual int processSpaceID() const = 0;
 
   virtual FILE_USER_TYPE fileUserType(const FileNode&) const = 0;
-  virtual bool hasFilePermission(const FileNode&, byte mode) const = 0;
+  virtual bool hasFilePermission(const FileNode&, int mode) const = 0;
   virtual uint64_t* pml4Table() const = 0;
 
   virtual void setDriveID(int driveID) = 0;

@@ -63,7 +63,7 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
     if (S_ISSOCK(fileStat.value().st_mode) == false) {
       throw upan::exception(XLOC, "a non socket file already exists at path: %s", path.c_str());
     }
-    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, O_RDWR)) {
+    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
       throw upan::exception(XLOC, "permission denied to access socket device at path: %s", path.c_str());
     }
   }
@@ -86,7 +86,7 @@ int FSDeviceManager::createTerminalDevice(int flags) {
     if (S_ISCHR(fileStat.value().st_mode) == false) {
       throw upan::exception(XLOC, "a non tty file already exists at path: %s", path.c_str());
     }
-    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, flags)) {
+    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
       throw upan::exception(XLOC, "permission denied to access tty device at path: %s", path.c_str());
     }
   }

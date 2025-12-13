@@ -146,37 +146,44 @@ FILE_USER_TYPE SchedulableProcess::fileUserType(const FileNode &node) const
   return USER_OTHERS ;
 }
 
-bool SchedulableProcess::hasFilePermission(const FileNode& node, byte mode) const
-{
-  unsigned short usMode = FILE_PERM(node.Attribute());
+bool SchedulableProcess::hasFilePermission(const FileNode& node, int mode) const {
+  if (mode == F_OK) {
+    return true;
+  }
 
-  bool bHasRead, bHasWrite;
-
-  switch(fileUserType(node))
-  {
+  const uint16_t perm = FILE_PERM(node.Attribute());
+  bool hasRead, hasWrite, hasExecutable;
+  switch(fileUserType(node)) {
     case FILE_USER_TYPE::USER_OWNER:
-      bHasRead = HAS_READ_PERM(G_OWNER(usMode));
-      bHasWrite = HAS_WRITE_PERM(G_OWNER(usMode));
+      hasRead = HAS_READ_PERM(G_OWNER(perm));
+      hasWrite = HAS_WRITE_PERM(G_OWNER(perm));
+      hasExecutable = HAS_EXE_PERM(G_OWNER(perm));
       break;
 
     case FILE_USER_TYPE::USER_OTHERS:
-      bHasRead = HAS_READ_PERM(G_OTHERS(usMode));
-      bHasWrite = HAS_WRITE_PERM(G_OTHERS(usMode));
+      hasRead = HAS_READ_PERM(G_OTHERS(perm));
+      hasWrite = HAS_WRITE_PERM(G_OTHERS(perm));
+      hasExecutable = HAS_EXE_PERM(G_OTHERS(perm));
       break;
 
     default:
       return false;
   }
 
-  if(mode & O_RDONLY)
-  {
-    return bHasRead || bHasWrite;
+  bool hasAccess = false;
+  if(mode & R_OK) {
+    hasAccess |= hasRead;
   }
-  else if((mode & O_WRONLY) || (mode & O_RDWR) || (mode & O_APPEND))
-  {
-    return bHasWrite;
+
+  if(mode & W_OK) {
+    hasAccess |= hasWrite;
   }
-  return false;
+
+  if (mode & X_OK) {
+    hasAccess |= hasExecutable;
+  }
+
+  return hasAccess;
 }
 
 void SchedulableProcess::Common::SetStackPDTable(uint64_t *pml4Table, uint64_t value) {

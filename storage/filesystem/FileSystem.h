@@ -76,7 +76,7 @@ public:
   struct stat stats(FileNodeRef fileNodeRef);
   struct stat stats(const FileNode& node);
   upan::string fullPath(FileNodeRef fileNodeRef);
-  bool hasFilePermission(const FileTree::NodeTokens& fileTokens, uint8_t mode, const FileNodeRef& cwd, Process& process);
+  bool hasFilePermission(const FileTree::NodeTokens& fileTokens, int mode, const FileNodeRef& cwd, Process& process);
   FileNodeRef openDir(const FileTree::NodeTokens& fileTokens, FileNodeRef cwd, Process& process, DIR& dir);
   void readDir(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, Process& process, DIR& dir);
   int read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* dataBuffer, int size);

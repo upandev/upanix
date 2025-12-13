@@ -63,7 +63,7 @@ public:
     return USER_OWNER;
   }
 
-  bool hasFilePermission(const FileNode&, byte mode) const override {
+  bool hasFilePermission(const FileNode&, int mode) const override {
     return true;
   }
 

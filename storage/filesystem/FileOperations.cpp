@@ -276,7 +276,7 @@ void FileOperations::closedir(DIR* dirp) {
   process.dmm().free((uintptr_t)dirp);
 }
 
-bool FileOperations::fileAccess(const upan::string& filePath, uint8_t mode) {
+bool FileOperations::fileAccess(const upan::string& filePath, int mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
