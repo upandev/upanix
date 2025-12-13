@@ -116,6 +116,14 @@ public:
     _parent.setControllingTerminal(terminalDevice);
   }
 
+  upan::pair<uint32_t, time_t> setAlarm(uint32_t seconds) override {
+    return _parent.setAlarm(seconds);
+  }
+
+  time_t alarmExpiry() const override {
+    return _parent.alarmExpiry();
+  }
+
 protected:
   AutonomousProcess& _parent;
   bool _joinable;

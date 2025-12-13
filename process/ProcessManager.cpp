@@ -176,7 +176,7 @@ void ProcessManager::Sleep(uint32_t sleepTime) // in Milli Seconds
   auto &p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(sleepTime));
+    p.stateInfo().SleepTime(btime() + PIT::Instance().RoundSleepTime(sleepTime));
     p.setStatus(WAIT_SLEEP);
   }
   p.yield();
@@ -645,4 +645,9 @@ void ProcessManager::getProcessRUsage(RUSAGE_ID who, struct rusage& ru) {
   } else {
     throw upan::exception(XLOC, "invalid rusage id: %d", who);
   }
+}
+
+upan::pair<uint32_t, time_t> ProcessManager::SetAlarm(uint32_t seconds) {
+  ProcessSwitchLock lock;
+  GetCurrentPAS().setAlarm(seconds);
 }

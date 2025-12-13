@@ -49,17 +49,17 @@ int SysFS_DeleteDirectory(const char* szDirPath)
 	return retStatus ;
 }
 
-int SysFS_CreateFile(const char* szDirPath, unsigned short usAttribute)
+int SysFS_CreateFile(const char* szDirPath, mode_t mode)
 {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_CREATE, false, (uint64_t) szDirPath, (uint64_t) usAttribute, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_CREATE, false, (uint64_t) szDirPath, (uint64_t) mode, 3, 4, 5);
 	return retStatus ;
 }
 
-int SysFS_FileOpen(const char* szFileName, uint32_t mode)
+int SysFS_FileOpen(const char* szFileName, int flags, mode_t mode)
 {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN, false, (uint64_t) szFileName, (uint64_t) mode, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_OPEN, false, (uint64_t)szFileName, (uint64_t)flags, (uint64_t)mode, 4, 5);
 	return retStatus ;
 }
 

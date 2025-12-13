@@ -39,10 +39,7 @@ UserManager::UserManager() : _userListFileName(upan::string(OSIN_PATH) + ".user.
 }
 
 void UserManager::CreateNewUserList() {
-	unsigned short usPerm = S_OWNER((ATTR_READ | ATTR_WRITE)) | S_GROUP(ATTR_READ) | S_OTHERS(ATTR_READ);
-
-  FileOperations::Instance().create(_userListFileName, S_IFDIR, usPerm);
-
+  FileOperations::Instance().create(_userListFileName, ATTR_FILE_DEFAULT);
 	InitializeDefaultUserList();
 	WriteUserList();
 }
@@ -52,7 +49,7 @@ void UserManager::InitializeDefaultUserList() {
 }
 
 void UserManager::WriteUserList() {
-  auto file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC);
+  auto file = FileOperations::Instance().open(_userListFileName, O_RDWR | O_TRUNC, ATTR_FILE_DEFAULT);
 
   for(auto u : _users) {
     const User& user = *u.second;
@@ -75,7 +72,7 @@ void UserManager::WriteUserList() {
 }
 
 bool UserManager::LoadUserList() {
-  auto file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY);
+  auto file = FileOperations::Instance().open(_userListFileName.c_str(), O_RDONLY, 0);
 
   upan::string name;
   while(FileOperations_ReadLine(file->id(), name))

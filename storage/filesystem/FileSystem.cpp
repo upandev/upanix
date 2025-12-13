@@ -163,7 +163,7 @@ void FileSystem::checkIfMounted() {
   }
 }
 
-uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
+uint16_t FileSystem::getFileAttr(uint16_t fileType, mode_t mode) {
   mode = FILE_PERM(mode) ;
   fileType = FILE_TYPE(fileType) ;
 
@@ -173,9 +173,7 @@ uint16_t FileSystem::getFileAttr(uint16_t fileType, uint16_t mode) {
   return (uint16_t)(fileType | mode);
 }
 
-void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName,
-                        uint16_t fileType, uint16_t mode,
-                        const FileNodeRef& cwd, Process& process) {
+void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName, mode_t mode, const FileNodeRef& cwd, Process& process) {
   if (newFileName == DIR_SPECIAL_CURRENT || newFileName == DIR_SPECIAL_PARENT || newFileName.empty()) {
     throw upan::exception(XLOC, "invalid file name %s", newFileName.c_str());
   }
@@ -193,7 +191,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   FileNodeRef::WriteGuard g1(parentNodeRef);
 
   if (!parentNode.find(newFileName).isEmpty()) {
-    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (S_ISFILE(fileType) ? "file" : "directory"));
+    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (S_ISFILE(mode) ? "file" : "directory"));
   }
 
   FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
@@ -230,7 +228,12 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
     _diskDrive.xRead(newSectorBuffer, newSectorId, 1);
   }
   auto& newFileNode = reinterpret_cast<FileNode*>(newSectorBuffer)[newSectorOffset];
-  newFileNode.Init(newFileName.c_str(), getFileAttr(fileType, mode), process.userID(), parentNode.sectorId(), parentNode.sectorOffset());
+  const auto fileType = FILE_TYPE(mode);
+
+  if(!(S_ISFILE(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
+    throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
+  }
+  newFileNode.Init(newFileName.c_str(), mode, process.userID(), parentNode.sectorId(), parentNode.sectorOffset());
 
   parentFileNode.AddNode();
 
@@ -304,16 +307,16 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
 }
 
-FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process) {
+FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   bool newFileCreated = false;
 
   if (fileNodeRef.empty()) {
-    if ( (mode & O_APPEND) || (mode & O_CREAT) || (mode & O_TRUNC) ) {
+    if ((flags & O_APPEND) || (flags & O_CREAT) || (flags & O_TRUNC) ) {
       FileTree::NodeTokens dirTokens(fileTokens);
       dirTokens.pop_back();
       const upan::string& fileName = fileTokens.back();
-      create(dirTokens, fileName, S_IFREG, ATTR_FILE_DEFAULT, cwd, process);
+      create(dirTokens, fileName, mode, cwd, process);
       fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
       newFileCreated = true;
     } else {
@@ -335,11 +338,11 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, uint16_t mo
   _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
   auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
 
-  if(!process.hasFilePermission(fileNode, mode)) {
+  if(!process.hasFilePermission(fileNode, flags)) {
     throw upan::exception(XLOC, "insufficient permission to open file %s", node.name().c_str());
   }
 
-  if( (mode & O_TRUNC) && !newFileCreated) {
+  if((flags & O_TRUNC) && !newFileCreated) {
     auto curSectorId = node.startSectorId();
     while(curSectorId != EOC) {
       curSectorId = deallocateSector(curSectorId);

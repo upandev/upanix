@@ -38,7 +38,7 @@ Signal::DEFAULT_SA_TYPE Signal::defaultActionType() const {
     case SIGBUS:
     case SIGFPE:
     case SIGKILL:
-    case SIGALRM:
+    case SIGALARM:
     case SIGTERM:
     case SIGSEGV:
       return SA_TERMINATE;

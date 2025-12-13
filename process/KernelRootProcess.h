@@ -160,6 +160,14 @@ public:
     }
   }
 
+  upan::pair<uint32_t, time_t> setAlarm(uint32_t seconds) override {
+    return { 0, 0 };
+  }
+
+  time_t alarmExpiry() const override {
+    return 0;
+  }
+
 private:
   IODescriptorTable _iodTable;
   upan::uniq_ptr<ThreadLocalSpace> _tlsp;

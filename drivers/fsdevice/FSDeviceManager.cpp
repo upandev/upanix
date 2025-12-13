@@ -58,7 +58,7 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
 
   const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
   if (fileStat.isEmpty()) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFSOCK, 0744);
+    FileOperations::Instance().create(_rootPrefix + path, S_IFSOCK | 0744);
   } else {
     if (S_ISSOCK(fileStat.value().st_mode) == false) {
       throw upan::exception(XLOC, "a non socket file already exists at path: %s", path.c_str());
@@ -81,7 +81,7 @@ int FSDeviceManager::createTerminalDevice(int flags) {
 
   const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
   if (fileStat.isEmpty()) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFCHR, 0620);
+    FileOperations::Instance().create(_rootPrefix + path, S_IFCHR | 0620);
   } else {
     if (S_ISCHR(fileStat.value().st_mode) == false) {
       throw upan::exception(XLOC, "a non tty file already exists at path: %s", path.c_str());

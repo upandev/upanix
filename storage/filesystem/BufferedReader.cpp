@@ -31,7 +31,7 @@ to ensure some non zero byte request is there within file size limit*/
 #define OVERFLOW_ADJUST 2
 
 BufferedReader::BufferedReader(const upan::string& szFileName, unsigned uiOffSet, unsigned uiBufferSize) : m_uiOffSet(uiOffSet), m_szBuffer(nullptr) {
-  _file = FileOperations::Instance().open(szFileName.c_str(), O_RDONLY);
+  _file = FileOperations::Instance().open(szFileName.c_str(), O_RDONLY, 0);
   if (_file.isEmpty()) {
     throw upan::exception(XLOC, "Failed to open file %s", szFileName.c_str());
   }

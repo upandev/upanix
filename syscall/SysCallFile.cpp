@@ -86,7 +86,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
         try
         {
-          FileOperations::Instance().create(szPathAddress, usType, (uint16_t)(p2));
+          FileOperations::Instance().create(szPathAddress, usType | (mode_t)(p2));
         }
         catch(const upan::exception& ex)
 				{
@@ -152,19 +152,17 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       break;
 
 		case SYS_CALL_FILE_OPEN:
-			// P1 => File Name / Path
-			// P2 => Mode
 			{
-				const char* szFileNameAddr = ( const char*) p1;
-				byte mode = p2 ;
+				const auto fileName = (const char*)p1;
+        const auto flags = (int)p2;
+        const auto mode = (mode_t)p3;
 
 				*retVal = 0 ;
 
         try {
-          *retVal = FileOperations::Instance().open(szFileNameAddr, mode).toOption().flatMap<int>(
-                  [](IODescriptor& fd) {
-                    return upan::option<int>(fd.id());
-                  }).valueOrElse(-1);
+          *retVal = FileOperations::Instance().open(fileName, flags, mode).toOption().flatMap<int>([](IODescriptor& fd) {
+            return upan::option<int>(fd.id());
+          }).valueOrElse(-1);
         } catch(const upan::exception& ex) {
           ex.Print();
           *retVal = -1 ;

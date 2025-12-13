@@ -107,14 +107,14 @@ StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, co
   return storageDrive;
 }
 
-upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath, const uint8_t mode) {
+upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath, int flags, mode_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
   FileTree::NodeTokens fileTokens;
 
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
-  auto fileNodeRef = storageDrive.fileSystem().open(fileTokens, mode, cwd, process);
+  auto fileNodeRef = storageDrive.fileSystem().open(fileTokens, flags, mode, cwd, process);
 
   if (fileNodeRef.empty()) {
     return {};
@@ -122,7 +122,7 @@ upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath
 
   return process.iodTable().allocate([&](int fd) -> IODescriptor* {
     if (fileNodeRef.isRegularFile()) {
-      return new FileDescriptor(process.processID(), fd, mode, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
+      return new FileDescriptor(process.processID(), fd, flags, fileNodeRef, storageDrive, fileNodeRef.startSectorId());
     } else if (fileNodeRef.isChrFile()) {
       const auto& fullPath = storageDrive.fileSystem().fullPath(fileNodeRef);
       auto terminalDevice = FSDeviceManager::Instance().getTerminalDevice(fullPath);
@@ -148,7 +148,7 @@ upan::shared_ptr<IODescriptor> FileOperations::openInMemoryTerminalDevice(const 
   });
 }
 
-void FileOperations::create(const upan::string& filePath, uint16_t fileType, uint16_t mode) {
+void FileOperations::create(const upan::string& filePath, mode_t mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 
   FileNodeRef cwd;
@@ -157,7 +157,7 @@ void FileOperations::create(const upan::string& filePath, uint16_t fileType, uin
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
   const upan::string newFileName = fileTokens.back();
   fileTokens.pop_back();
-  storageDrive.fileSystem().create(fileTokens, newFileName, fileType, mode, cwd, process);
+  storageDrive.fileSystem().create(fileTokens, newFileName, mode, cwd, process);
 }
 
 void FileOperations::remove(const upan::string& filePath) {

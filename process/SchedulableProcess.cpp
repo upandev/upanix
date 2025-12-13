@@ -460,6 +460,14 @@ void SchedulableProcess::prepareToRun() {
     }
   }
 
+  if (!isThread()) {
+    const auto aExpiry = alarmExpiry();
+    if (aExpiry && PIT::Instance().GetClockCount() >= aExpiry) {
+      setAlarm(0);
+      queueSignal(SIGALARM, nullptr);
+    }
+  }
+
   switch(_status) {
     case PREEMPTED:
       setStatus(RUN);

@@ -65,12 +65,11 @@ public:
 
   FileNodeRef root() { return _root; }
 
-  void create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName,
-              uint16_t fileType, uint16_t mode,
-              const FileNodeRef& cwd, Process& process);
+  void create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName, mode_t mode, const FileNodeRef& cwd, Process& process);
   void remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd,
               Process& process);
-  FileNodeRef open(const FileTree::NodeTokens& fileTokens, uint16_t mode, const FileNodeRef& cwd, Process& process);
+  FileNodeRef open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd,
+                   Process& process);
   void truncate(FileNodeRef fileNodeRef);
   FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   upan::option<struct stat> stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
@@ -85,7 +84,7 @@ public:
   void updateTime(FileNodeRef fileNodeRef, uint8_t timeType);
 
 private:
-  uint16_t getFileAttr(uint16_t fileType, uint16_t mode);
+  uint16_t getFileAttr(uint16_t fileType, mode_t mode);
   void loadFreeSectors();
   void _bufferedWrite(uint32_t sectorId, const uint8_t* dataBuffer, uint8_t* writeBuffer, unsigned& startSectorId, unsigned& prevSectorId, unsigned& count, bool flush);
   int _write(FileTree::Node& node, FileDescriptor& fdEntry, const uint8_t* dataBuffer, int size);

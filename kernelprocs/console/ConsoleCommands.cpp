@@ -290,7 +290,7 @@ void ConsoleCommands_ClearScreen()
 
 void ConsoleCommands_CreateDirectory()
 {
-  FileOperations::Instance().create((char*)(CommandLineParser::Instance().GetParameterAt(0)), S_IFDIR, ATTR_DIR_DEFAULT);
+  FileOperations::Instance().create((char*)(CommandLineParser::Instance().GetParameterAt(0)), ATTR_DIR_DEFAULT);
   printf("\n DIR Created\n");
 }
 
@@ -324,7 +324,7 @@ void ConsoleCommands_ReadFileContent()
 	
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
 
-  auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
+  auto file = FileOperations::Instance().open(szFileName, O_RDONLY, 0);
   if (file.isEmpty()) {
     throw upan::exception(XLOC, "%s: File not found", szFileName);
   }
@@ -356,21 +356,20 @@ void ConsoleCommands_PresentWorkingDir() {
 	printf("\n%s", getenv("PWD"));
 }
 
-void ConsoleCommands_CopyFile()
-{
+void ConsoleCommands_CopyFile() {
 	const int iBufSize = 512 ;
 	char bDataBuffer[iBufSize] ;
 
   const char* szFileName = CommandLineParser::Instance().GetParameterAt(0) ;
-  auto file = FileOperations::Instance().open(szFileName, O_RDONLY);
+  auto file = FileOperations::Instance().open(szFileName, O_RDONLY, 0);
   if (file.isEmpty()) {
     throw upan::exception(XLOC, "%s: File not found", szFileName);
   }
   const char* szDestFile = CommandLineParser::Instance().GetParameterAt(1) ;
 
-  FileOperations::Instance().create(szDestFile, S_IFREG, ATTR_FILE_DEFAULT);
+  FileOperations::Instance().create(szDestFile, ATTR_FILE_DEFAULT);
 
-  auto file1 = FileOperations::Instance().open(szDestFile, O_RDWR);
+  auto file1 = FileOperations::Instance().open(szDestFile, O_RDWR, 0);
 
   printf("\n Progress = ");
 	int cr = KC::MConsole().GetCurrentCursorPosition();
@@ -965,7 +964,7 @@ void graphics_photos(int x, int y) {
   while (auto s = readdir(dirp)) {
     if (S_ISFILE(s->d_stat.st_mode)) {
       const auto fileSize = s->d_stat.st_size;
-      auto file = FileOperations::Instance().open(s->d_name, O_RDONLY);
+      auto file = FileOperations::Instance().open(s->d_name, O_RDONLY, 0);
       if (file.isEmpty()) {
         continue;
       }
@@ -1643,7 +1642,7 @@ void graphics_desktop(int x, int y) {
                                                               upanui::VerticalPlacementType::TOP_FIXED);
 
     const upan::string desktopImageFile("usdb@/desktop/desktop.png");
-    auto file = FileOperations::Instance().open(desktopImageFile, O_RDONLY);
+    auto file = FileOperations::Instance().open(desktopImageFile, O_RDONLY, 0);
     if (file.isEmpty()) {
       throw upan::exception(XLOC, "Failed to open desktop image file: %s", desktopImageFile.c_str());
     }
@@ -2173,7 +2172,11 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "sigchld") {
+  if (test == "sigalarm") {
+    printf("\n setting alarm for 5 seconds");
+    alarm(5);
+  }
+  else if (test == "sigchld") {
     if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
       throw upan::exception(XLOC, "parameter signal number is required");
     }

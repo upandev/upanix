@@ -64,7 +64,7 @@ class ProcessManager
     void AddToSchedulerList(SchedulableProcess& process);
     void AddToProcessMap(SchedulableProcess& process);
     void RemoveFromProcessMap(SchedulableProcess& process);
-    void Sleep(volatile unsigned int sleepTime);
+    void Sleep(uint32_t sleepTime);
     void WaitOnInterrupt(const IRQ&);
     void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
     int GetCurProcId();
@@ -123,6 +123,7 @@ class ProcessManager
     void stopUserProcesses();
     void stopKernelProcesses();
 
+  upan::pair<uint32_t, time_t> SetAlarm(uint32_t seconds);
   private:
     void stopProcesses(upan::function<bool, SchedulableProcess&> stopCondition);
     bool DoPollWait();

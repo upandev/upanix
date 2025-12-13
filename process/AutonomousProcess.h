@@ -73,6 +73,11 @@ public:
     _terminalDevice = terminalDevice;
   }
 
+  upan::pair<uint32_t, time_t> setAlarm(uint32_t seconds) override;
+  time_t alarmExpiry() const override {
+    return _alarmExpiry;
+  }
+
 private:
   void sendKeyboardDataToControllingTerminal(const upanui::KeyboardData& data);
 
@@ -90,4 +95,6 @@ private:
   SIGNAL_ACTION_MAP _signalHandler;
   IODescriptorTable _iodTable;
   upan::shared_ptr<FSTerminalDevice> _terminalDevice;
+  uint32_t _alarmTime;
+  time_t _alarmExpiry;
 };

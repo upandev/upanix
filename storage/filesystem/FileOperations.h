@@ -38,8 +38,8 @@ public:
     return instance;
   }
 
-  void create(const upan::string& filePath, uint16_t fileType, uint16_t mode);
-  upan::shared_ptr<IODescriptor> open(const upan::string& filePath, const uint8_t mode);
+  void create(const upan::string& filePath, mode_t mode);
+  upan::shared_ptr<IODescriptor> open(const upan::string& filePath, int flags, mode_t mode);
   upan::shared_ptr<IODescriptor> openInMemoryTerminalDevice(const upan::string& filePath);
   void remove(const upan::string& filePath) ;
   bool fileExists(const upan::string& filePath);
