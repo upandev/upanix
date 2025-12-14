@@ -26,7 +26,7 @@
 #include <ProcessManager.h>
 #include <StorageDrive.h>
 
-FileDescriptor::FileDescriptor(int pid, int fd, byte mode,
+FileDescriptor::FileDescriptor(int pid, int fd, uint32_t mode,
                                const FileNodeRef& fileNodeRef,
                                StorageDrive& diskDrive,
                                uint32_t startSectorId) :
