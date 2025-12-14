@@ -33,19 +33,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="- enhance open() to meet POSIX standards&#10;- implemented support for SIGALRM/alarm()">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="bug fix in filesystem open() to assume default mode as regular file with 0644 when it is not passed i.e. passed with value 0">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPStreamWorker.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPStreamWorker.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -798,7 +790,7 @@
       <workItem from="1765146211929" duration="20000" />
       <workItem from="1765151119153" duration="2569000" />
       <workItem from="1765367625736" duration="27709000" />
-      <workItem from="1765598081296" duration="17507000" />
+      <workItem from="1765598081296" duration="40040000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1143,7 +1135,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="235" />
+    <option name="localTasksCounter" value="241" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1177,12 +1169,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="capture process exit status" />
-    <MESSAGE value="add a test tcp client and server on the host" />
-    <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
-    <MESSAGE value="set a flag in thread local storage block to indicate if the process is a regular process or a thread. this is used in libc to skip exit handlers for threads" />
-    <MESSAGE value="get rid of mainThreadID - instead introduce processSpaceID() which will be the main process ID - common for all threads in a process - to be used in wait-queue" />
-    <MESSAGE value="support detach/joinable for threads" />
     <MESSAGE value="add dependency for openssl library and also enhance build to strip the debug symbols out into a separate file" />
     <MESSAGE value="implement socketpair system call" />
     <MESSAGE value="socketpair descriptor support and implemented getsockname and getpeername system calls" />
@@ -1202,7 +1188,13 @@
     <MESSAGE value="data from evenQueue in event handlers that are driven by interrupts must copy the data from eventQueue instead of taking the value by reference" />
     <MESSAGE value="added rusage system call&#10;refactored select system call to meet POSIX standards" />
     <MESSAGE value="- enhance open() to meet POSIX standards&#10;- implemented support for SIGALRM/alarm()" />
-    <option name="LAST_COMMIT_MESSAGE" value="- enhance open() to meet POSIX standards&#10;- implemented support for SIGALRM/alarm()" />
+    <MESSAGE value="implement file access() as per POSIX standards" />
+    <MESSAGE value="bug fix in ARPClient to gracefully close the connection upon any error during send/recv" />
+    <MESSAGE value="refactored TCP client test case to take host IP as a command line param and removed the server IP hardcoding" />
+    <MESSAGE value="added mutex in E1000 network device while sending packet to ensure multiple parallel sends are synchronized" />
+    <MESSAGE value="changed mode type from byte to uint32_t in FileDescriptor to ensure it can handle values larger than 256" />
+    <MESSAGE value="bug fix in filesystem open() to assume default mode as regular file with 0644 when it is not passed i.e. passed with value 0" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fix in filesystem open() to assume default mode as regular file with 0644 when it is not passed i.e. passed with value 0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

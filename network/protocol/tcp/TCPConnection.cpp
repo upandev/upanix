@@ -75,7 +75,12 @@ void TCPConnection::connect() {
     struct timeval timeout;
     timeout.tv_sec = 3;
     timeout.tv_usec = 0;
-    _sendRecvCond.wait(_sendRecvMutex, &timeout);
+    try {
+      _sendRecvCond.wait(_sendRecvMutex, &timeout);
+    } catch(...) {
+      _state.set(TCP_CLOSED);
+      throw;
+    }
 
     if (_state.get() != TCP_ESTABLISHED) {
       _state.set(TCP_CLOSED);
@@ -104,7 +109,11 @@ void TCPConnection::accept() {
 
 void TCPConnection::close() {
   upan::mutex_guard g(_sendRecvMutex);
-  _sendFin = true;
+  if (_state.get() == TCP_SYN_SENT) {
+    _state.set(TCP_CLOSED);
+  } else {
+    _sendFin = true;
+  }
 }
 
 int TCPConnection::recv(uint8_t* data, int len) {
@@ -160,14 +169,21 @@ void TCPConnection::recvPacket(upan::shared_ptr<RawNetPacket> rawPacket) {
       return;
     }
   }
-
   _recvPackets.push_back(rawPacket);
 }
 
 void TCPConnection::processStream() {
   upan::mutex_guard g(_sendRecvMutex);
 
-  if (_state.get() == TCP_TIME_WAIT) {
+  //TCP_TIME_WAIT - both sides have fully closed - waiting for any need for retransmission of my last ack
+  //TCP_CLOSING - both sides have sent FIN with me sending FIN first - waiting for other side to send ACK for my FIN
+  //TCP_FIN_WAIT_2 - half open connection - I have sent FIN, the other side has ACKed by FIN but hasn't sent a FIN yet and there is no data transmitted for timeout period
+  //No need to timeout for TCP_LAST_ACK and TCP_FIN_WAIT_1 because these will be in pending ACK queue - and it will retransmit and finally
+  //reset (and close) the connection if there is no ACK response from other side
+
+  if (_state.get() == TCP_TIME_WAIT
+  || _state.get() == TCP_CLOSING
+  || _state.get() == TCP_FIN_WAIT_2) {
     if ((btime() - _timeWaitStart) > 60000) { // 1 min
       _state.set(TCP_CLOSED);
       return;
@@ -275,6 +291,13 @@ void TCPConnection::processRecvPackets() {
     }
 
     sendAck();
+
+    if (_state.get() == TCP_FIN_WAIT_2) {
+      //this is a half open connection. I have already sent FIN and received ACK
+      //the other side hasn't sent FIN yet - it may have some pending data to send.
+      //if I see any data packet then I will reset the time-wait - otherwise, I will release connection after the time-wait
+      _timeWaitStart = btime();
+    }
   }
 
   for (auto it = _pendingDataPackets.begin(); it != _pendingDataPackets.end();) {
@@ -363,10 +386,12 @@ void TCPConnection::processAck(upan::shared_ptr<RawNetPacket> rawPacket) {
     if (_finSeqNum && recvAckNum >= _finSeqNum) {
       if (_state.get() == TCP_FIN_WAIT_1) {
         _state.set(TCP_FIN_WAIT_2);
+        _timeWaitStart = btime();
       } else if (_state.get() == TCP_LAST_ACK) {
         _state.set(TCP_CLOSED);
       } else if (_state.get() == TCP_CLOSING) {
         _state.set(TCP_TIME_WAIT);
+        _timeWaitStart = btime();
       }
     } else if (_state.get() == TCP_LISTEN) {
       _state.set(TCP_ESTABLISHED);
@@ -417,7 +442,13 @@ void TCPConnection::processSynAck(upan::shared_ptr<RawNetPacket> rawPacket) {
 
 void TCPConnection::sendSegment(TCPSegment& segment) {
   segment.ackNum(_ackNum);
-  _tcpHandler.send(segment, _srcAddr, _destAddr);
+  try {
+    _tcpHandler.send(segment, _srcAddr, _destAddr);
+  } catch(const upan::exception& e) {
+    KLog::exception(e);
+    _state.set(TCP_CLOSED);
+    throw;
+  }
 }
 
 void TCPConnection::sendAck() {
@@ -452,6 +483,7 @@ void TCPConnection::onRecvFin() {
   _ackNum += 1;
   if (_state.get() == TCP_FIN_WAIT_1) {
     _state.set(TCP_CLOSING);
+    _timeWaitStart = btime();
   } else if (_state.get() == TCP_FIN_WAIT_2) {
     _state.set(TCP_TIME_WAIT);
     _timeWaitStart = btime();
