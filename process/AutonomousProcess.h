@@ -64,6 +64,10 @@ public:
     return _iodTable;
   }
 
+  const ProcessIDs& childProcessIDs() const override { return _childProcessIDs; }
+  void addChildProcessID(int pid) override { _childProcessIDs.insert(pid); }
+  void removeChildProcessID(int pid) override { _childProcessIDs.erase(pid); }
+
   void setSID() override;
   upan::shared_ptr<FSTerminalDevice> controllingTerminal() override;
   upan::shared_ptr<FSTerminalDevice> ownerControllingTerminal() override {
@@ -90,6 +94,7 @@ private:
   IODescriptor::Ptr _uiMouseEventStreamFD;
   bool _isGuiBase;
   MouseCursorType _mouseCursorType;
+  ProcessIDs _childProcessIDs;
 
   typedef upan::map<SIGNAL, struct sigaction> SIGNAL_ACTION_MAP;
   SIGNAL_ACTION_MAP _signalHandler;

@@ -100,6 +100,10 @@ public:
     return _parent.getSignalAction(signo);
   }
 
+  const ProcessIDs& childProcessIDs() const override { return _parent.childProcessIDs(); }
+  void addChildProcessID(int pid) override { _parent.addChildProcessID(pid); }
+  void removeChildProcessID(int pid) override { _parent.removeChildProcessID(pid); }
+
   void setSID() override {
     _parent.setSID();
   }

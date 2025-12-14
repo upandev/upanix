@@ -36,6 +36,7 @@ public:
     NO_ERROR,
     INTERRUPTED,
     TIMEOUT,
+    OTHER,
   } Error;
   ProcessStateInfo();
 

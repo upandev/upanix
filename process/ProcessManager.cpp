@@ -235,8 +235,9 @@ void ProcessManager::WaitForEvent()
 }
 
 int ProcessManager::WaitOnChild(int iChildProcessID, int& exitStatus) {
-	if(GetCurProcId() < 0)
-		return -1;
+	if(GetCurProcId() < 0) {
+    return -1;
+  }
 
 	if(iChildProcessID < 0 || iChildProcessID >= MAX_NO_PROCESS)
 		return -1;
@@ -244,18 +245,24 @@ int ProcessManager::WaitOnChild(int iChildProcessID, int& exitStatus) {
 	auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    auto childProcess = GetSchedulableProcess(iChildProcessID);
-    if (childProcess.isEmpty()
-      || childProcess.value().parentProcessID() != p.processID()
-      || (childProcess.value().isThread() && dynamic_cast<Thread&>(childProcess.value()).isJoinable() == false)) {
-      return -1;
+    if (iChildProcessID == 0) {
+      if (p.childProcessIDs().empty()) {
+        return -1;
+      }
+    } else {
+      auto childProcess = GetSchedulableProcess(iChildProcessID);
+      if (childProcess.isEmpty()
+          || childProcess.value().parentProcessID() != p.processID()
+          || (childProcess.value().isThread() && dynamic_cast<Thread&>(childProcess.value()).isJoinable() == false)) {
+        return -1;
+      }
     }
     p.stateInfo().WaitChildProcId(iChildProcessID);
     p.setStatus(WAIT_CHILD);
   }
   p.yield();
   exitStatus = p.stateInfo().getExitStatus();
-  return 0;
+  return p.stateInfo().WaitChildProcId();
 }
 
 void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal) {
@@ -379,6 +386,9 @@ bool ProcessManager::IsChildAlive(int iChildProcessID) {
 int ProcessManager::CreateKernelProcess(const upan::string& name, const uintptr_t uiTaskAddress, int iParentProcessID,
                                         bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params) {
   try {
+    if (iParentProcessID != NO_PROCESS_ID) {
+      iParentProcessID = GetThreadParentProcess(iParentProcessID).processID();
+    }
     upan::uniq_ptr<SchedulableProcess> newPAS(new KernelProcess(name, uiTaskAddress, iParentProcessID, isFGProcess, isCoreProcess, params));
     int pid = newPAS->processID();
     AddToSchedulerList(*newPAS.release());
@@ -393,6 +403,9 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
                            const upan::vector<upan::string>& argv,
                            const upan::vector<upan::string>& envp) {
   try {
+    if (iParentProcessID != NO_PROCESS_ID) {
+      iParentProcessID = GetThreadParentProcess(iParentProcessID).processID();
+    }
     upan::uniq_ptr<SchedulableProcess> newPAS(new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, argv, envp));
     int pid = newPAS->processID();
     AddToSchedulerList(*newPAS.release());

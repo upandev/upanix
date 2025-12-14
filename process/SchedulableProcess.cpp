@@ -575,20 +575,50 @@ void SchedulableProcess::prepareToRun() {
     break;
 
     case WAIT_CHILD: {
+      _stateInfo.setError(ProcessStateInfo::NO_ERROR);
       if(_stateInfo.WaitChildProcId() < 0) {
         _stateInfo.WaitChildProcId(NO_PROCESS_ID);
         setStatus(RUN);
       } else {
-        auto childProcess = ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId());
-        if(childProcess.isEmpty() || childProcess.value().parentProcessID() != _processID) {
-          removeChildProcessID(_stateInfo.WaitChildProcId());
-          _stateInfo.WaitChildProcId(NO_PROCESS_ID);
-          setStatus(RUN);
-        } else if(childProcess.value().status() == TERMINATED && childProcess.value().parentProcessID() == _processID) {
-          _stateInfo.setExitStatus(childProcess.value().stateInfo().getExitStatus());
-          childProcess.value().Release();
-          removeChildProcessID(_stateInfo.WaitChildProcId());
-          _stateInfo.WaitChildProcId(NO_PROCESS_ID);
+        if (_stateInfo.WaitChildProcId() == 0) {
+          if (childProcessIDs().empty()) {
+            _stateInfo.WaitChildProcId(-1);
+            _stateInfo.setError(ProcessStateInfo::OTHER);
+            setStatus(RUN);
+          } else {
+            for(auto pid : childProcessIDs()) {
+              ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId()).ifPresent([&](SchedulableProcess& childProcess) {
+                if (childProcess.status() == TERMINATED && childProcess.parentProcessID() == _processID) {
+                  _stateInfo.WaitChildProcId(childProcess.processID());
+                  removeChildProcessID(childProcess.processID());
+                  childProcess.Release();
+                  setStatus(RUN);
+                }
+              });
+              if (_status == RUN) {
+                break;
+              }
+            }
+          }
+        } else {
+          auto childProcess = ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId());
+          if (childProcess.isEmpty() || childProcess.value().parentProcessID() != _processID) {
+            removeChildProcessID(_stateInfo.WaitChildProcId());
+            _stateInfo.WaitChildProcId(-1);
+            _stateInfo.setError(ProcessStateInfo::OTHER);
+            setStatus(RUN);
+          } else if (childProcess.value().status() == TERMINATED &&
+                     childProcess.value().parentProcessID() == _processID) {
+            _stateInfo.setExitStatus(childProcess.value().stateInfo().getExitStatus());
+            childProcess.value().Release();
+            removeChildProcessID(_stateInfo.WaitChildProcId());
+            setStatus(RUN);
+          }
+        }
+
+        if (_status != RUN && interruptedBySignal) {
+          _stateInfo.WaitChildProcId(-1);
+          _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
         }
       }

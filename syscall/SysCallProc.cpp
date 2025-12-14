@@ -83,13 +83,18 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         *retVal = KC::MKernelService().RequestThreadExec(p1, p2, (void*) p3, (bool)p4);
       }
       break;
-		case SYS_CALL_PROCESS_WAIT_PID :
+
+		case SYS_CALL_PROCESS_WAIT_PID:
 			// P1 => PID
 			{
+        int status;
+				*retVal = ProcessManager::Instance().WaitOnChild((int)p1, status);
         auto exitStatus = (int*)p2;
-				*retVal = ProcessManager::Instance().WaitOnChild((int) p1, *exitStatus);
+        if (exitStatus) {
+          *exitStatus = status;
+        }
 			}
-			break ;
+			break;
 
     case SYS_CALL_PROCESS_WAIT_ON_LOCK:
       // P1 => Atomic Lock Address

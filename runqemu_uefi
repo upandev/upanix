@@ -110,7 +110,8 @@ sudo qemu-system-x86_64 \
 -device usb-storage,bus=xhci.0,port=1,drive=usbdrive1 \
 -device usb-hub,bus=xhci.0,port=3 \
 -nic tap,model=e1000,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh
-#-nic user,model=e1000
+#-nic user,model=e1000,hostfwd=tcp::8443-:8443
+#-nic user,model=e1000,hostfwd=tcp::8443-:8443
 
 #-nic option allows you to have guest directly connect to host backend without an intermediate hub valn
 #-nic tap,model=e1000,ifname=tap0,script=./tap_net_up.sh,downscript=./tap_net_down.sh

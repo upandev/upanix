@@ -1,0 +1,47 @@
+6 Dec 2025: malloc should always return bytes that are aligned to 16 bytes for x86_64
+* thread #1, stop reason = signal SIGTRAP
+  * frame #0: 0x000000000017b063 upanix.elf`SchedulableProcess::handlePageFault(TaskContext&, unsigned long) + 111
+    frame #1: 0x00000000001681db upanix.elf`MemManager::PageFaultHandler(TaskContext&) + 193
+    frame #2: 0x00000000004eb78d upanix.elf`page_fault_interrupt_handler + 24
+    frame #3: 0x000000000018592d upanix.elf`_page_fault_interrupt_handler + 49
+    frame #4: 0x0000000000534e3f upanix.elf`abort + 24
+    frame #5: 0x000000000027c99e upanix.elf`OPENSSL_die + 58
+    frame #6: 0x0000000000285fc2 upanix.elf`ossl_assert_int + 50
+    frame #7: 0x000000000028619b upanix.elf`WPACKET_reserve_bytes + 82
+    frame #8: 0x00000000002860a1 upanix.elf`WPACKET_allocate_bytes + 43
+    frame #9: 0x0000000000249f4f upanix.elf`tls_initialise_write_packets_default + 357
+    frame #10: 0x000000000024a73d upanix.elf`tls_write_records_default + 348
+    frame #11: 0x000000000024ae56 upanix.elf`tls_write_records + 232
+    frame #12: 0x00000000001ef290 upanix.elf`ssl3_write_bytes + 1899
+    frame #13: 0x000000000021574d upanix.elf`ssl3_do_write + 437
+    frame #14: 0x00000000001db409 upanix.elf`ssl3_handshake_write + 29
+    frame #15: 0x000000000020ce2d upanix.elf`statem_do_write + 141
+    frame #16: 0x000000000020d40f upanix.elf`write_state_machine + 1468
+    frame #17: 0x000000000020c5a7 upanix.elf`state_machine + 1245
+    frame #18: 0x000000000020c002 upanix.elf`ossl_statem_connect + 111
+    frame #19: 0x000000000019e514 upanix.elf`SSL_do_handshake + 410
+    frame #20: 0x0000000000198462 upanix.elf`SSL_connect + 176
+    frame #21: 0x0000000000162dc8 upanix.elf`test_tcp_tls_client() + 661
+    frame #22: 0x0000000000163818 upanix.elf`ConsoleCommands_Test() + 1994
+    frame #23: 0x000000000015b8cb upanix.elf`ConsoleCommands_ExecuteInternalCommand(char const*) + 117
+    frame #24: 0x000000000015b577 upanix.elf`Console::ExecuteCommand() + 75
+    frame #25: 0x000000000015b4cd upanix.elf`Console::OnKeyboardInput(unsigned char const*, int) + 243
+    frame #26: 0x000000000015b37f upanix.elf`Console::Start() + 315
+    frame #27: 0x000000000015b15d upanix.elf`Console_StartUpanixConsole() + 17
+
+7 Dec 2025: Event handler thread should copy the data from eventQueue instead of taking it by reference. Poping element from queue is thread safe at uses atomic count variable to manager the read and write end of the queue
+    * thread #1, stop reason = signal SIGTRAP
+  * frame #0: 0x000000000017b077 upanix.elf`SchedulableProcess::handlePageFault(TaskContext&, unsigned long) + 111
+    frame #1: 0x00000000001681ef upanix.elf`MemManager::PageFaultHandler(TaskContext&) + 193
+    frame #2: 0x00000000004eb7f7 upanix.elf`page_fault_interrupt_handler + 24
+    frame #3: 0x000000000018594d upanix.elf`_page_fault_interrupt_handler + 49
+    frame #4: 0x000000300000002f
+    frame #5: 0x0000000000550aab upanix.elf`upan::atomic::integral<int>::inc() + 29
+    frame #6: 0x0000000000565111 upanix.elf`upan::_base_shared_ptr<upan::shared_ptr<RawNetPacket>, RawNetPacket>::_base_shared_ptr(upan::_base_shared_ptr<upan::shared_ptr<RawNetPacket>, RawNetPacket> const&) + 75
+    frame #7: 0x0000000000564e67 upanix.elf`upan::shared_ptr<RawNetPacket>::shared_ptr(upan::shared_ptr<RawNetPacket> const&) + 35
+    frame #8: 0x0000000000136038 upanix.elf`TCPConnection::processRecvPackets() + 110
+    frame #9: 0x0000000000135dc8 upanix.elf`TCPConnection::processStream() + 202
+    frame #10: 0x0000000000137e3c upanix.elf`TCPStreamWorker::on_timer_trigger() + 424
+    frame #11: 0x000000000052af6f upanix.elf`upan::timer_thread::run() + 73
+    frame #12: 0x000000000052a6a3 upanix.elf`upan::thread_callback(void*) + 63
+    frame #13: 0x0000000000535115 upanix.elf`thread_entry_caller_with_noret + 29

@@ -40,6 +40,7 @@ class IODescriptorTable;
 
 class Process {
 public:
+  typedef upan::set<int> ProcessIDs;
   enum UIType { NA, TTY, GUI, REDIRECT_TTY };
 
   virtual bool isKernelProcess() const = 0;
@@ -69,6 +70,9 @@ public:
   virtual PROCESS_STATUS setStatus(PROCESS_STATUS status) = 0;
   virtual ProcessGroup* processGroup() = 0;
   virtual void setProcessGroup(ProcessGroup* processGroup) = 0;
+  virtual const ProcessIDs& childProcessIDs() const = 0;
+  virtual void addChildProcessID(int pid) = 0;
+  virtual void removeChildProcessID(int pid) = 0;
 
   virtual IODescriptorTable& iodTable() = 0;
   virtual upan::option<upan::mutex&> dllMutex() {

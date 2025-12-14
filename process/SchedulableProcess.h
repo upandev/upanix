@@ -38,11 +38,7 @@
 #include <signal.h>
 #include <ProcessStat.h>
 
-class SchedulableProcess : public Process
-{
-public:
-  typedef upan::set<int> ProcessIDs;
-
+class SchedulableProcess : public Process {
 public:
   SchedulableProcess(const upan::string& name, int parentID, bool isFGProcess);
   virtual ~SchedulableProcess() = 0;
@@ -104,10 +100,6 @@ public:
 
   FileNodeRef pwd() const override { return _pwd; }
   void pwd(const FileNodeRef& pwd) { _pwd = pwd; }
-
-  const ProcessIDs& childProcessIDs() const { return _childProcessIDs; }
-  void addChildProcessID(int pid) { _childProcessIDs.insert(pid); }
-  void removeChildProcessID(int pid) { _childProcessIDs.erase(pid); }
 
   void yield() override;
   bool CanPreempt();
@@ -174,7 +166,6 @@ protected:
   //this is managed like a shared_ptr
   ProcessGroup* _processGroup;
 
-  ProcessIDs _childProcessIDs;
   upan::uniq_ptr<ThreadLocalStorage> _tls;
   upan::vector<uintptr_t> _istStackPages;
 

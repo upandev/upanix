@@ -55,6 +55,12 @@ public:
   int userID() const override { return ROOT_USER_ID; }
   bool isThread() const override { return false; }
 
+  const ProcessIDs& childProcessIDs() const override {
+    throw upan::exception(XLOC, "childProcessIDs is not supported for Kernel Root Process");
+  }
+  void addChildProcessID(int pid) override {}
+  void removeChildProcessID(int pid) override {}
+
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }
