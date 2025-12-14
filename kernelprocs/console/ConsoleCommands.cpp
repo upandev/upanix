@@ -1997,8 +1997,7 @@ static void test_tcp_server() {
   close(sd);
 }
 
-static void test_tcp_client() {
-  const upan::string host = "192.168.50.208";
+static void test_tcp_client(const upan::string& host) {
   const int server_port = 12345;
   char message[1024] = "Hello, TCP Server!";
 
@@ -2097,8 +2096,7 @@ static void test_tcp_tls_server() {
   close(sd);
 }
 
-static void test_tcp_tls_client() {
-  const upan::string host = "192.168.50.174";
+static void test_tcp_tls_client(const upan::string& host) {
   const int server_port = 8443;
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
@@ -2240,11 +2238,19 @@ void ConsoleCommands_Test() {
       printf("\nRegistered set signal action handler - old_sa: %d", old_sa.sa_flags);
     }
   } else if (test == "tcp-client") {
-    test_tcp_client();
+    if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+      throw upan::exception(XLOC, "server IP parameter is required");
+    }
+    upan::string host(CommandLineParser::Instance().GetParameterAt(1));
+    test_tcp_client(host);
   } else if (test == "tcp-server") {
     test_tcp_server();
   } else if (test == "tcp-tls-client") {
-    test_tcp_tls_client();
+    if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+      throw upan::exception(XLOC, "server IP parameter is required");
+    }
+    upan::string host(CommandLineParser::Instance().GetParameterAt(1));
+    test_tcp_tls_client(host);
   } else if (test == "tcp-tls-server") {
     test_tcp_tls_server();
   } else if (test == "config") {
