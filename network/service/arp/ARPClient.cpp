@@ -58,10 +58,12 @@ MACAddress ARPClient::resolveMacAddress(in_addr_t dest_ip) {
   }
 
   if (sendto(sd, &arp, sizeof(arp), 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    close(sd);
     throw upan::exception(XLOC, "sendto failed");
   }
 
   if(recvfrom(sd, &arp, sizeof(arp), 0, nullptr, nullptr) < 0) {
+    close(sd);
     throw upan::exception(XLOC, "recvfrom failed");
   }
 
