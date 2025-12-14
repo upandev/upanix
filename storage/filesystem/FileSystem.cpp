@@ -310,15 +310,15 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
 FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   bool newFileCreated = false;
+  if (FILE_TYPE(mode) == 0) {
+    mode = ATTR_FILE_DEFAULT;
+  }
 
   if (fileNodeRef.empty()) {
     if ((flags & O_APPEND) || (flags & O_CREAT) || (flags & O_TRUNC) ) {
       FileTree::NodeTokens dirTokens(fileTokens);
       dirTokens.pop_back();
       const upan::string& fileName = fileTokens.back();
-      if (FILE_TYPE(mode) == 0) {
-        mode = ATTR_FILE_DEFAULT;
-      }
       create(dirTokens, fileName, mode, cwd, process);
       fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
       newFileCreated = true;
