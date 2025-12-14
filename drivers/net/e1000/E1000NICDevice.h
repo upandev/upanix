@@ -209,4 +209,5 @@ private:
     RegRXDescriptor* regRx;
     RegTXDescriptor* regTx;
     upan::queue<InterruptData> _eventQueue;
+    upan::mutex _mutex;
 };

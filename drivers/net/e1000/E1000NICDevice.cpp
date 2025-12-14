@@ -146,6 +146,7 @@ void E1000NICDevice::NotifyEvent() {
 }
 
 void E1000NICDevice::sendPacket(const RawNetPacket& packet) {
+  upan::mutex_guard g(_mutex);
   regTx->SendPacket(packet.buf(), packet.len());
   KLog::debug("Packet sent with len: %d", packet.len());
 }
