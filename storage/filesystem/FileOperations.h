@@ -47,6 +47,7 @@ public:
   upan::option<struct stat> stats(const upan::string& filePath);
   void getpwd(char** pwd);
   upan::string getcwd();
+  void rename(const upan::string& oldPath, const upan::string& newPath);
   void changeDir(const upan::string& dirPath, char** retPwd);
   DIR* opendir(const upan::string& dirPath);
   void readdir(DIR* dirp);

@@ -243,21 +243,44 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   _fileTree.addNode(parentNode, newFileNode, newSectorId, newSectorOffset);
 }
 
-void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd, Process& process) {
+void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd, Process& process, bool skipDeleteFile) {
+  const upan::string& deleteFileName = fileTokens.back();
+
   if (deleteFileName == DIR_SPECIAL_CURRENT || deleteFileName == DIR_SPECIAL_PARENT || deleteFileName.empty()) {
     throw upan::exception(XLOC, "invalid file name %s", deleteFileName.c_str());
   }
-  auto parentNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+
+  {
+    auto deleteFileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+    if (deleteFileNodeRef.empty()) {
+      throw upan::exception(XLOC, "invalid path for file %s", deleteFileName.c_str());
+    }
+
+    FileNodeRef::WriteGuard g(deleteFileNodeRef);
+    auto& deleteNode = deleteFileNodeRef.nodev();
+
+    uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+    _diskDrive.xRead(sectorBuffer, deleteNode.sectorId(), 1);
+    auto& deleteFileNode = reinterpret_cast<FileNode*>(sectorBuffer)[deleteNode.sectorOffset()];
+
+    if (!process.hasFilePermission(deleteFileNode, W_OK)) {
+      throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
+    }
+  }
+
+  FileTree::NodeTokens dirTokens(fileTokens);
+  dirTokens.pop_back();
+
+  auto parentNodeRef = _fileTree.getFileNodeRef(dirTokens, cwd);
   if (parentNodeRef.empty()) {
     throw upan::exception(XLOC, "invalid path for file %s", deleteFileName.c_str());
   }
 
+  FileNodeRef::WriteGuard g(parentNodeRef);
   auto& parentNode = parentNodeRef.nodev();
   if (parentNode.isFile()) {
     throw upan::exception(XLOC, "%s is not a directory", parentNode.name().c_str());
   }
-
-  FileNodeRef::WriteGuard g(parentNodeRef);
 
   FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
   FileNodeRef::WriteGuard g2(parentParentNodeRef);
@@ -266,11 +289,11 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   _diskDrive.xRead(parentDirBuffer, parentNode.sectorId(), 1);
   auto& parentFileNode = reinterpret_cast<FileNode*>(parentDirBuffer)[parentNode.sectorOffset()];
 
-  if(!process.hasFilePermission(parentFileNode, R_OK | W_OK)) {
+  if (!process.hasFilePermission(parentFileNode, R_OK | W_OK | X_OK)) {
     throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
   }
 
-  if(process.fileUserType(parentFileNode) != USER_OWNER) {
+  if (process.fileUserType(parentFileNode) != USER_OWNER) {
     throw upan::exception(XLOC, "insufficient permission to delete file: %s", deleteFileName.c_str());
   }
 
@@ -278,7 +301,7 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   bool deallocateSectorBlock;
   auto deleteNode =  _fileTree.removeNode(parentNode, deleteFileName, prevSectorId, deallocateSectorBlock);
 
-  if (deleteNode->isFile()) {
+  if (deleteNode->isFile() && !skipDeleteFile) {
     auto curSectorId = deleteNode->startSectorId();
     while(curSectorId != EOC) {
       curSectorId = deallocateSector(curSectorId);
@@ -305,6 +328,78 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const upan::stri
   parentFileNode.RemoveNode();
 
   _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
+}
+
+void FileSystem::renameFile(const FileTree::NodeTokens& srcFileTokens,
+                            const FileTree::NodeTokens& destFileTokens,
+                            FileNodeRef& srcCWD,
+                            FileNodeRef& destCWD,
+                            Process& process) {
+  auto srcFileNodeRef = _fileTree.getFileNodeRef(srcFileTokens, srcCWD);
+  if (srcFileNodeRef.empty()) {
+    throw upan::exception(XLOC, "file %s doesn't exist", srcFileTokens.back().c_str());
+  }
+
+  FileTree::NodeTokens srcDirTokens(srcFileTokens);
+  srcDirTokens.pop_back();
+  auto srcParentNodeRef = _fileTree.getFileNodeRef(srcDirTokens, srcCWD);
+  FileNodeRef::WriteGuard sparentg(srcParentNodeRef);
+
+  const auto& srcFileName = srcFileTokens.back();
+  auto& srcNode = srcFileNodeRef.nodev();
+
+  uint8_t srcFileSectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(srcFileSectorBuffer, srcNode.sectorId(), 1);
+  auto& srcFileNode = reinterpret_cast<FileNode*>(srcFileSectorBuffer)[srcNode.sectorOffset()];
+
+  if (!process.hasFilePermission(srcFileNode, W_OK)) {
+    throw upan::exception(XLOC, "insufficient permission for process %d to rename file %s", process.processID(), srcFileNode.Name());
+  }
+
+  {
+    auto destFileNodeRef = _fileTree.getFileNodeRef(destFileTokens, destCWD);
+    if (!destFileNodeRef.empty()) {
+      destFileNodeRef = FileNodeRef();
+      remove(destFileTokens, destCWD, process, false);
+    }
+  }
+
+  FileTree::NodeTokens destDirTokens(destFileTokens);
+  destDirTokens.pop_back();
+  auto destParentNodeRef = _fileTree.getFileNodeRef(destDirTokens, destCWD);
+  FileNodeRef::WriteGuard dparentg(destParentNodeRef);
+
+  const auto& destFileName = destFileTokens.back();
+
+  if (destParentNodeRef == srcParentNodeRef) {
+    srcFileNode.Name(destFileName.c_str());
+    _diskDrive.xWrite(srcFileSectorBuffer, srcNode.sectorId(), 1);
+    _fileTree.renameNode(destParentNodeRef.nodev(), srcFileName, destFileName);
+  } else {
+    create(destDirTokens, destFileName, srcFileNode.Attribute(), destCWD, process);
+    auto newFileNodeRef = _fileTree.getFileNodeRef(destFileTokens, destCWD);
+    if (newFileNodeRef.empty()) {
+      throw upan::exception(XLOC, "unexpected error happened while renaming file %s to %s", srcFileNode.Name(), destFileName.c_str());
+    }
+
+    FileNodeRef::WriteGuard dfileg(newFileNodeRef);
+    auto& newNode = newFileNodeRef.nodev();
+    uint8_t newFileSectorBuffer[FileSystem::SECTOR_SIZE];
+    _diskDrive.xRead(newFileSectorBuffer, newNode.sectorId(), 1);
+    auto& newFileNode = reinterpret_cast<FileNode*>(newFileSectorBuffer)[newNode.sectorOffset()];
+
+    newFileNode.StartSectorID(srcFileNode.StartSectorID());
+    newFileNode.Size(srcFileNode.Size());
+    newFileNode.CreatedTime(srcFileNode.CreatedTime());
+
+    newNode.size(srcFileNode.Size());
+    newNode.startSectorId(srcFileNode.StartSectorID());
+    _diskDrive.xWrite(newFileSectorBuffer, newNode.sectorId(), 1);
+
+    //release src-file node reference
+    srcFileNodeRef = FileNodeRef();
+    remove(srcFileTokens, srcCWD, process, true);
+  }
 }
 
 FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process) {

@@ -75,6 +75,7 @@ public:
     uint32_t getDirLastSectorId();
     void addSubNode(const FileNode& fileNode, uint32_t sectorId, uint8_t sectorOffset);
     FileTree::Node* removeSubNode(const upan::string& fileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
+    void renameSubNode(const upan::string& oldName, const upan::string& newName);
 
     upan::rwlock& rwlock() { return _rwlock; }
 
@@ -109,6 +110,7 @@ private:
   void uninitialize();
   void addNode(FileTree::Node& parent, const FileNode& newFileNode, uint32_t sectorId, uint8_t sectorOffset);
   FileTree::Node* removeNode(Node& parent, const upan::string& deleteFileName, uint32_t& prevSectorId, bool& deallocateSectorBlock);
+  void renameNode(Node& parent, const upan::string& oldName, const upan::string& newName);
   upan::string getFullPath(Node& node);
 
 private:

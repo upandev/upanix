@@ -167,9 +167,7 @@ void FileOperations::remove(const upan::string& filePath) {
   FileTree::NodeTokens fileTokens;
 
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
-  const upan::string fileName = fileTokens.back();
-  fileTokens.pop_back();
-  storageDrive.fileSystem().remove(fileTokens, fileName, cwd, process);
+  storageDrive.fileSystem().remove(fileTokens, cwd, process, false);
 }
 
 FileNodeRef FileOperations::exists(const upan::string& filePath) {
@@ -211,6 +209,24 @@ upan::option<struct stat> FileOperations::stats(const upan::string& filePath) {
 
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
   return storageDrive.fileSystem().stats(fileTokens, cwd);
+}
+
+void FileOperations::rename(const upan::string& oldPath, const upan::string& newPath) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  FileNodeRef srcCWD;
+  FileTree::NodeTokens srcFileTokens;
+  auto& storageDrive = parseFilePath(oldPath, process, srcCWD, srcFileTokens);
+
+  FileNodeRef destCWD;
+  FileTree::NodeTokens destFileTokens;
+  auto& destStorageDrive = parseFilePath(newPath, process, destCWD, destFileTokens);
+
+  if (storageDrive.Id() != destStorageDrive.Id()) {
+    throw upan::exception(XLOC, "can't renameFile file across different storage drive");
+  }
+
+  storageDrive.fileSystem().renameFile(srcFileTokens, destFileTokens, srcCWD, destCWD, process);
 }
 
 void FileOperations::changeDir(const upan::string& dirPath, char** retPwd) {

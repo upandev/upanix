@@ -33,18 +33,19 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="important bug fix in TCP layer&#10;- set connection state to CLOSED if there is any error while sending segment &#10;- set connection state to CLOSED if waiting for SYN ACK times-out&#10;- similar to TCP TIMED_WAIT state, timeout after 1 min if the connection remains in TCP_LAST_ACK or TCP_CLOSING state because in this case both sides have sent FIN to each other but the other side holding up the connection without sending the ACK&#10;- timeout and release the connection when in TCP_FIN_WAIT_2 state if there is no data from the other side. This is a half open connection situation - and if there is no data packets coming from the other side then close/release the connection after the time out">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implemented wait() system call - a variant of waitpid()">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNode.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,11 +135,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -797,7 +793,8 @@
       <workItem from="1765146211929" duration="20000" />
       <workItem from="1765151119153" duration="2569000" />
       <workItem from="1765367625736" duration="27709000" />
-      <workItem from="1765598081296" duration="46361000" />
+      <workItem from="1765598081296" duration="75069000" />
+      <workItem from="1766285508618" duration="40051000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1142,7 +1139,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="242" />
+    <option name="localTasksCounter" value="243" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1176,7 +1173,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implement socketpair system call" />
     <MESSAGE value="socketpair descriptor support and implemented getsockname and getpeername system calls" />
     <MESSAGE value="bug fix - handle file not found when loading process" />
     <MESSAGE value="test code on host for openssl" />
@@ -1201,7 +1197,8 @@
     <MESSAGE value="changed mode type from byte to uint32_t in FileDescriptor to ensure it can handle values larger than 256" />
     <MESSAGE value="bug fix in filesystem open() to assume default mode as regular file with 0644 when it is not passed i.e. passed with value 0" />
     <MESSAGE value="important bug fix in TCP layer&#10;- set connection state to CLOSED if there is any error while sending segment &#10;- set connection state to CLOSED if waiting for SYN ACK times-out&#10;- similar to TCP TIMED_WAIT state, timeout after 1 min if the connection remains in TCP_LAST_ACK or TCP_CLOSING state because in this case both sides have sent FIN to each other but the other side holding up the connection without sending the ACK&#10;- timeout and release the connection when in TCP_FIN_WAIT_2 state if there is no data from the other side. This is a half open connection situation - and if there is no data packets coming from the other side then close/release the connection after the time out" />
-    <option name="LAST_COMMIT_MESSAGE" value="important bug fix in TCP layer&#10;- set connection state to CLOSED if there is any error while sending segment &#10;- set connection state to CLOSED if waiting for SYN ACK times-out&#10;- similar to TCP TIMED_WAIT state, timeout after 1 min if the connection remains in TCP_LAST_ACK or TCP_CLOSING state because in this case both sides have sent FIN to each other but the other side holding up the connection without sending the ACK&#10;- timeout and release the connection when in TCP_FIN_WAIT_2 state if there is no data from the other side. This is a half open connection situation - and if there is no data packets coming from the other side then close/release the connection after the time out" />
+    <MESSAGE value="implemented wait() system call - a variant of waitpid()" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented wait() system call - a variant of waitpid()" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

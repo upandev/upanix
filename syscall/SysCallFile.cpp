@@ -37,6 +37,23 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 	
 	switch(sysCallId)
 	{
+    case SYS_CALL_FILE_RENAME: {
+      auto oldPath = (const char*)p1;
+      auto newPath = (const char*)p2;
+      try {
+        if (!oldPath || !newPath) {
+          *retVal = -1;
+        } else {
+          *retVal = 0;
+          FileOperations::Instance().rename(oldPath, newPath);
+        }
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
 		case SYS_CALL_CHANGE_DIR : //Change Directory
 			//P1 => Directory Path
 			{

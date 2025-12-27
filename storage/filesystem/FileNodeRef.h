@@ -32,6 +32,9 @@ public:
   ~FileNodeRef();
 
   FileNodeRef& operator=(const FileNodeRef& fileNodeRef);
+  bool operator==(const FileNodeRef& other) {
+    return _node == other._node;
+  }
   void set(FileTree::Node* node);
   void clear();
   bool empty() { return _node == nullptr; }

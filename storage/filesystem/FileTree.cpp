@@ -91,6 +91,11 @@ FileTree::Node* FileTree::removeNode(Node& parent, const upan::string& deleteFil
   return parent.removeSubNode(deleteFileName, prevSectorId, deallocateSectorBlock);
 }
 
+void FileTree::renameNode(Node& parent, const upan::string& oldName, const upan::string& newName) {
+  upan::mutex_guard g(_treeMutex);
+  parent.renameSubNode(oldName, newName);
+}
+
 upan::string FileTree::getFullPath(FileTree::Node& node) {
   upan::mutex_guard g(_treeMutex);
   upan::string fullPath;
@@ -252,7 +257,7 @@ void FileTree::Node::addSubNode(const FileNode& fileNode, uint32_t sectorId, uin
 FileTree::Node* FileTree::Node::removeSubNode(const upan::string& fileName, uint32_t& prevSectorId, bool& deallocateSectorBlock) {
   auto sit = _subNodes.find(fileName);
   if (sit == _subNodes.end()) {
-    throw upan::exception(XLOC, "%s does not exists", fileName.c_str());
+    throw upan::exception(XLOC, "removeSubNode - %s does not exists", fileName.c_str());
   }
 
   auto subNode = sit->second;
@@ -288,4 +293,20 @@ FileTree::Node* FileTree::Node::removeSubNode(const upan::string& fileName, uint
   _subNodes.erase(sit);
   --_size;
   return subNode;
+}
+
+void FileTree::Node::renameSubNode(const upan::string& oldName, const upan::string& newName) {
+  auto sit = _subNodes.find(oldName);
+  if (sit == _subNodes.end()) {
+    throw upan::exception(XLOC, "renameSubNode - %s does not exists", oldName.c_str());
+  }
+
+  auto subNode = sit->second;
+  subNode->name(newName);
+
+  _subNodes.erase(sit);
+  auto i = _subNodes.insert(SubNodes::value_type(newName, subNode));
+  if (i.second == false) {
+    throw upan::exception(XLOC, "failed to add file sub-node for %s - entry already exists", newName.c_str());
+  }
 }

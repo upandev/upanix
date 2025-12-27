@@ -66,10 +66,11 @@ public:
   FileNodeRef root() { return _root; }
 
   void create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName, mode_t mode, const FileNodeRef& cwd, Process& process);
-  void remove(const FileTree::NodeTokens& fileTokens, const upan::string& deleteFileName, const FileNodeRef& cwd,
-              Process& process);
-  FileNodeRef open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd,
-                   Process& process);
+  void remove(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd, Process& process,
+              bool skipDeleteFile);
+  FileNodeRef open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process);
+  void renameFile(const FileTree::NodeTokens& srcFileTokens, const FileTree::NodeTokens& destFileTokens,
+                  FileNodeRef& srcCWD, FileNodeRef& destCWD, Process& process);
   void truncate(FileNodeRef fileNodeRef);
   FileNodeRef exists(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);
   upan::option<struct stat> stats(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd);

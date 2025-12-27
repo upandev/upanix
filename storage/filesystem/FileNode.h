@@ -52,7 +52,11 @@ public:
   bool IsFile() const { return !S_ISDIR(_attribute); }
   bool IsDeleted() const { return FILE_TYPE(_attribute) == ATTR_DELETED_DIR; }
 
+  void Name(const char* name) {
+    strcpy(_name, name);
+  }
   void Size(uint32_t s) { _size = s; }
+  void CreatedTime(time_t t) { _createdTime = t; }
   void AddNode() { ++_size; }
   void RemoveNode() { --_size; }
   void MarkAsDeleted() { _attribute |= ATTR_DELETED_DIR; }
