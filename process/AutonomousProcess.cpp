@@ -150,6 +150,7 @@ void AutonomousProcess::DestroyThreads() {
   // child processes if any of a thread will be redirected to current process (main thread)
   for(auto t : _threadSchedulerList) {
     if (t->status() != TERMINATED && t->status() != RELEASED) {
+      t->stateInfo().setExitStatusNormal(0);
       t->Destroy();
     }
     t->Release();

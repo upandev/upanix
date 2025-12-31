@@ -81,8 +81,13 @@ public:
   Error getError() const { return _error; }
   void setError(Error error) { _error = error; }
 
+  int getChildExitStatus() const { return _childExitStatus; }
+  void setChildExitStatus(int e) { _childExitStatus = e; }
   int getExitStatus() const { return _exitStatus; }
-  void setExitStatus(int existStatus) { _exitStatus = existStatus; }
+  void setExitStatusNormal(int existStatus) { _exitStatus = (existStatus << 8) | 0x80; }
+  void setExitStatusSignaled(int signo) { _exitStatus = signo & 0x7f; }
+  void setExitStatusStopped(int signo) { _exitStatus = ((signo & 0x7f) << 16); }
+  void setExitStatusContinued() { _exitStatus = 1 << 23; }
 
 private:
   time_t         _sleepTime;
@@ -96,6 +101,7 @@ private:
   FSTerminalDevice::WaitInfo _terminalIOWaitInfo;
   Error          _error;
   int            _exitStatus;
+  int            _childExitStatus;
 
   upan::atomic::integral<int>* _waitLock;
   int _newVal;

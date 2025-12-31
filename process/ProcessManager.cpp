@@ -261,7 +261,7 @@ int ProcessManager::WaitOnChild(int iChildProcessID, int& exitStatus) {
     p.setStatus(WAIT_CHILD);
   }
   p.yield();
-  exitStatus = p.stateInfo().getExitStatus();
+  exitStatus = p.stateInfo().getChildExitStatus();
   return p.stateInfo().WaitChildProcId();
 }
 
@@ -485,7 +485,7 @@ void ProcessManager_Exit(int exitStatus) {
   }
   auto& p = ProcessManager::Instance().GetCurrentPAS();
   p.setStatus(TERMINATED);
-  p.stateInfo().setExitStatus(exitStatus);
+  p.stateInfo().setExitStatusNormal(exitStatus);
   p.yield();
 }
 
@@ -633,6 +633,7 @@ void ProcessManager::stopProcesses(upan::function<bool, SchedulableProcess&> sto
       auto& process = *e.second;
       if (stopCondition(process)) {
         printf("\n force terminating %s (%d)", process.name().c_str(), process.processID());
+        process.stateInfo().setExitStatusNormal(0);
         process.setStatus(TERMINATED);
         process.yield();
       }

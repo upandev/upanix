@@ -609,7 +609,7 @@ void SchedulableProcess::prepareToRun() {
             setStatus(RUN);
           } else if (childProcess.value().status() == TERMINATED &&
                      childProcess.value().parentProcessID() == _processID) {
-            _stateInfo.setExitStatus(childProcess.value().stateInfo().getExitStatus());
+            _stateInfo.setChildExitStatus(childProcess.value().stateInfo().getExitStatus());
             childProcess.value().Release();
             removeChildProcessID(_stateInfo.WaitChildProcId());
             setStatus(RUN);
@@ -675,6 +675,7 @@ void SchedulableProcess::applyDefaultSignalAction(const Signal& signal) {
       if (isCoreProcess()) {
         KLog::warn("Can't terminate core process: %s (%d)", _name.c_str(), _processID);
       } else {
+        _stateInfo.setExitStatusSignaled(signal.signo());
         Destroy();
       }
     }
@@ -685,10 +686,12 @@ void SchedulableProcess::applyDefaultSignalAction(const Signal& signal) {
       break;
 
     case Signal::SA_STOP:
+      _stateInfo.setExitStatusStopped(signal.signo());
       setStatus(STOPPED);
       break;
 
     case Signal::SA_CONTINUE:
+      _stateInfo.setExitStatusContinued();
       setStatus(RUN);
       break;
   }
@@ -723,6 +726,7 @@ void SchedulableProcess::deliverPendingSignal() {
           setStatus(RUN);
         } catch (upan::exception& e) {
           KLog::critical("Signal delivery failed for process: %d. Reason: %s", _processID, e.ErrorMsg().c_str());
+          _stateInfo.setExitStatusNormal(-1);
           Destroy();
         }
       }
