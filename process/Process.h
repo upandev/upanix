@@ -62,7 +62,7 @@ public:
   virtual uint64_t* pml4Table() const = 0;
 
   virtual void setDriveID(int driveID) = 0;
-  virtual FileNodeRef& pwd() = 0;
+  virtual FileNodeRef pwd() const = 0;
   virtual void pwd(const FileNodeRef&) = 0;
   virtual ProcessStateInfo& stateInfo() = 0;
   virtual ProcessStat& processStat() = 0;

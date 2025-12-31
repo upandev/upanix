@@ -258,6 +258,8 @@ void SchedulableProcess::Common::initSignalFrame(SchedulableProcess& process, ui
     siginfo.si_value = signal.value();
     switch(signal.signo()) {
       //TODO: set other info fields based on the signal
+      default: //no-op
+      break;
     }
 
     memcpy(signalFrame + framePos, (void*)&siginfo, sizeof(siginfo_t));
@@ -587,7 +589,7 @@ void SchedulableProcess::prepareToRun() {
             setStatus(RUN);
           } else {
             for(auto pid : childProcessIDs()) {
-              ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId()).ifPresent([&](SchedulableProcess& childProcess) {
+              ProcessManager::Instance().GetSchedulableProcess(pid).ifPresent([&](SchedulableProcess& childProcess) {
                 if (childProcess.status() == TERMINATED && childProcess.parentProcessID() == _processID) {
                   _stateInfo.WaitChildProcId(childProcess.processID());
                   removeChildProcessID(childProcess.processID());

@@ -98,7 +98,7 @@ public:
   ProcessStateInfo& stateInfo() override { return _stateInfo; }
   ProcessStat& processStat() override { return _processStat; }
 
-  FileNodeRef& pwd() override { return _pwd; }
+  FileNodeRef pwd() const override { return _pwd; }
   void pwd(const FileNodeRef& pwd) { _pwd = pwd; }
 
   void yield() override;

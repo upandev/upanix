@@ -61,7 +61,7 @@ private:
   StorageDrive& parseFilePath(const upan::string& fullFilePath, Process& process,
                               FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
   StorageDrive& parseFilePath(const upan::string& fullFilePath,
-                              int driveId, FileNodeRef& pwd, bool allowCrossDrive,
+                              int driveId, FileNodeRef pwd, bool allowCrossDrive,
                               FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
   FileNodeRef exists(const upan::string& filePath);
 

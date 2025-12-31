@@ -176,3 +176,7 @@ DMM& KernelRootProcess::dmm() {
 void KernelRootProcess::switchPageTable() {
   Cpu::SetRegValue(Cpu::CR3, (uint64_t)MEM_PML4_TABLE);
 }
+
+FileNodeRef KernelRootProcess::pwd() const {
+  return StorageDriveManager::Instance().GetByID(driveID(), true).goodValueOrThrow(XLOC).fileSystem().root();
+}

@@ -102,6 +102,8 @@ include_directories(${PROJECT_SOURCE_DIR}/exeparser)
 include_directories(${PROJECT_SOURCE_DIR}/syscall)
 include_directories(${PROJECT_SOURCE_DIR}/resource)
 
+include_directories(${PROJECT_SOURCE_DIR}/tests)
+
 include_directories(${UPANLIB_SOURCE_DIR}/libc/include)
 include_directories(${UPANLIB_SOURCE_DIR}/libc/stdio)
 include_directories(${UPANLIB_SOURCE_DIR}/libc/sysdeps/mos/common/)

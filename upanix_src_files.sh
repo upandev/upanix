@@ -33,7 +33,8 @@ SRC_DIRS="
   interopc
   syscall
   users
-  util"
+  utilx
+  tests"
 
 for i in $SRC_DIRS
 do

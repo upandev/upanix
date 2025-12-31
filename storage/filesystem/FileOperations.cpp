@@ -74,7 +74,7 @@ StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, Pr
 }
 
 StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath,
-                                            int driveId, FileNodeRef& pwd, bool allowCrossDrive,
+                                            int driveId, FileNodeRef pwd, bool allowCrossDrive,
                                             FileNodeRef& cwd, FileTree::NodeTokens& fileTokens) {
   fullFilePath.tokenize("/", false, fileTokens);
 
