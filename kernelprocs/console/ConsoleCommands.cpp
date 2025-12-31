@@ -962,7 +962,7 @@ void graphics_photos(int x, int y) {
 
   upan::vector<upanui::Image*> images;
   while (auto s = readdir(dirp)) {
-    if (S_ISFILE(s->d_stat.st_mode)) {
+    if (S_ISREG(s->d_stat.st_mode)) {
       const auto fileSize = s->d_stat.st_size;
       auto file = FileOperations::Instance().open(s->d_name, O_RDONLY, 0);
       if (file.isEmpty()) {

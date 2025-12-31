@@ -68,7 +68,13 @@ bool FileOperations_ReadLine(int fd, upan::string& line)
   return true;
 }
 
-StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, const Process& process,
+StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, Process& process,
+                                            FileNodeRef& cwd, FileTree::NodeTokens& fileTokens) {
+  return parseFilePath(fullFilePath, process.driveID(), process.pwd(), true, cwd, fileTokens);
+}
+
+StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath,
+                                            int driveId, FileNodeRef& pwd, bool allowCrossDrive,
                                             FileNodeRef& cwd, FileTree::NodeTokens& fileTokens) {
   fullFilePath.tokenize("/", false, fileTokens);
 
@@ -98,13 +104,24 @@ StorageDrive& FileOperations::parseFilePath(const upan::string& fullFilePath, co
     }
   }
 
-  auto& storageDrive = hasDrivePrefix ?
-          StorageDriveManager::Instance().GetByDriveName(drivePrefix, true).goodValueOrThrow(XLOC)
-          : StorageDriveManager::Instance().GetByID(process.driveID(), true).goodValueOrThrow(XLOC);
+  upan::option<StorageDrive&> storageDrive = { nullptr };
+  if (allowCrossDrive) {
+    storageDrive = { hasDrivePrefix ?
+                         StorageDriveManager::Instance().GetByDriveName(drivePrefix, true).goodValueOrThrow(XLOC)
+                                        : StorageDriveManager::Instance().GetByID(driveId, true).goodValueOrThrow(XLOC) };
+  } else {
+    if (hasDrivePrefix) {
+      storageDrive = StorageDriveManager::Instance().GetByDriveName(drivePrefix, true).goodValueOrThrow(XLOC);
+      if (storageDrive.value().Id() != driveId) {
+        throw upan::exception(XLOC, "can't access file across different storage drive (%d -> %d)", driveId, storageDrive.value().Id());
+      }
+    } else {
+      storageDrive = StorageDriveManager::Instance().GetByID(driveId, true).goodValueOrThrow(XLOC);
+    }
+  }
 
-  cwd = isAbsolutePath ? storageDrive.fileSystem().root() : process.pwd();
-
-  return storageDrive;
+  cwd = isAbsolutePath ? storageDrive.value().fileSystem().root() : pwd;
+  return storageDrive.value();
 }
 
 upan::shared_ptr<IODescriptor> FileOperations::open(const upan::string& filePath, int flags, mode_t mode) {
@@ -209,6 +226,34 @@ upan::option<struct stat> FileOperations::stats(const upan::string& filePath) {
 
   auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
   return storageDrive.fileSystem().stats(fileTokens, cwd);
+}
+
+int FileOperations::readLink(const upan::string& link, char* buf, size_t bufSize) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  FileNodeRef cwd;
+  FileTree::NodeTokens fileTokens;
+  auto& storageDrive = parseFilePath(link, process, cwd, fileTokens);
+
+  return storageDrive.fileSystem().readLink(fileTokens, cwd, buf, bufSize);
+}
+
+void FileOperations::symLink(const upan::string& target, const upan::string& link) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+
+  FileNodeRef targetCWD;
+  FileTree::NodeTokens targetFileTokens;
+  auto& targetStorageDrive = parseFilePath(target, process, targetCWD, targetFileTokens);
+
+  FileNodeRef linkCWD;
+  FileTree::NodeTokens linkFileTokens;
+  auto& linkStorageDrive = parseFilePath(link, process, linkCWD, linkFileTokens);
+
+  if (targetStorageDrive.Id() != linkStorageDrive.Id()) {
+    throw upan::exception(XLOC, "can't sym link file across different storage drive");
+  }
+
+  linkStorageDrive.fileSystem().symLink(linkFileTokens, target, linkCWD, process);
 }
 
 void FileOperations::rename(const upan::string& oldPath, const upan::string& newPath) {

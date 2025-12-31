@@ -56,3 +56,9 @@ int SysIO_TCSetAttr(int fd, termios_actions action, const struct termios *termio
   SysCallIO_Handle(&retStatus, SYS_CALL_IO_TC_SET_ATTR, false, (uint64_t)fd, (uint64_t)action, (uint64_t)termios_p, 4 ,5);
   return retStatus;
 }
+
+int SysIO_IsTTY(int fd) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_IS_TTY, false, (uint64_t)fd, 2, 3, 4 ,5);
+  return (int)retStatus;
+}

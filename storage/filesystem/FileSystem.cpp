@@ -167,7 +167,7 @@ uint16_t FileSystem::getFileAttr(uint16_t fileType, mode_t mode) {
   mode = FILE_PERM(mode) ;
   fileType = FILE_TYPE(fileType) ;
 
-  if(!(S_ISFILE(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
+  if(!(S_ISREG(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
     throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
   }
   return (uint16_t)(fileType | mode);
@@ -191,7 +191,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   FileNodeRef::WriteGuard g1(parentNodeRef);
 
   if (!parentNode.find(newFileName).isEmpty()) {
-    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (S_ISFILE(mode) ? "file" : "directory"));
+    throw upan::exception(XLOC, "%s %s already exists", newFileName.c_str(), (S_ISREG(mode) ? "file" : "directory"));
   }
 
   FileNodeRef parentParentNodeRef(parentNodeRef.nodev().parent());
@@ -230,7 +230,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   auto& newFileNode = reinterpret_cast<FileNode*>(newSectorBuffer)[newSectorOffset];
   const auto fileType = FILE_TYPE(mode);
 
-  if(!(S_ISFILE(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
+  if(!(S_ISREG(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
     throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
   }
   newFileNode.Init(newFileName.c_str(), mode, process.userID(), parentNode.sectorId(), parentNode.sectorOffset());
@@ -330,6 +330,73 @@ void FileSystem::remove(const FileTree::NodeTokens& fileTokens, const FileNodeRe
   _diskDrive.xWrite(parentDirBuffer, parentNode.sectorId(), 1);
 }
 
+int FileSystem::readLink(const FileTree::NodeTokens& fileTokens, FileNodeRef& cwd, char* buf, size_t bufSize) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "%s link file not found", fileTokens.back().c_str());
+  }
+
+  FileNodeRef::ReadGuard g1(fileNodeRef);
+  return readLink(fileNodeRef, buf, bufSize);
+}
+
+int FileSystem::readLink(FileNodeRef& fileNodeRef, char* buf, size_t bufSize) {
+  auto& node = fileNodeRef.nodev();
+
+  if (!node.isSymLink()) {
+    throw upan::exception(XLOC, "%s is not a symbolic link", node.name().c_str());
+  }
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.startSectorId(), 1);
+
+  int n = (int)upan::min((uint32_t)bufSize, node.size());
+  memcpy(buf, sectorBuffer, n);
+
+  updateTime(fileNodeRef, DIR_ACCESS_TIME);
+  return n;
+}
+
+void FileSystem::symLink(const FileTree::NodeTokens& linkFileTokens, const upan::string& target, FileNodeRef& cwd, Process& process) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(linkFileTokens, cwd);
+  if (!fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "%s link file already exists", fileNodeRef.nodev().name().c_str());
+  }
+
+  FileTree::NodeTokens dirTokens(linkFileTokens);
+  dirTokens.pop_back();
+  const upan::string& linkFileName = linkFileTokens.back();
+  create(dirTokens, linkFileName, S_IFLNK | 0777, cwd, process);
+  fileNodeRef = _fileTree.getFileNodeRef(linkFileTokens, cwd);
+
+  FileNodeRef::WriteGuard g1(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  FileNodeRef parentNodeRef(node.parent());
+  FileNodeRef::WriteGuard g2(parentNodeRef);
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  if (target.length() > FileSystem::SECTOR_SIZE) {
+    throw upan::exception(XLOC, "link target path length can't be larger than file system sector block size");
+  }
+
+  node.size(target.length());
+  fileNode.Size(target.length());
+
+  auto startSectorId = allocateSector();
+  node.startSectorId(startSectorId);
+  fileNode.StartSectorID(startSectorId);
+
+  _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
+
+  memset(sectorBuffer, 0, FileSystem::SECTOR_SIZE);
+  memcpy(sectorBuffer, target.c_str(), target.length());
+  _diskDrive.xWrite(sectorBuffer, startSectorId, 1);
+}
+
 void FileSystem::renameFile(const FileTree::NodeTokens& srcFileTokens,
                             const FileTree::NodeTokens& destFileTokens,
                             FileNodeRef& srcCWD,
@@ -402,7 +469,7 @@ void FileSystem::renameFile(const FileTree::NodeTokens& srcFileTokens,
   }
 }
 
-FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process) {
+FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, FileNodeRef& cwd, Process& process) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   bool newFileCreated = false;
   if (FILE_TYPE(mode) == 0) {
@@ -427,6 +494,17 @@ FileNodeRef FileSystem::open(const FileTree::NodeTokens& fileTokens, int flags, 
 
   if (node.isDirectory()) {
     throw upan::exception(XLOC, "%s is a directory", node.name().c_str());
+  }
+
+  if (node.isSymLink()) {
+    upan::uniq_ptr<char> path(new char[node.size() + 1]);
+    readLink(fileNodeRef, path.get(), node.size());
+    path.get()[node.size()] = '\0';
+
+    FileTree::NodeTokens linkedFileTokens;
+    FileNodeRef linkCWD;
+    FileOperations::Instance().parseFilePath(path.get(), _diskDrive.Id(), cwd, false, linkCWD, linkedFileTokens);
+    return open(linkedFileTokens, flags, mode, linkCWD, process);
   }
 
   FileNodeRef parentNodeRef(node.parent());

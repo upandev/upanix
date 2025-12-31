@@ -54,9 +54,10 @@ public:
     uint32_t sectorId() const { return _sectorId; }
     bool isDirectory() const { return S_ISDIR(_attribute); }
     bool isFile() const { return !isDirectory(); }
-    bool isRegularFile() const { return S_ISFILE(_attribute); }
+    bool isRegularFile() const { return S_ISREG(_attribute); }
     bool isChrFile() const { return S_ISCHR(_attribute); }
     bool isSockFile() const { return S_ISSOCK(_attribute); }
+    bool isSymLink() const { return S_ISLNK(_attribute); }
     bool isDeleted() const { return FILE_TYPE(_attribute) == ATTR_DELETED_DIR; }
     uint16_t attribute() const { return _attribute; }
     uint32_t size() const { return _size; }

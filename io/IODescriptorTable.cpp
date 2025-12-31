@@ -134,6 +134,10 @@ void IODescriptorTable::updateRedirections(int srcFD, IODescriptor::Ptr targetDe
   }
 }
 
+int IODescriptorTable::dup(int oldFD) {
+  return allocate([&](int fd) { return new RedirectDescriptor(_pid, fd, get(oldFD)); })->id();
+}
+
 void IODescriptorTable::dup2(int oldFD, int newFD) {
   upan::mutex_guard g(_ioMutex);
   auto oldF = get(oldFD);

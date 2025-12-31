@@ -85,7 +85,7 @@ public:
     throw upan::exception(XLOC, "setDriveID() unsupported");
   }
 
-  FileNodeRef pwd() const override {
+  FileNodeRef& pwd() override {
     throw upan::exception(XLOC, "pwd() unsupported");
   }
 

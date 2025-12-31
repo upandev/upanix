@@ -47,6 +47,8 @@ public:
   upan::option<struct stat> stats(const upan::string& filePath);
   void getpwd(char** pwd);
   upan::string getcwd();
+  int readLink(const upan::string& link, char* buf, size_t bufSize);
+  void symLink(const upan::string& target, const upan::string& link);
   void rename(const upan::string& oldPath, const upan::string& newPath);
   void changeDir(const upan::string& dirPath, char** retPwd);
   DIR* opendir(const upan::string& dirPath);
@@ -56,9 +58,14 @@ public:
   void dup2(int oldFD, int newFD);
 
 private:
-  StorageDrive& parseFilePath(const upan::string& fullFilePath, const Process& process,
+  StorageDrive& parseFilePath(const upan::string& fullFilePath, Process& process,
+                              FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
+  StorageDrive& parseFilePath(const upan::string& fullFilePath,
+                              int driveId, FileNodeRef& pwd, bool allowCrossDrive,
                               FileNodeRef& cwd, FileTree::NodeTokens& fileTokens);
   FileNodeRef exists(const upan::string& filePath);
+
+  friend class FileSystem;
 };
 
 bool FileOperations_ReadLine(int fd, upan::string& line);

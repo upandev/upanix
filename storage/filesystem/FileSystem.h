@@ -68,7 +68,9 @@ public:
   void create(const FileTree::NodeTokens& fileTokens, const upan::string& newFileName, mode_t mode, const FileNodeRef& cwd, Process& process);
   void remove(const FileTree::NodeTokens& fileTokens, const FileNodeRef& cwd, Process& process,
               bool skipDeleteFile);
-  FileNodeRef open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, const FileNodeRef& cwd, Process& process);
+  FileNodeRef open(const FileTree::NodeTokens& fileTokens, int flags, mode_t mode, FileNodeRef& cwd, Process& process);
+  int readLink(const FileTree::NodeTokens& linkFileTokens, FileNodeRef& cwd, char* buf, size_t bufSize);
+  void symLink(const FileTree::NodeTokens& linkFileTokens, const upan::string& target, FileNodeRef& cwd, Process& process);
   void renameFile(const FileTree::NodeTokens& srcFileTokens, const FileTree::NodeTokens& destFileTokens,
                   FileNodeRef& srcCWD, FileNodeRef& destCWD, Process& process);
   void truncate(FileNodeRef fileNodeRef);
@@ -85,6 +87,7 @@ public:
   void updateTime(FileNodeRef fileNodeRef, uint8_t timeType);
 
 private:
+  int readLink(FileNodeRef& fileNodeRef, char* buf, size_t bufSize);
   uint16_t getFileAttr(uint16_t fileType, mode_t mode);
   void loadFreeSectors();
   void _bufferedWrite(uint32_t sectorId, const uint8_t* dataBuffer, uint8_t* writeBuffer, unsigned& startSectorId, unsigned& prevSectorId, unsigned& count, bool flush);

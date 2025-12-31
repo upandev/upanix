@@ -35,8 +35,34 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
                    uint64_t p4, uint64_t p5)
 {
 	
-	switch(sysCallId)
-	{
+	switch(sysCallId) {
+    case SYS_CALL_FILE_READLINK: {
+      *retVal = 0;
+      auto link = (const char*)p1;
+      auto buf = (char*)p2;
+      auto bufSize = (size_t)p3;
+      try {
+        *retVal = FileOperations::Instance().readLink(link, buf, bufSize);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_FILE_SYMLINK: {
+      *retVal = 0;
+      auto target = (const char*)p1;
+      auto link = (const char*)p2;
+      try {
+        FileOperations::Instance().symLink(target, link);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
     case SYS_CALL_FILE_RENAME: {
       auto oldPath = (const char*)p1;
       auto newPath = (const char*)p2;
@@ -387,14 +413,25 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			}
 			break ;
 
-		case SYS_CALL_FILE_DUP2:
+    case SYS_CALL_FILE_DUP: {
+      try {
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        *retVal = process.iodTable().dup((int)p1);
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1 ;
+      }
+    }
+    break ;
+
+    case SYS_CALL_FILE_DUP2:
 			// P1 => Old FD
 			// P2 => New FD
 			{
 				*retVal = 0 ;
 				try {
           FileOperations::Instance().dup2(p1, p2);
-				} catch(upan::exception& e) {
+				} catch(const upan::exception& e) {
 				  e.Print();
           *retVal = -1 ;
 				}

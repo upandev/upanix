@@ -22,6 +22,18 @@
 # include <SysCall.h>
 # include <fs.h>
 
+int SysFS_ReadLink(const char *link, char *buf, size_t bufsize) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_READLINK, false, (uint64_t)link, (uint64_t)buf, (uint64_t)bufsize, 4, 5);
+  return (int)retStatus;
+}
+
+int SysFS_SymLink(const char* target, const char* link) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_SYMLINK, false, (uint64_t)target, (uint64_t)link, 3, 4, 5);
+  return (int)retStatus;
+}
+
 int SysFS_Rename(const char* oldPath, const char* newPath) {
   uint64_t retStatus;
   SysCallFile_Handle(&retStatus, SYS_CALL_FILE_RENAME, false, (uint64_t)oldPath, (uint64_t)newPath, 3, 4, 5);
@@ -136,10 +148,16 @@ int SysFS_FileAccess(const char* szFileName, int mode) {
   return retStatus;
 }
 
+int SysFS_Dup(int oldFD) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_DUP, false, (uint64_t)oldFD, 2, 3, 4, 5);
+  return (int)retStatus;
+}
+
 int SysFS_Dup2(int oldFD, int newFD) {
   uint64_t retStatus;
   SysCallFile_Handle(&retStatus, SYS_CALL_FILE_DUP2, false, (uint64_t)oldFD, (uint64_t)newFD, 3, 4, 5);
-  return retStatus;
+  return (int)retStatus;
 }
 
 DIR* SysFS_OpenDir(const char* szDirPath) {

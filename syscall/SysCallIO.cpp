@@ -123,5 +123,20 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
       }
     }
     break;
+
+    case SYS_CALL_IO_IS_TTY:
+    {
+      *retVal = 0;
+      auto fd = (int)p1;
+      try {
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        auto terminalDevice = process.iodTable().getRealNonDupped(fd).cast<TerminalDescriptor>();
+        *retVal = terminalDevice.isEmpty() ? 0 : 1;
+      } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
   }
 }
