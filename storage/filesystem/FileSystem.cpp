@@ -230,7 +230,7 @@ void FileSystem::create(const FileTree::NodeTokens& fileTokens, const upan::stri
   auto& newFileNode = reinterpret_cast<FileNode*>(newSectorBuffer)[newSectorOffset];
   const auto fileType = FILE_TYPE(mode);
 
-  if(!(S_ISREG(fileType) || S_ISDIR(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
+  if(!(S_ISREG(fileType) || S_ISDIR(fileType) || S_ISLNK(fileType) || S_ISSOCK(fileType) || S_ISCHR(fileType))) {
     throw upan::exception(XLOC, "invalid file attribute: %x", fileType);
   }
   newFileNode.Init(newFileName.c_str(), mode, process.userID(), parentNode.sectorId(), parentNode.sectorOffset());
@@ -336,7 +336,7 @@ int FileSystem::readLink(const FileTree::NodeTokens& fileTokens, FileNodeRef& cw
     throw upan::exception(XLOC, "%s link file not found", fileTokens.back().c_str());
   }
 
-  FileNodeRef::ReadGuard g1(fileNodeRef);
+  FileNodeRef::WriteGuard g1(fileNodeRef);
   return readLink(fileNodeRef, buf, bufSize);
 }
 

@@ -2174,6 +2174,8 @@ void ConsoleCommands_Test() {
 
   if (test == "rename") {
     FileSystemTest::testRename();
+  } else if (test == "symlink") {
+    FileSystemTest::testSymlink();
   } else if (test == "sigalarm") {
     printf("\n setting alarm for 5 seconds");
     alarm(5);

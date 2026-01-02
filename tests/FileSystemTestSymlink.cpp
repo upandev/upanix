@@ -23,7 +23,42 @@
 #include <fs.h>
 #include <exception.h>
 #include <dirent.h>
+#include <Global.h>
 #include <FileSystemTest.h>
+
+static void testSymlinkWithAbsolutePath(const char* targetFileContent) {
+  if(symlink("/wdir/ldir/target.txt", "wdir/tlink.txt")) {
+    throw upan::exception(XLOC, "failed to create symlink wdir/tlink.txt");
+  }
+
+  char buf[128];
+
+  int n = readlink("wdir/tlink.txt", buf, 128);
+  if (n <= 0) {
+    throw upan::exception(XLOC, "failed to readlink wdir/tlink.txt");
+  }
+
+  buf[n] = '\0';
+  if (strcmp("/wdir/ldir/target.txt", buf) != 0) {
+    throw upan::exception(XLOC, "invalid link value: %s", buf);
+  }
+
+  int fd = open("wdir/tlink.txt", O_RDONLY);
+  if (fd < 0) {
+    throw upan::exception(XLOC, "failed to open wdir/tlink.txt");
+  }
+
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/tlink.txt");
+  }
+
+  close (fd);
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
+  }
+}
 
 static void testRenameInSameDirectory(const char* srcFileContent) {
   if (create("sdir/sfile.txt", ATTR_FILE_DEFAULT)) {
@@ -291,31 +326,48 @@ static void testRenameWithReplaceAcrossDirectory(const char* srcFileContent) {
   }
 }
 
-void FileSystemTest::testRename() {
+void FileSystemTest::testSymlink() {
   try {
-    if (mkdir("sdir", ATTR_DIR_DEFAULT)) {
-      throw upan::exception(XLOC, "failed to create directory: sdir");
+    if (mkdir("wdir", ATTR_DIR_DEFAULT)) {
+      throw upan::exception(XLOC, "failed to create directory: wdir");
     }
 
-    printf("\n sdir created");
+    printf("\n wdir created");
 
-    if (mkdir("ddir", ATTR_DIR_DEFAULT)) {
-      throw upan::exception(XLOC, "failed to create directory: ddir");
+    if (mkdir("wdir/ldir", ATTR_DIR_DEFAULT)) {
+      throw upan::exception(XLOC, "failed to create directory: ldir");
     }
 
-    printf("\n ddir created");
+    printf("\n wdir/ldir created");
 
-    char srcFileContent[] = "This is the source file";
-    testRenameInSameDirectory(srcFileContent);
-    testRenameAcrossDirectory(srcFileContent);
-    testRenameWithReplaceInSameDirectory(srcFileContent);
-    testRenameWithReplaceAcrossDirectory(srcFileContent);
+    char targetFileContent[] = "This is the link target file";
+
+    if (create("wdir/ldir/target.txt", ATTR_FILE_DEFAULT)) {
+      throw upan::exception(XLOC, "failed to create file: target.txt");
+    }
+
+    printf("\n wdir/ldir/target.txt created");
+
+    int fd = open("wdir/ldir/target.txt", O_RDWR);
+    if (fd < 0) {
+      throw upan::exception(XLOC, "failed to open file: target.txt");
+    }
+
+    int w = strlen(targetFileContent);
+    int n = write(fd, targetFileContent, w);
+    if (n < w) {
+      close(fd);
+      upan::exception(XLOC, "failed to write to target.txt");
+    }
+
+    close(fd);
+
+    testSymlinkWithAbsolutePath(targetFileContent);
   } catch(const upan::exception& e) {
-    printf("\n file rename test failed...");
+    printf("\n symlink test failed...");
     e.Print();
   }
 
   printf("\n cleaning up");
-  recursiveDirectoryCleanup("sdir");
-  recursiveDirectoryCleanup("ddir");
+  recursiveDirectoryCleanup("wdir");
 }

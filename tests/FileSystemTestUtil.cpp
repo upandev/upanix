@@ -20,14 +20,37 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#pragma once
+#include <FileSystemTest.h>
+#include <dirent.h>
+#include <fs.h>
+#include <exception.h>
 
-#include <ustring.h>
+void FileSystemTest::recursiveDirectoryCleanup(const upan::string& dirPath) {
+  auto sd = opendir(dirPath.c_str());
 
-class FileSystemTest {
-public:
-  static void testRename();
-  static void testSymlink();
-private:
-  static void recursiveDirectoryCleanup(const upan::string& dirPath);
-};
+  struct dirent* sde;
+  while ((sde = readdir(sd))) {
+    upan::string filePath(dirPath);
+    filePath.concat("/", sde->d_name);
+
+    struct stat st;
+    if (stat(filePath.c_str(), &st)) {
+      throw upan::exception(XLOC, "failed to get stat for file %s", filePath.c_str());
+    }
+
+    if (S_ISDIR(st.st_mode)) {
+      recursiveDirectoryCleanup(filePath.c_str());
+    } else {
+      printf("\n deleting %s", filePath.c_str());
+      if (unlink(filePath.c_str())) {
+        printf("\n failed to delete %s", filePath.c_str());
+      }
+    }
+  }
+
+  closedir(sd);
+  printf("\n deleting %s", dirPath.c_str());
+  if (unlink(dirPath.c_str())) {
+    printf("\n failed to delete %s", dirPath.c_str());
+  }
+}
