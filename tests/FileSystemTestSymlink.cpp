@@ -55,274 +55,232 @@ static void testSymlinkWithAbsolutePath(const char* targetFileContent) {
   }
 
   close (fd);
+  buf[n] = '\0';
   if(strcmp(buf, targetFileContent) != 0) {
     throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 }
 
-static void testRenameInSameDirectory(const char* srcFileContent) {
-  if (create("sdir/sfile.txt", ATTR_FILE_DEFAULT)) {
-    throw upan::exception(XLOC, "failed to create file: sfile.txt");
+static void testSymlinkWithRelativePath(const char* targetFileContent) {
+  if(symlink("wdir/ldir/target.txt", "wdir/trlink.txt")) {
+    throw upan::exception(XLOC, "failed to create symlink wdir/trlink.txt");
   }
 
-  printf("\n sdir/sfile.txt created");
+  char buf[128];
 
-  int fd = open("sdir/sfile.txt", O_RDWR);
+  int n = readlink("wdir/trlink.txt", buf, 128);
+  if (n <= 0) {
+    throw upan::exception(XLOC, "failed to readlink wdir/trlink.txt");
+  }
+
+  buf[n] = '\0';
+  if (strcmp("wdir/ldir/target.txt", buf) != 0) {
+    throw upan::exception(XLOC, "invalid link value: %s", buf);
+  }
+
+  if (chdir("/bin")) {
+    throw upan::exception(XLOC, "failed to change directory to /bin");
+  }
+
+  int fd = open("/wdir/trlink.txt", O_RDONLY);
   if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open file: sdir/sfile.txt");
+    throw upan::exception(XLOC, "failed to open /wdir/trlink.txt");
   }
 
-  int w = strlen(srcFileContent);
-  int n = write(fd, srcFileContent, w);
-  if (n < w) {
-    upan::exception(XLOC, "failed to write to sdir/sfile.txt");
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/trlink.txt");
   }
 
-  printf("\n sdir content before renaming");
-  auto sd = opendir("sdir");
-  struct dirent* sde;
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 
-  closedir(sd);
-
-  printf("\n renaming sdir/srfile.txt to sdir/srfile.txt");
-  if (rename("sdir/sfile.txt", "sdir/srfile.txt")) {
-    throw upan::exception(XLOC, "failed to rename file sdir/sfile.txt to sdir/srfile.txt");
-  }
-
-  printf("\n sdir content after renaming");
-  sd = opendir("sdir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    if (strcmp(sde->d_name, "srfile.txt") != 0) {
-      throw upan::exception(XLOC, "renamed file name doesn't match srfile.txt");
-    }
-  }
-
-  closedir(sd);
-
-  lseek(fd, 0, SEEK_SET);
-  char rbuf[128];
-  n = read(fd, rbuf, 128);
-  if (n >= 0) {
-    rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
-  }
-
-  close(fd);
-
-  if (n != w) {
-    throw upan::exception(XLOC, "failed to read %d bytes from sdir/srfile.txt", w);
-  }
-
-  if (strcmp(rbuf, srcFileContent) != 0) {
-    throw upan::exception(XLOC, "mismatch in data from file write vs read");
+  if (chdir("..")) {
+    throw upan::exception(XLOC, "failed to change directory to ..");
   }
 }
 
-static void testRenameAcrossDirectory(const char* srcFileContent) {
-  printf("\n renaming sdir/srfile.txt to ddir/drfile.txt");
-  if (rename("sdir/srfile.txt", "ddir/drfile.txt")) {
-    throw upan::exception(XLOC, "failed to rename file sdir/srfile.txt to ddir/drfile.txt");
+static void testSymlinkForNonExistentTarget() {
+  if(symlink("/wdir/ldir/targetd.txt", "wdir/tdlink.txt")) {
+    throw upan::exception(XLOC, "failed to create symlink wdir/tdlink.txt");
   }
 
-  auto fd = open("ddir/drfile.txt", O_RDONLY);
+  char buf[128];
+
+  int n = readlink("wdir/tdlink.txt", buf, 128);
+  if (n <= 0) {
+    throw upan::exception(XLOC, "failed to readlink wdir/tdlink.txt");
+  }
+
+  buf[n] = '\0';
+  if (strcmp("/wdir/ldir/targetd.txt", buf) != 0) {
+    throw upan::exception(XLOC, "invalid link value: %s", buf);
+  }
+
+  int fd = open("wdir/tdlink.txt", O_RDONLY);
+  if (fd >= 0) {
+    throw upan::exception(XLOC, "open for non existent symlink wdir/tdlink.txt didn't fail");
+  }
+
+  char targetFileContent[] = "This is the link target (delayed) file";
+
+  if (create("/wdir/ldir/targetd.txt", ATTR_FILE_DEFAULT)) {
+    throw upan::exception(XLOC, "failed to create file: targetd.txt");
+  }
+
+  printf("\n wdir/ldir/targetd.txt created");
+
+  fd = open("/wdir/ldir/targetd.txt", O_RDWR);
   if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open renamed file ddir/drfile.txt");
+    throw upan::exception(XLOC, "failed to open file: targetd.txt");
   }
 
-  char rbuf[128];
-  auto n = read(fd, rbuf, 128);
-  if (n >= 0) {
-    rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
-  }
-
-  int w = strlen(srcFileContent);
-  if (n != w) {
-    throw upan::exception(XLOC, "failed to read %d bytes from ddir/drfile.txt", w);
-  }
-
-  if (strcmp(rbuf, srcFileContent) != 0) {
-    throw upan::exception(XLOC, "mismatch in data from file write vs read");
-  }
-
-  close(fd);
-
-  printf("\n sdir content after renaming file under ddir");
-  auto sd = opendir("sdir");
-  struct dirent* sde;
-  int count = 0;
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    ++count;
-  }
-  if (count != 0) {
-    throw upan::exception(XLOC, "sdir is not empty");
-  }
-
-  closedir(sd);
-
-  printf("\n ddir content after renaming");
-  sd = opendir("ddir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    if (strcmp(sde->d_name, "drfile.txt") != 0) {
-      throw upan::exception(XLOC, "renamed file name doesn't match drfile.txt");
-    }
-  }
-
-  closedir(sd);
-}
-
-static void testRenameWithReplaceInSameDirectory(const char* srcFileContent) {
-  if (create("ddir/dxfile.txt", ATTR_FILE_DEFAULT)) {
-    throw upan::exception(XLOC, "failed to create file: dxfile.txt");
-  }
-
-  printf("\n ddir/dxfile.txt created");
-
-  int fd = open("ddir/dxfile.txt", O_RDWR);
-  if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open file: ddir/dxfile.txt");
-  }
-
-  char wbuf[] = "This is a dest rename replace file";
-  int w = strlen(wbuf);
-  int n = write(fd, wbuf, w);
+  int w = strlen(targetFileContent);
+  n = write(fd, targetFileContent, w);
   if (n < w) {
-    upan::exception(XLOC, "failed to write to ddir/dxfile.txt");
+    close(fd);
+    upan::exception(XLOC, "failed to write to targetd.txt");
   }
 
   close(fd);
 
-  printf("\n ddir content before renaming");
-  auto sd = opendir("ddir");
-  struct dirent* sde;
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-  }
-  closedir(sd);
-
-  printf("\n renaming ddir/drfile.txt to ddir/dxfile.txt");
-  if (rename("ddir/drfile.txt", "ddir/dxfile.txt")) {
-    throw upan::exception(XLOC, "failed to rename file ddir/drfile.txt to ddir/dxfile.txt");
-  }
-
-  printf("\n ddir content after renaming");
-  sd = opendir("ddir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    if (strcmp(sde->d_name, "dxfile.txt") != 0) {
-      throw upan::exception(XLOC, "renamed file name doesn't match dxfile.txt");
-    }
-  }
-
-  closedir(sd);
-
-  fd = open("ddir/dxfile.txt", O_RDONLY);
+  fd = open("wdir/tdlink.txt", O_RDONLY);
   if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open ddir/dxfile.txt");
+    throw upan::exception(XLOC, "failed to open wdir/tdlink.txt");
   }
 
-  char rbuf[128];
-  n = read(fd, rbuf, 128);
-  if (n >= 0) {
-    rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/tdlink.txt");
   }
 
-  close(fd);
-
-  w = strlen(srcFileContent);
-  if (n != w) {
-    throw upan::exception(XLOC, "failed to read %d bytes from ddir/dxfile.txt", w);
-  }
-
-  if (strcmp(rbuf, srcFileContent) != 0) {
-    throw upan::exception(XLOC, "mismatch in data from file write vs read");
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 }
 
-static void testRenameWithReplaceAcrossDirectory(const char* srcFileContent) {
-  int fd = open("sdir/sxfile.txt", O_RDWR | O_CREAT, ATTR_FILE_DEFAULT);
+static void testSymlinkOfSymlink(const char* targetFileContent) {
+  if(symlink("/wdir/ldir/target.txt", "wdir/tlink1.txt")) {
+    throw upan::exception(XLOC, "failed to create symlink wdir/tlink1.txt");
+  }
+
+  char buf[128];
+
+  int n = readlink("wdir/tlink1.txt", buf, 128);
+  if (n <= 0) {
+    throw upan::exception(XLOC, "failed to readlink wdir/tlink1.txt");
+  }
+
+  buf[n] = '\0';
+  if (strcmp("/wdir/ldir/target.txt", buf) != 0) {
+    throw upan::exception(XLOC, "invalid link value: %s", buf);
+  }
+
+  if(symlink("wdir/tlink1.txt", "wdir/tlink2.txt")) {
+    throw upan::exception(XLOC, "failed to create symlink wdir/tlink2.txt");
+  }
+
+  n = readlink("wdir/tlink2.txt", buf, 128);
+  if (n <= 0) {
+    throw upan::exception(XLOC, "failed to readlink wdir/tlink2.txt");
+  }
+
+  buf[n] = '\0';
+  if (strcmp("wdir/tlink1.txt", buf) != 0) {
+    throw upan::exception(XLOC, "invalid link value: %s", buf);
+  }
+
+  int fd = open("wdir/tlink1.txt", O_RDONLY);
   if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open file: sdir/sxfile.txt");
+    throw upan::exception(XLOC, "failed to open wdir/tlink1.txt");
   }
 
-  printf("\n sdir/sxfile.txt created");
-
-  char wbuf[] = "This is a src rename replace file";
-  int w = strlen(wbuf);
-  int n = write(fd, wbuf, w);
-  if (n < w) {
-    upan::exception(XLOC, "failed to write to sdir/sxfile.txt");
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/tlink1.txt");
   }
 
-  close(fd);
-
-  printf("\n ddir content before renaming");
-  auto sd = opendir("ddir");
-  struct dirent* sde;
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-  }
-  closedir(sd);
-
-  printf("\n sdir content before renaming");
-  sd = opendir("sdir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-  }
-  closedir(sd);
-
-  printf("\n renaming ddir/dxfile.txt to sdir/sxfile.txt");
-  if (rename("ddir/dxfile.txt", "sdir/sxfile.txt")) {
-    throw upan::exception(XLOC, "failed to rename file ddir/dxfile.txt to sdir/sxfile.txt");
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 
-  printf("\n ddir content after renaming");
-  sd = opendir("ddir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    closedir(sd);
-    throw upan::exception(XLOC, "ddir is not empty after renaming the file dxfile.txt");
-  }
-  closedir(sd);
-
-  printf("\n sdir content before renaming");
-  sd = opendir("sdir");
-  while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
-    if (strcmp(sde->d_name, "sxfile.txt") != 0) {
-      throw upan::exception(XLOC, "renamed file name doesn't match sxfile.txt");
-    }
-  }
-  closedir(sd);
-
-  fd = open("sdir/sxfile.txt", O_RDONLY);
+  fd = open("wdir/tlink2.txt", O_RDONLY);
   if (fd < 0) {
-    throw upan::exception(XLOC, "failed to open sdir/sxfile.txt");
+    throw upan::exception(XLOC, "failed to open wdir/tlink2.txt");
   }
 
-  char rbuf[128];
-  n = read(fd, rbuf, 128);
-  if (n >= 0) {
-    rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/tlink2.txt");
   }
 
-  close(fd);
-
-  w = strlen(srcFileContent);
-  if (n != w) {
-    throw upan::exception(XLOC, "failed to read %d bytes from sdir/sxfile.txt", w);
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 
-  if (strcmp(rbuf, srcFileContent) != 0) {
-    throw upan::exception(XLOC, "mismatch in data from file write vs read");
+  if (unlink("wdir/tlink2.txt")) {
+    throw upan::exception(XLOC, "failed to unlink wdir/tlink2.txt");
+  }
+
+  fd = open("wdir/tlink2.txt", O_RDONLY);
+  if (fd >= 0) {
+    throw upan::exception(XLOC, "open for non existent symlink wdir/tlink2.txt didn't fail");
+  }
+
+  fd = open("wdir/tlink1.txt", O_RDONLY);
+  if (fd < 0) {
+    throw upan::exception(XLOC, "failed to open wdir/tlink1.txt");
+  }
+
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/tlink1.txt");
+  }
+
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
+  }
+
+  if (unlink("wdir/tlink1.txt")) {
+    throw upan::exception(XLOC, "failed to unlink wdir/tlink1.txt");
+  }
+
+  fd = open("wdir/tlink1.txt", O_RDONLY);
+  if (fd >= 0) {
+    throw upan::exception(XLOC, "open for non existent symlink wdir/tlink1.txt didn't fail");
+  }
+
+  fd = open("wdir/ldir/target.txt", O_RDONLY);
+  if (fd < 0) {
+    throw upan::exception(XLOC, "failed to open wdir/ldir/target.txt");
+  }
+
+  n = read(fd, buf, 128);
+  if (n <= 0) {
+    close (fd);
+    throw upan::exception(XLOC, "failed to read wdir/ldir/target.txt");
+  }
+
+  close (fd);
+  buf[n] = '\0';
+  if(strcmp(buf, targetFileContent) != 0) {
+    throw upan::exception(XLOC, "target file content mismatch: %s", buf);
   }
 }
 
@@ -363,6 +321,9 @@ void FileSystemTest::testSymlink() {
     close(fd);
 
     testSymlinkWithAbsolutePath(targetFileContent);
+    testSymlinkWithRelativePath(targetFileContent);
+    testSymlinkForNonExistentTarget();
+    testSymlinkOfSymlink(targetFileContent);
   } catch(const upan::exception& e) {
     printf("\n symlink test failed...");
     e.Print();
