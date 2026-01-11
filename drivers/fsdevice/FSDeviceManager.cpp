@@ -28,8 +28,9 @@
 #include <ProcessManager.h>
 #include <TerminalMasterDescriptor.h>
 #include <RedirectDescriptor.h>
+#include <FSPipeDevice.h>
 
-FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@"), _nextTerminalId(0) {
+FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@"), _nextTerminalId(0), _nextPipeId(0) {
 }
 
 //function to update file node ref across all devices when file system is mounted - which means creating the file node references that are missing
@@ -49,6 +50,10 @@ upan::shared_ptr<FSSocketDevice> FSDeviceManager::getSocketDevice(const upan::st
 
 upan::shared_ptr<FSTerminalDevice> FSDeviceManager::getTerminalDevice(const upan::string& path) {
   return getDevice(path).cast<FSTerminalDevice>();
+}
+
+upan::shared_ptr<FSPipeDevice> FSDeviceManager::getPipeDevice(const upan::string& path) {
+  return getDevice(path).cast<FSPipeDevice>();
 }
 
 void FSDeviceManager::createSocketDevice(const upan::string& path) {
@@ -121,10 +126,57 @@ int FSDeviceManager::createTerminalDevice(int flags, const upan::string& path) {
   return masterDesc->id();
 }
 
+upan::string FSDeviceManager::createPipeDevice() {
+  upan::string path = "/dev/upipe";
+  path += upan::string::to_string(_nextPipeId.inc());
+  _devices[path].reset(new FSPipeDevice(path, 4096));
+  return path;
+}
+
+void FSDeviceManager::createPipeDevice(const upan::string& path) {
+  if (_devices.exists(path)) {
+    throw upan::exception(XLOC, "device already exists for path: %s", path.c_str());
+  }
+
+  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
+  if (fileStat.isEmpty()) {
+    FileOperations::Instance().create(_rootPrefix + path, S_IFIFO | 0666);
+  } else {
+    if (S_ISFIFO(fileStat.value().st_mode) == false) {
+      throw upan::exception(XLOC, "a non pipe file already exists at path: %s", path.c_str());
+    }
+    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
+      throw upan::exception(XLOC, "permission denied to access pipe device at path: %s", path.c_str());
+    }
+  }
+
+  _devices[path].reset(new FSPipeDevice(path, 4096));
+}
+
 void FSDeviceManager::removeDevice(const upan::string& path) {
   auto i = _devices.find(path);
   if (i == _devices.end()) {
     return;
   }
   _devices.erase(i);
+}
+
+upan::shared_ptr<FSPipeDevice> FSDeviceManager::registerPipeDescriptor(int fd, const upan::string& path) {
+  auto pipeDevice = getPipeDevice(path);
+  if (pipeDevice.isEmpty()) {
+    throw upan::exception(XLOC, "pipe device not found for path: %s", path.c_str());
+  }
+  pipeDevice->addFD(fd);
+  return pipeDevice;
+}
+
+void FSDeviceManager::unregisterPipeDescriptor(int fd, const upan::string& path) {
+  auto pipeDevice = getPipeDevice(path);
+  if (pipeDevice.isEmpty()) {
+    throw upan::exception(XLOC, "pipe device not found for path: %s", path.c_str());
+  }
+  pipeDevice->removeFD(fd);
+  if (pipeDevice->fdCount() == 0) {
+    removeDevice(path);
+  }
 }

@@ -28,7 +28,7 @@
 
 FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize)
   : FSDevice(path), _owner(owner),
-    _inBuffer(inBufSize, SB_IN, path), _outBuffer(outBufSize, SB_OUT, path),
+    _inBuffer(inBufSize), _outBuffer(outBufSize),
     _directKernelConsole(false) {
   _termios.c_lflag = ICANON | ECHO |  ISIG;
 }
@@ -57,11 +57,15 @@ bool FSTerminalDevice::canWriteInStream() const {
 }
 
 int FSTerminalDevice::readInStream(void* buffer, int len) {
-  return _inBuffer.read(buffer, len, true);
+  return _inBuffer.read(buffer, len, true, [&]() {
+    ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_IN_READ, 0);
+  });
 }
 
 int FSTerminalDevice::writeInStream(const void* buffer, int len) {
-  const int n = _inBuffer.write(buffer, len, false);
+  const int n = _inBuffer.write(buffer, len, false, [&]() {
+    ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_IN_WRITE, 0);
+  });
   if ((_termios.c_lflag & ECHO) && n > 0) {
     for (int i = 0; i < n; ++i) {
       auto ch = ((uint8_t*)buffer)[i];
@@ -81,6 +85,7 @@ int FSTerminalDevice::writeInStream(const void* buffer, int len) {
       }
     }
   }
+  return n;
 }
 
 bool FSTerminalDevice::canReadOutStream() const {
@@ -92,7 +97,9 @@ bool FSTerminalDevice::canWriteOutStream() const {
 }
 
 int FSTerminalDevice::readOutStream(void* buffer, int len) {
-  return _outBuffer.read(buffer, len, true);
+  return _outBuffer.read(buffer, len, true, [&]() {
+    ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_OUT_READ, 0);
+  });
 }
 
 int FSTerminalDevice::writeOutStream(const void* buffer, int len) {
@@ -100,64 +107,7 @@ int FSTerminalDevice::writeOutStream(const void* buffer, int len) {
     KC::MConsole().nMessage((char*) buffer, len, upanui::CharStyle::WHITE_ON_BLACK());
     return len;
   }
-  return _outBuffer.write(buffer, len, true);
-}
-
-FSTerminalDevice::StreamBuffer::StreamBuffer(int bufSize, STREAM_BUFFER_TYPE type, const upan::string& path) : _queue(bufSize), _type(type), _path(path) {
-}
-
-bool FSTerminalDevice::StreamBuffer::canRead() const {
-  upan::mutex_guard g(_ioSync);
-  return !_queue.empty();
-}
-
-int FSTerminalDevice::StreamBuffer::read(void* buffer, int len, bool block) {
-  while(true) {
-    {
-      upan::mutex_guard g(_ioSync);
-      if (!_queue.empty()) {
-        return _queue.read((uint8_t*)buffer, len);
-      }
-    }
-    if (!block) {
-      PCSound::Instance().Beep();
-      return 0;
-    }
-
-    const auto waitType = _type == SB_IN ? TERMINAL_IO_TYPES::TERMINAL_IN_READ : TERMINAL_IO_TYPES::TERMINAL_OUT_READ;
-    ProcessManager::Instance().WaitOnTerminalIO(_path, waitType, 0);
-
-    const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
-    if (err == ProcessStateInfo::INTERRUPTED) {
-      throw upan::exception(XLOC, "TerminalDevice read interrupted for process %d", 1);
-    }
-  }
-}
-
-bool FSTerminalDevice::StreamBuffer::canWrite() const {
-  upan::mutex_guard g(_ioSync);
-  return !_queue.full();
-}
-
-int FSTerminalDevice::StreamBuffer::write(const void* buffer, int len, bool block) {
-  while(true) {
-    {
-      upan::mutex_guard g(_ioSync);
-      if (!_queue.full()) {
-        return _queue.write((uint8_t*)buffer, len);
-      }
-    }
-    if (!block) {
-      PCSound::Instance().Beep();
-      return 0;
-    }
-
-    const auto waitType = _type == SB_IN ? TERMINAL_IO_TYPES::TERMINAL_IN_WRITE : TERMINAL_IO_TYPES::TERMINAL_OUT_WRITE;
-    ProcessManager::Instance().WaitOnTerminalIO(_path, waitType, 0);
-
-    const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
-    if (err == ProcessStateInfo::INTERRUPTED) {
-      throw upan::exception(XLOC, "TerminalDevice write interrupted for process %d", 1);
-    }
-  }
+  return _outBuffer.write(buffer, len, true, [&]() {
+    ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_OUT_WRITE, 0);
+  });
 }

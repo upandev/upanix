@@ -27,6 +27,8 @@
 
 class FSSocketDevice;
 class FSTerminalDevice;
+class FSPipeDevice;
+
 class FSDeviceManager {
 private:
   FSDeviceManager();
@@ -40,9 +42,17 @@ public:
   upan::shared_ptr<FSDevice> getDevice(const upan::string& path);
   upan::shared_ptr<FSSocketDevice> getSocketDevice(const upan::string& path);
   upan::shared_ptr<FSTerminalDevice> getTerminalDevice(const upan::string& path);
+  upan::shared_ptr<FSPipeDevice> getPipeDevice(const upan::string& path);
+
   void createSocketDevice(const upan::string& path);
   int createTerminalDevice(int flags);
   int createKernelRootInMemoryTerminalDevice(const upan::string& path);
+
+  upan::string createPipeDevice();
+  void createPipeDevice(const upan::string& path);
+  upan::shared_ptr<FSPipeDevice> registerPipeDescriptor(int fd, const upan::string& path);
+  void unregisterPipeDescriptor(int fd, const upan::string& path);
+
   void removeDevice(const upan::string& path);
 
 private:
@@ -51,5 +61,6 @@ private:
 private:
   const upan::string _rootPrefix;
   upan::atomic::integral<int> _nextTerminalId;
+  upan::atomic::integral<int> _nextPipeId;
   upan::map<upan::string, upan::shared_ptr<FSDevice>> _devices;
 };

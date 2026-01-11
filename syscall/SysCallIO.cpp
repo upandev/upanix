@@ -26,6 +26,8 @@
 # include <FSDeviceManager.h>
 # include <TerminalMasterDescriptor.h>
 # include <TerminalDescriptor.h>
+# include <PipeReadDescriptor.h>
+# include <PipeWriteDescriptor.h>
 
 bool SysCallIO_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_IO_START && sysCallId < SYS_CALL_IO_END) ;
@@ -133,6 +135,26 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
         auto terminalDevice = process.iodTable().getRealNonDupped(fd).cast<TerminalDescriptor>();
         *retVal = terminalDevice.isEmpty() ? 0 : 1;
       } catch(upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
+    }
+    break;
+
+    case SYS_CALL_IO_CREATE_PIPE:
+    {
+      *retVal = 0;
+      auto fd = (int*)p1;
+      try {
+        const auto& path = FSDeviceManager::Instance().createPipeDevice();
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
+        fd[0] = process.iodTable().allocate([&](int fd) {
+          return new PipeReadDescriptor(process.processID(), fd, 0666, path);
+        })->id();
+        fd[1] = process.iodTable().allocate([&](int fd) {
+          return new PipeWriteDescriptor(process.processID(), fd, 0666, path);
+        })->id();
+      } catch(const upan::exception& e) {
         KLog::exception(e);
         *retVal = -1;
       }

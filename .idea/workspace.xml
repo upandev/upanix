@@ -33,13 +33,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="created a separate directory for all tests - moved rename() tests to this new directory">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="added tests for symlink">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/FileSystemTest.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTest.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/FileSystemTestRename.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTestRename.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/upanix_src_files.sh" beforeDir="false" afterPath="$PROJECT_DIR$/upanix_src_files.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallIO.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +102,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/tests&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/io/pipe&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -114,24 +116,24 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/tests" />
-      <recent name="$PROJECT_DIR$/process" />
-      <recent name="$PROJECT_DIR$/io/socket" />
-      <recent name="$PROJECT_DIR$/io/terminal" />
+      <recent name="$PROJECT_DIR$/io/pipe" />
+      <recent name="$PROJECT_DIR$/io" />
+      <recent name="$PROJECT_DIR$/util" />
       <recent name="$PROJECT_DIR$/drivers/fsdevice" />
+      <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/io/pipe" />
+      <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/interopc" />
       <recent name="$PROJECT_DIR$/network/protocol" />
       <recent name="$PROJECT_DIR$/network/protocol/udp" />
-      <recent name="$PROJECT_DIR$/network/protocol/tcp" />
-      <recent name="$PROJECT_DIR$/network/protocol/icmp" />
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -796,7 +798,10 @@
       <workItem from="1766285508618" duration="52387000" />
       <workItem from="1767081411196" duration="11051000" />
       <workItem from="1767155227405" duration="15736000" />
-      <workItem from="1767326070768" duration="3205000" />
+      <workItem from="1767326070768" duration="16624000" />
+      <workItem from="1768056371057" duration="3960000" />
+      <workItem from="1768084889310" duration="45000" />
+      <workItem from="1768111599090" duration="4736000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1141,7 +1146,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="247" />
+    <option name="localTasksCounter" value="249" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1175,8 +1180,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="link to openssl crypto and ssl static library" />
-    <MESSAGE value="add a default no-op signal handler for Ctrl+C i.e. SIGINT" />
     <MESSAGE value="add test code for tcp tls server and client" />
     <MESSAGE value="implement getentropy method using rdtsc instruction to capture CPU time jitters" />
     <MESSAGE value="initialize SSL context as part of network initialization (initnet)" />
@@ -1200,7 +1203,9 @@
     <MESSAGE value="capture exit status of a process as per POSIX standards" />
     <MESSAGE value="implemented dup(), symlink(), readlink() system calls" />
     <MESSAGE value="created a separate directory for all tests - moved rename() tests to this new directory" />
-    <option name="LAST_COMMIT_MESSAGE" value="created a separate directory for all tests - moved rename() tests to this new directory" />
+    <MESSAGE value="fixed file node read/write lock bug in readlink system call. Created a new test suite for symlink - added test symlink with absolute path" />
+    <MESSAGE value="added tests for symlink" />
+    <option name="LAST_COMMIT_MESSAGE" value="added tests for symlink" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

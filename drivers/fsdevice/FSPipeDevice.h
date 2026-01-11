@@ -22,51 +22,22 @@
 #pragma once
 
 #include <FSDevice.h>
-#include <queue.h>
-#include <termios.h>
 #include <StreamBuffer.h>
+#include <set.h>
 
-class Process;
-class FSTerminalDevice : public FSDevice {
+class FSPipeDevice : public FSDevice {
 public:
-  typedef enum {
-    CANONICAL,
-    RAW
-  } Mode;
+  FSPipeDevice(const upan::string& path, int bufSize);
 
-  typedef enum {
-    TERMINAL_IN_READ,
-    TERMINAL_IN_WRITE,
-    TERMINAL_OUT_READ,
-    TERMINAL_OUT_WRITE,
-  } TERMINAL_IO_TYPES;
-
-  typedef struct {
-    upan::string _path;
-    TERMINAL_IO_TYPES _waitType;
-  } WaitInfo;
-
-  FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize);
-
-  bool isReady(TERMINAL_IO_TYPES ioType) const;
-  bool canReadInStream() const;
-  bool canWriteInStream() const;
-  int readInStream(void* buffer, int len);
-  int writeInStream(const void* buffer, int len);
-
-  bool canReadOutStream() const;
-  bool canWriteOutStream() const;
-  int readOutStream(void* buffer, int len);
-  int writeOutStream(const void* buffer, int len);
-
-  void setDirectKernelConsole(bool directKernelConsole) { _directKernelConsole = directKernelConsole; }
-  const struct termios& getTermios() const { return _termios; }
-  void setTermios(const struct termios& termios) { _termios = termios; }
+  bool canRead() const;
+  bool canWrite() const;
+  int read(int fd, void* buffer, int len, bool block);
+  int write(int fd, const void* buffer, int len, bool block);
+  void addFD(int fd) { _fds.insert(fd); }
+  void removeFD(int fd) { _fds.erase(fd); }
+  int fdCount() { return _fds.size(); }
 
 private:
-  Process& _owner;
-  StreamBuffer _inBuffer;
-  StreamBuffer _outBuffer;
-  bool _directKernelConsole;
-  struct termios _termios;
+  StreamBuffer _buffer;
+  upan::set<int> _fds;
 };

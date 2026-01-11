@@ -62,3 +62,9 @@ int SysIO_IsTTY(int fd) {
   SysCallIO_Handle(&retStatus, SYS_CALL_IO_IS_TTY, false, (uint64_t)fd, 2, 3, 4 ,5);
   return (int)retStatus;
 }
+
+int SysIO_CreatePipe(int fd[2]) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CREATE_PIPE, false, (uint64_t)fd, 2, 3, 4 ,5);
+  return (int)retStatus;
+}
