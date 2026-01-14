@@ -30,7 +30,7 @@
 #include <RedirectDescriptor.h>
 #include <FSPipeDevice.h>
 
-FSDeviceManager::FSDeviceManager() : _rootPrefix(upan::string(ROOT_DRIVE_SYN) + "@"), _nextTerminalId(0), _nextPipeId(0) {
+FSDeviceManager::FSDeviceManager() : _nextTerminalId(0), _nextPipeId(0) {
 }
 
 //function to update file node ref across all devices when file system is mounted - which means creating the file node references that are missing
@@ -60,19 +60,6 @@ void FSDeviceManager::createSocketDevice(const upan::string& path) {
   if (_devices.exists(path)) {
     throw upan::exception(XLOC, "socket device already exists for path: %s", path.c_str());
   }
-
-  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
-  if (fileStat.isEmpty()) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFSOCK | 0744);
-  } else {
-    if (S_ISSOCK(fileStat.value().st_mode) == false) {
-      throw upan::exception(XLOC, "a non socket file already exists at path: %s", path.c_str());
-    }
-    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
-      throw upan::exception(XLOC, "permission denied to access socket device at path: %s", path.c_str());
-    }
-  }
-
   _devices[path].reset(new FSSocketDevice(path));
 }
 
@@ -84,14 +71,15 @@ int FSDeviceManager::createTerminalDevice(int flags) {
     throw upan::exception(XLOC, "tty device already exists for path: %s", path.c_str());
   }
 
-  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
+  const upan::string rootPrefix(ROOT_DRIVE_PREFIX);
+  const auto& fileStat = FileOperations::Instance().stats(rootPrefix + path);
   if (fileStat.isEmpty()) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFCHR | 0620);
+    FileOperations::Instance().create(rootPrefix + path, S_IFCHR | 0620);
   } else {
     if (S_ISCHR(fileStat.value().st_mode) == false) {
       throw upan::exception(XLOC, "a non tty file already exists at path: %s", path.c_str());
     }
-    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
+    if (!FileOperations::Instance().fileAccess(rootPrefix + path, W_OK)) {
       throw upan::exception(XLOC, "permission denied to access tty device at path: %s", path.c_str());
     }
   }
@@ -129,7 +117,7 @@ int FSDeviceManager::createTerminalDevice(int flags, const upan::string& path) {
 upan::string FSDeviceManager::createPipeDevice() {
   upan::string path = "/dev/upipe";
   path += upan::string::to_string(_nextPipeId.inc());
-  _devices[path].reset(new FSPipeDevice(path, 4096));
+  _devices[path].reset(new FSPipeDevice(path, 4096, false));
   return path;
 }
 
@@ -137,20 +125,7 @@ void FSDeviceManager::createPipeDevice(const upan::string& path) {
   if (_devices.exists(path)) {
     throw upan::exception(XLOC, "device already exists for path: %s", path.c_str());
   }
-
-  const auto& fileStat = FileOperations::Instance().stats(_rootPrefix + path);
-  if (fileStat.isEmpty()) {
-    FileOperations::Instance().create(_rootPrefix + path, S_IFIFO | 0666);
-  } else {
-    if (S_ISFIFO(fileStat.value().st_mode) == false) {
-      throw upan::exception(XLOC, "a non pipe file already exists at path: %s", path.c_str());
-    }
-    if (!FileOperations::Instance().fileAccess(_rootPrefix + path, W_OK)) {
-      throw upan::exception(XLOC, "permission denied to access pipe device at path: %s", path.c_str());
-    }
-  }
-
-  _devices[path].reset(new FSPipeDevice(path, 4096));
+  _devices[path].reset(new FSPipeDevice(path, 4096, true));
 }
 
 void FSDeviceManager::removeDevice(const upan::string& path) {

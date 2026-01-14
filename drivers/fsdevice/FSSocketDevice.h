@@ -25,5 +25,6 @@
 
 class FSSocketDevice : public FSDevice {
 public:
-  explicit FSSocketDevice(const upan::string& path) : FSDevice(path) {}
+  explicit FSSocketDevice(const upan::string& path);
+  ~FSSocketDevice() override;
 };

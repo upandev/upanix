@@ -56,6 +56,7 @@ return X ;
 #define BCD_TO_DECIMAL(no)	((((no & 0xF0) >> 4) * 10) + (no & 0x0F))
 
 #define ROOT_DRIVE_SYN "ROOT"
+#define ROOT_DRIVE_PREFIX "ROOT@"
 
 #define LIB_PATH ":ROOT@/lib:ROOT@/usr/lib:"
 #define BIN_PATH "ROOT@/bin/"

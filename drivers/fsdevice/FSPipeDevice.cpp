@@ -23,8 +23,30 @@
 #include <FSPipeDevice.h>
 #include <ProcessManager.h>
 
-FSPipeDevice::FSPipeDevice(const upan::string& path, int bufSize) : FSDevice(path),
-    _buffer(bufSize) {
+FSPipeDevice::FSPipeDevice(const upan::string& path, int bufSize, bool isNamed) : FSDevice(path),
+    _buffer(bufSize), _isNamed(isNamed) {
+  if (_isNamed) {
+    upan::string rootPath(ROOT_DRIVE_PREFIX);
+    rootPath += path;
+    const auto& fileStat = FileOperations::Instance().stats(rootPath);
+    if (fileStat.isEmpty()) {
+      FileOperations::Instance().create(rootPath, S_IFIFO | 0666);
+    } else {
+      if (S_ISFIFO(fileStat.value().st_mode) == false) {
+        throw upan::exception(XLOC, "a non pipe file already exists at path: %s", path.c_str());
+      }
+      if (!FileOperations::Instance().fileAccess(rootPath, W_OK)) {
+        throw upan::exception(XLOC, "permission denied to access pipe device at path: %s", path.c_str());
+      }
+    }
+  }
+}
+
+FSPipeDevice::~FSPipeDevice() {
+  if (_isNamed) {
+    const upan::string rootPrefix(ROOT_DRIVE_PREFIX);
+    unlink((rootPrefix + path()).c_str());
+  }
 }
 
 bool FSPipeDevice::canRead() const {

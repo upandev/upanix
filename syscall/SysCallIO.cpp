@@ -145,8 +145,13 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
     {
       *retVal = 0;
       auto fd = (int*)p1;
+      upan::string path((const char*)p2);
       try {
-        const auto& path = FSDeviceManager::Instance().createPipeDevice();
+        if (path.empty()) {
+          path = FSDeviceManager::Instance().createPipeDevice();
+        } else {
+          FSDeviceManager::Instance().createPipeDevice(path);
+        }
         auto& process = ProcessManager::Instance().GetCurrentPAS();
         fd[0] = process.iodTable().allocate([&](int fd) {
           return new PipeReadDescriptor(process.processID(), fd, 0666, path);

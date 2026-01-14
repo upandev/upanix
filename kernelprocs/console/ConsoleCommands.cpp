@@ -81,6 +81,7 @@
 #include <ConfigFileDB.h>
 #include <NetworkDevice.h>
 #include <RealNetworkDevice.h>
+#include <TestRunner.h>
 
 /**** Command Function Declarations  *****/
 static void ConsoleCommands_ChangeDrive() ;
@@ -2172,7 +2173,9 @@ void ConsoleCommands_Test() {
     test = CommandLineParser::Instance().GetParameterAt(0);
   }
 
-  if (test == "rename") {
+  if (test == "all") {
+    TestRunner::run();
+  } if (test == "rename") {
     FileSystemTest::testRename();
   } else if (test == "symlink") {
     FileSystemTest::testSymlink();

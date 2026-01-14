@@ -65,6 +65,12 @@ int SysIO_IsTTY(int fd) {
 
 int SysIO_CreatePipe(int fd[2]) {
   uint64_t retStatus;
-  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CREATE_PIPE, false, (uint64_t)fd, 2, 3, 4 ,5);
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CREATE_PIPE, false, (uint64_t)fd, (uint64_t)NULL, 3, 4 ,5);
+  return (int)retStatus;
+}
+
+int SysIO_CreateNamedPipe(const char* path, int fd[2]) {
+  uint64_t retStatus;
+  SysCallIO_Handle(&retStatus, SYS_CALL_IO_CREATE_PIPE, false, (uint64_t)fd, (uint64_t)path, 3, 4 ,5);
   return (int)retStatus;
 }

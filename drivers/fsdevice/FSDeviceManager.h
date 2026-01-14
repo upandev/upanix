@@ -59,8 +59,11 @@ private:
   int createTerminalDevice(int flags, const upan::string& path);
 
 private:
-  const upan::string _rootPrefix;
+  typedef upan::map<upan::string, upan::shared_ptr<FSDevice>> Devices;
+  Devices& devices() { return _devices; }
+  friend class PipeTest;
+
   upan::atomic::integral<int> _nextTerminalId;
   upan::atomic::integral<int> _nextPipeId;
-  upan::map<upan::string, upan::shared_ptr<FSDevice>> _devices;
+  Devices _devices;
 };

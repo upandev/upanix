@@ -19,28 +19,27 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#pragma once
 
-#include <FSDevice.h>
-#include <StreamBuffer.h>
-#include <set.h>
+#include <FSSocketDevice.h>
+#include <FileOperations.h>
 
-class FSPipeDevice : public FSDevice {
-public:
-  FSPipeDevice(const upan::string& path, int bufSize, bool isNamed);
-  ~FSPipeDevice() override;
+FSSocketDevice::FSSocketDevice(const upan::string& path) : FSDevice(path) {
+  upan::string rootPath(ROOT_DRIVE_PREFIX);
+  rootPath += path;
+  const auto& fileStat = FileOperations::Instance().stats(rootPath);
+  if (fileStat.isEmpty()) {
+    FileOperations::Instance().create(rootPath, S_IFSOCK | 0744);
+  } else {
+    if (S_ISSOCK(fileStat.value().st_mode) == false) {
+      throw upan::exception(XLOC, "a non socket file already exists at path: %s", path.c_str());
+    }
+    if (!FileOperations::Instance().fileAccess(rootPath, W_OK)) {
+      throw upan::exception(XLOC, "permission denied to access socket device at path: %s", path.c_str());
+    }
+  }
+}
 
-  bool isNamed() const { return _isNamed; }
-  bool canRead() const;
-  bool canWrite() const;
-  int read(int fd, void* buffer, int len, bool block);
-  int write(int fd, const void* buffer, int len, bool block);
-  void addFD(int fd) { _fds.insert(fd); }
-  void removeFD(int fd) { _fds.erase(fd); }
-  int fdCount() { return _fds.size(); }
-
-private:
-  StreamBuffer _buffer;
-  upan::set<int> _fds;
-  bool _isNamed;
-};
+FSSocketDevice::~FSSocketDevice() {
+  const upan::string rootPrefix(ROOT_DRIVE_PREFIX);
+  unlink((rootPrefix + path()).c_str());
+}
