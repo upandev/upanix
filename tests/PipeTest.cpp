@@ -25,6 +25,7 @@
 #include <exception.h>
 #include <fs.h>
 #include <FSDeviceManager.h>
+#include <FSPipeDevice.h>
 
 void PipeTest::testUnamedPipe() {
   int pipeFd[2];
@@ -36,8 +37,8 @@ void PipeTest::testUnamedPipe() {
   write(pipeFd[1], message, strlen(message));
   char buf[128];
 
-  read(pipeFd[0], buf, sizeof(buf));
-  buf[sizeof(buf)-1] = '\0';
+  int n = read(pipeFd[0], buf, sizeof(buf));
+  buf[n] = '\0';
   if (strcmp(buf, message) != 0) {
     throw upan::exception(XLOC, "pipe message mismatch: %s", buf);
   }
@@ -78,4 +79,71 @@ void PipeTest::testUnamedPipe() {
 }
 
 void PipeTest::testNamedPipe() {
+  const upan::string pipeName("/dev/pipe_test");
+  int pipeFd[2];
+  if (mkfifo(pipeName.c_str(), pipeFd)) {
+    throw upan::exception(XLOC, "mkfifo failed");
+  }
+  const char message[] = "Hello Named Pipe!";
+
+  write(pipeFd[1], message, strlen(message));
+  char buf[128];
+
+  int n = read(pipeFd[0], buf, sizeof(buf));
+  buf[n] = '\0';
+  if (strcmp(buf, message) != 0) {
+    throw upan::exception(XLOC, "pipe message mismatch: %s", buf);
+  }
+
+  {
+    auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
+    if (!device.isEmpty()) {
+      printf("\n Pipe device found: %s", device->path().c_str());
+    } else {
+      throw upan::exception(XLOC, "pipe device not found for %s", pipeName.c_str());
+    }
+  }
+
+  struct stat pstat;
+  if (stat(pipeName.c_str(), &pstat)) {
+    throw upan::exception(XLOC, "stat failed for pipe %s", pipeName.c_str());
+  }
+
+  if (!(pstat.st_mode & S_IFIFO)) {
+    throw upan::exception(XLOC, "pipe %s is not a fifo", pipeName.c_str());
+  }
+
+  close(pipeFd[0]);
+
+  {
+    auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
+    if (!device.isEmpty()) {
+      printf("\n Pipe device still found as expected after closing one of the fd: %s", device->path().c_str());
+    } else {
+      throw upan::exception(XLOC, "pipe device not found for %s", pipeName.c_str());
+    }
+  }
+
+  if (stat(pipeName.c_str(), &pstat)) {
+    throw upan::exception(XLOC, "stat failed for pipe %s", pipeName.c_str());
+  }
+
+  if (!(pstat.st_mode & S_IFIFO)) {
+    throw upan::exception(XLOC, "pipe %s is not a fifo", pipeName.c_str());
+  }
+
+  close(pipeFd[1]);
+
+  if (stat(pipeName.c_str(), &pstat) == 0) {
+    throw upan::exception(XLOC, "pipe %s still exists after closing both fds", pipeName.c_str());
+  }
+
+  {
+    auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
+    if (!device.isEmpty()) {
+      throw upan::exception(XLOC, "pipe device still exists for %s", pipeName.c_str());
+    } else {
+      printf("\n Pipe device deleted for %s", pipeName.c_str());
+    }
+  }
 }

@@ -33,15 +33,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="added tests for symlink">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSDeviceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/fsdevice/FSTerminalDevice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysIO.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallIO.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallIO.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/PipeTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/PipeTest.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,37 +85,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck&quot;,
-    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/io/pipe&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHELLCHECK.PATH": "/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck",
+    "Shell Script.run.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/drivers/fsdevice",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "CMakeSettings",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/drivers/fsdevice" />
+      <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/io/pipe" />
       <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/util" />
-      <recent name="$PROJECT_DIR$/drivers/fsdevice" />
-      <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/io/pipe" />
@@ -131,9 +126,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -801,7 +796,8 @@
       <workItem from="1767326070768" duration="16624000" />
       <workItem from="1768056371057" duration="3960000" />
       <workItem from="1768084889310" duration="45000" />
-      <workItem from="1768111599090" duration="4736000" />
+      <workItem from="1768111599090" duration="8002000" />
+      <workItem from="1768398960355" duration="12440000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1146,7 +1142,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="249" />
+    <option name="localTasksCounter" value="251" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1180,8 +1176,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add test code for tcp tls server and client" />
-    <MESSAGE value="implement getentropy method using rdtsc instruction to capture CPU time jitters" />
     <MESSAGE value="initialize SSL context as part of network initialization (initnet)" />
     <MESSAGE value="added getentropy system call" />
     <MESSAGE value="refactor test tcp tls client" />
@@ -1205,7 +1199,9 @@
     <MESSAGE value="created a separate directory for all tests - moved rename() tests to this new directory" />
     <MESSAGE value="fixed file node read/write lock bug in readlink system call. Created a new test suite for symlink - added test symlink with absolute path" />
     <MESSAGE value="added tests for symlink" />
-    <option name="LAST_COMMIT_MESSAGE" value="added tests for symlink" />
+    <MESSAGE value="pipe() system call implemented" />
+    <MESSAGE value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
+    <option name="LAST_COMMIT_MESSAGE" value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
