@@ -35,6 +35,9 @@ void TestRunner::run() {
   printf("\n--> Running testSymlink...\n");
   FileSystemTest::testSymlink();
 
+  printf("\n--> Running testAccess...\n");
+  FileSystemTest::testAccess();
+
   printf("\n-> Running PipeTest...");
 
   printf("\n--> Running testUnamedPipe...\n");

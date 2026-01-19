@@ -47,7 +47,7 @@ void PipeTest::testUnamedPipe() {
   FSDeviceManager::Devices& devices = FSDeviceManager::Instance().devices();
   for(FSDeviceManager::Devices::iterator it = devices.begin(); it != devices.end(); ++it) {
     if (it->first.find("/dev/upipe") >= 0) {
-      printf("\n Pipe device found: %s", it->first.c_str());
+      //printf("\n Pipe device found: %s", it->first.c_str());
       ++pipeDevCount;
     }
   }
@@ -97,9 +97,7 @@ void PipeTest::testNamedPipe() {
 
   {
     auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
-    if (!device.isEmpty()) {
-      printf("\n Pipe device found: %s", device->path().c_str());
-    } else {
+    if (device.isEmpty()) {
       throw upan::exception(XLOC, "pipe device not found for %s", pipeName.c_str());
     }
   }
@@ -117,9 +115,7 @@ void PipeTest::testNamedPipe() {
 
   {
     auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
-    if (!device.isEmpty()) {
-      printf("\n Pipe device still found as expected after closing one of the fd: %s", device->path().c_str());
-    } else {
+    if (device.isEmpty()) {
       throw upan::exception(XLOC, "pipe device not found for %s", pipeName.c_str());
     }
   }
@@ -142,8 +138,6 @@ void PipeTest::testNamedPipe() {
     auto device = FSDeviceManager::Instance().getPipeDevice(pipeName);
     if (!device.isEmpty()) {
       throw upan::exception(XLOC, "pipe device still exists for %s", pipeName.c_str());
-    } else {
-      printf("\n Pipe device deleted for %s", pipeName.c_str());
     }
   }
 }

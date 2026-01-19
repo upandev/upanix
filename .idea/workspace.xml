@@ -33,10 +33,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="allow S_FIFO device in file-system. add test for named pipes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysFS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNode.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileOperations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileTree.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileTree.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/FileSystemTest.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTest.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/FileSystemTestRename.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTestRename.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/FileSystemTestSymlink.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTestSymlink.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/FileSystemTestUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/FileSystemTestUtil.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/PipeTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/PipeTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/TestRunner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/TestRunner.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +109,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/drivers/fsdevice",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/tests",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -111,8 +123,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/drivers/fsdevice" />
       <recent name="$PROJECT_DIR$/tests" />
+      <recent name="$PROJECT_DIR$/drivers/fsdevice" />
       <recent name="$PROJECT_DIR$/io/pipe" />
       <recent name="$PROJECT_DIR$/io" />
       <recent name="$PROJECT_DIR$/util" />
@@ -126,9 +138,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -797,7 +809,8 @@
       <workItem from="1768056371057" duration="3960000" />
       <workItem from="1768084889310" duration="45000" />
       <workItem from="1768111599090" duration="8002000" />
-      <workItem from="1768398960355" duration="12440000" />
+      <workItem from="1768398960355" duration="17070000" />
+      <workItem from="1768829471973" duration="5818000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1142,7 +1155,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="251" />
+    <option name="localTasksCounter" value="252" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1176,7 +1189,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="initialize SSL context as part of network initialization (initnet)" />
     <MESSAGE value="added getentropy system call" />
     <MESSAGE value="refactor test tcp tls client" />
     <MESSAGE value="updated todo with bug list" />
@@ -1201,7 +1213,8 @@
     <MESSAGE value="added tests for symlink" />
     <MESSAGE value="pipe() system call implemented" />
     <MESSAGE value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
-    <option name="LAST_COMMIT_MESSAGE" value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
+    <MESSAGE value="allow S_FIFO device in file-system. add test for named pipes" />
+    <option name="LAST_COMMIT_MESSAGE" value="allow S_FIFO device in file-system. add test for named pipes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

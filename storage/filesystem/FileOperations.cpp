@@ -337,6 +337,15 @@ void FileOperations::closedir(DIR* dirp) {
   process.dmm().free((uintptr_t)dirp);
 }
 
+void FileOperations::setMode(const upan::string& filePath, mode_t mode) {
+  auto& process = ProcessManager::Instance().GetCurrentPAS();
+  FileNodeRef cwd;
+  FileTree::NodeTokens fileTokens;
+
+  auto& storageDrive = parseFilePath(filePath, process, cwd, fileTokens);
+  storageDrive.fileSystem().setMode(fileTokens, mode, cwd, process);
+}
+
 bool FileOperations::fileAccess(const upan::string& filePath, int mode) {
   auto& process = ProcessManager::Instance().GetCurrentPAS();
 

@@ -43,6 +43,7 @@ public:
   void ModifiedTime(const time_t tSec) { _modifiedTime = tSec; }
   uint16_t ParentSectorPos() const { return _parentSectorPos; }
   uint16_t Attribute() const { return _attribute; }
+  uint16_t Attribute(uint16_t attribute) { return _attribute = attribute; }
   uint32_t ParentSectorID() const { return _parentSectorID; }
   int UserID() const { return _userID; }
   uint32_t Size() const { return _size; }

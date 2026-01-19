@@ -90,7 +90,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           FileOperations::Instance().changeDir(szPathAddress, retPwd);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
 					*retVal = -1 ;
         }
 			}
@@ -110,9 +110,8 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
           }
           strcpy(szPathAddress, fullPath.c_str());
         }
-        catch(upan::exception& ex)
-        {
-          ex.Print();
+        catch(upan::exception& ex) {
+          KLog::exception(ex);
           *retVal = -1;
         }
 			}
@@ -127,13 +126,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				unsigned short usType = (sysCallId == SYS_CALL_MKDIR) ? S_IFDIR : S_IFREG;
 				*retVal = 0 ;
 
-        try
-        {
+        try {
           FileOperations::Instance().create(szPathAddress, usType | (mode_t)(p2));
-        }
-        catch(const upan::exception& ex)
-				{
-          ex.Print();
+        } catch(const upan::exception& ex) {
+          KLog::exception(ex);
 					*retVal = -1 ;
 				}
 			}
@@ -144,13 +140,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			{
 				char* szPathAddress = ( char*) p1;
 				*retVal = 0 ;
-        try
-        {
+        try {
           FileOperations::Instance().remove(szPathAddress);
-        }
-        catch(const upan::exception& ex)
-        {
-          ex.Print();
+        } catch(const upan::exception& ex) {
+          KLog::exception(ex);
           *retVal = -1 ;
         }
 			}
@@ -162,7 +155,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           *retVal = (uintptr_t)FileOperations::Instance().opendir(dirPath);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
           *retVal = NULL;
         }
       }
@@ -175,7 +168,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           FileOperations::Instance().readdir(dirp);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
           *retVal = -1;
         }
       }
@@ -188,7 +181,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           FileOperations::Instance().closedir(dirp);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
           *retVal = -1;
         }
       }
@@ -207,7 +200,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
             return upan::option<int>(fd.id());
           }).valueOrElse(-1);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
           *retVal = -1 ;
         }
 			}
@@ -227,7 +220,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         });
         *retVal = ioDescriptor->id();
       } catch(const upan::exception& ex) {
-        ex.Print();
+        KLog::exception(ex);
         *retVal = -1 ;
       }
     }
@@ -242,13 +235,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				char* szBufferAddr = ( char*) p2;
 
 				*retVal = 0 ;
-        try
-        {
+        try {
           auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
           *retVal = file->read(szBufferAddr, (int)p3);
-        }
-        catch(...)
-        {
+        } catch(...) {
           *retVal = -1 ;
         }
 			}
@@ -266,7 +256,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
           auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
           *retVal =  file->write(szBufferAddr, (int)p3);
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
 					*retVal = -1 ;
 				}
 			}
@@ -316,14 +306,11 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P3 => Seek Type
 			{
 				*retVal = 0 ;
-        try
-        {
+        try {
           auto file = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1);
           file->seek((int)p3, (int)p2);
-        }
-        catch(upan::exception& ex)
-        {
-          ex.Print();
+        } catch(upan::exception& ex) {
+          KLog::exception(ex);
           *retVal = -1;
         }
       }
@@ -334,13 +321,10 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => Seek Type
 			// P3 => Offset
 			{
-        try
-        {
+        try {
           *retVal = ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1)->getOffset();
-        }
-        catch(const upan::exception& ex)
-        {
-          ex.Print();
+        } catch(const upan::exception& ex) {
+          KLog::exception(ex);
           *retVal = -1;
         }
 			}
@@ -374,7 +358,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
             *fileStat = r.value();
           }
         } catch(const upan::exception& ex) {
-          ex.Print();
+          KLog::exception(ex);
 					*retVal = -1 ;
 				}
 			}
@@ -385,19 +369,29 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P2 => FileStat
 			{
 				*retVal = 0 ;
-        try
-        {
+        try {
           auto& file = dynamic_cast<FileDescriptor&>(*ProcessManager::Instance().GetCurrentPAS().iodTable().getRealNonDupped((int)p1));
           auto pFileStat = (struct stat*)p2;
           *pFileStat = file.getStat();
-        }
-        catch(const upan::exception& ex)
-				{
-          ex.Print();
+        } catch(const upan::exception& ex) {
+          KLog::exception(ex);
 					*retVal = -1 ;
 				}
 			}
 			break ;
+
+    case SYS_CALL_FILE_SET_MODE: {
+      auto path = (const char*)p1;
+      auto mode = (mode_t)p2;
+      *retVal = 0;
+      try {
+        FileOperations::Instance().setMode(path, mode);
+      } catch(const upan::exception& ex) {
+        KLog::exception(ex);
+        *retVal = -1;
+      }
+    }
+    break;
 
 		case SYS_CALL_FILE_ACCESS:
 			// P1 => File Name
@@ -407,7 +401,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         try {
           *retVal = FileOperations::Instance().fileAccess(szPathAddress, (int)p2) ? 0 : -1;
         } catch(const upan::exception& ex) {
-          //ex.Print();
+          KLog::exception(ex);
           *retVal = -1;
         }
 			}
@@ -432,7 +426,7 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 				try {
           FileOperations::Instance().dup2(p1, p2);
 				} catch(const upan::exception& e) {
-				  e.Print();
+          KLog::exception(e);
           *retVal = -1 ;
 				}
 			}

@@ -607,6 +607,30 @@ upan::string FileSystem::fullPath(FileNodeRef fileNodeRef) {
   return _fileTree.getFullPath(fileNodeRef.nodev());
 }
 
+void FileSystem::setMode(const FileTree::NodeTokens& fileTokens, mode_t mode, const FileNodeRef& cwd, Process& process) {
+  auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
+  if (fileNodeRef.empty()) {
+    throw upan::exception(XLOC, "no such file or directory : %s", fileTokens.back().c_str());
+  }
+
+  FileNodeRef::WriteGuard g(fileNodeRef);
+  auto& node = fileNodeRef.nodev();
+
+  uint8_t sectorBuffer[FileSystem::SECTOR_SIZE];
+  _diskDrive.xRead(sectorBuffer, node.sectorId(), 1);
+  auto& fileNode = reinterpret_cast<FileNode*>(sectorBuffer)[node.sectorOffset()];
+
+  if (process.fileUserType(fileNode) != USER_OWNER) {
+    throw upan::exception(XLOC, "insufficient permission to change mode of file %s", node.name().c_str());
+  }
+
+  uint16_t attribute = (fileNode.Attribute() & ~(0xFFF)) | (mode & 0xFFF);
+  fileNode.Attribute(attribute);
+  node.attribute(attribute);
+
+  _diskDrive.xWrite(sectorBuffer, node.sectorId(), 1);
+}
+
 bool FileSystem::hasFilePermission(const FileTree::NodeTokens& fileTokens, int mode, const FileNodeRef& cwd, Process& process) {
   auto fileNodeRef = _fileTree.getFileNodeRef(fileTokens, cwd);
   if (fileNodeRef.empty()) {

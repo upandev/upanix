@@ -28,6 +28,7 @@ class FileSystemTest {
 public:
   static void testRename();
   static void testSymlink();
+  static void testAccess();
 private:
   static void recursiveDirectoryCleanup(const upan::string& dirPath);
 };

@@ -132,7 +132,7 @@ static void testSymlinkForNonExistentTarget() {
     throw upan::exception(XLOC, "failed to create file: targetd.txt");
   }
 
-  printf("\n wdir/ldir/targetd.txt created");
+  //printf("\n wdir/ldir/targetd.txt created");
 
   fd = open("/wdir/ldir/targetd.txt", O_RDWR);
   if (fd < 0) {
@@ -290,13 +290,13 @@ void FileSystemTest::testSymlink() {
       throw upan::exception(XLOC, "failed to create directory: wdir");
     }
 
-    printf("\n wdir created");
+    //printf("\n wdir created");
 
     if (mkdir("wdir/ldir", ATTR_DIR_DEFAULT)) {
       throw upan::exception(XLOC, "failed to create directory: ldir");
     }
 
-    printf("\n wdir/ldir created");
+    //printf("\n wdir/ldir created");
 
     char targetFileContent[] = "This is the link target file";
 
@@ -304,7 +304,7 @@ void FileSystemTest::testSymlink() {
       throw upan::exception(XLOC, "failed to create file: target.txt");
     }
 
-    printf("\n wdir/ldir/target.txt created");
+    //printf("\n wdir/ldir/target.txt created");
 
     int fd = open("wdir/ldir/target.txt", O_RDWR);
     if (fd < 0) {
@@ -325,10 +325,8 @@ void FileSystemTest::testSymlink() {
     testSymlinkForNonExistentTarget();
     testSymlinkOfSymlink(targetFileContent);
   } catch(const upan::exception& e) {
-    printf("\n symlink test failed...");
-    e.Print();
+    printf("\n symlink test failed... : %s", e.ErrorMsg().c_str());
   }
 
-  printf("\n cleaning up");
   recursiveDirectoryCleanup("wdir");
 }

@@ -128,18 +128,23 @@ int SysFS_FileOpenMode(int fd)
 	return retStatus ;
 }
 
-int SysFS_FileStat(const char* szFileName, struct stat* pFileStat)
-{
+int SysFS_FileStat(const char* path, struct stat* st, bool followLink) {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_STAT, false, (uint64_t) szFileName, (uint64_t) pFileStat, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_STAT, false, (uint64_t)path, (uint64_t)st, (uint64_t)followLink, 4, 5);
 	return retStatus ;
 }
 
 int SysFS_FileStatFD(int iFD, struct stat* pFileStat)
 {
   uint64_t retStatus ;
-  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_STAT_FD, false, iFD, (uint64_t) pFileStat, 3, 4, 5);
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_STAT_FD, false, (uint64_t)iFD, (uint64_t)pFileStat, 3, 4, 5);
 	return retStatus ;
+}
+
+int SysFS_SetMode(const char *path, mode_t mode) {
+  uint64_t retStatus;
+  SysCallFile_Handle(&retStatus, SYS_CALL_FILE_SET_MODE, false, (uint64_t)path, (uint64_t)mode, 3, 4, 5);
+  return retStatus;
 }
 
 int SysFS_FileAccess(const char* szFileName, int mode) {

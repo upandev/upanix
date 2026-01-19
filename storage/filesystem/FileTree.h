@@ -60,6 +60,7 @@ public:
     bool isSymLink() const { return S_ISLNK(_attribute); }
     bool isDeleted() const { return FILE_TYPE(_attribute) == ATTR_DELETED_DIR; }
     uint16_t attribute() const { return _attribute; }
+    void attribute(uint16_t attribute) { _attribute = attribute; }
     uint32_t size() const { return _size; }
     Node* parent() { return _parent; }
 

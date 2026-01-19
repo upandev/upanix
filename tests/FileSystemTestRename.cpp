@@ -24,13 +24,14 @@
 #include <exception.h>
 #include <dirent.h>
 #include <FileSystemTest.h>
+#include <set.h>
 
 static void testRenameInSameDirectory(const char* srcFileContent) {
   if (create("sdir/sfile.txt", ATTR_FILE_DEFAULT)) {
     throw upan::exception(XLOC, "failed to create file: sfile.txt");
   }
 
-  printf("\n sdir/sfile.txt created");
+//  printf("\n sdir/sfile.txt created");
 
   int fd = open("sdir/sfile.txt", O_RDWR);
   if (fd < 0) {
@@ -43,24 +44,27 @@ static void testRenameInSameDirectory(const char* srcFileContent) {
     upan::exception(XLOC, "failed to write to sdir/sfile.txt");
   }
 
-  printf("\n sdir content before renaming");
+//  printf("\n sdir content before renaming");
   auto sd = opendir("sdir");
   struct dirent* sde;
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //    printf("\n   %s", sde->d_name);
+    if (strcmp(sde->d_name, "sfile.txt") != 0) {
+      throw upan::exception(XLOC, "file name doesn't match sfile.txt");
+    }
   }
 
   closedir(sd);
 
-  printf("\n renaming sdir/srfile.txt to sdir/srfile.txt");
+//  printf("\n renaming sdir/srfile.txt to sdir/srfile.txt");
   if (rename("sdir/sfile.txt", "sdir/srfile.txt")) {
     throw upan::exception(XLOC, "failed to rename file sdir/sfile.txt to sdir/srfile.txt");
   }
 
-  printf("\n sdir content after renaming");
+//  printf("\n sdir content after renaming");
   sd = opendir("sdir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     if (strcmp(sde->d_name, "srfile.txt") != 0) {
       throw upan::exception(XLOC, "renamed file name doesn't match srfile.txt");
     }
@@ -73,7 +77,7 @@ static void testRenameInSameDirectory(const char* srcFileContent) {
   n = read(fd, rbuf, 128);
   if (n >= 0) {
     rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+    //printf("\n Source file content: %s", rbuf);
   }
 
   close(fd);
@@ -88,7 +92,7 @@ static void testRenameInSameDirectory(const char* srcFileContent) {
 }
 
 static void testRenameAcrossDirectory(const char* srcFileContent) {
-  printf("\n renaming sdir/srfile.txt to ddir/drfile.txt");
+  //printf("\n renaming sdir/srfile.txt to ddir/drfile.txt");
   if (rename("sdir/srfile.txt", "ddir/drfile.txt")) {
     throw upan::exception(XLOC, "failed to rename file sdir/srfile.txt to ddir/drfile.txt");
   }
@@ -102,7 +106,7 @@ static void testRenameAcrossDirectory(const char* srcFileContent) {
   auto n = read(fd, rbuf, 128);
   if (n >= 0) {
     rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+    //printf("\n Source file content: %s", rbuf);
   }
 
   int w = strlen(srcFileContent);
@@ -116,12 +120,12 @@ static void testRenameAcrossDirectory(const char* srcFileContent) {
 
   close(fd);
 
-  printf("\n sdir content after renaming file under ddir");
+  //printf("\n sdir content after renaming file under ddir");
   auto sd = opendir("sdir");
   struct dirent* sde;
   int count = 0;
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     ++count;
   }
   if (count != 0) {
@@ -130,10 +134,10 @@ static void testRenameAcrossDirectory(const char* srcFileContent) {
 
   closedir(sd);
 
-  printf("\n ddir content after renaming");
+  //printf("\n ddir content after renaming");
   sd = opendir("ddir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     if (strcmp(sde->d_name, "drfile.txt") != 0) {
       throw upan::exception(XLOC, "renamed file name doesn't match drfile.txt");
     }
@@ -147,7 +151,7 @@ static void testRenameWithReplaceInSameDirectory(const char* srcFileContent) {
     throw upan::exception(XLOC, "failed to create file: dxfile.txt");
   }
 
-  printf("\n ddir/dxfile.txt created");
+  //printf("\n ddir/dxfile.txt created");
 
   int fd = open("ddir/dxfile.txt", O_RDWR);
   if (fd < 0) {
@@ -163,23 +167,38 @@ static void testRenameWithReplaceInSameDirectory(const char* srcFileContent) {
 
   close(fd);
 
-  printf("\n ddir content before renaming");
+  //printf("\n ddir content before renaming");
   auto sd = opendir("ddir");
+  upan::set<upan::string> ddir_files;
+
   struct dirent* sde;
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
+    ddir_files.insert(sde->d_name);
   }
   closedir(sd);
 
-  printf("\n renaming ddir/drfile.txt to ddir/dxfile.txt");
+  if (ddir_files.size() != 2) {
+    throw upan::exception(XLOC, "ddir should have 2 files (drfile.txt and dxfile.txt)");
+  }
+
+  if (ddir_files.find("drfile.txt") == ddir_files.end()) {
+    throw upan::exception(XLOC, "ddir should have drfile.txt file");
+  }
+
+  if (ddir_files.find("dxfile.txt") == ddir_files.end()) {
+    throw upan::exception(XLOC, "ddir should have dxfile.txt file");
+  }
+
+  //printf("\n renaming ddir/drfile.txt to ddir/dxfile.txt");
   if (rename("ddir/drfile.txt", "ddir/dxfile.txt")) {
     throw upan::exception(XLOC, "failed to rename file ddir/drfile.txt to ddir/dxfile.txt");
   }
 
-  printf("\n ddir content after renaming");
+  //printf("\n ddir content after renaming");
   sd = opendir("ddir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     if (strcmp(sde->d_name, "dxfile.txt") != 0) {
       throw upan::exception(XLOC, "renamed file name doesn't match dxfile.txt");
     }
@@ -196,7 +215,7 @@ static void testRenameWithReplaceInSameDirectory(const char* srcFileContent) {
   n = read(fd, rbuf, 128);
   if (n >= 0) {
     rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+    //printf("\n Source file content: %s", rbuf);
   }
 
   close(fd);
@@ -217,7 +236,7 @@ static void testRenameWithReplaceAcrossDirectory(const char* srcFileContent) {
     throw upan::exception(XLOC, "failed to open file: sdir/sxfile.txt");
   }
 
-  printf("\n sdir/sxfile.txt created");
+  //printf("\n sdir/sxfile.txt created");
 
   char wbuf[] = "This is a src rename replace file";
   int w = strlen(wbuf);
@@ -228,39 +247,42 @@ static void testRenameWithReplaceAcrossDirectory(const char* srcFileContent) {
 
   close(fd);
 
-  printf("\n ddir content before renaming");
+  //printf("\n ddir content before renaming");
   auto sd = opendir("ddir");
   struct dirent* sde;
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
   }
   closedir(sd);
 
-  printf("\n sdir content before renaming");
+  //printf("\n sdir content before renaming");
   sd = opendir("sdir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
+    if (strcmp(sde->d_name, "sxfile.txt") != 0) {
+      throw upan::exception(XLOC, "renamed file name doesn't match sxfile.txt");
+    }
   }
   closedir(sd);
 
-  printf("\n renaming ddir/dxfile.txt to sdir/sxfile.txt");
+  //printf("\n renaming ddir/dxfile.txt to sdir/sxfile.txt");
   if (rename("ddir/dxfile.txt", "sdir/sxfile.txt")) {
     throw upan::exception(XLOC, "failed to rename file ddir/dxfile.txt to sdir/sxfile.txt");
   }
 
-  printf("\n ddir content after renaming");
+  //printf("\n ddir content after renaming");
   sd = opendir("ddir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     closedir(sd);
     throw upan::exception(XLOC, "ddir is not empty after renaming the file dxfile.txt");
   }
   closedir(sd);
 
-  printf("\n sdir content before renaming");
+  //printf("\n sdir content after renaming");
   sd = opendir("sdir");
   while ((sde = readdir(sd))) {
-    printf("\n   %s", sde->d_name);
+    //printf("\n   %s", sde->d_name);
     if (strcmp(sde->d_name, "sxfile.txt") != 0) {
       throw upan::exception(XLOC, "renamed file name doesn't match sxfile.txt");
     }
@@ -276,7 +298,7 @@ static void testRenameWithReplaceAcrossDirectory(const char* srcFileContent) {
   n = read(fd, rbuf, 128);
   if (n >= 0) {
     rbuf[n] = '\0';
-    printf("\n Source file content: %s", rbuf);
+    //printf("\n Source file content: %s", rbuf);
   }
 
   close(fd);
@@ -297,13 +319,13 @@ void FileSystemTest::testRename() {
       throw upan::exception(XLOC, "failed to create directory: sdir");
     }
 
-    printf("\n sdir created");
+    //printf("\n sdir created");
 
     if (mkdir("ddir", ATTR_DIR_DEFAULT)) {
       throw upan::exception(XLOC, "failed to create directory: ddir");
     }
 
-    printf("\n ddir created");
+    //printf("\n ddir created");
 
     char srcFileContent[] = "This is the source file";
     testRenameInSameDirectory(srcFileContent);
@@ -311,11 +333,10 @@ void FileSystemTest::testRename() {
     testRenameWithReplaceInSameDirectory(srcFileContent);
     testRenameWithReplaceAcrossDirectory(srcFileContent);
   } catch(const upan::exception& e) {
-    printf("\n file rename test failed...");
-    e.Print();
+    printf("\n file rename test failed... : %s", e.ErrorMsg().c_str());
   }
 
-  printf("\n cleaning up");
+  //printf("\n cleaning up");
   recursiveDirectoryCleanup("sdir");
   recursiveDirectoryCleanup("ddir");
 }

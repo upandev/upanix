@@ -41,16 +41,16 @@ void FileSystemTest::recursiveDirectoryCleanup(const upan::string& dirPath) {
     if (S_ISDIR(st.st_mode)) {
       recursiveDirectoryCleanup(filePath.c_str());
     } else {
-      printf("\n deleting %s", filePath.c_str());
+      //printf("\n deleting %s", filePath.c_str());
       if (unlink(filePath.c_str())) {
-        printf("\n failed to delete %s", filePath.c_str());
+        //printf("\n failed to delete %s", filePath.c_str());
       }
     }
   }
 
   closedir(sd);
-  printf("\n deleting %s", dirPath.c_str());
+  //printf("\n deleting %s", dirPath.c_str());
   if (unlink(dirPath.c_str())) {
-    printf("\n failed to delete %s", dirPath.c_str());
+    //printf("\n failed to delete %s", dirPath.c_str());
   }
 }
