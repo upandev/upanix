@@ -193,3 +193,9 @@ uint32_t SysProcess_SetAlarm(uint32_t seconds) {
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SET_ALARM, false, (uint64_t)seconds, 2, 3, 4, 5);
   return (uint32_t)retStatus;
 }
+
+pid_t SysProcess_Fork() {
+  uint64_t retStatus ;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_FORK, false, 1, 2, 3, 4, 5);
+  return (pid_t)retStatus;
+}

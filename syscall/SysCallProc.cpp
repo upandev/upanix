@@ -57,6 +57,14 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       }
       break;
 
+    case SYS_CALL_PROCESS_FORK: {
+      if (iskernel()) {
+        KLog::error("kernel can't fork a process");
+        *retVal = -1;
+      }
+    }
+    break;
+
 		case SYS_CALL_PROCESS_EXEC :
 			// P1 => Address of File Name Char Array
 			// P2 => Number Of Args
