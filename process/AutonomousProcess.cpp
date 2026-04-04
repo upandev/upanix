@@ -45,11 +45,24 @@ AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, boo
 
 SchedulableProcess& AutonomousProcess::forSchedule() {
   if (_status == TERMINATED || _status == RELEASED || _status == STOPPED) {
+    _curScheduledThread.clear();
     return *this;
+  }
+
+  //no context switch if status == WAIT_KERNEL_SERVICE_FREEZE
+  if (!_curScheduledThread.isEmpty()) {
+    if (_curScheduledThread.value().status() == WAIT_KERNEL_SERVICE_FREEZE) {
+      return _curScheduledThread.value();
+    }
+  } else {
+    if (_status == WAIT_KERNEL_SERVICE_FREEZE) {
+      return *this;
+    }
   }
 
   if (_nextThreadIt == _threadSchedulerList.end()) {
     _nextThreadIt = _threadSchedulerList.begin();
+    _curScheduledThread.clear();
     return *this;
   }
 
@@ -64,10 +77,12 @@ SchedulableProcess& AutonomousProcess::forSchedule() {
         delete &thread;
       }
     } else {
+      _curScheduledThread = thread;
       return thread;
     }
   }
 
+  _curScheduledThread.clear();
   return *this;
 }
 

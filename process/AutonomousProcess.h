@@ -102,4 +102,5 @@ private:
   upan::shared_ptr<FSTerminalDevice> _terminalDevice;
   uint32_t _alarmTime;
   time_t _alarmExpiry;
+  upan::option<Thread&> _curScheduledThread;
 };
