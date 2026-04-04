@@ -295,6 +295,22 @@ void MemManager::AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, 
   }
 }
 
+void MemManager::AllocateAndCopyAddressSpace(uint64_t* pml4Table, uint64_t* srcPML4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
+  for(const auto maxVirtualAddress = virtualAddress + size; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
+    auto flatAddress = GetFlatAddress(srcPML4Table, virtualAddress);
+    if (flatAddress == NULL) {
+      continue;
+    }
+    auto ptTable = GetPTTable(pml4Table, virtualAddress);
+    auto ptIndex = PT_INDEX(virtualAddress);
+    if (!PAGE_IS_PRESENT(ptTable, ptIndex)) {
+      auto pageAddress = AllocatePhysicalPage() * PAGE_SIZE;
+      memcpy((uint8_t*)pageAddress, (uint8_t*)(flatAddress), PAGE_SIZE);
+      ptTable[ptIndex] = pageAddress | pageConfig;
+    }
+  }
+}
+
 void MemManager::AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size) {
   for(const auto maxVirtualAddress = virtualAddress + size; virtualAddress < maxVirtualAddress; virtualAddress += PAGE_SIZE) {
     auto ptTable = GetPTTableFromPD(pdTable, virtualAddress);
@@ -494,6 +510,21 @@ uintptr_t MemManager::GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualA
   }
 
   return PAGE_ADDRESS(ptTable, ptIndex) + PAGE_INDEX(virtualAddress);
+}
+
+uintptr_t MemManager::GetFlatPDAddress(uint64_t* pml4Table, uintptr_t virtualAddress) {
+  const auto pml4Index = PML4_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
+    return NULL;
+  }
+
+  auto pdpTable = PAGE_TABLE(pml4Table, pml4Index);
+  const auto pdpIndex = PDP_INDEX(virtualAddress);
+  if (!PAGE_IS_PRESENT(pdpTable, pdpIndex)) {
+    return NULL;
+  }
+
+  return PAGE_ADDRESS(pdpTable, pdpIndex);
 }
 
 uint64_t MemManager::GetCeilAlignedAddress(uint64_t uiAddress, unsigned uiAlign) {

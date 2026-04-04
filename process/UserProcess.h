@@ -35,6 +35,8 @@ public:
   UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
               const upan::vector<upan::string>& argv,
               const upan::vector<upan::string>& envp);
+  //used by fork
+  explicit UserProcess(UserProcess& parent);
 
   bool isKernelProcess() const override {
     return false;
@@ -87,6 +89,10 @@ private:
   void AllocateAddressSpace();
   void CopyElfImage(const uint8_t* processImage, int imageSize, uint64_t virtualLoadAddress);
   uint64_t PushProgramInitStackData(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp);
+
+  void LoadFromParent(UserProcess& parent);
+  void AllocateAndCopyAddressSpaceFromParent(UserProcess& parent);
+  void LoadDLLsFromParent(UserProcess& parent);
 
   void DeallocateResources() override;
   void DeallocateGUIFramebuffer();

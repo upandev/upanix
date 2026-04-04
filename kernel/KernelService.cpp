@@ -81,6 +81,21 @@ void KernelService::ProcessExec::Execute() {
   curProc.pwd(curPwd);
 }
 
+void KernelService::ProcessFork::Execute() {
+  auto& curProc = ProcessManager::Instance().GetCurrentPAS();
+
+  const int curDriveId = curProc.driveID();
+  const FileNodeRef curPwd = curProc.pwd();
+
+  curProc.setDriveID(_parent.driveID());
+  curProc.pwd(_parent.pwd());
+
+  _newPid = ProcessManager::Instance().Fork(_parent);
+
+  curProc.setDriveID(curDriveId);
+  curProc.pwd(curPwd);
+}
+
 void KernelService::ThreadExec::Execute() {
   _threadID = ProcessManager::Instance().CreateThreadTask(GetRequestProcessID(), _threadCaller,
                                                           _entryAddress, _arg,
@@ -100,7 +115,7 @@ bool KernelService::RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string&
 	KernelService::DLLAllocCopy* pRequest = new KernelService::DLLAllocCopy(uiNoOfPages, dllName) ;
 	AddRequest(pRequest) ;
 
-	ProcessManager::Instance().WaitOnKernelService() ;
+  ProcessManager::Instance().WaitOnKernelService(false);
 
 	bool bStatus = pRequest->GetStatus() ;
 
@@ -114,7 +129,7 @@ uint64_t KernelService::RequestFlatAddress(uint64_t uiVirtualAddress)
 	KernelService::FlatAddress* pRequest = new KernelService::FlatAddress(uiVirtualAddress) ;
 	AddRequest(pRequest) ;
 
-	ProcessManager::Instance().WaitOnKernelService() ;
+  ProcessManager::Instance().WaitOnKernelService(false);
 
 	auto uiFlatAddress = pRequest->GetFlatAddress() ;
 
@@ -136,7 +151,7 @@ int KernelService::RequestProcessExec(const upan::string& fileName, const char**
 	auto pRequest = new KernelService::ProcessExec(fullPath, argv, envp);
 
 	AddRequest(pRequest) ;
-	ProcessManager::Instance().WaitOnKernelService() ;
+  ProcessManager::Instance().WaitOnKernelService(false);
 
 	int iNewProcId = pRequest->GetNewProcId() ;
 
@@ -145,11 +160,32 @@ int KernelService::RequestProcessExec(const upan::string& fileName, const char**
 	return iNewProcId ;
 }
 
+int KernelService::RequestFork() {
+  auto curPid = ProcessManager::Instance().GetCurProcId();
+  auto& p = ProcessManager::Instance().GetThreadParentProcess(curPid);
+  auto parent  = dynamic_cast<UserProcess*>(&p);
+  if (parent == nullptr) {
+    throw upan::exception(XLOC, "Process %d is not a user-process - can't fork", curPid);
+  }
+
+  auto pRequest = new KernelService::ProcessFork(*parent);
+  AddRequest(pRequest);
+  ProcessManager::Instance().WaitOnKernelService(true);
+
+  if (ProcessManager::Instance().GetCurProcId() == curPid) {
+    auto newPid = pRequest->getNewPid();
+    delete pRequest;
+    return newPid;
+  } else {
+    return 0;
+  }
+}
+
 int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg, bool joinable) {
   auto pRequest = new KernelService::ThreadExec(threadCaller, entryAddresss, arg, joinable);
 
   AddRequest(pRequest) ;
-  ProcessManager::Instance().WaitOnKernelService() ;
+  ProcessManager::Instance().WaitOnKernelService(false);
 
   int threadID = pRequest->GetThreadID();
   delete pRequest;
@@ -159,7 +195,7 @@ int KernelService::RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddr
 void KernelService::RequestProcessGUIFramebufferAllocate(UserProcess& userProcess) {
   auto request = new KernelService::ProcessGUIFramebufferAllocate(userProcess);
   AddRequest(request);
-  ProcessManager::Instance().WaitOnKernelService();
+  ProcessManager::Instance().WaitOnKernelService(false);
   delete request;
 }
 

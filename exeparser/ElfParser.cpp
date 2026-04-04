@@ -285,17 +285,17 @@ void ElfParser::CopyProcessImage(byte* processImage, uint64_t processBase, uint6
 	}
 }
 
-char* ElfParser::CopyELFSecStrTable() {
+upan::pair<char*, size_t> ElfParser::CopyELFSecStrTable() {
 	auto size = _sectionHeader[ _header->e_shstrndx ].sh_size;
 	auto secStrTable = new char[size];
 	memcpy(secStrTable, m_pSecHeaderStrTable, size);
-	return secStrTable;
+	return { secStrTable, size };
 }
 
-Elf64_Shdr* ElfParser::CopyELFSectionHeader() {
-	auto sectionHeaders = new Elf64_Shdr[_header->e_shnum];
+upan::pair<Elf64_Shdr*, size_t> ElfParser::CopyELFSectionHeader() {
+  auto sectionHeaders = new Elf64_Shdr[_header->e_shnum];
   memcpy(sectionHeaders, _sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
-	return sectionHeaders;
+	return { sectionHeaders, _header->e_shnum };
 }
 
 bool ElfParser::CheckMagicSignature(const Elf64_Ehdr* pELFHeader) {

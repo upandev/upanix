@@ -417,6 +417,19 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
   return -1;
 }
 
+int ProcessManager::Fork(UserProcess& parent) {
+  try {
+    auto& child = *new UserProcess(parent);
+    int pid = child.processID();
+    AddToSchedulerList(child);
+    return pid;
+  }
+  catch(const upan::exception& e) {
+    e.Print();
+  }
+  return -1;
+}
+
 //TODO:
 //1: Lock Env Page access
 //2: Lock FileDescriptor Table access
@@ -500,7 +513,7 @@ void ProcessManager::WakeUpFromKSWait(int iProcessID) {
   });
 }
 
-void ProcessManager::WaitOnKernelService() {
+void ProcessManager::WaitOnKernelService(bool freeze) {
 	if(GetCurProcId() < 0)
 		return ; 
 
@@ -510,7 +523,7 @@ void ProcessManager::WaitOnKernelService() {
     if (!p.stateInfo().IsKernelServiceComplete()) {
       p.stateInfo().KernelServiceComplete(false);
     }
-    p.setStatus(WAIT_KERNEL_SERVICE);
+    p.setStatus(freeze ? WAIT_KERNEL_SERVICE_FREEZE : WAIT_KERNEL_SERVICE);
   }
   p.yield();
 }

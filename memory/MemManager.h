@@ -51,6 +51,7 @@ class MemManager
 
     uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
     uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
+    uintptr_t GetFlatPDAddress(uint64_t* pml4Table, uintptr_t virtualAddress);
 		void DisplayPageAllocationStats() ;
 
     static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);
@@ -58,6 +59,7 @@ class MemManager
     uint64_t* GetPTTableFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
 
     void AllocateAddressSpace(uint64_t* pml4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
+    void AllocateAndCopyAddressSpace(uint64_t* pml4Table, uint64_t* srcPML4Table, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
     void AllocatePDAddressSpace(uint64_t* pdTable, uint32_t pageConfig, uintptr_t virtualAddress, uintptr_t size);
     void DeallocateAddressSpace(uint64_t* pml4Table, uintptr_t virtualAddress, uintptr_t size);
     void DeallocateAddressSpace(uint64_t* pml4Table);
@@ -101,8 +103,6 @@ private:
     uint64_t _kernelPagePoolStartPage;
 
     uint32_t _kernelReservedMapSize ;
-
-    uintptr_t* m_uipKernelProcessStackPTEBase ;
 
 		bool _allocMapForKernelProcessStackBlock[NO_OF_KERNEL_STACK_BLOCKS];
 

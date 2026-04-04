@@ -52,8 +52,8 @@ public:
     Elf64_Xword _size;
   };
 
-  ELFInfo() : _base(0), _elfSectionHeaderSize(0),
-  _elfSectionHeaders(nullptr), _elfSecStrTable(nullptr),
+  ELFInfo() : _base(0), _elfSectionHeaders(nullptr),
+  _elfSectionHeaderSize(0), _elfSecStrTable(nullptr),
   _dynSection(upan::option<Elf64_Dyn*>::empty()), _dynSectionSize(0),
   _dynSymTable(upan::option<Elf64_Sym*>::empty()), _dynSymTableSize(0),
   _dynRelTable(upan::option<Elf64_Rela*>::empty()), _dynRelTableSize(0),
@@ -62,12 +62,18 @@ public:
   _dynSymStrTable(nullptr) {
   }
 
+  ELFInfo(const ELFInfo& _elfInfo) : ELFInfo() {
+    init(_elfInfo);
+  }
+
   ~ELFInfo() {
     delete []_elfSectionHeaders;
     delete []_elfSecStrTable;
   }
 
-  void init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable);
+  void init(uint64_t base, upan::pair<ElfSectionHeader::Elf64_Shdr*, size_t>, upan::pair<char*, size_t>);
+  void init(const ELFInfo& _elfInfo);
+
   void adjustBase(uint64_t base);
   template <typename LAMBDA>
   void extractDynSymbols(LAMBDA& consumer);
@@ -101,9 +107,12 @@ public:
 
 private:
   uint64_t _base;
-  int _elfSectionHeaderSize;
+
   ElfSectionHeader::Elf64_Shdr* _elfSectionHeaders;
+  int _elfSectionHeaderSize;
+
   char* _elfSecStrTable;
+  int _elfSecStrTableSize;
 
   upan::option<Elf64_Dyn*> _dynSection;
   Elf64_Xword _dynSectionSize;
@@ -203,6 +212,7 @@ public:
   uint64_t value() const override { return _value; }
   int tlsModuleId() const override { return _dllInfo.tlsInfo().moduleId(); }
   uint64_t tlsOffset() const override { return _dllInfo.tlsInfo().offset(); }
+  const DLLInfo& dllInfo() const { return _dllInfo; }
 
 private:
   const DLLInfo& _dllInfo;

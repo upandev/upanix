@@ -76,6 +76,7 @@ class ProcessManager
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID,
                const upan::vector<upan::string>& argv,
                const upan::vector<upan::string>& envp);
+    int Fork(UserProcess& parent);
     int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg, bool joinable);
     bool IsDMMOn(int iProcessID);
     int WaitOnChild(int iChildProcessID, int& exitStatus);
@@ -85,7 +86,7 @@ class ProcessManager
     void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs);
     void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs);
     void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs);
-    void WaitOnKernelService();
+    void WaitOnKernelService(bool freeze);
     bool IsKernelProcess(int iProcessID);
     bool ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor);
     void WaitForEvent();

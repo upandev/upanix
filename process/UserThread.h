@@ -67,5 +67,5 @@ private:
   void setupSignalStackFrame(const struct sigaction& action, const Signal& signal) override;
 
 private:
-  uint32_t _stackPDAddress;
+  uint64_t _stackPDAddress;
 };

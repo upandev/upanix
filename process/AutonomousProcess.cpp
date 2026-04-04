@@ -31,7 +31,7 @@
 AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess)
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
     _uiType(Process::UIType::NA), _uiKeyboardEventStreamFD(nullptr), _uiMouseEventStreamFD(nullptr),
-    _isGuiBase(false), _iodTable(_processID), _alarmTime(0), _alarmExpiry(0) {
+    _isGuiBase(false), _iodTable(_processID), _alarmTime(0), _alarmExpiry(0), _curScheduledThread(nullptr) {
 
   auto& parentIODTable = ProcessManager::Instance().GetProcess(parentID)
           .valueOrThrow(XLOC, "failed to create process as parent process not found")

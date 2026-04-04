@@ -27,11 +27,16 @@
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define REL_PLT_SUB_NAME	".rela.plt"
 
-void ELFInfo::init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::Elf64_Shdr* elfSectionHeaders, char* elfSecStrTable) {
+void ELFInfo::init(uint64_t base,
+                   upan::pair<ElfSectionHeader::Elf64_Shdr*, size_t> elfSectionHeaders,
+                   upan::pair<char*, size_t> elfSecStrTable) {
   _base = base;
-  _elfSectionHeaderSize = elfSectionHeaderSize;
-  _elfSectionHeaders = elfSectionHeaders;
-  _elfSecStrTable = elfSecStrTable;
+
+  _elfSectionHeaders = elfSectionHeaders.first;
+  _elfSectionHeaderSize = elfSectionHeaders.second;
+
+  _elfSecStrTable = elfSecStrTable.first;
+  _elfSecStrTableSize = elfSecStrTable.second;
 
   getSectionByType(SHT_DYNAMIC).onGood([&](Section& section) {
     _dynSection = upan::option<Elf64_Dyn*>(section.get<Elf64_Dyn>());
@@ -60,6 +65,35 @@ void ELFInfo::init(uint64_t base, int elfSectionHeaderSize, ElfSectionHeader::El
   getSectionByType(SHT_HASH).onGood([&](Section& section) {
     _hashTable = upan::option<Elf64_Word*>(section.get<Elf64_Word>());
   });
+}
+
+void ELFInfo::init(const ELFInfo& elfInfo) {
+  _base = elfInfo._base;
+
+  _elfSectionHeaderSize = elfInfo._elfSectionHeaderSize;
+  _elfSectionHeaders = new ElfSectionHeader::Elf64_Shdr[_elfSectionHeaderSize];
+  memcpy(_elfSectionHeaders, elfInfo._elfSectionHeaders,
+         sizeof(ElfSectionHeader::Elf64_Shdr) * _elfSectionHeaderSize);
+
+  _elfSecStrTableSize = elfInfo._elfSecStrTableSize;
+  _elfSecStrTable = new char[_elfSecStrTableSize];
+  memcpy(_elfSecStrTable, elfInfo._elfSecStrTable, _elfSecStrTableSize);
+
+  //the child process will have same address value for sections as the parent because their address space mapping is similar
+  _dynSection = elfInfo._dynSection;
+  _dynSectionSize = elfInfo._dynSectionSize;
+  _dynSymStrTable = elfInfo._dynSymStrTable;
+
+  _dynSymTable = elfInfo._dynSymTable;
+  _dynSymTableSize = elfInfo._dynSymTableSize;
+
+  _dynRelTable = elfInfo._dynRelTable;
+  _dynRelTableSize = elfInfo._dynRelTableSize;
+
+  _dynRelPltTable = elfInfo._dynRelPltTable;
+  _dynRelPltTableSize = elfInfo._dynRelPltTableSize;
+
+  _hashTable = elfInfo._hashTable;
 }
 
 void ELFInfo::adjustBase(uint64_t base) {

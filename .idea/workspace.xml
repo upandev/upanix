@@ -33,9 +33,24 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="implemented system call for chmod()">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -795,7 +810,12 @@
       <workItem from="1768398960355" duration="17070000" />
       <workItem from="1768829471973" duration="7246000" />
       <workItem from="1769347653608" duration="13874000" />
-      <workItem from="1774099311755" duration="3000" />
+      <workItem from="1774099311755" duration="15462000" />
+      <workItem from="1774185531034" duration="15759000" />
+      <workItem from="1774949473630" duration="2000" />
+      <workItem from="1775008175593" duration="5870000" />
+      <workItem from="1775109907817" duration="2000" />
+      <workItem from="1775197571395" duration="27909000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1140,7 +1160,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="253" />
+    <option name="localTasksCounter" value="255" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1174,8 +1194,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor test tcp tls client" />
-    <MESSAGE value="updated todo with bug list" />
     <MESSAGE value="handle dynamic symbol relocation for type R_X86_64_64" />
     <MESSAGE value="minor refactoring" />
     <MESSAGE value="data from evenQueue in event handlers that are driven by interrupts must copy the data from eventQueue instead of taking the value by reference" />
@@ -1199,7 +1217,9 @@
     <MESSAGE value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
     <MESSAGE value="allow S_FIFO device in file-system. add test for named pipes" />
     <MESSAGE value="implemented system call for chmod()" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented system call for chmod()" />
+    <MESSAGE value="system call stub for fork()" />
+    <MESSAGE value="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool" />
+    <option name="LAST_COMMIT_MESSAGE" value="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

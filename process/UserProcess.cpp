@@ -56,6 +56,15 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID, boo
   _userID = userID == DERIVE_FROM_PARENT && !parentProcess.isEmpty() ? parentProcess.value().userID() : _userID;
 }
 
+UserProcess::UserProcess(UserProcess& parent) : AutonomousProcess(parent.name(), parent.processID(), parent.isFGProcessGroup()) {
+  _pml4Table = nullptr;
+  _totalNoOfPagesForDLL = 0;
+  _userID = parent.userID();
+  LoadFromParent(parent);
+  parent.addChildProcessID(_processID);
+  _taskContext = parent._taskContext;
+}
+
 UserThread& UserProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) {
   return *new UserThread(*this, threadCaller, entryAddress, arg, joinable);
 }
@@ -93,10 +102,9 @@ void UserProcess::Load(const upan::vector<upan::string>& argv, const upan::vecto
          DynamicLinkLoader::Instance().dllResolverProgBits(),
          DynamicLinkLoader::Instance().dllResolverSize());
 
-  _elfInfo.init((uint64_t)bProcessImage.get() - minMemAddr,
-                mELFParser.GetHeader()->e_shnum,
-                mELFParser.CopyELFSectionHeader(),
-                mELFParser.CopyELFSecStrTable());
+  //sh_addr in elf section headers will be minMemAddr + offset. Therefore, in order to reference the correct offset
+  //in allocated processImage heap space, subtract minMemAddr from the processImage heap allocated address, so _base + sh_addr => processImageBase + offset
+  _elfInfo.init((uint64_t)bProcessImage.get() - minMemAddr, mELFParser.CopyELFSectionHeader(), mELFParser.CopyELFSecStrTable());
 
   // Setting the Dynamic Link Loader Address in GOT
   _elfInfo.getGOT().ifPresent([&](ELFInfo::Section& gotSection){
@@ -269,7 +277,6 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
          DynamicLinkLoader::Instance().dllResolverSize());
 
   dllInfo.elfInfo().init((uint64_t)bDLLImage.get(),
-                     dllElfParser.GetHeader()->e_shnum,
                      dllElfParser.CopyELFSectionHeader(),
                      dllElfParser.CopyELFSecStrTable());
 
@@ -315,6 +322,31 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
   //memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 
+void UserProcess::LoadFromParent(UserProcess& parent) {
+  _processSpaceSize = parent._processSpaceSize;
+  _processBase = parent._processBase;
+
+  AllocateAndCopyAddressSpaceFromParent(parent);
+
+  _elfInfo = parent._elfInfo;
+
+//  upan::uniq_ptr<RootFrame> _frame;
+
+  //this is copying over all TLS sections, that includes those from DLLs
+  _tlsp.reset(new ThreadLocalSpace());
+  if (!parent._tlsp->getDTV().empty()) {
+    for (const auto& dtv : parent._tlsp->getDTV()) {
+      _tlsp->add(dtv.total_len, dtv.init_len, dtv.init_image);
+    }
+  }
+
+  _relocateInfoExeMap = parent._relocateInfoExeMap;
+
+  LoadDLLsFromParent(parent);
+
+  _tls.reset(new ThreadLocalStorage(_processID, false, _pml4Table, tlsp(), 0x7));
+}
+
 void UserProcess::AllocateAddressSpace() {
   _pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
 
@@ -329,6 +361,43 @@ void UserProcess::AllocateAddressSpace() {
   MemManager::Instance().AllocateAddressSpace(_pml4Table, 0x7, _processBase, _processSpaceSize);
 
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
+}
+
+void UserProcess::AllocateAndCopyAddressSpaceFromParent(UserProcess& parent) {
+  _pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+
+  //Map kernel space into the process
+  //The first PDP entry = 1 GB of memory is reserved for kernel space
+  auto pdpPage = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
+  auto kernelPdpPage = PAGE_TABLE(MEM_PML4_TABLE, 0);
+  pdpPage[0] = PAGE_ADDRESS(kernelPdpPage, 0) | 0x7;
+  _pml4Table[0] = (uint64_t)pdpPage | 0x7;
+
+  //Allocate process space
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+                                                     parent._processBase, _processSpaceSize);
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+                                                     PROCESS_HEAP_START_ADDRESS, PROCESS_HEAP_SIZE);
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+                                                     PROCESS_STACK_BASE - PROCESS_STACK_SIZE, PROCESS_STACK_SIZE);
+
+  _stackPDAddress = MemManager::Instance().GetFlatPDAddress(_pml4Table, PROCESS_STACK_BASE - 1);
+}
+
+void UserProcess::LoadDLLsFromParent(UserProcess& parent) {
+  _dllInfoMap = parent._dllInfoMap;
+  upan::map<int, const DLLInfo&> localDllInfoMap;
+  for(const auto& dllInfo : _dllInfoMap) {
+    localDllInfoMap.insert(upan::map<int, const DLLInfo&>::value_type(dllInfo.second.id(), dllInfo.second));
+    MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+                                                       dllInfo.second.virtualLoadAddress(), dllInfo.second.noOfPages() * PAGE_SIZE);
+  }
+  _totalNoOfPagesForDLL = parent._totalNoOfPagesForDLL;
+
+  for(const auto& e : parent._relocateInfoDLLMap) {
+    auto& dllInfo = localDllInfoMap.find(e.second.dllInfo().id())->second;
+    _relocateInfoDLLMap.insert(RELOCATE_INFO_DLL_MAP::value_type (e.first, DLLRelocateInfo(dllInfo, e.second.value())));
+  }
 }
 
 void UserProcess::DeallocateResources() {

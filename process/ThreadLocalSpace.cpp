@@ -45,5 +45,5 @@ TLSInfo ThreadLocalSpace::add(int totalLen, int initLen, const uint8_t* initImag
     offset += dtv.total_len;
   }
 
-  return TLSInfo(_dtv.size(), offset);
+  return { _dtv.size(), offset };
 }

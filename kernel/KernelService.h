@@ -59,6 +59,7 @@ class KernelService
 		bool RequestDLLAlloCopy(unsigned uiNoOfPages, const upan::string& dllName) ;
     uint64_t RequestFlatAddress(uint64_t uiAddress) ;
 		int RequestProcessExec(const upan::string& fileName, const char** argv, const char** envp) ;
+    int RequestFork();
 		int RequestThreadExec(uintptr_t threadCaller, uintptr_t entryAddresss, void* arg, bool joinable);
     void RequestProcessGUIFramebufferAllocate(UserProcess& userProcess);
     void RequestSystemReboot();
@@ -108,6 +109,17 @@ class KernelService
         void Execute() override;
 				int GetNewProcId() const { return m_iNewProcId ; }
 		};
+
+    class ProcessFork : public Request {
+    private:
+      int _newPid;
+      UserProcess& _parent;
+
+    public:
+      explicit ProcessFork(UserProcess& parent) : _newPid(-1), _parent(parent) {}
+      void Execute() override;
+      int getNewPid() const { return _newPid; }
+    };
 
 		class ThreadExec : public Request {
 		private:

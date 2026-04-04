@@ -57,8 +57,8 @@ class ElfParser {
 		~ElfParser();
 
     void CopyProcessImage(byte* processImage, uint64_t processBase, uint64_t maxImageSize) const;
-		char* CopyELFSecStrTable();
-    Elf64_Shdr* CopyELFSectionHeader();
+		upan::pair<char*, size_t> CopyELFSecStrTable();
+  upan::pair<Elf64_Shdr*, size_t> CopyELFSectionHeader();
 
     upan::result<uint64_t*> GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr);
     upan::result<uint32_t> GetNoOfGOTEntries();

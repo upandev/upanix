@@ -62,6 +62,12 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         KLog::error("kernel can't fork a process");
         *retVal = -1;
       }
+      try {
+        *retVal = KC::MKernelService().RequestFork();
+      } catch(const upan::exception& e) {
+        KLog::exception(e);
+        *retVal = -1;
+      }
     }
     break;
 

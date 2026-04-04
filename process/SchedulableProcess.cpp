@@ -657,7 +657,8 @@ void SchedulableProcess::prepareToRun() {
     }
     break;
 
-    case WAIT_KERNEL_SERVICE: {
+    case WAIT_KERNEL_SERVICE:
+    case WAIT_KERNEL_SERVICE_FREEZE: {
       if(_stateInfo.IsKernelServiceComplete()) {
         _stateInfo.KernelServiceComplete(false);
         setStatus(RUN);
