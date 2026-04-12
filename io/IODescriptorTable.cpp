@@ -81,7 +81,9 @@ IODescriptor::Ptr IODescriptorTable::allocate(const upan::function<IODescriptor:
   }
 
   const auto fd = _descIdCounter++;
-  auto i = _iodMap.insert(IODMap::value_type(fd, descriptorBuilder(fd)));
+  auto ioDescriptor = descriptorBuilder(fd);
+  ioDescriptor->incrementRefCount();
+  auto i = _iodMap.insert(IODMap::value_type(fd, ioDescriptor));
 
   if (!i.second) {
     throw upan::exception(XLOC, "failed to create an entry in File IODescriptor table");
@@ -115,16 +117,11 @@ IODescriptor::Ptr IODescriptorTable::getRealNonDupped(int fd) {
 void IODescriptorTable::free(int fd) {
   upan::mutex_guard g(_ioMutex);
   auto e = getItr(fd);
-
-  if (e->second->getRefCount() > 1) {
-    throw upan::exception(XLOC, "descriptor is open - refcount: %d", e->second->getRefCount());
-  }
-
   e->second->close();
   _iodMap.erase(e);
 }
 
-void IODescriptorTable::updateRedirections(int srcFD, IODescriptor::Ptr targetDesc) {
+void IODescriptorTable::updateRedirections(int srcFD, const IODescriptor::Ptr& targetDesc) {
   upan::mutex_guard g(_ioMutex);
   for(auto& x : _iodMap) {
     auto d = x.second.cast<RedirectDescriptor>();
@@ -143,9 +140,10 @@ void IODescriptorTable::dup2(int oldFD, int newFD) {
   auto oldF = get(oldFD);
   auto newF = get(newFD);
 
-  IODescriptor::Ptr targetF(new RedirectDescriptor(_pid, newFD, oldF));
-  ProcessManager::Instance().updateAllIODescriptorRedirections(_pid, newFD, targetF);
+  ProcessManager::Instance().updateAllIODescriptorRedirections(_pid, newFD, oldF);
   free(newFD);
+  IODescriptor::Ptr targetF(new RedirectDescriptor(_pid, newFD, oldF));
+  targetF->incrementRefCount();
   _iodMap.insert(IODMap::value_type(newFD, targetF));
 }
 

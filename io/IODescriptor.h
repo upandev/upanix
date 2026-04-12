@@ -29,7 +29,7 @@
 
 class IODescriptor {
 protected:
-  IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(1), _isClosed(false) {
+  IODescriptor(int pid, int id, uint32_t mode) : _pid(pid), _id(id), _mode(mode), _refCount(0), _isClosed(false) {
   }
 
 public:
@@ -96,5 +96,6 @@ private:
   int _refCount;
   bool _isClosed;
 
+  friend class RedirectDescriptor;
   friend class IODescriptorTable;
 };

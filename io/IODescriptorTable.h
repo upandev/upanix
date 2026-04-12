@@ -61,7 +61,7 @@ public:
 
   IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
   void free(int fd);
-  void updateRedirections(int srcFD, IODescriptor::Ptr targetDesc);
+  void updateRedirections(int srcFD, const IODescriptor::Ptr& targetDesc);
   int dup(int oldFD);
   void dup2(int oldFD, int newFD);
   IODescriptor::Ptr getRealNonDupped(int fd);

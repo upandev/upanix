@@ -60,8 +60,12 @@ struct stat IODescriptor::getStat() {
 void IODescriptor::close() {
   closeCheckAndThrow();
   decrementRefCount();
-  _close();
-  _isClosed = true;
+  if (_refCount == 0) {
+    _close();
+    _isClosed = true;
+  } else if (_refCount < 0) {
+    throw upan::exception(XLOC, "IODescriptor %d has negative ref count", id());
+  }
 }
 
 void IODescriptor::closeCheckAndThrow() const {
