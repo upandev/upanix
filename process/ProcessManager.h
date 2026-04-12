@@ -93,7 +93,7 @@ class ProcessManager
     void EventCompleted(int pid);
     void ContextSwitch(TaskContext &);
     void closeAllFiles(StorageDrive& storageDrive);
-    void updateAllIODescriptorRedirections(pid_t pid, int srcFD, IODescriptor::Ptr targetDesc);
+    void updateAllIODescriptorRedirections(pid_t pid, int srcFD, const IODescriptor::Ptr& targetDesc);
     void getProcessRUsage(RUSAGE_ID who, struct rusage& ru);
 
     static int GetCurrentProcessID() {

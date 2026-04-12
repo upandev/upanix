@@ -70,7 +70,7 @@ AutonomousProcess& ProcessManager::GetThreadParentProcess(int pid) {
 
 upan::option<Process&> ProcessManager::GetProcess(int pid) {
   if (pid == NO_PROCESS_ID) {
-    return upan::option<Process&>(KernelRootProcess::Instance());
+    return { KernelRootProcess::Instance() };
   }
   return GetSchedulableProcess(pid).map<Process&>([](SchedulableProcess& p) -> Process& { return p; });
 }
@@ -574,7 +574,7 @@ void ProcessManager::closeAllFiles(StorageDrive& storageDrive) {
   }
 }
 
-void ProcessManager::updateAllIODescriptorRedirections(pid_t pid, int srcFD, IODescriptor::Ptr targetDesc) {
+void ProcessManager::updateAllIODescriptorRedirections(pid_t pid, int srcFD, const IODescriptor::Ptr& targetDesc) {
   ProcessSwitchLock lock;
   Process& process = GetProcess(pid).valueOrThrow(XLOC, upan::error("failed to find process with pid %d", pid).Msg());
   process.iodTable().updateRedirections(srcFD, targetDesc);
