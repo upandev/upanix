@@ -23,7 +23,7 @@
 
 ThreadLocalSpace::~ThreadLocalSpace() {
   for(auto& i : _dtv) {
-    delete i.init_image;
+    delete[] i.init_image;
   }
 }
 
