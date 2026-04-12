@@ -147,8 +147,8 @@ void KernelRootProcess::initFSDevices() {
   try {
     XHCIManager::Instance().ProbeDevice();
     StorageDriveManager::Instance().MountDrive("usdb");
-    KernelSysLog::Instance().start();
     initTerminalDevice();
+    KernelSysLog::Instance().start();
   } catch(upan::exception& ex) {
     ex.Print();
     initInMemoryTerminalDevice();
