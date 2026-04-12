@@ -143,7 +143,7 @@ void ElfParser::ReadSectionHeaders() {
   const auto n = _bufferedReader->Read((uint8_t*)_sectionHeader, sizeof(Elf64_Shdr) * _header->e_shnum);
 
   if (n < sizeof(Elf64_Shdr) * _header->e_shnum) {
-    upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(Elf64_Shdr) * _header->e_shnum);
+    throw upan::exception(XLOC, "Invalid elf section header size %u - expected: %u", n, sizeof(Elf64_Shdr) * _header->e_shnum);
   }
 }
 
@@ -157,8 +157,9 @@ void ElfParser::ReadSecHeaderStrTable() {
 
   auto n = _bufferedReader->Read((uint8_t*)m_pSecHeaderStrTable, uiSecSize);
 
-	if(n < uiSecSize)
-    upan::exception(XLOC, "Invalid elf section header string table size: %u - expected: %u", n, uiSecSize);
+	if(n < uiSecSize) {
+    throw upan::exception(XLOC, "Invalid elf section header string table size: %u - expected: %u", n, uiSecSize);
+  }
 }
 
 void ElfParser::ReadSymbolTables() {
@@ -171,7 +172,7 @@ void ElfParser::ReadSymbolTables() {
       const auto n = _bufferedReader->Read((uint8_t*)(m_pSymbolTable[uiSymTabIndex].symTabEntries), sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
 
 			if(n < sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size)
-        throw upan::exception(XLOC, "Invalid elf symbol table size: %u - excpected: %u", n, sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
+        throw upan::exception(XLOC, "Invalid elf symbol table size: %u - expected: %u", n, sizeof(ElfSymbolTable::Elf64_Sym) * m_pSymbolTable[uiSymTabIndex].table_size);
 
       _sectionTableMap[i] = uiSymTabIndex;
       ++uiSymTabIndex;
@@ -187,6 +188,7 @@ void ElfParser::ReadTLS() {
       _tlsInitImage.reset(new uint8_t[_tlsInitImageSize]);
       _bufferedReader->Seek(_programHeader[i].p_offset);
       _bufferedReader->Read(_tlsInitImage.get(), _tlsInitImageSize);
+      break;
     }
   }
 }
@@ -277,7 +279,7 @@ void ElfParser::CopyProcessImage(byte* processImage, uint64_t processBase, uint6
 			if(offset >= maxImageSize)
         throw upan::exception(XLOC, "process load virtual address %x is larger than max image size %x", offset, maxImageSize);
 
-      const uint32_t n = _bufferedReader->Read((uint8_t*)processImage + offset, _programHeader[i].p_filesz);
+      const auto n = _bufferedReader->Read((uint8_t*)processImage + offset, _programHeader[i].p_filesz);
 
 			if(n < _programHeader[i].p_filesz)
         throw upan::exception(XLOC, "Invalid elf file size: %u - expected: %u", n, _programHeader[i].p_filesz);
