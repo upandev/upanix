@@ -33,7 +33,7 @@ public:
   }
 
   void changeRedirection(IODescriptor::Ptr ioDescriptor) {
-    _parentDesc->decrementRefCount();
+    _parentDesc->close();
     _parentDesc = upan::move(ioDescriptor);
     _parentDesc->incrementRefCount();
   }
@@ -64,7 +64,7 @@ private:
   }
 
   void _close() override {
-    _parentDesc->decrementRefCount();
+    _parentDesc->close();
   }
 
 private:
