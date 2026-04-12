@@ -27,6 +27,7 @@
 #include <ElfSymbolTable.h>
 #include <result.h>
 #include <uniq_ptr.h>
+#include <pair.h>
 
 class BufferedReader;
 using ElfHeader::Elf64_Ehdr;
@@ -53,12 +54,12 @@ class ElfParser {
 
 	public:
 		ElfParser(Elf64_Ehdr* pELFHeader, Elf64_Shdr* pELFSectionHeader, char* pSecHeaderStrTable);
-		ElfParser(const upan::string& szFileName);
+		explicit ElfParser(const upan::string& szFileName);
 		~ElfParser();
 
     void CopyProcessImage(byte* processImage, uint64_t processBase, uint64_t maxImageSize) const;
 		upan::pair<char*, size_t> CopyELFSecStrTable();
-  upan::pair<Elf64_Shdr*, size_t> CopyELFSectionHeader();
+    upan::pair<Elf64_Shdr*, size_t> CopyELFSectionHeader();
 
     upan::result<uint64_t*> GetGOTAddress(byte* bProcessImage, unsigned uiMinMemAddr);
     upan::result<uint32_t> GetNoOfGOTEntries();
