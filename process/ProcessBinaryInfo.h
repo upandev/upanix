@@ -25,6 +25,7 @@
 #include <ElfSectionHeader.h>
 #include <result.h>
 #include <option.h>
+#include <pair.h>
 #include <ElfDynamicSection.h>
 #include <ElfSymbolTable.h>
 #include <ElfRelocationSection.h>
@@ -52,8 +53,9 @@ public:
     Elf64_Xword _size;
   };
 
-  ELFInfo() : _base(0), _elfSectionHeaders(nullptr),
-  _elfSectionHeaderSize(0), _elfSecStrTable(nullptr),
+  ELFInfo() : _base(0),
+  _elfSectionHeaders(nullptr), _elfSectionHeaderSize(0),
+  _elfSecStrTable(nullptr), _elfSecStrTableSize(0),
   _dynSection(upan::option<Elf64_Dyn*>::empty()), _dynSectionSize(0),
   _dynSymTable(upan::option<Elf64_Sym*>::empty()), _dynSymTableSize(0),
   _dynRelTable(upan::option<Elf64_Rela*>::empty()), _dynRelTableSize(0),
@@ -66,13 +68,14 @@ public:
     init(_elfInfo);
   }
 
+  ELFInfo& operator=(const ELFInfo& _elfInfo);
+
   ~ELFInfo() {
-    delete []_elfSectionHeaders;
-    delete []_elfSecStrTable;
+    clear();
   }
 
   void init(uint64_t base, upan::pair<ElfSectionHeader::Elf64_Shdr*, size_t>, upan::pair<char*, size_t>);
-  void init(const ELFInfo& _elfInfo);
+  void init(const ELFInfo& elfInfo);
 
   void adjustBase(uint64_t base);
   template <typename LAMBDA>
@@ -106,6 +109,8 @@ public:
   upan::result<ELFInfo::Section> getSectionByIndex(Elf64_Word index);
 
 private:
+  void clear();
+
   uint64_t _base;
 
   ElfSectionHeader::Elf64_Shdr* _elfSectionHeaders;

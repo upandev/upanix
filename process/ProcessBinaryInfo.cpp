@@ -22,7 +22,6 @@
 
 #include <ProcessBinaryInfo.h>
 #include <ElfSectionHeader.h>
-#include <result.h>
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define REL_PLT_SUB_NAME	".rela.plt"
@@ -70,14 +69,19 @@ void ELFInfo::init(uint64_t base,
 void ELFInfo::init(const ELFInfo& elfInfo) {
   _base = elfInfo._base;
 
-  _elfSectionHeaderSize = elfInfo._elfSectionHeaderSize;
-  _elfSectionHeaders = new ElfSectionHeader::Elf64_Shdr[_elfSectionHeaderSize];
-  memcpy(_elfSectionHeaders, elfInfo._elfSectionHeaders,
-         sizeof(ElfSectionHeader::Elf64_Shdr) * _elfSectionHeaderSize);
+  _elfSectionHeaders = nullptr;
+  if (_elfSectionHeaderSize) {
+    _elfSectionHeaderSize = elfInfo._elfSectionHeaderSize;
+    _elfSectionHeaders = new ElfSectionHeader::Elf64_Shdr[_elfSectionHeaderSize];
+    memcpy(_elfSectionHeaders, elfInfo._elfSectionHeaders, sizeof(ElfSectionHeader::Elf64_Shdr) * _elfSectionHeaderSize);
+  }
 
-  _elfSecStrTableSize = elfInfo._elfSecStrTableSize;
-  _elfSecStrTable = new char[_elfSecStrTableSize];
-  memcpy(_elfSecStrTable, elfInfo._elfSecStrTable, _elfSecStrTableSize);
+  _elfSecStrTable = nullptr;
+  if (_elfSecStrTableSize) {
+    _elfSecStrTableSize = elfInfo._elfSecStrTableSize;
+    _elfSecStrTable = new char[_elfSecStrTableSize];
+    memcpy(_elfSecStrTable, elfInfo._elfSecStrTable, _elfSecStrTableSize);
+  }
 
   //the child process will have same address value for sections as the parent because their address space mapping is similar
   _dynSection = elfInfo._dynSection;
@@ -94,6 +98,36 @@ void ELFInfo::init(const ELFInfo& elfInfo) {
   _dynRelPltTableSize = elfInfo._dynRelPltTableSize;
 
   _hashTable = elfInfo._hashTable;
+}
+
+void ELFInfo::clear() {
+  delete [] _elfSectionHeaders;
+  delete [] _elfSecStrTable;
+
+  _base = 0;
+  _elfSectionHeaders = nullptr;
+  _elfSectionHeaderSize = 0;
+  _elfSecStrTable = nullptr;
+  _elfSecStrTableSize = 0;
+  _dynSection = upan::option<Elf64_Dyn*>::empty();
+  _dynSectionSize = 0;
+  _dynSymTable = upan::option<Elf64_Sym*>::empty();
+  _dynSymTableSize = 0;
+  _dynRelTable = upan::option<Elf64_Rela*>::empty();
+  _dynRelTableSize = 0;
+  _dynRelPltTable = upan::option<Elf64_Rela*>::empty();
+  _dynRelPltTableSize = 0;
+  _hashTable = upan::option<Elf64_Word*>::empty();
+  _dynSymStrTable = nullptr;
+}
+
+ELFInfo& ELFInfo::operator=(const ELFInfo& elfInfo) {
+  if (this == &elfInfo) {
+    return *this;
+  }
+  clear();
+  init(elfInfo);
+  return *this;
 }
 
 void ELFInfo::adjustBase(uint64_t base) {
