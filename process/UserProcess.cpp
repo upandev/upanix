@@ -46,9 +46,7 @@ using namespace ElfDynamicSection;
 UserProcess::UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
                          const upan::vector<upan::string>& argv,
                          const upan::vector<upan::string>& envp)
-                         : AutonomousProcess(name, parentID, isFGProcess) {
-  _pml4Table = nullptr;
-  _totalNoOfPagesForDLL = 0;
+                         : AutonomousProcess(name, parentID, isFGProcess), _totalNoOfPagesForDLL(0), _pml4Table(nullptr) {
   Load(argv, envp);
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
@@ -56,9 +54,9 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID, boo
   _userID = userID == DERIVE_FROM_PARENT && !parentProcess.isEmpty() ? parentProcess.value().userID() : _userID;
 }
 
-UserProcess::UserProcess(UserProcess& parent) : AutonomousProcess(parent.name(), parent.processID(), parent.isFGProcessGroup()) {
-  _pml4Table = nullptr;
-  _totalNoOfPagesForDLL = 0;
+UserProcess::UserProcess(UserProcess& parent)
+  : AutonomousProcess(parent.name(), parent.processID(), parent.isFGProcessGroup()),
+    _totalNoOfPagesForDLL(0), _pml4Table(nullptr) {
   _userID = parent.userID();
   LoadFromParent(parent);
   parent.addChildProcessID(_processID);
@@ -255,7 +253,7 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
 
   const uint32_t uiDLLImageSize = upan::align_up(maxMemAddr - minMemAddr, 4) ;
   const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
-  const uint32_t uiNoOfPagesForDLL = MemManager::Instance().GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
+  const uint32_t uiNoOfPagesForDLL = MemManager::GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
 
   if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE) {
     throw upan::exception(XLOC, "DLL mem size %lu exceeds max limit per dll", uiMemImageSize, MAX_PROCESS_SPACE_SIZE);
