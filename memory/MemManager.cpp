@@ -434,15 +434,15 @@ uint64_t MemManager::AllocatePhysicalPage() {
 	ProcessSwitchLock lock;
 	for(auto pageMapPosition = _kernelReservedMapSize; pageMapPosition < _pageMapSize; ++pageMapPosition) {
 		if((_pageMap[pageMapPosition] & UINT64_MAX) != UINT64_MAX) {
-      auto pageMapEntry = _pageMap[pageMapPosition] ;
+      auto pageMapEntry = _pageMap[pageMapPosition];
 			for(auto pageOffset = 0; pageOffset < 64; ++pageOffset) {
 				if((pageMapEntry & 0x1) == 0x0) {
-          _pageMap[pageMapPosition] |= (0x1 << pageOffset) ;
+          _pageMap[pageMapPosition] |= (0x1 << pageOffset);
           uint64_t pageNumber = (pageMapPosition * 64) + pageOffset;
           memset((void*)(pageNumber * PAGE_SIZE), 0, PAGE_SIZE);
           return pageNumber;
 				}
-        pageMapEntry >>= 1 ;
+        pageMapEntry >>= 1;
 			}
 		}
 	}
