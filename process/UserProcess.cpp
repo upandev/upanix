@@ -41,7 +41,6 @@ using namespace ElfDynamicSection;
 
 #define REL_DYN_SUB_NAME  ".rela.dyn"
 #define BSS_SEC_NAME      ".bss"
-#define DLL_ELF_SEC_HEADER_PAGE 1
 
 UserProcess::UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
                          const upan::vector<upan::string>& argv,
@@ -253,7 +252,7 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
 
   const uint32_t uiDLLImageSize = upan::align_up(maxMemAddr - minMemAddr, 4) ;
   const uint32_t uiMemImageSize = uiDLLImageSize + DynamicLinkLoader::Instance().dllResolverSize();
-  const uint32_t uiNoOfPagesForDLL = MemManager::GetProcessSizeInPages(uiMemImageSize) + DLL_ELF_SEC_HEADER_PAGE ;
+  const uint32_t uiNoOfPagesForDLL = MemManager::GetProcessSizeInPages(uiMemImageSize);
 
   if(uiMemImageSize > MAX_PROCESS_SPACE_SIZE) {
     throw upan::exception(XLOC, "DLL mem size %lu exceeds max limit per dll", uiMemImageSize, MAX_PROCESS_SPACE_SIZE);
