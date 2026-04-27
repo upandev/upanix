@@ -154,10 +154,10 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
         }
         auto& process = ProcessManager::Instance().GetCurrentPAS();
         fd[0] = process.iodTable().allocate([&](int fd) {
-          return new PipeReadDescriptor(process.processID(), fd, 0666, path);
+          return new PipeReadDescriptor(process.processID(), fd, O_RDONLY, path);
         })->id();
         fd[1] = process.iodTable().allocate([&](int fd) {
-          return new PipeWriteDescriptor(process.processID(), fd, 0666, path);
+          return new PipeWriteDescriptor(process.processID(), fd, O_WRONLY, path);
         })->id();
       } catch(const upan::exception& e) {
         KLog::exception(e);
