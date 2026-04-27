@@ -90,7 +90,8 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         if (!ru) {
           *retVal = -1;
         } else {
-          ProcessManager::Instance().getProcessRUsage(who, *ru);
+          auto& p = ProcessManager::Instance().GetCurrentPAS();
+          ProcessManager::Instance().getProcessRUsage(p, who, *ru);
         }
       } catch(upan::exception& e) {
         *retVal = -1;
