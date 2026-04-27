@@ -31,7 +31,7 @@ ProcessStateInfo::ProcessStateInfo() :
         _waitQueueId(0),
         _eventCompleted(false),
         _kernelServiceComplete(false),
-        _waitLock(nullptr), _newVal(0), _oldVal(0) {
+        _waitLock(nullptr), _newVal(0), _oldVal(0), _isForkReady(false) {
 }
 
 bool ProcessStateInfo::IsEventCompleted()

@@ -76,7 +76,7 @@ class ProcessManager
     int Create(const upan::string& name, int iParentProcessID, byte bIsFGProcess, int iUserID,
                const upan::vector<upan::string>& argv,
                const upan::vector<upan::string>& envp);
-    int Fork(UserProcess& parent);
+    int Fork(UserProcess& mainParent, SchedulableProcess& forkingParent);
     int CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg, bool joinable);
     bool IsDMMOn(int iProcessID);
     int WaitOnChild(int iChildProcessID, int& exitStatus);
@@ -86,7 +86,8 @@ class ProcessManager
     void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs);
     void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs);
     void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs);
-    void WaitOnKernelService(bool freeze);
+    void WaitOnKernelService();
+    void WaitOnKernelServiceFork();
     bool IsKernelProcess(int iProcessID);
     bool ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor);
     void WaitForEvent();
@@ -94,7 +95,7 @@ class ProcessManager
     void ContextSwitch(TaskContext &);
     void closeAllFiles(StorageDrive& storageDrive);
     void updateAllIODescriptorRedirections(pid_t pid, int srcFD, const IODescriptor::Ptr& targetDesc);
-    void getProcessRUsage(RUSAGE_ID who, struct rusage& ru);
+    void getProcessRUsage(Process& p, RUSAGE_ID who, struct rusage& ru);
 
     static int GetCurrentProcessID() {
       return _currentProcessID;

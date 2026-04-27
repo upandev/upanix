@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define YIELD_THROUGH_INTERRUPT __asm__ __volatile__ ("int $0x20")
+
 typedef struct {
   uint64_t rip;
   uint64_t cs;

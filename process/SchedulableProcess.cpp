@@ -75,7 +75,7 @@ void SchedulableProcess::Release() {
 
 void SchedulableProcess::yield() {
   do {
-    __asm__ __volatile__ ("int $0x20");
+    YIELD_THROUGH_INTERRUPT;
   } while (status() != RUN);
 }
 
@@ -658,9 +658,10 @@ void SchedulableProcess::prepareToRun() {
     break;
 
     case WAIT_KERNEL_SERVICE:
-    case WAIT_KERNEL_SERVICE_FREEZE: {
+    case WAIT_KERNEL_SERVICE_FORK: {
       if(_stateInfo.IsKernelServiceComplete()) {
         _stateInfo.KernelServiceComplete(false);
+        _stateInfo.setForkReady(false);
         setStatus(RUN);
       }
     }

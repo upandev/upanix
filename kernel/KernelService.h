@@ -113,10 +113,13 @@ class KernelService
     class ProcessFork : public Request {
     private:
       int _newPid;
-      UserProcess& _parent;
+      UserProcess& _mainParent;
+      SchedulableProcess& _forkingParent;
 
     public:
-      explicit ProcessFork(UserProcess& parent) : _newPid(-1), _parent(parent) {}
+      explicit ProcessFork(UserProcess& mainParent, SchedulableProcess& forkingParent) : _newPid(-1),
+        _mainParent(mainParent),
+        _forkingParent(forkingParent) {}
       void Execute() override;
       int getNewPid() const { return _newPid; }
     };

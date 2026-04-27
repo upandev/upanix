@@ -512,7 +512,7 @@ uintptr_t MemManager::GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualA
   return PAGE_ADDRESS(ptTable, ptIndex) + PAGE_INDEX(virtualAddress);
 }
 
-uintptr_t MemManager::GetFlatPDAddress(uint64_t* pml4Table, uintptr_t virtualAddress) {
+uintptr_t MemManager::GetFlatPDAddress(const uint64_t* pml4Table, uintptr_t virtualAddress) {
   const auto pml4Index = PML4_INDEX(virtualAddress);
   if (!PAGE_IS_PRESENT(pml4Table, pml4Index)) {
     return NULL;

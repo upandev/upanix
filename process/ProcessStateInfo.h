@@ -78,6 +78,9 @@ public:
   void WaitOnLock(upan::atomic::integral<int>* lock, int oldVal, int newVal);
   bool IsWaitOnLockCompleted();
 
+  bool isForkReady() const { return _isForkReady; }
+  void setForkReady(bool v) { _isForkReady = v; }
+
   Error getError() const { return _error; }
   void setError(Error error) { _error = error; }
 
@@ -106,4 +109,5 @@ private:
   upan::atomic::integral<int>* _waitLock;
   int _newVal;
   int _oldVal;
+  bool _isForkReady;
 };

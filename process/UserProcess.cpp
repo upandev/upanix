@@ -45,7 +45,7 @@ using namespace ElfDynamicSection;
 UserProcess::UserProcess(const upan::string &name, int parentID, int userID, bool isFGProcess,
                          const upan::vector<upan::string>& argv,
                          const upan::vector<upan::string>& envp)
-                         : AutonomousProcess(name, parentID, isFGProcess), _totalNoOfPagesForDLL(0), _pml4Table(nullptr) {
+                         : AutonomousProcess(name, parentID, false, isFGProcess), _totalNoOfPagesForDLL(0), _pml4Table(nullptr) {
   Load(argv, envp);
 
   auto parentProcess = ProcessManager::Instance().GetSchedulableProcess(parentID);
@@ -53,13 +53,13 @@ UserProcess::UserProcess(const upan::string &name, int parentID, int userID, boo
   _userID = userID == DERIVE_FROM_PARENT && !parentProcess.isEmpty() ? parentProcess.value().userID() : _userID;
 }
 
-UserProcess::UserProcess(UserProcess& parent)
-  : AutonomousProcess(parent.name(), parent.processID(), parent.isFGProcessGroup()),
+UserProcess::UserProcess(UserProcess& mainParent, SchedulableProcess& forkingParent)
+  : AutonomousProcess(mainParent.name(), mainParent.processID(), true, mainParent.isFGProcessGroup()),
     _totalNoOfPagesForDLL(0), _pml4Table(nullptr) {
-  _userID = parent.userID();
-  LoadFromParent(parent);
-  parent.addChildProcessID(_processID);
-  _taskContext = parent._taskContext;
+  _userID = mainParent.userID();
+  LoadFromParent(mainParent, forkingParent);
+  mainParent.addChildProcessID(_processID);
+  _taskContext = forkingParent.taskContext();
 }
 
 UserThread& UserProcess::CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) {
@@ -319,11 +319,11 @@ void UserProcess::LoadELFDLL(const upan::string& dllName) {
   //memcpy((void*) dllInfo.loadAddress(), bDLLImage.get(), uiMemImageSize);
 }
 
-void UserProcess::LoadFromParent(UserProcess& parent) {
+void UserProcess::LoadFromParent(UserProcess& parent, SchedulableProcess& forkingParent) {
   _processSpaceSize = parent._processSpaceSize;
   _processBase = parent._processBase;
 
-  AllocateAndCopyAddressSpaceFromParent(parent);
+  AllocateAndCopyAddressSpaceFromParent(forkingParent);
 
   _elfInfo = parent._elfInfo;
 
@@ -342,6 +342,7 @@ void UserProcess::LoadFromParent(UserProcess& parent) {
   LoadDLLsFromParent(parent);
 
   _tls.reset(new ThreadLocalStorage(_processID, false, _pml4Table, tlsp(), 0x7));
+  _dmm.setRootAut(parent.dmm().getRootAut());
 }
 
 void UserProcess::AllocateAddressSpace() {
@@ -360,7 +361,7 @@ void UserProcess::AllocateAddressSpace() {
   _stackPDAddress = SchedulableProcess::Common::AllocateStackSpace();
 }
 
-void UserProcess::AllocateAndCopyAddressSpaceFromParent(UserProcess& parent) {
+void UserProcess::AllocateAndCopyAddressSpaceFromParent(SchedulableProcess& parent) {
   _pml4Table = (uint64_t*)(MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE);
 
   //Map kernel space into the process
@@ -371,11 +372,11 @@ void UserProcess::AllocateAndCopyAddressSpaceFromParent(UserProcess& parent) {
   _pml4Table[0] = (uint64_t)pdpPage | 0x7;
 
   //Allocate process space
-  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
-                                                     parent._processBase, _processSpaceSize);
-  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent.pml4Table(), 0x7,
+                                                     _processBase, _processSpaceSize);
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent.pml4Table(), 0x7,
                                                      PROCESS_HEAP_START_ADDRESS, PROCESS_HEAP_SIZE);
-  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent._pml4Table, 0x7,
+  MemManager::Instance().AllocateAndCopyAddressSpace(_pml4Table, parent.pml4Table(), 0x7,
                                                      PROCESS_STACK_BASE - PROCESS_STACK_SIZE, PROCESS_STACK_SIZE);
 
   _stackPDAddress = MemManager::Instance().GetFlatPDAddress(_pml4Table, PROCESS_STACK_BASE - 1);

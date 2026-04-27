@@ -29,7 +29,7 @@
 #include <KernelRootProcess.h>
 
 KernelProcess::KernelProcess(const upan::string& name, uintptr_t taskAddress, int parentID, bool isFGProcess, bool isCoreProcess, const upan::vector<uintptr_t>& params)
-  : AutonomousProcess(name, parentID, isFGProcess), _graphicsContext(nullptr), _isCoreProcess(isCoreProcess) {
+  : AutonomousProcess(name, parentID, false, isFGProcess), _graphicsContext(nullptr), _isCoreProcess(isCoreProcess) {
   _processBase = 0;
 
   _stackBlockId = SchedulableProcess::Common::AllocateKernelStackSpace();

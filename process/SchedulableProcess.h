@@ -119,6 +119,7 @@ public:
   void prepareToRun();
   void deliverPendingSignal();
   void applyDefaultSignalAction(const Signal& signal);
+  const TaskContext& taskContext() const { return _taskContext; }
 
 private:
   static int _nextPid;

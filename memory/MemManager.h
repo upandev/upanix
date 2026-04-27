@@ -51,7 +51,7 @@ class MemManager
 
     uintptr_t GetFlatAddress(uint64_t* pml4Table, uintptr_t virtualAddress) ;
     uintptr_t GetFlatAddressFromPD(uint64_t* pdTable, uintptr_t virtualAddress);
-    uintptr_t GetFlatPDAddress(uint64_t* pml4Table, uintptr_t virtualAddress);
+    uintptr_t GetFlatPDAddress(const uint64_t* pml4Table, uintptr_t virtualAddress);
 		void DisplayPageAllocationStats() ;
 
     static void KernelPageTableMmap(const uint64_t vAddr, const uint64_t pAddr, const uint32_t pageFlag);

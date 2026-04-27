@@ -124,6 +124,9 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
     } else if (currentProcess.status() == TERMINATED) {
       currentProcess.Destroy();
     } else {
+      if (currentProcess.status() == PROCESS_STATUS::WAIT_KERNEL_SERVICE_FORK) {
+        currentProcess.stateInfo().setForkReady(true);
+      }
       currentProcess.Store(taskContext);
     }
     EnableTaskSwitch();
@@ -406,9 +409,9 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
     if (iParentProcessID != NO_PROCESS_ID) {
       iParentProcessID = GetThreadParentProcess(iParentProcessID).processID();
     }
-    upan::uniq_ptr<SchedulableProcess> newPAS(new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, argv, envp));
-    int pid = newPAS->processID();
-    AddToSchedulerList(*newPAS.release());
+    auto& process = *new UserProcess(name, iParentProcessID, iUserID, bIsFGProcess, argv, envp);
+    int pid = process.processID();
+    AddToSchedulerList(process);
     return pid;
   }
   catch(const upan::exception& e) {
@@ -417,9 +420,9 @@ int ProcessManager::Create(const upan::string& name, int iParentProcessID, byte 
   return -1;
 }
 
-int ProcessManager::Fork(UserProcess& parent) {
+int ProcessManager::Fork(UserProcess& mainParent, SchedulableProcess& forkingParent) {
   try {
-    auto& child = *new UserProcess(parent);
+    auto& child = *new UserProcess(mainParent, forkingParent);
     int pid = child.processID();
     AddToSchedulerList(child);
     return pid;
@@ -438,9 +441,9 @@ int ProcessManager::Fork(UserProcess& parent) {
 int ProcessManager::CreateThreadTask(int parentID, uintptr_t threadCaller, uintptr_t threadEntryAddress, void* arg, bool joinable) {
   try {
     AutonomousProcess& parent = ProcessManager::Instance().GetThreadParentProcess(parentID);
-    upan::uniq_ptr<SchedulableProcess> threadPAS(&parent.CreateThread(threadCaller, threadEntryAddress, arg, joinable));
-    int threadID = threadPAS->processID();
-    AddToProcessMap(*threadPAS.release());
+    auto& thread = parent.CreateThread(threadCaller, threadEntryAddress, arg, joinable);
+    int threadID = thread.processID();
+    AddToProcessMap(thread);
     return threadID;
   } catch(const upan::exception& e) {
     e.Print();
@@ -513,7 +516,7 @@ void ProcessManager::WakeUpFromKSWait(int iProcessID) {
   });
 }
 
-void ProcessManager::WaitOnKernelService(bool freeze) {
+void ProcessManager::WaitOnKernelService() {
 	if(GetCurProcId() < 0)
 		return ; 
 
@@ -523,9 +526,31 @@ void ProcessManager::WaitOnKernelService(bool freeze) {
     if (!p.stateInfo().IsKernelServiceComplete()) {
       p.stateInfo().KernelServiceComplete(false);
     }
-    p.setStatus(freeze ? WAIT_KERNEL_SERVICE_FREEZE : WAIT_KERNEL_SERVICE);
+    p.setStatus(WAIT_KERNEL_SERVICE);
   }
   p.yield();
+}
+
+void ProcessManager::WaitOnKernelServiceFork() {
+  if(GetCurProcId() < 0)
+    return ;
+
+  auto& p = GetCurrentPAS();
+  {
+    ProcessSwitchLock lock;
+    if (!p.stateInfo().IsKernelServiceComplete()) {
+      p.stateInfo().KernelServiceComplete(false);
+    }
+    p.setStatus(WAIT_KERNEL_SERVICE_FORK);
+  }
+  // When a child process is forked, yielding via a timer interrupt (int 0x2) from the parent
+  // should not involve looping on a check that waits for the process to enter the RUN state.
+  // This is because the child resumes execution from the same yield point,
+  // where the process pointer still refers to the parent.
+  // As a result, the state check is performed on the parent instead of the child.
+  // Since the parent remains in the KERNEL_SERVICE_FORK state (i.e., not RUN),
+  // the child ends up stuck in the yield loop.
+  YIELD_THROUGH_INTERRUPT;
 }
 
 bool ProcessManager::DoPollWait() {
@@ -662,9 +687,8 @@ void ProcessManager::stopKernelProcesses() {
   stopProcesses([](SchedulableProcess& process) { return process.isKernelProcess() && !process.isCoreProcess() && !process.isThread(); });
 }
 
-void ProcessManager::getProcessRUsage(RUSAGE_ID who, struct rusage& ru) {
+void ProcessManager::getProcessRUsage(Process& p, RUSAGE_ID who, struct rusage& ru) {
   ProcessSwitchLock lock;
-  auto& p = GetCurrentPAS();
   if (who == RUSAGE_SELF) {
     ru = p.processStat().rusage();
   } else if (who == RUSAGE_CHILDREN) {
