@@ -60,6 +60,7 @@ public:
   ~IODescriptorTable() noexcept;
 
   IODescriptor::Ptr allocate(const upan::function<IODescriptor::Ptr, int>& descriptorBuilder);
+  void clone(const IODescriptorTable& iodTable);
   void free(int fd);
   void updateRedirections(int srcFD, const IODescriptor::Ptr& targetDesc);
   int dup(int oldFD);
@@ -71,6 +72,7 @@ public:
   upan::vector<io_descriptor> select(const upan::vector<io_descriptor>& ioDescriptors, struct timeval* timeout, int& retCode);
   upan::vector<io_descriptor> selectCheck(const upan::vector<io_descriptor>& ioDescriptors);
   void closeAllFiles(StorageDrive&);
+  void initChildIODTable(IODescriptorTable& childIODTable, bool forkChild);
 
 private:
   IODMap::iterator getItr(int fd);

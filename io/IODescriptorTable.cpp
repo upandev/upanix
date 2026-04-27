@@ -92,6 +92,26 @@ IODescriptor::Ptr IODescriptorTable::allocate(const upan::function<IODescriptor:
   return i.first->second;
 }
 
+void IODescriptorTable::clone(const IODescriptorTable& iodTable) {
+  upan::mutex_guard g(_ioMutex);
+
+  for(auto& x : _iodMap) {
+    x.second->close();
+  }
+
+  _iodMap.clear();
+  _descIdCounter = iodTable._descIdCounter;
+
+  for (auto& x : iodTable._iodMap) {
+    auto ioDescriptor = x.second;
+    ioDescriptor->incrementRefCount();
+    auto i = _iodMap.insert(IODMap::value_type(x.first, ioDescriptor));
+    if (!i.second) {
+      throw upan::exception(XLOC, "unexpected error while cloning file-descriptor table (cpid: %d, ppip: %d, fd: %d)", _pid, iodTable._pid, x.first);
+    }
+  }
+}
+
 IODescriptorTable::IODMap::iterator IODescriptorTable::getItr(int fd) {
   auto i = _iodMap.find(fd);
   if (i == _iodMap.end()) {
@@ -187,4 +207,16 @@ upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::selectCheck(co
     }
   }
   return result;
+}
+
+void IODescriptorTable::initChildIODTable(IODescriptorTable& childIODTable, bool forkChild) {
+  if (forkChild) {
+    childIODTable.clone(*this);
+  } else {
+    childIODTable.allocate([&](int fd) { return new RedirectDescriptor(childIODTable._pid, fd, get(IODescriptorTable::STDIN)); });
+    childIODTable.allocate([&](int fd) { return new RedirectDescriptor(childIODTable._pid, fd, get(IODescriptorTable::STDOUT)); });
+    childIODTable.allocate([&](int fd) { return new RedirectDescriptor(childIODTable._pid, fd, get(IODescriptorTable::STDERR)); });
+    childIODTable.allocate([&](int fd) { return new RedirectDescriptor(childIODTable._pid, fd, get(IODescriptorTable::TERMINAL_MASTER)); });
+    childIODTable.allocate([&](int fd) { return new RedirectDescriptor(childIODTable._pid, fd, get(IODescriptorTable::KSYSLOG)); });
+  }
 }
