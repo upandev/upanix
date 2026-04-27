@@ -35,7 +35,7 @@ void AllocationUnitTracker::updateCheckSum() {
 }
 
 DMM::DMM(uint64_t heapStartAddress, uint64_t heapMaxSize) :
-  _heapStartAddress(heapStartAddress), _heapMaxSize(heapMaxSize), _rootAut(nullptr) {
+  _heapStartAddress(heapStartAddress), _heapMaxSize(heapMaxSize), _dmmFlag(false), _rootAut(nullptr) {
 }
 
 uint32_t DMM::getByteStuffForAlign(uint64_t uiAddress, uint32_t uiAlignNumber) const {

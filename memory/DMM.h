@@ -48,6 +48,9 @@ protected:
 
 public:
   bool isDmmFlag() const { return _dmmFlag; }
+  AllocationUnitTracker* getRootAut() const { return _rootAut; }
+  void setRootAut(AllocationUnitTracker* aut) { _rootAut = aut; }
+
   virtual uintptr_t allocate(uint32_t sizeInBytes, uint32_t alignment) = 0;
   uintptr_t allocate(uint32_t sizeInBytes) {
     return allocate(sizeInBytes, 0);
