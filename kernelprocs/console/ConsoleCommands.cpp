@@ -153,6 +153,7 @@ static void ConsoleCommands_SysLog();
 static void ConsoleCommands_Ping();
 static void ConsoleCommands_Host();
 static void ConsoleCommands_ListServents();
+static void ConsoleCommands_RUsage();
 
 /*****************************************/
 
@@ -229,6 +230,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
   { "memstats", &ConsoleCommands_MemStats },
   { "syslog", &ConsoleCommands_SysLog },
   { "lsservent", &ConsoleCommands_ListServents },
+  { "rusage", &ConsoleCommands_RUsage },
 	{ "\0",			NULL }
 } ;
 
@@ -2263,44 +2265,44 @@ void ConsoleCommands_Test() {
   } else if (test == "tcp-tls-server") {
     test_tcp_tls_server();
   } else if (test == "config") {
-      upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
+    upan::ConfigFileDB configFileDb("/var/db/test.cfg", upan::ConfigFileDB::OpType::RDWR);
 
-      printf("\n **** Initial content");
-      for (const auto& i : configFileDb.getAll()) {
-        printf("\n%s %s", i.first.c_str(), i.second.c_str());
-      }
+    printf("\n **** Initial content");
+    for (const auto& i: configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
 
-      configFileDb.set("Protocol", "DHCP", "");
-      configFileDb.set("LeaseTime", "1234", "This is lease time");
-      configFileDb.set("IP Address", "192.168.50.27", "This is the IP address");
-      configFileDb.set("Gateway", "192.168.255.255", "");
-      printf("\n **** First update");
-      for (const auto& i : configFileDb.getAll()) {
-        printf("\n%s %s", i.first.c_str(), i.second.c_str());
-      }
+    configFileDb.set("Protocol", "DHCP", "");
+    configFileDb.set("LeaseTime", "1234", "This is lease time");
+    configFileDb.set("IP Address", "192.168.50.27", "This is the IP address");
+    configFileDb.set("Gateway", "192.168.255.255", "");
+    printf("\n **** First update");
+    for (const auto& i: configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
 
-      {
-        upan::ConfigFileDB::BatchWriteGuard g(configFileDb);
-        configFileDb.set("Protocol", "DHCP", "This is the protocol type");
-        configFileDb.set("LeaseTime", "12345678", "This is lease time");
-        configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
-        configFileDb.set("Gateway", "192.168.255.255", "This is Gateway IP");
-      }
-      printf("\n **** Second update");
-      for (const auto& i : configFileDb.getAll()) {
-        printf("\n%s %s", i.first.c_str(), i.second.c_str());
-      }
-
+    {
+      upan::ConfigFileDB::BatchWriteGuard g(configFileDb);
       configFileDb.set("Protocol", "DHCP", "This is the protocol type");
       configFileDb.set("LeaseTime", "12345678", "This is lease time");
       configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
-      configFileDb.remove("Gateway");
-      configFileDb.set("Router", "192.168.255.255", "This is Gateway/Router IP");
-      printf("\n **** Third update");
-      for (const auto& i : configFileDb.getAll()) {
-        printf("\n%s %s", i.first.c_str(), i.second.c_str());
-      }
-    } else if (test == "tls") {
+      configFileDb.set("Gateway", "192.168.255.255", "This is Gateway IP");
+    }
+    printf("\n **** Second update");
+    for (const auto& i: configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+
+    configFileDb.set("Protocol", "DHCP", "This is the protocol type");
+    configFileDb.set("LeaseTime", "12345678", "This is lease time");
+    configFileDb.set("IP Address", "192.168.50.27", "This is the IP");
+    configFileDb.remove("Gateway");
+    configFileDb.set("Router", "192.168.255.255", "This is Gateway/Router IP");
+    printf("\n **** Third update");
+    for (const auto& i: configFileDb.getAll()) {
+      printf("\n%s %s", i.first.c_str(), i.second.c_str());
+    }
+  } else if (test == "tls") {
     printf("\n %d", _t_local_var_data1);
     printf("\n %d", (int) _t_local_var_data2);
     printf("\n %d", (int) _t_local_var_data3);
@@ -2652,4 +2654,21 @@ void ConsoleCommands_ListServents() {
       printf("\nNo such service");
     }
   }
+}
+
+void ConsoleCommands_RUsage() {
+  if (CommandLineParser::Instance().GetNoOfParameters() != 1) {
+    throw upan::exception(XLOC, "required parameter: pid");
+  }
+
+  pid_t pid = atoi(CommandLineParser::Instance().GetParameterAt(0));
+  auto process = ProcessManager::Instance().GetProcess(pid);
+  if (process.isEmpty()) {
+    throw upan::exception(XLOC, "invalid pid");
+  }
+
+  struct rusage r;
+  ProcessManager::Instance().getProcessRUsage(process.value(), RUSAGE_SELF, r);
+  printf("\nUser time: %ld.%06ld", r.ru_utime.tv_sec, r.ru_utime.tv_usec);
+  printf("\nSystem time: %ld.%06ld", r.ru_stime.tv_sec, r.ru_stime.tv_usec);
 }
