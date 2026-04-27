@@ -27,7 +27,7 @@ class Thread;
 
 class AutonomousProcess : public SchedulableProcess {
 public:
-  AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess);
+  AutonomousProcess(const upan::string& name, int parentID, bool forkChild, bool isFGProcess);
 
   virtual Thread& CreateThread(uintptr_t threadCaller, uintptr_t entryAddress, void* arg, bool joinable) = 0;
 
@@ -55,9 +55,9 @@ public:
   void setGuiBase(bool v) override;
 
   MouseCursorType mouseCursorType() const override { return _mouseCursorType; }
-  void setMouseCursorType(MouseCursorType type) { _mouseCursorType = type; }
+  void setMouseCursorType(MouseCursorType type) override { _mouseCursorType = type; }
 
-  void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact);
+  void setSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) override;
   upan::option<struct sigaction&> getSignalAction(SIGNAL signo) override;
 
   IODescriptorTable& iodTable() override {

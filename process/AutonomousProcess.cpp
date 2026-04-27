@@ -28,19 +28,15 @@
 #include <FSDeviceManager.h>
 #include <RedirectDescriptor.h>
 
-AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool isFGProcess)
+AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool forkChild, bool isFGProcess)
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
     _uiType(Process::UIType::NA), _uiKeyboardEventStreamFD(nullptr), _uiMouseEventStreamFD(nullptr),
-    _isGuiBase(false), _iodTable(_processID), _alarmTime(0), _alarmExpiry(0), _curScheduledThread(nullptr) {
+    _isGuiBase(false), _mouseCursorType(MOUSECURSOR_NORMAL), _iodTable(_processID),
+    _alarmTime(0), _alarmExpiry(0), _curScheduledThread(nullptr) {
 
-  auto& parentIODTable = ProcessManager::Instance().GetProcess(parentID)
-          .valueOrThrow(XLOC, "failed to create process as parent process not found")
-          .iodTable();
-  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDIN)); });
-  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDOUT)); });
-  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::STDERR)); });
-  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::TERMINAL_MASTER)); });
-  _iodTable.allocate([&](int fd) { return new RedirectDescriptor(_processID, fd, parentIODTable.get(IODescriptorTable::KSYSLOG)); });
+  ProcessManager::Instance().GetProcess(parentID)
+    .valueOrThrow(XLOC, "failed to create process as parent process not found")
+    .iodTable().initChildIODTable(_iodTable, forkChild);
 }
 
 SchedulableProcess& AutonomousProcess::forSchedule() {
@@ -49,13 +45,13 @@ SchedulableProcess& AutonomousProcess::forSchedule() {
     return *this;
   }
 
-  //no context switch if status == WAIT_KERNEL_SERVICE_FREEZE
+  //no context switch if status == WAIT_KERNEL_SERVICE_FORK
   if (!_curScheduledThread.isEmpty()) {
-    if (_curScheduledThread.value().status() == WAIT_KERNEL_SERVICE_FREEZE) {
+    if (_curScheduledThread.value().status() == WAIT_KERNEL_SERVICE_FORK) {
       return _curScheduledThread.value();
     }
   } else {
-    if (_status == WAIT_KERNEL_SERVICE_FREEZE) {
+    if (_status == WAIT_KERNEL_SERVICE_FORK) {
       return *this;
     }
   }
