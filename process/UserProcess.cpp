@@ -498,7 +498,7 @@ upan::option<IRelocateInfo&> UserProcess::getRelocateInfo(const upan::string& sy
       }
     }
     if (stBind != STB_WEAK) {
-      printf("\n Dynamic Symbol %s not found in any DLL/Exe, relocation failed!", symName.c_str());
+      printf("\n Dynamic Symbol %s not found in any DLL/Exe (st-bind:%d), relocation failed!", symName.c_str(), stBind);
     }
     return upan::option<IRelocateInfo&>::empty();
   }
