@@ -147,7 +147,7 @@ void UserProcess::Load(const upan::vector<upan::string>& argv, const upan::vecto
 }
 
 uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp) {
-  const uint32_t argvD1Size = argv.size() * sizeof(uintptr_t); // address of char* entry (second dimension) of argv array
+  const uint32_t argvD1Size = (argv.size() + 1) * sizeof(uintptr_t); // address of char* entry (second dimension) of argv array
   uint32_t argvD2Size = 0;
   for(const auto& i : argv) {
     argvD2Size += i.length() + 1;
@@ -179,6 +179,8 @@ uint64_t UserProcess::PushProgramInitStackData(const upan::vector<upan::string>&
     strcpy((char*)realArgAddress, argv[i].c_str());
     pos += argv[i].length() + 1;
   }
+
+  ((uint64_t*)realStackTopAddress)[argv.size()] = 0;
 
   const uint64_t realEnvpStackTopAddress = realStackTopAddress + pos;
   const uint64_t virtualEnvpStackTopAddress = virtualStackTopAddress + pos;
