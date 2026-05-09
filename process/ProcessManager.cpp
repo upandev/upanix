@@ -255,7 +255,7 @@ int ProcessManager::WaitOnChild(int iChildProcessID, int& exitStatus) {
     } else {
       auto childProcess = GetSchedulableProcess(iChildProcessID);
       if (childProcess.isEmpty()
-          || childProcess.value().parentProcessID() != p.processID()
+          || childProcess.value().parentProcessID() != p.mainThreadID()
           || (childProcess.value().isThread() && dynamic_cast<Thread&>(childProcess.value()).isJoinable() == false)) {
         return -1;
       }

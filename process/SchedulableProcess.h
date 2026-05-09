@@ -75,6 +75,7 @@ public:
 
   int processID() const override { return _processID; }
   int parentProcessID() const override { return _parentProcessID; }
+  int mainThreadID() const override { return _processID; }
   int processSpaceID() const override { return isThread() ? _parentProcessID : _processID; }
 
   void setParentProcessID(int parentProcessID) { _parentProcessID = parentProcessID; }

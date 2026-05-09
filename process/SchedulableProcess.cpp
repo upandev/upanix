@@ -325,6 +325,7 @@ void SchedulableProcess::Common::SetupKernelSignalStackFrame(SchedulableProcess&
 }
 
 extern __volatile__ uint64_t SYS_CALL_ID;
+//extern void _print_last_dynamic_symbol();
 
 bool SchedulableProcess::handlePageFault(TaskContext& taskContext, uint64_t faultyAddress) {
   KernelRootProcess::Instance().switchPageTable();
@@ -356,8 +357,10 @@ bool SchedulableProcess::handlePageFault(TaskContext& taskContext, uint64_t faul
     queueSignal(SIGSEGV, &value);
 
     printf("\n Segmentation Fault @ Address: 0x%llx", faultyAddress);
+    printf("\n RIP: 0x%llx", _taskContext.interruptState.rip);
     printf("\n Sys Call Id: %lu", SYS_CALL_ID);
     printf("\n PID: %d, DMM Flag: %d", _processID, dmm().isDmmFlag());
+    //_print_last_dynamic_symbol();
     switchPageTable();
 
     //move the process to Preempted state, that will make sure SIGSEGV is delivered before executing the user space code again
@@ -590,7 +593,7 @@ void SchedulableProcess::prepareToRun() {
           } else {
             for(auto pid : childProcessIDs()) {
               ProcessManager::Instance().GetSchedulableProcess(pid).ifPresent([&](SchedulableProcess& childProcess) {
-                if (childProcess.status() == TERMINATED && childProcess.parentProcessID() == _processID) {
+                if (childProcess.status() == TERMINATED && childProcess.parentProcessID() == mainThreadID()) {
                   _stateInfo.WaitChildProcId(childProcess.processID());
                   removeChildProcessID(childProcess.processID());
                   childProcess.Release();
@@ -604,13 +607,13 @@ void SchedulableProcess::prepareToRun() {
           }
         } else {
           auto childProcess = ProcessManager::Instance().GetSchedulableProcess(_stateInfo.WaitChildProcId());
-          if (childProcess.isEmpty() || childProcess.value().parentProcessID() != _processID) {
+          if (childProcess.isEmpty() || childProcess.value().parentProcessID() != mainThreadID()) {
             removeChildProcessID(_stateInfo.WaitChildProcId());
             _stateInfo.WaitChildProcId(-1);
             _stateInfo.setError(ProcessStateInfo::OTHER);
             setStatus(RUN);
           } else if (childProcess.value().status() == TERMINATED &&
-                     childProcess.value().parentProcessID() == _processID) {
+                     childProcess.value().parentProcessID() == mainThreadID()) {
             _stateInfo.setChildExitStatus(childProcess.value().stateInfo().getExitStatus());
             childProcess.value().Release();
             removeChildProcessID(_stateInfo.WaitChildProcId());

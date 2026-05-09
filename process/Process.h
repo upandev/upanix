@@ -54,6 +54,7 @@ public:
   virtual DMM& dmm() = 0;
 
   virtual int processID() const = 0;
+  virtual int mainThreadID() const = 0;
   virtual int parentProcessID() const = 0;
   virtual int processSpaceID() const = 0;
 

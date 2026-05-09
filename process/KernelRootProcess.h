@@ -49,6 +49,7 @@ public:
   bool isFGProcessGroup() const override { return true; }
   int processID() const override { return NO_PROCESS_ID; }
   int parentProcessID() const override { return NO_PROCESS_ID; }
+  int mainThreadID() const override { return NO_PROCESS_ID; }
   int processSpaceID() const override { return NO_PROCESS_ID; }
   int driveID() const override { return ROOT_DRIVE; }
   uint64_t getProcessBase() const override { return 0; }
