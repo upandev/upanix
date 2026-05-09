@@ -287,7 +287,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 
     case SYS_CALL_PROCESS_SET_ALARM:
     {
-      *retVal = ProcessManager::Instance().SetAlarm((uint32_t)p1).first;
+      *retVal = ProcessManager::Instance().SetAlarm((uint32_t)p1);
     }
     break;
   }

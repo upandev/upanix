@@ -698,7 +698,7 @@ void ProcessManager::getProcessRUsage(Process& p, RUSAGE_ID who, struct rusage& 
   }
 }
 
-upan::pair<uint32_t, time_t> ProcessManager::SetAlarm(uint32_t seconds) {
+time_t ProcessManager::SetAlarm(uint32_t seconds) {
   ProcessSwitchLock lock;
-  GetCurrentPAS().setAlarm(seconds);
+  return GetCurrentPAS().setAlarm(seconds);
 }

@@ -121,7 +121,7 @@ public:
     _parent.setControllingTerminal(terminalDevice);
   }
 
-  upan::pair<uint32_t, time_t> setAlarm(uint32_t seconds) override {
+  time_t setAlarm(uint32_t seconds) override {
     return _parent.setAlarm(seconds);
   }
 

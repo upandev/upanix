@@ -32,7 +32,7 @@ AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, boo
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
     _uiType(Process::UIType::NA), _uiKeyboardEventStreamFD(nullptr), _uiMouseEventStreamFD(nullptr),
     _isGuiBase(false), _mouseCursorType(MOUSECURSOR_NORMAL), _iodTable(_processID),
-    _alarmTime(0), _alarmExpiry(0), _curScheduledThread(nullptr) {
+    _alarmExpiry(0), _curScheduledThread(nullptr) {
 
   ProcessManager::Instance().GetProcess(parentID)
     .valueOrThrow(XLOC, "failed to create process as parent process not found")
@@ -350,15 +350,12 @@ upan::shared_ptr<FSTerminalDevice> AutonomousProcess::controllingTerminal() {
   return _terminalDevice;
 }
 
-upan::pair<uint32_t, time_t> AutonomousProcess::setAlarm(uint32_t seconds) {
-  auto at = _alarmTime;
-  auto ae = _alarmExpiry;
+time_t AutonomousProcess::setAlarm(uint32_t seconds) {
+  const time_t r = _alarmExpiry ? (_alarmExpiry - btime()) : 0;
   if (seconds) {
-    _alarmTime = seconds;
     _alarmExpiry = btime() + seconds * 1000;
   } else {
-    _alarmTime = 0;
     _alarmExpiry = 0;
   }
-  return { at, ae };
+  return r;
 }

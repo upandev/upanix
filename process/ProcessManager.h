@@ -125,7 +125,7 @@ class ProcessManager
     void stopUserProcesses();
     void stopKernelProcesses();
 
-  upan::pair<uint32_t, time_t> SetAlarm(uint32_t seconds);
+    time_t SetAlarm(uint32_t seconds);
   private:
     void stopProcesses(upan::function<bool, SchedulableProcess&> stopCondition);
     bool DoPollWait();

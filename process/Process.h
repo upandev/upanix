@@ -138,6 +138,6 @@ public:
     throw upan::exception(XLOC, "setGraphicsContext unsupported");
   }
 
-  virtual upan::pair<uint32_t, time_t> setAlarm(uint32_t seconds) = 0;
+  virtual time_t setAlarm(uint32_t seconds) = 0;
   virtual time_t alarmExpiry() const = 0;
 };
