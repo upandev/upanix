@@ -107,6 +107,7 @@ void Console::OnKeyboardInput(const uint8_t* buffer, int len) {
         }
         break;
       case Keyboard_ENTER:
+      case Keyboard_CTRL_J:
         ExecuteCommand();
         DisplayCommandLine();
         break;
@@ -191,6 +192,7 @@ void Console::ConsoleOutHandler::ProcessInput(const uint8_t* buffer, int len) {
         break;
 
       case Keyboard_ENTER:
+      case Keyboard_CTRL_J:
         KC::MConsole().PutChar('\n', upanui::CharStyle::WHITE_ON_BLACK());
         break;
 

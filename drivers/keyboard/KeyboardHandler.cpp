@@ -95,6 +95,10 @@ bool KeyboardHandler::Process(const KeyboardKeys key, const bool isKeyReleased) 
     return false;
   }
 
+  if (key == Keyboard_ENTER) {
+    res = Keyboard_CTRL_J;
+  }
+
   upanui::KeyboardData data((uint8_t)res, _isShift, _isAlt, _isCtrl);
 
   if(!KBInputHandler_Process(data)) {

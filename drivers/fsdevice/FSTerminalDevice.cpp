@@ -30,7 +30,8 @@ FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int
   : FSDevice(path), _owner(owner),
     _inBuffer(inBufSize), _outBuffer(outBufSize),
     _directKernelConsole(false) {
-  _termios.c_lflag = ICANON | ECHO |  ISIG;
+  _termios.c_lflag = ICANON | ECHO | ISIG;
+  _termios.c_iflag = ICRNL;
 }
 
 bool FSTerminalDevice::isReady(TERMINAL_IO_TYPES ioType) const {

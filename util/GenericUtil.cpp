@@ -76,6 +76,7 @@ void GenericUtil_ReadInput(char* szInputBuffer, const int iMaxReadLength, byte b
 				break ;
 
 			case Keyboard_ENTER:
+      case Keyboard_CTRL_J:
 				szInputBuffer[iCurrentReadPos] = '\0' ;
 				return ;
 

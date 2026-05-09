@@ -93,6 +93,11 @@ bool DynamicLinkLoader_GetSymbolOffset(const upan::string& dllName, const upan::
 
 extern uint8_t _runtime_dll_resolver;
 extern uint8_t _runtime_dll_resolver_end;
+//char symbol[40] = "";
+//
+//void _print_last_dynamic_symbol() {
+//  printf("\n Fault symbol: %s", symbol);
+//}
 
 DynamicLinkLoader::DynamicLinkLoader() {
   _dll_resolver_size = &_runtime_dll_resolver_end - &_runtime_dll_resolver;
@@ -122,6 +127,7 @@ void DynamicLinkLoader_DoRelocation(Process& process, int64_t iID, uint64_t relo
   auto& symGOTAddress = *(uint64_t*)GLOBAL_REL_ADDR(elfDynRelPltTable[relocationOffset].r_offset, elfInfo->getBase());
   const auto relocationAddend = elfDynRelPltTable[relocationOffset].r_addend;
 
+  //strncpy(symbol, szSymName, 38);
   //printf("\n %s", szSymName);
 	if (iID >= 0) {
 	  if (DynamicLinkLoader_GetSymbolOffsetFromProcess(process, szSymName, symGOTAddress, relocationAddend)) {
