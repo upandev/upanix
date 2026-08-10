@@ -265,6 +265,16 @@ const char* XHCIController::PortProtocolName(USB_PROTOCOL protocol) const
   }
 }
 
+const char* XHCIController::PortSpeedName(DEVICE_SPEED speed) const {
+  switch(speed) {
+    case FULL_SPEED: return "Full Speed";
+    case LOW_SPEED: return "Low Speed";
+    case HIGH_SPEED: return "High Speed";
+    case SUPER_SPEED: return "Super Speed";
+    default: return "Undefined";
+  }
+}
+
 void XHCIController::Probe()
 {
   Start();
@@ -442,7 +452,6 @@ EventTRB XHCIController::WaitForEvent(uint64_t trbId)
 void XHCIController::RegisterForWaitedEventResult(uint64_t trbId)
 {
   upan::mutex_guard g(_eventMutex);
-  //printf("\n Registering for TRB event: %x, Process: %d", trbId, ProcessManager::Instance().GetCurProcId());
   _eventResults[trbId] = new WaitedEventResult(ProcessManager::Instance().GetCurProcId());
 }
 
@@ -608,32 +617,6 @@ void EventManager::NotifyEvents()
     ++count;
     if(count == ERST_SIZE)
       break;
-  }
-}
-
-void WaitedEventResult::Consume(const EventTRB &r)
-{
-  _result = r;
-  ProcessManager::Instance().EventCompleted(Pid());
-}
-
-void InterruptEventResult::Consume(const EventTRB &r)
-{
-  _result = r;
-
-  try
-  {
-    r.ValidateTransferResult();
-    EventResult& eventResult = _context.Controller().ConsumeEventResult(r.TRBPointer());
-    auto intEventResult = dynamic_cast<InterruptEventResult*>(&eventResult);
-    if(!intEventResult)
-      throw upan::exception(XLOC, "Non-InterruptEventResult found for interrupt transfer @ TRB ID: %x", r.TRBPointer());
-    _context.OnInterrupt(r, intEventResult->InterruptDataAddress());
-    delete &eventResult;
-  }
-  catch(upan::exception& e)
-  {
-    e.Print();
   }
 }
 

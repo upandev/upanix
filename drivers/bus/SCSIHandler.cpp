@@ -481,101 +481,73 @@ byte SCSIHandler_GenericClose(SCSIDevice* pDevice)
 	return SCSIHandler_SUCCESS ;
 }
 
-void SCSIHandler_GenericRead(SCSIDevice* pDevice, unsigned uiStartSector, unsigned uiNumOfSectors, byte* pDataBuffer)
-{
-	unsigned uiBlock ;
-	unsigned uiBlockCount ;
-	unsigned uiMaxBlock = 8 ;
-		
-	while(uiNumOfSectors > 0)
-	{
-		uiBlockCount = (uiNumOfSectors > uiMaxBlock) ? uiMaxBlock : uiNumOfSectors ;
-		unsigned uiReadLen = uiBlockCount * pDevice->uiSectorSize ;
+void SCSIHandler_GenericRead(SCSIDevice* pDevice, unsigned uiStartSector, unsigned uiNumOfSectors, byte* pDataBuffer) {
+  auto uiReadLen = uiNumOfSectors * pDevice->uiSectorSize;
 
-		uiBlock = uiStartSector ;
+  /* Build SCSI_READ_10 command */
+  SCSICommand sCommand(*pDevice);
 
-		/* Build SCSI_READ_10 command */
-    SCSICommand sCommand(*pDevice);
+  sCommand.iDirection = SCSI_DATA_READ;
+  sCommand.pRequestBuffer = pDataBuffer;
+  sCommand.iRequestLen = uiReadLen;
 
-		sCommand.iDirection = SCSI_DATA_READ ;
-		sCommand.pRequestBuffer = pDataBuffer ;
-		sCommand.iRequestLen = uiReadLen ;
+  sCommand.bCommand[0] = SCSI_READ_10;
 
-		sCommand.bCommand[0] = SCSI_READ_10 ;
+  if (pDevice->iSCSILevel <= SCSI_2)
+    sCommand.bCommand[1] = (pDevice->iLun << 5) & 0xE0;
+  else
+    sCommand.bCommand[1] = 0;
 
-		if(pDevice->iSCSILevel <= SCSI_2)
-			sCommand.bCommand[1] = (pDevice->iLun << 5) & 0xE0 ;
-		else
-			sCommand.bCommand[1] = 0 ;
+  sCommand.bCommand[2] = (byte) (uiStartSector >> 24) & 0xFF;
+  sCommand.bCommand[3] = (byte) (uiStartSector >> 16) & 0xFF;
+  sCommand.bCommand[4] = (byte) (uiStartSector >> 8) & 0xFF;
+  sCommand.bCommand[5] = (byte) (uiStartSector & 0xFF);
+  sCommand.bCommand[6] = sCommand.bCommand[9] = 0;
+  sCommand.bCommand[7] = (byte) (uiNumOfSectors >> 8) & 0xFF;
+  sCommand.bCommand[8] = (byte) (uiNumOfSectors & 0xFF);
 
-		sCommand.bCommand[2] = (byte)(uiBlock >> 24) & 0xFF ;
-		sCommand.bCommand[3] = (byte)(uiBlock >> 16) & 0xFF ;
-		sCommand.bCommand[4] = (byte)(uiBlock >> 8) & 0xFF ;
-		sCommand.bCommand[5] = (byte)(uiBlock & 0xFF) ;
-		sCommand.bCommand[6] = sCommand.bCommand[9] = 0 ;
-		sCommand.bCommand[7] = (byte)(uiBlockCount >> 8) & 0xFF ;
-		sCommand.bCommand[8] = (byte)(uiBlockCount & 0xFF) ;
+  sCommand.iCmdLen = SCSIHandler_GetCommandSize(SCSI_READ_10);
 
-		sCommand.iCmdLen = SCSIHandler_GetCommandSize(SCSI_READ_10) ;
+  /* Send command */
+  bool bStatus = pDevice->pHost->QueueCommand(&sCommand);
 
-		/* Send command */
-		bool bStatus = pDevice->pHost->QueueCommand(&sCommand) ;
-
-		if(!bStatus || sCommand.iResult != 0)
-      throw upan::exception(XLOC, "SCSI read failed with status code:%d, result:%d", bStatus, sCommand.iResult);
-
-		uiStartSector += uiBlockCount ;
-		uiNumOfSectors -= uiBlockCount ;
-		pDataBuffer += uiReadLen ;
-	}
+  if (!bStatus || sCommand.iResult != 0)
+    throw upan::exception(XLOC, "SCSI read failed with status code:%d, result:%d", bStatus, sCommand.iResult);
 }
 
-void SCSIHandler_GenericWrite(SCSIDevice* pDevice, unsigned uiStartSector, unsigned uiNumOfSectors, byte* pDataBuffer)
-{
-	unsigned uiBlock ;
-	unsigned uiBlockCount ;
-	unsigned uiMaxBlock = 16 ;
-		
-	while(uiNumOfSectors > 0)
-	{
-		uiBlockCount = (uiNumOfSectors > uiMaxBlock) ? uiMaxBlock : uiNumOfSectors ;
-		unsigned uiWriteLen = uiBlockCount * pDevice->uiSectorSize ;
+void SCSIHandler_GenericWrite(SCSIDevice* pDevice, unsigned uiStartSector, unsigned uiNumOfSectors, byte* pDataBuffer) {
+  unsigned uiWriteLen = uiNumOfSectors * pDevice->uiSectorSize;
 
-		uiBlock = uiStartSector ;
+  /* Build SCSI_WRITE_10 command */
+  SCSICommand sCommand(*pDevice);
+  sCommand.iDirection = SCSI_DATA_WRITE;
+  sCommand.pRequestBuffer = pDataBuffer;
+  sCommand.iRequestLen = uiWriteLen;
 
-		/* Build SCSI_WRITE_10 command */
-    SCSICommand sCommand(*pDevice);
-		sCommand.iDirection = SCSI_DATA_WRITE ;
-		sCommand.pRequestBuffer = pDataBuffer ;
-		sCommand.iRequestLen = uiWriteLen ;
+  sCommand.bCommand[0] = SCSI_WRITE_10;
 
-		sCommand.bCommand[0] = SCSI_WRITE_10 ;
+  if (pDevice->iSCSILevel <= SCSI_2)
+    sCommand.bCommand[1] = (pDevice->iLun << 5) & 0xE0;
+  else
+    sCommand.bCommand[1] = 0;
 
-		if(pDevice->iSCSILevel <= SCSI_2)
-			sCommand.bCommand[1] = (pDevice->iLun << 5) & 0xE0 ;
-		else
-			sCommand.bCommand[1] = 0 ;
+  sCommand.bCommand[2] = (byte) (uiStartSector >> 24) & 0xFF;
+  sCommand.bCommand[3] = (byte) (uiStartSector >> 16) & 0xFF;
+  sCommand.bCommand[4] = (byte) (uiStartSector >> 8) & 0xFF;
+  sCommand.bCommand[5] = (byte) (uiStartSector & 0xFF);
+  sCommand.bCommand[6] = sCommand.bCommand[9] = 0;
+  sCommand.bCommand[7] = (byte) (uiNumOfSectors >> 8) & 0xFF;
+  sCommand.bCommand[8] = (byte) (uiNumOfSectors & 0xFF);
 
-		sCommand.bCommand[2] = (byte)(uiBlock >> 24) & 0xFF ;
-		sCommand.bCommand[3] = (byte)(uiBlock >> 16) & 0xFF ;
-		sCommand.bCommand[4] = (byte)(uiBlock >> 8) & 0xFF ;
-		sCommand.bCommand[5] = (byte)(uiBlock & 0xFF) ;
-		sCommand.bCommand[6] = sCommand.bCommand[9] = 0 ;
-		sCommand.bCommand[7] = (byte)(uiBlockCount >> 8) & 0xFF ;
-		sCommand.bCommand[8] = (byte)(uiBlockCount & 0xFF) ;
-		
-		sCommand.iCmdLen = SCSIHandler_GetCommandSize(SCSI_WRITE_10) ;
+  sCommand.iCmdLen = SCSIHandler_GetCommandSize(SCSI_WRITE_10);
 
-		/* Send command */
-		bool bStatus = pDevice->pHost->QueueCommand(&sCommand) ;
+  /* Send command */
+  bool bStatus = pDevice->pHost->QueueCommand(&sCommand);
 
-		if(!bStatus || sCommand.iResult != 0)
-      throw upan::exception(XLOC, "SCSI read failed with status code:%d, result:%d", bStatus, sCommand.iResult);
+  if (!bStatus || sCommand.iResult != 0)
+    throw upan::exception(XLOC, "SCSI read failed with status code:%d, result:%d", bStatus, sCommand.iResult);
 
-		uiStartSector += uiBlockCount ;
-		uiNumOfSectors -= uiBlockCount ;
-		pDataBuffer += uiWriteLen ;
-	}
+  pDataBuffer += uiWriteLen;
 }
 
 byte SCSIHandler_DoStartStop(SCSIDevice* pDevice, unsigned uiFlags)

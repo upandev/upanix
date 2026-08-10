@@ -34,11 +34,12 @@ ProcessStateInfo::ProcessStateInfo() :
         _waitLock(nullptr), _newVal(0), _oldVal(0), _isForkReady(false) {
 }
 
-bool ProcessStateInfo::IsEventCompleted()
-{
-  if(_eventCompleted.get()) {
-    _eventCompleted.set(false);
-    return true;
+bool ProcessStateInfo::IsEventCompleted() {
+  for (int i = 0; i < 10; ++i) {
+    if (_eventCompleted.get()) {
+      _eventCompleted.set(false);
+      return true;
+    }
   }
   return false;
 }

@@ -107,20 +107,20 @@ void InputContext::SendCommand(uint32_t bmRequestType, uint32_t bmRequest,
                                uint32_t wValue, uint32_t wIndex, uint32_t wLength, 
                                TransferType trt, void* dataBuffer)
 {
-  const uint32_t trbId = _controlEP->SetupTransfer(bmRequestType, bmRequest, wValue, wIndex, wLength, trt, dataBuffer);
+  const auto trbId = _controlEP->SetupTransfer(bmRequestType, bmRequest, wValue, wIndex, wLength, trt, dataBuffer);
   _controller.InitiateTransfer(trbId, _slotID, _controlEP->Id());
 }
 
 void InputContext::SendData(uint64_t bufferAddress, uint32_t len)
 {
-  const uint64_t trbId = BulkOutEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
+  const auto trbId = BulkOutEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
   const auto& result = _controller.InitiateTransfer(trbId, _slotID, BulkOutEP().Id());
   BulkOutEP().UpdateDeEnQPtr(result.TRBPointer());
 }
 
 void InputContext::ReceiveData(uint64_t bufferAddress, uint32_t len)
 {
-  const uint32_t trbId = BulkInEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
+  const auto trbId = BulkInEP().SetupTransfer(bufferAddress, len).goodValueOrThrow(XLOC);
   const auto& result = _controller.InitiateTransfer(trbId, _slotID, BulkInEP().Id());
   BulkInEP().UpdateDeEnQPtr(result.TRBPointer());
 }

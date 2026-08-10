@@ -152,8 +152,8 @@ void LFUSectorManager::operator()(const BTreeKey& rKey, BTreeValue* pValue)
 }
 
 DiskCache::DiskCache() :
-	_cacheKeyMemPool(MemPool<DiskCacheKey>::createMemPool(MAX_CACHE_SECTORS, 32)),
-	_cacheValueMemPool(MemPool<DiskCacheValue>::createMemPool(MAX_CACHE_SECTORS, 32)),
+	_cacheKeyMemPool(MAX_CACHE_SECTORS, 32),
+	_cacheValueMemPool(MAX_CACHE_SECTORS, 32),
   _tree(MAX_CACHE_SECTORS),
   _LFUSectorManager(*this)
 {

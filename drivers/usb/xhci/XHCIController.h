@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _XHCI_CONTROLLER_H_
-#define _XHCI_CONTROLLER_H_
+#pragma once
 
 #include <USBController.h>
 #include <PCIBusHandler.h>
@@ -28,6 +27,7 @@
 #include <TRB.h>
 #include <map.h>
 #include <ProcessManager.h>
+#include <XHCIEventResult.h>
 
 class CommandManager;
 class EventManager;
@@ -41,7 +41,7 @@ class InputContext;
 class XHCIController
 {
   public:
-    XHCIController(PCIEntry*);
+    explicit XHCIController(PCIEntry*);
     void Probe();
     void NotifyEvent();
     const XHCICapRegister& CapReg() const { return *_capReg; }
@@ -248,39 +248,3 @@ class EventManager
     XHCIController& _controller;
   friend class XHCIController;
 };
-
-class EventResult
-{
-public:
-  EventResult(int pid) : _pid(pid) {}
-  virtual ~EventResult() { }
-
-  int Pid() const { return _pid; }
-  const EventTRB& Result() const { return _result; }
-
-  virtual void Consume(const EventTRB& r) = 0;
-protected:
-  int      _pid;
-  EventTRB _result;
-};
-
-class WaitedEventResult : public EventResult
-{
-public:
-  explicit WaitedEventResult(int pid) : EventResult(pid) { }
-  void Consume(const EventTRB& r) override;
-};
-
-class InterruptEventResult : public EventResult
-{
-public:
-  InterruptEventResult(InputContext& context, int pid, uint64_t dataAddress) : EventResult(pid), _context(context), _dataAddress(dataAddress) { }
-  void Consume(const EventTRB &r) override;
-  uint64_t InterruptDataAddress() const { return _dataAddress; }
-
-private:
-  InputContext& _context;
-  uint64_t _dataAddress;
-};
-
-#endif

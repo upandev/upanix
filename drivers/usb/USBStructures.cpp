@@ -130,14 +130,14 @@ void USBStandardEndPt::DebugPrint()
 USBulkDisk::USBulkDisk(USBDevice* device, 
   int interfaceIndex,
   byte maxLun, 
-  const upan::string& protoName) : 
-    pUSBDevice(device), bEndPointInToggle(0), bEndPointOutToggle(0), pRawAlignedBuffer(nullptr),
-    pSCSIDeviceList(nullptr), bMaxLun(maxLun), szProtocolName(protoName), pHostDevice(nullptr)
+  const upan::string& protoName) :
+        _usbDevice(device), bEndPointInToggle(0), bEndPointOutToggle(0), pRawAlignedBuffer(nullptr),
+        pSCSIDeviceList(nullptr), bMaxLun(maxLun), szProtocolName(protoName), pHostDevice(nullptr)
 {
-	const USBStandardInterface& interface = pUSBDevice->_pArrConfigDesc[ pUSBDevice->_iConfigIndex ].pInterfaces[ interfaceIndex ];
-  pUSBDevice->_iInterfaceIndex = interfaceIndex;
-  pUSBDevice->_bInterfaceNumber = interface.bInterfaceNumber;
-	pUSBDevice->_pPrivate = this;
+	const USBStandardInterface& interface = _usbDevice->_pArrConfigDesc[ _usbDevice->_iConfigIndex ].pInterfaces[ interfaceIndex ];
+  _usbDevice->_iInterfaceIndex = interfaceIndex;
+  _usbDevice->_bInterfaceNumber = interface.bInterfaceNumber;
+  _usbDevice->_pPrivate = this;
 
 	/* Find the endpoints we need
 	 * We are expecting a minimum of 2 endpoints - in and out (bulk).

@@ -29,6 +29,7 @@
 # include <FileSystem.h>
 # include <try.h>
 # include <StorageDriveManager.h>
+# include <metrics.h>
 
 static unsigned uiTotalFloppyDiskReads = 0;
 static unsigned uiTotalATADiskReads = 0;
@@ -83,7 +84,7 @@ StorageDrive::StorageDrive(int id,
     _uiSectorsPerTrack(uiSectorsPerTrack),
     _uiTracksPerHead(uiTracksPerHead),
     _uiNoOfHeads(uiNoOfHeads),
-    _bEnableDiskCache(true),
+    _bEnableDiskCache(false),
     _device(device),
     _rawDisk(rawDisk),
     _fsType(FS_UNKNOWN),

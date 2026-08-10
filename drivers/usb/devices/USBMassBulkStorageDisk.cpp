@@ -68,7 +68,7 @@ byte USBMassBulkStorageDisk::DoReset()
 {
 	printf("\n Doing Bulk Reset on USB Bulk Mass Storage Device\n") ;
 
-	USBDevice* pUSBDevice = _disk->pUSBDevice ;
+	USBDevice* pUSBDevice = _disk->_usbDevice ;
 
 	if(pUSBDevice == NULL)
 		return USBMassBulkStorageDisk_FAILURE ;
@@ -119,7 +119,7 @@ byte USBMassBulkStorageDisk::ReadData(void* pDataBuf, unsigned uiLen)
 		uiTranLen = (uiLen > US_BULK_MAX_TRANSFER_SIZE) ? US_BULK_MAX_TRANSFER_SIZE : uiLen ;
 		uiLen -= uiTranLen ;
 
-		if(!_disk->pUSBDevice->BulkRead(_disk, pDataBuf, uiTranLen))
+		if(!_disk->_usbDevice->BulkRead(_disk, pDataBuf, uiTranLen))
 		{
 			printf("\n Bulk Read Data Failed") ;
 			return USBMassBulkStorageDisk_FAILURE ;
@@ -139,7 +139,7 @@ byte USBMassBulkStorageDisk::WriteData(void* pDataBuf, unsigned uiLen)
 		uiTranLen = (uiLen > US_BULK_MAX_TRANSFER_SIZE) ? US_BULK_MAX_TRANSFER_SIZE : uiLen ;
 		uiLen -= uiTranLen ;
 
-		if(!_disk->pUSBDevice->BulkWrite(_disk, pDataBuf, uiTranLen))
+		if(!_disk->_usbDevice->BulkWrite(_disk, pDataBuf, uiTranLen))
 		{
 			printf("\n Bulk Write Data Failed") ;
 			return USBMassBulkStorageDisk_FAILURE ;
@@ -156,9 +156,9 @@ byte USBMassBulkStorageDisk::SendCommand(SCSICommand* pCommand)
 	USBulkCBW oCBW ;
 	USBulkCSW oCSW ;
 
-	USBDevice* pUSBDevice = (USBDevice*)(_disk->pUSBDevice) ;
+	auto usbDevice = _disk->_usbDevice;
 
-	if(pUSBDevice == NULL)
+	if(usbDevice == NULL)
 		return USBMassBulkStorageDisk_FAILURE ;
 
 	// Setup Command Block Wrapper (CBW)
@@ -194,7 +194,7 @@ byte USBMassBulkStorageDisk::SendCommand(SCSICommand* pCommand)
 
 	RETURN_IF_NOT(bStatus, ReadData(&oCSW, 13), USBMassBulkStorageDisk_SUCCESS) ;
 
-	/* Checl bulk status */
+	/* Check bulk status */
 	if(oCSW.uiSignature != USBDISK_BULK_CSW_SIGNATURE || oCSW.uiTag != oCBW.uiTag || oCSW.bStatus > US_BULK_STAT_PHASE)
 	{
 		printf("\nUSB Disk: Command Block Status Failed") ;

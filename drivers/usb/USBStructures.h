@@ -153,7 +153,7 @@ class USBulkDisk
     byte MaxLun() const { return bMaxLun; }
 
   public:
-    USBDevice* pUSBDevice;
+    USBDevice* _usbDevice;
     byte bEndPointInToggle;
     byte bEndPointOutToggle;
     unsigned uiEndPointIn;

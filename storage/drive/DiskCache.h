@@ -193,8 +193,8 @@ class DiskCache
 		//has to be a multiple of 1024
     //static const int MAX_CACHE_SECTORS = 32;
 		DestroyDiskCacheKeyValue* _destroyKeyValue;
-		MemPool<DiskCacheKey>& _cacheKeyMemPool;
-		MemPool<DiskCacheValue>& _cacheValueMemPool;
+		MemPool<DiskCacheKey> _cacheKeyMemPool;
+		MemPool<DiskCacheValue> _cacheValueMemPool;
 		upan::list<SecKeyCacheValue> _dirtyCacheList;
 		BTree _tree;
 		LFUSectorManager _LFUSectorManager;

@@ -33,25 +33,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="fix alarm system call to return the remaining time of previously set alarm if any">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exeparser/ElfParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/exeparser/ElfParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/KernelService.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/KernelService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessBinaryInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/bus/SCSIHandler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/USBStructures.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/USBStructures.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/devices/USBMassBulkStorageDisk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/TRB.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIContext.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalSpace.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserThread.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserThread.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DiskCache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/DiskCache.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/DiskCache.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/DiskCache.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/drive/StorageDrive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +112,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/tests&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/drivers/usb/xhci&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -126,11 +126,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/drivers/usb/xhci" />
       <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/drivers/fsdevice" />
       <recent name="$PROJECT_DIR$/io/pipe" />
       <recent name="$PROJECT_DIR$/io" />
-      <recent name="$PROJECT_DIR$/util" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/io/pipe" />
@@ -815,7 +815,32 @@
       <workItem from="1774949473630" duration="2000" />
       <workItem from="1775008175593" duration="5870000" />
       <workItem from="1775109907817" duration="2000" />
-      <workItem from="1775197571395" duration="27909000" />
+      <workItem from="1775197571395" duration="51384000" />
+      <workItem from="1775567889609" duration="3515000" />
+      <workItem from="1775743692880" duration="1090000" />
+      <workItem from="1775744894279" duration="5968000" />
+      <workItem from="1775875704996" duration="25883000" />
+      <workItem from="1775956095658" duration="2311000" />
+      <workItem from="1775969253049" duration="5078000" />
+      <workItem from="1776558377003" duration="9228000" />
+      <workItem from="1776680611962" duration="27925000" />
+      <workItem from="1777135094491" duration="12880000" />
+      <workItem from="1777246332763" duration="2568000" />
+      <workItem from="1777612393341" duration="9876000" />
+      <workItem from="1777677245150" duration="19792000" />
+      <workItem from="1778070964570" duration="22995000" />
+      <workItem from="1778293486570" duration="27000" />
+      <workItem from="1778293522662" duration="13235000" />
+      <workItem from="1778333620526" duration="25292000" />
+      <workItem from="1778678655686" duration="1360000" />
+      <workItem from="1778682999924" duration="8680000" />
+      <workItem from="1778892310436" duration="22367000" />
+      <workItem from="1779495299756" duration="6566000" />
+      <workItem from="1779598071060" duration="4306000" />
+      <workItem from="1780146559175" duration="12037000" />
+      <workItem from="1783851008442" duration="149000" />
+      <workItem from="1783851162965" duration="7222000" />
+      <workItem from="1786331323282" duration="4000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1160,7 +1185,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="255" />
+    <option name="localTasksCounter" value="280" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1194,32 +1219,32 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="handle dynamic symbol relocation for type R_X86_64_64" />
-    <MESSAGE value="minor refactoring" />
-    <MESSAGE value="data from evenQueue in event handlers that are driven by interrupts must copy the data from eventQueue instead of taking the value by reference" />
-    <MESSAGE value="added rusage system call&#10;refactored select system call to meet POSIX standards" />
-    <MESSAGE value="- enhance open() to meet POSIX standards&#10;- implemented support for SIGALRM/alarm()" />
-    <MESSAGE value="implement file access() as per POSIX standards" />
-    <MESSAGE value="bug fix in ARPClient to gracefully close the connection upon any error during send/recv" />
-    <MESSAGE value="refactored TCP client test case to take host IP as a command line param and removed the server IP hardcoding" />
-    <MESSAGE value="added mutex in E1000 network device while sending packet to ensure multiple parallel sends are synchronized" />
-    <MESSAGE value="changed mode type from byte to uint32_t in FileDescriptor to ensure it can handle values larger than 256" />
-    <MESSAGE value="bug fix in filesystem open() to assume default mode as regular file with 0644 when it is not passed i.e. passed with value 0" />
-    <MESSAGE value="important bug fix in TCP layer&#10;- set connection state to CLOSED if there is any error while sending segment &#10;- set connection state to CLOSED if waiting for SYN ACK times-out&#10;- similar to TCP TIMED_WAIT state, timeout after 1 min if the connection remains in TCP_LAST_ACK or TCP_CLOSING state because in this case both sides have sent FIN to each other but the other side holding up the connection without sending the ACK&#10;- timeout and release the connection when in TCP_FIN_WAIT_2 state if there is no data from the other side. This is a half open connection situation - and if there is no data packets coming from the other side then close/release the connection after the time out" />
-    <MESSAGE value="implemented wait() system call - a variant of waitpid()" />
-    <MESSAGE value="implemented rename() filesystem system call with tests" />
-    <MESSAGE value="capture exit status of a process as per POSIX standards" />
-    <MESSAGE value="implemented dup(), symlink(), readlink() system calls" />
-    <MESSAGE value="created a separate directory for all tests - moved rename() tests to this new directory" />
-    <MESSAGE value="fixed file node read/write lock bug in readlink system call. Created a new test suite for symlink - added test symlink with absolute path" />
-    <MESSAGE value="added tests for symlink" />
-    <MESSAGE value="pipe() system call implemented" />
-    <MESSAGE value="add test runner - to host and manage all tests. implemented mkfifo() - named pipe - system call" />
-    <MESSAGE value="allow S_FIFO device in file-system. add test for named pipes" />
-    <MESSAGE value="implemented system call for chmod()" />
-    <MESSAGE value="system call stub for fork()" />
-    <MESSAGE value="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool" />
-    <option name="LAST_COMMIT_MESSAGE" value="support another process state called WAIT_KERNEL_SERVICE_FREEZE - where in the process or the thread that is waiting will not context switch within that process thread-pool" />
+    <MESSAGE value="implement fork - copy address space of the parent including stack and heap. GUI frame initialization is still pending" />
+    <MESSAGE value="fix typo and exception throw blocks" />
+    <MESSAGE value="make the constructor explicit" />
+    <MESSAGE value="some indentation changes" />
+    <MESSAGE value="add assignment operator for ELFInfo - which is required while forking a child process. Also, fix the bug by initializing the secStrTableSize in the constructor" />
+    <MESSAGE value="take shared_ptr by const reference in updateAllIODescriptorRedirections()" />
+    <MESSAGE value="call close() on the parent descriptor instead of directly calling decrementRefCount()" />
+    <MESSAGE value="start the kernel syslog after successful terminal device initialization" />
+    <MESSAGE value="fix memory leak/bug in ThreadLocalSpace - to delete the TLS image using delete []" />
+    <MESSAGE value="IODescriptor is explicitly reference counted - this will pave the way for forked child process to duplicate all the IO/file descriptors" />
+    <MESSAGE value="some minor semantics change" />
+    <MESSAGE value="no need for a separate dedicated page to store DLL sec header data - it will be stored in kernel heap as part of the process data-structure (ELFInfo, DLLInfo)" />
+    <MESSAGE value="Delegate the creation of Child IOD table to the parent IOD Table - which will determine the correct action based on whether the child is an exec or fork child" />
+    <MESSAGE value="add console command for resource usage (rusage)" />
+    <MESSAGE value="initialize the dmmFlag in constructor and provide get/set method for rootAut - which will be used while forking a child process" />
+    <MESSAGE value="rephrase comment" />
+    <MESSAGE value="The parent IOD table will create the child IOD table. If the child is an exec child - then a separate IOD table is created by redirecting the standard I/O to parent I/O descriptors. If the child is a fork child - then a clone of the parent IOD table is created" />
+    <MESSAGE value="support for forking a child process" />
+    <MESSAGE value="fix pipe descriptor creation to send proper value for mode" />
+    <MESSAGE value="rusage system call is fixed to pass the current process as param to the underlying rusage method" />
+    <MESSAGE value="improved log to print ST_BIND value during relocation failure" />
+    <MESSAGE value="bug fix in argv size calculation - to include the null terminator entry" />
+    <MESSAGE value="fix waitpid() on a child process to work for a thread" />
+    <MESSAGE value="convert \r to \n on keyboard input handler" />
+    <MESSAGE value="fix alarm system call to return the remaining time of previously set alarm if any" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix alarm system call to return the remaining time of previously set alarm if any" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

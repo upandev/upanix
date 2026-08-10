@@ -220,19 +220,18 @@ void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout
   p.yield();
 }
 
-void ProcessManager::WaitForEvent()
-{
-  if(DoPollWait())
-  {
-    while(!IsEventCompleted(GetCurProcId()))
-    {
+void ProcessManager::WaitForEvent() {
+  if(DoPollWait()) {
+    while(!IsEventCompleted(GetCurProcId())) {
       __asm__ __volatile__("nop") ;
       __asm__ __volatile__("nop") ;
     }
     return;
   }
-
   auto& p = GetCurrentPAS();
+  if(p.stateInfo().IsEventCompleted()) {
+    return;
+  }
   p.setStatus(WAIT_EVENT);
   p.yield();
 }

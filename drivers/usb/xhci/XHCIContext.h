@@ -319,7 +319,7 @@ class EndPoint
     uint32_t Id() const { return _id; }
     void UpdateDeEnQPtr(uint64_t dnqPtr) { _tRing->UpdateDeEnQPtr(dnqPtr); }
   protected:
-    EndPoint(uint32_t maxPacketSize);
+    explicit EndPoint(uint32_t maxPacketSize);
     virtual ~EndPoint();
   protected:
     uint32_t         _id;

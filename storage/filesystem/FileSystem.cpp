@@ -26,7 +26,7 @@
 #include <Process.h>
 #include <SystemUtil.h>
 
-#define MAX_SECTORS_PER_RW 8
+#define MAX_SECTORS_PER_RW 32
 
 FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
   _diskDrive(diskDrive),
