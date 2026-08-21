@@ -95,6 +95,17 @@ bool KeyboardHandler::Process(const KeyboardKeys key, const bool isKeyReleased) 
     return false;
   }
 
+  switch(key) {
+    case Keyboard_CAPS_LOCK:
+    case Keyboard_LEFT_SHIFT:
+    case Keyboard_RIGHT_SHIFT:
+    case Keyboard_LEFT_CTRL:
+    case Keyboard_RIGHT_CTRL:
+    case Keyboard_LEFT_ALT:
+    case Keyboard_RIGHT_ALT:
+      return false;
+  }
+
   if (key == Keyboard_ENTER) {
     res = Keyboard_CTRL_J;
   }
