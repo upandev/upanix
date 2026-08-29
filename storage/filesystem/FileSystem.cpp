@@ -26,7 +26,8 @@
 #include <Process.h>
 #include <SystemUtil.h>
 
-#define MAX_SECTORS_PER_RW 32
+#define MAX_SECTORS_PER_READ 32
+#define MAX_SECTORS_PER_WRITE 32
 
 FileSystem::FileSystem(StorageDrive &diskDrive, uint32_t freePoolSize) :
   _diskDrive(diskDrive),
@@ -764,7 +765,8 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   int readCount = 0 ;
   int readRemainingCount = (size < (currentFileSize - offset) && size > 0) ? size : (currentFileSize  - offset) ;
 
-  uint8_t sectorBuffer[MAX_SECTORS_PER_RW * FileSystem::SECTOR_SIZE];
+  upan::uniq_ptr<uint8_t> sectorBuffer(new uint8_t[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE]);
+  //uint8_t sectorBuffer[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE];
   int startReadSectorOffset = offset % FileSystem::SECTOR_SIZE;
   int sectorCount = 0;
 
@@ -799,7 +801,7 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
           break;
         }
 
-        if(sectorCount == MAX_SECTORS_PER_RW) {
+        if(sectorCount == MAX_SECTORS_PER_READ) {
           currentSectorId = getSectorEntryValue(currentSectorId);
           break;
         }
@@ -815,9 +817,9 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
       }
     }
 
-    _diskDrive.xRead(sectorBuffer, startSectorId, sectorCount);
+    _diskDrive.xRead(sectorBuffer.get(), startSectorId, sectorCount);
 
-    memcpy(dataBuffer + readCount, sectorBuffer + startReadSectorOffset, currentReadSize);
+    memcpy(dataBuffer + readCount, sectorBuffer.get() + startReadSectorOffset, currentReadSize);
 
     readCount += currentReadSize;
     readRemainingCount -= currentReadSize;
@@ -856,7 +858,7 @@ void FileSystem::_bufferedWrite(uint32_t sectorId, const uint8_t* dataBuffer, ui
     newBuffering = true ;
   }
 
-  if(count == MAX_SECTORS_PER_RW || newBuffering) {
+  if(count == MAX_SECTORS_PER_WRITE || newBuffering) {
     _diskDrive.xWrite(writeBuffer, startSectorId, count);
 
     count = 0 ;
@@ -948,7 +950,7 @@ int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint
   bool allocationStarted = false ;
 
   uint32_t uiBufStartSectorId, bufPrevSectorId;
-  uint8_t writeBuffer[MAX_SECTORS_PER_RW * FileSystem::SECTOR_SIZE];
+  uint8_t writeBuffer[MAX_SECTORS_PER_WRITE * FileSystem::SECTOR_SIZE];
   uint32_t bufCount = 0;
 
   while(true) {

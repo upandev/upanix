@@ -112,6 +112,10 @@ void KernelRootProcess::initTerminalDevice() {
       throw upan::exception(XLOC, "open failed");
     }
 
+    tcgetattr(_terminalSlaveFD, &_termios);
+    _termios.c_lflag &= ~ICANON;
+    tcsetattr(_terminalSlaveFD, TCSANOW, &_termios);
+
     setDirectKernelConsole(true);
     dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
     dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);

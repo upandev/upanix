@@ -28,8 +28,7 @@
 
 FSTerminalDevice::FSTerminalDevice(Process& owner, const upan::string& path, int inBufSize, int outBufSize)
   : FSDevice(path), _owner(owner),
-    _inBuffer(inBufSize), _outBuffer(outBufSize),
-    _directKernelConsole(false) {
+    _inBuffer(inBufSize), _outBuffer(outBufSize), _lineBuffer(_inBuffer), _directKernelConsole(false) {
   _termios.c_lflag = ICANON | ECHO | ISIG;
   _termios.c_iflag = ICRNL;
 }
@@ -63,30 +62,65 @@ int FSTerminalDevice::readInStream(void* buffer, int len) {
   });
 }
 
+static bool isOutWritable(uint8_t ch) {
+  switch (ch) {
+    case Keyboard_F1:
+    case Keyboard_F2:
+    case Keyboard_F3:
+    case Keyboard_F4:
+    case Keyboard_F5:
+    case Keyboard_F6:
+    case Keyboard_F7:
+    case Keyboard_F8:
+      return false;
+  }
+  return true;
+}
+
 int FSTerminalDevice::writeInStream(const void* buffer, int len) {
-  const int n = _inBuffer.write(buffer, len, false, [&]() {
-    ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_IN_WRITE, 0);
-  });
-  if ((_termios.c_lflag & ECHO) && n > 0) {
-    for (int i = 0; i < n; ++i) {
-      auto ch = ((uint8_t*)buffer)[i];
-      switch (ch) {
-        case Keyboard_F1:
-        case Keyboard_F2:
-        case Keyboard_F3:
-        case Keyboard_F4:
-        case Keyboard_F5:
-        case Keyboard_F6:
-        case Keyboard_F7:
-        case Keyboard_F8:
-        case Keyboard_BACKSPACE:
-          break;
-        default:
-          writeOutStream(&ch, 1);
+  const bool isCanonicalMode = (_termios.c_lflag & ICANON) != 0;
+  const bool isEchoMode = (_termios.c_lflag & ECHO) != 0;
+  if (isCanonicalMode) {
+    for (int i = 0; i < len; ++i) {
+      auto ch = ((uint8_t*) buffer)[i];
+      const auto& r = _lineBuffer.process(ch, [&]() {
+        ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_IN_WRITE, 0);
+      });
+
+      if (isEchoMode && r._processed) {
+        if (isOutWritable(ch)) {
+          if (ch == Keyboard_KEY_HOME) {
+            for (int j = 0; j < r._distance; ++j) {
+              auto m = Keyboard_KEY_LEFT;
+              writeOutStream(&m, 1);
+            }
+          } else if (ch == Keyboard_KEY_END) {
+            for (int j = 0; j < r._distance; ++j) {
+              auto m = Keyboard_KEY_RIGHT;
+              writeOutStream(&m, 1);
+            }
+          } else {
+            writeOutStream(&ch, 1);
+          }
+        }
       }
     }
+    return len;
+  } else {
+    const int n = _inBuffer.write(buffer, len, false, [&]() {
+      ProcessManager::Instance().WaitOnTerminalIO(path(), TERMINAL_IO_TYPES::TERMINAL_IN_WRITE, 0);
+    });
+
+    if (isEchoMode && n > 0) {
+      for (int i = 0; i < n; ++i) {
+        auto ch = ((uint8_t*)buffer)[i];
+        if (isOutWritable(ch)) {
+          writeOutStream(&ch, 1);
+        }
+      }
+    }
+    return n;
   }
-  return n;
 }
 
 bool FSTerminalDevice::canReadOutStream() const {

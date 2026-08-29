@@ -58,4 +58,5 @@ private:
   const upan::string _prompt;
   upan::string _commandLine;
   ConsoleOutHandler _ioHandler;
+  upan::string _currentPrompt;
 };

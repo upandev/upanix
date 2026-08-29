@@ -82,8 +82,12 @@ void RootConsole::ClearScreen() {
   _consoleBuffer.clear();
 }
 
-int RootConsole::GetCurrentCursorPosition() {
+int RootConsole::GetCurrentCursorPosition() const {
   return _consoleBuffer.getCurPos();
+}
+
+int RootConsole::GetCurrentCursorX() const {
+  return _consoleBuffer.getCurPosX();
 }
 
 void RootConsole::SetCursor(int iCurPos, bool bUpdateCursorOnScreen) {

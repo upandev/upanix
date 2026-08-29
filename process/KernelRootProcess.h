@@ -182,4 +182,5 @@ private:
   upan::shared_ptr<FSTerminalDevice> _controllingTerminal;
   int _terminalMasterFD;
   int _terminalSlaveFD;
+  termios _termios;
 };

@@ -25,6 +25,7 @@
 #include <queue.h>
 #include <termios.h>
 #include <StreamBuffer.h>
+#include <LineBuffer.h>
 
 class Process;
 class FSTerminalDevice : public FSDevice {
@@ -67,6 +68,7 @@ private:
   Process& _owner;
   StreamBuffer _inBuffer;
   StreamBuffer _outBuffer;
+  LineBuffer _lineBuffer;
   bool _directKernelConsole;
   struct termios _termios;
 };

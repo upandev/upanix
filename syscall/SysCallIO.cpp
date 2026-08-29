@@ -112,7 +112,7 @@ void SysCallIO_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslati
     {
       *retVal = 0;
       auto fd = (int)p1;
-      auto termios_p = (struct termios*)p2;
+      auto termios_p = (struct termios*)p3;
       try {
         if (termios_p) {
           auto& process = ProcessManager::Instance().GetCurrentPAS();

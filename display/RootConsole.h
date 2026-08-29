@@ -39,7 +39,8 @@ public:
   void ClearLine(int pos);
   void RefreshScreen();
   void ClearScreen();
-  int GetCurrentCursorPosition();
+  int GetCurrentCursorPosition() const;
+  int GetCurrentCursorX() const;
   void ShowProgress(const char* msg, int startCur, unsigned progressPercent);
 
   void SetCursor(int iCurPos, bool bUpdateCursorOnScreen);

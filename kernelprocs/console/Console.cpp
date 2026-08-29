@@ -40,7 +40,10 @@ Console::Console() : _ioHandler(*this) {
 }
 
 void Console::DisplayCommandLine() {
-  printf("\nupanix:%s > ", getenv("PWD"));
+  _currentPrompt = "upanix:";
+  _currentPrompt += getenv("PWD");
+  _currentPrompt += " > ";
+  printf("\n%s", _currentPrompt.c_str());
 }
 
 static void sig_int_handler(int signum) {
@@ -102,7 +105,7 @@ void Console::OnKeyboardInput(const uint8_t* buffer, int len) {
           int x = _commandLine.back() == '\t' ? 4 : 1;
           _commandLine.pop_back();
           for(int j = 0; j < x; ++j) {
-            putchar(Keyboard_BACKSPACE);
+            //putchar(Keyboard_BACKSPACE);
           }
         }
         break;
@@ -178,8 +181,10 @@ void Console::ConsoleOutHandler::ProcessInput(const uint8_t* buffer, int len) {
       case Keyboard_CAPS_LOCK:
         break;
       case Keyboard_BACKSPACE:
-        KC::MConsole().MoveCursor(-1);
-        KC::MConsole().ClearLine(upanui::ConsoleBuffer::START_CURSOR_POS);
+        if (KC::MConsole().GetCurrentCursorX() > _console._currentPrompt.length()) {
+          KC::MConsole().MoveCursor(-1);
+          KC::MConsole().ClearLine(upanui::ConsoleBuffer::START_CURSOR_POS);
+        }
         break;
 
       case Keyboard_LEFT_SHIFT:
