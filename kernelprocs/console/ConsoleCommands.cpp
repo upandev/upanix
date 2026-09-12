@@ -1539,6 +1539,37 @@ void graphics_text_editor(int x, int y) {
   exit(0);
 }
 
+void graphics_fixed_text_editor(int x, int y) {
+  const int appWidth = 600;
+  const int mainHeight = 500;
+  const int menuBarHeight = 30;
+  upanui::GraphicsContext::Init();
+  auto& gc = upanui::GraphicsContext::Instance();
+  auto& uiRoot = gc.initUIRoot(x, y, appWidth, mainHeight + menuBarHeight, true);
+  uiRoot.setResizable(true, true);
+
+  auto& uiMenuBar = upanui::UIObjectFactory::createRectangleCanvas(uiRoot, 0, 0, appWidth, menuBarHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::TOP_FIXED);
+  uiMenuBar.backgroundColor(0xA59E9D);
+
+  auto& closeBt = upanui::UIObjectFactory::createIconButton(uiMenuBar, upanui::PngImageResource::CLOSE, appWidth - menuBarHeight, 0, menuBarHeight, menuBarHeight, upanui::HorizontalPlacementType::RIGHT_FIXED, upanui::VerticalPlacementType::TOP_FIXED);
+
+  const int scrollBarWidth = 20;
+  auto& vScroller = upanui::UIObjectFactory::createVerticalScroller(uiRoot, 0, menuBarHeight, appWidth, mainHeight, scrollBarWidth, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
+
+  upanui::UIObjectFactory::createFixedTextArea(vScroller, 0, 0, appWidth - scrollBarWidth, mainHeight, upanui::HorizontalPlacementType::STRETCHED, upanui::VerticalPlacementType::STRETCHED);
+
+  DragMouseHandler mouseHandler;
+  PassThroughMouseHandler passThroughMouseHandler;
+  uiMenuBar.registerMouseEventHandler(passThroughMouseHandler);
+
+  CloseButtonMouseHandler closeButtonMouseHandler;
+  closeBt.registerMouseEventHandler(closeButtonMouseHandler);
+
+  gc.eventManager().startEventLoop();
+
+  exit(0);
+}
+
 class TCE : public upanui::Terminal::CommandExecutor {
 public:
   void setTerminal(upanui::Terminal* terminal) {
@@ -1736,11 +1767,16 @@ void ConsoleCommands_TestGraphics() {
     break;
 
     case 7: {
-      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, false, params);
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_fixed_text_editor, NO_PROCESS_ID, true, false, params);
     }
     break;
 
     case 8: {
+      ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_terminal, NO_PROCESS_ID, true, false, params);
+    }
+    break;
+
+    case 9: {
       ProcessManager::Instance().CreateKernelProcess(pname, (uintptr_t) &graphics_desktop, NO_PROCESS_ID, true, false, params);
     }
     break;
