@@ -154,6 +154,7 @@ static void ConsoleCommands_Ping();
 static void ConsoleCommands_Host();
 static void ConsoleCommands_ListServents();
 static void ConsoleCommands_RUsage();
+static void ConsoleCommands_KernelProp();
 
 /*****************************************/
 
@@ -231,6 +232,7 @@ static const ConsoleCommand ConsoleCommands_CommandList[] = {
   { "syslog", &ConsoleCommands_SysLog },
   { "lsservent", &ConsoleCommands_ListServents },
   { "rusage", &ConsoleCommands_RUsage },
+  { "kprop", &ConsoleCommands_KernelProp },
 	{ "\0",			NULL }
 } ;
 
@@ -287,9 +289,8 @@ void ConsoleCommands_FormatDrive()
   StorageDriveManager::Instance().FormatDrive(CommandLineParser::Instance().GetParameterAt(0));
 }
 
-void ConsoleCommands_ClearScreen()
-{
-  KC::MConsole().ClearScreen() ;
+void ConsoleCommands_ClearScreen() {
+  putchar(Keyboard_CTRL_L);
 }
 
 void ConsoleCommands_CreateDirectory()
@@ -950,7 +951,7 @@ public:
   void run() override {
     for(auto image : _images) {
       _c.setImage(*image);
-      sleepms(5000);
+      millisleep(5000);
     }
   }
 private:
@@ -1346,7 +1347,7 @@ public:
         const int h = (dateTime._hour * 5 + int(dateTime._minute * _htomFactor)) % 60;
         _hourHand->updateXY(_cx, _cy, _cx + _hourSteps[h].x(), _cy - _hourSteps[h].y());
 
-        sleepms(1000);
+        millisleep(1000);
         c = (c + 1) % 20;
         if (c >= 5 && c < 10) {
           _uiRoot.backgroundColorAlpha(upanui::GCoreFunctions::percentToAlpha(50));
@@ -1820,10 +1821,10 @@ class RankInOrderVisitor : public BTree::InOrderVisitor
 	private:
 		unsigned m_uiSectorID ;
 		double m_dRank ;
-		const unsigned m_uiCurrent ;
+		const uint64_t m_uiCurrent ;
 
 	public:
-		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(PIT::Instance().GetClockCount()) { }
+		RankInOrderVisitor() : m_uiSectorID(0), m_dRank(0), m_uiCurrent(TscClock::instance().rdtsc()) { }
 
 		void operator()(const BTreeKey& rKey, BTreeValue* pValue) 
 		{
@@ -1856,7 +1857,7 @@ typedef struct
 ReadStat read_stat[256] ;
 void _UpdateReadStat(unsigned len, bool bFirst)
 {
-	unsigned uiTime = PIT::Instance().GetClockCount() ;
+	time_t time = TscClock::instance().currentTime();
 	static bool bInit = false ;
 	if(!bInit)
 	{
@@ -1876,7 +1877,7 @@ void _UpdateReadStat(unsigned len, bool bFirst)
 		{
 			if((unsigned)read_stat[i].len == len)
 			{
-				read_stat[i].time += (uiTime - read_stat[i].begin) ;
+				read_stat[i].time += (time - read_stat[i].begin) ;
 				break ;
 			}
 		}
@@ -1890,7 +1891,7 @@ void _UpdateReadStat(unsigned len, bool bFirst)
 		if((unsigned)read_stat[i].len == len)
 		{
 			read_stat[i].cnt++ ;
-			read_stat[i].begin = uiTime ;
+			read_stat[i].begin = time ;
 			bUpdated = true ;
 			break ;
 		}
@@ -1905,7 +1906,7 @@ void _UpdateReadStat(unsigned len, bool bFirst)
 		{
 			read_stat[free].len = len ;
 	 		read_stat[free].cnt	= 1 ;
-			read_stat[free].begin = uiTime ;
+			read_stat[free].begin = time ;
 			read_stat[free].time = 0 ;
 		}
 	}
@@ -1925,7 +1926,7 @@ void aThread(void* x) {
   printf("\n Running thread: %u", n);
   for(int i = 0; i < n; ++i) {
     printf("\nCounter: %d", i);
-    sleepms(500);
+    millisleep(500);
   }
 }
 
@@ -1959,9 +1960,9 @@ extern thread_local int _lib_global1_thread_local;
 class TLSDemo : public upan::thread {
   void run() override {
     _t_local_var_data1 += getpid();
-    sleepms(500);
+    millisleep(500);
     _t_local_var_global1 += getpid();
-    sleepms(500);
+    millisleep(500);
     printf("\n %d -> %d\n", _t_local_var_global1, _t_local_var_data1);
     access_thread_local_test();
     printf("\n TLS Lib data1 -> %d", _lib_data1_thread_local);
@@ -2457,8 +2458,8 @@ void ConsoleCommands_TestNet() {
          INADDR_MAC_BROADCAST[4],
          INADDR_MAC_BROADCAST[5]);
 
-  printf("\n Time based on boot = %u", PIT::Instance().GetCurrentTimeFromBoot());
-  printf("\n Time based on RTC = %u", SystemUtil_GetTimeOfDay() * 1000);
+  printf("\n Time based on boot = %lu", TscClock::instance().currentTime() / 1000);
+  printf("\n Time based on RTC = %lu", SystemUtil_GetTimeOfDay() * 1000);
 }
 
 class Global
@@ -2504,7 +2505,7 @@ void ConsoleCommands_Beep()
 void ConsoleCommands_Sleep()
 {
   uint32_t t = atoi(CommandLineParser::Instance().GetParameterAt(0));
-  ProcessManager::Instance().Sleep(t * 1000);
+  ProcessManager::Instance().Sleep(t * 1000000);
 }
 
 void ConsoleCommands_Kill() {
@@ -2707,4 +2708,16 @@ void ConsoleCommands_RUsage() {
   ProcessManager::Instance().getProcessRUsage(process.value(), RUSAGE_SELF, r);
   printf("\nUser time: %ld.%06ld", r.ru_utime.tv_sec, r.ru_utime.tv_usec);
   printf("\nSystem time: %ld.%06ld", r.ru_stime.tv_sec, r.ru_stime.tv_usec);
+}
+
+void ConsoleCommands_KernelProp() {
+  if (CommandLineParser::Instance().GetNoOfParameters() < 2) {
+    throw upan::exception(XLOC, "required parameter: <property name> <property value>");
+  }
+  const upan::string prop = CommandLineParser::Instance().GetParameterAt(0);
+  const upan::string value = CommandLineParser::Instance().GetParameterAt(1);
+
+  if (prop == "priority.schedule") {
+    ProcessManager::Instance().enablePriorityScheduling(value == "true");
+  }
 }
