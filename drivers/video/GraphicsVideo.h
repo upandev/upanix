@@ -33,7 +33,7 @@
 
 class GraphicsVideo : protected KernelUtil::TimerTask {
   private:
-    GraphicsVideo(const FrameBufferInfo&);
+    explicit GraphicsVideo(const FrameBufferInfo&);
 
   public:
     static void Create();

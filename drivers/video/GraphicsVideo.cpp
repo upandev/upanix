@@ -62,9 +62,9 @@ GraphicsVideo& GraphicsVideo::Instance() {
 }
 
 GraphicsVideo::GraphicsVideo(const FrameBufferInfo& fbinfo)
-  : _needRefresh(false), _initialized(false),
+  : _needRefresh(false), _ssfnContext(nullptr), _initialized(false),
     _mouseCursor(nullptr), _mousePointerImage(nullptr), _mouseResizerImage(nullptr), _mousePrevX(0), _mousePrevY(0),
-    _mousePrevWidth(0), _mousePrevHeight(0), _mouseChange(0) {
+    _mousePrevWidth(0), _mousePrevHeight(0), _mouseChange(false) {
   _flatLFBAddress = (uint64_t)fbinfo._frameBuffer;
   _mappedLFBAddress = (uint64_t)fbinfo._frameBuffer;
   _zBuffer = (uint64_t)fbinfo._frameBuffer;
@@ -436,8 +436,7 @@ GraphicsVideo::RedrawInfo GraphicsVideo::isDirty() {
       removeFGProcess(pid);
     } else {
       process.value().getGuiFrame().ifPresent([&dirty](RootFrame &f) {
-        dirty |= f.isDirty();
-        f.clean();
+        dirty |= f.clean();
       });
     }
   }
@@ -459,7 +458,7 @@ void GraphicsVideo::removeFGProcess(int pid) {
   }
   _fgProcesses.erase(pid);
   if (pid == _inputEventFGProcess) {
-    if (_fgProcesses.size() > 0) {
+    if (!_fgProcesses.empty()) {
       _inputEventFGProcess = _fgProcesses.back();
     } else {
       _inputEventFGProcess = NO_PROCESS_ID;
