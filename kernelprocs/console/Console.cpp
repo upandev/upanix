@@ -196,6 +196,10 @@ void Console::ConsoleOutHandler::ProcessInput(const uint8_t* buffer, int len) {
       case Keyboard_ESC:
         break;
 
+      case Keyboard_CTRL_L:
+        KC::MConsole().ClearScreen();
+        break;
+
       case Keyboard_ENTER:
       case Keyboard_CTRL_J:
         KC::MConsole().PutChar('\n', upanui::CharStyle::WHITE_ON_BLACK());
