@@ -162,7 +162,8 @@ TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, Dat
       bytesToTransfer = remainingBytesToTransfer;
     remainingBytesToTransfer -= bytesToTransfer;
 
-    int32_t remainingPackets = (remainingBytesToTransfer + (maxPacketSize - 1)) / maxPacketSize;
+    const int32_t remainingPackets = (remainingBytesToTransfer + (maxPacketSize - 1)) / maxPacketSize;
+    const auto tdSize = remainingPackets > 31 ? 31 : remainingPackets;
 
     const bool ioc = remainingPackets <= 0;
 
@@ -170,7 +171,7 @@ TRB::Result TransferRing::AddDataTRB(uintptr_t dataBufferAddr, uint32_t len, Dat
     //TODO: Write to 64bit field (i.e. _b1 + _b2 together) in a single assigment
     trb._b1 = dataBufferAddr;
     trb._b2 = 0;
-    trb._b3 = (remainingPackets << 17) | bytesToTransfer;
+    trb._b3 = (tdSize << 17) | bytesToTransfer;
     trb._b4 = (dir << 16) | ((remainingPackets != 0) << 4) | (ioc ? INTERRUPT_ON_COMPLETE : 0);
     trb.Type(1);
     trb.SetCycleBit(_cycleState);
