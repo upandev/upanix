@@ -54,8 +54,9 @@
 
 #define ATA_MAX_PORTS	8
 
-#define ATA_CMD_DELAY       20
-#define ATA_CMD_TIMEOUT		18
+//in micro-seconds
+#define ATA_CMD_DELAY     20000
+#define ATA_CMD_TIMEOUT		18000
 
 #define ATA_CMD_SET_FEATURES	0xEF
 #define ATA_CMD_IDENTIFY		0xEC

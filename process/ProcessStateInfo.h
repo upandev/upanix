@@ -40,8 +40,8 @@ public:
   } Error;
   ProcessStateInfo();
 
-  uint32_t SleepTime() const { return _sleepTime; }
-  void SleepTime(const uint32_t s) { _sleepTime = s; }
+  uint64_t sleepTsc() const { return _sleepTsc; }
+  void sleepTsc(const uint64_t s) { _sleepTsc = s; }
 
   int WaitChildProcId() const { return _waitChildProcId; }
   void WaitChildProcId(const int id) { _waitChildProcId = id; }
@@ -93,7 +93,7 @@ public:
   void setExitStatusContinued() { _exitStatus = 1 << 23; }
 
 private:
-  time_t         _sleepTime;
+  uint64_t       _sleepTsc;
   const IRQ*     _irq;
   int            _waitChildProcId;
   int            _waitQueueId;

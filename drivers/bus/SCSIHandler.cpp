@@ -114,7 +114,7 @@ __attribute__((unused)) static int SCSIHandler_UnitNotReady(SCSIDevice* pDevice,
 					printf("and a qualifier of SCSI_BECOMING_READY" ) ;
 
 					/* Wait for the drive to become ready. Delay a little to give the drive a chance to spin up */
-					ProcessManager::Instance().Sleep(1000) ;
+					ProcessManager::Instance().Sleep(1000000) ;
 					iStatus = SENSE_RETRY ;
 					break ;
 
@@ -455,7 +455,7 @@ byte SCSIHandler_GenericOpen(SCSIDevice* pDevice)
 
 	if(bStatus == SCSIHandler_SUCCESS)
 	{
-		ProcessManager::Instance().Sleep(1000) ;
+		ProcessManager::Instance().Sleep(1000000) ;
 
 		bStatus = SCSIHandler_ReadCapacity(pDevice) ;
 

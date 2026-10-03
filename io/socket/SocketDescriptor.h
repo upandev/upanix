@@ -52,19 +52,19 @@ public:
   void setAllowBroadcast(bool val) { _allowBroadcast = val; }
   bool canBroadcast() const { return _allowBroadcast; }
 
-  time_t getSendTimeout() const { return _sendTimeoutInMs; }
+  time_t getSendTimeout() const { return _sendTimeoutInMicroSeconds; }
   void setSendTimeout(const struct timeval* timeout) {
-    _sendTimeoutInMs = 0;
+    _sendTimeoutInMicroSeconds = 0;
     if (timeout) {
-      _sendTimeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+      _sendTimeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
     }
   }
 
-  time_t getRecvTimeout() const { return _recvTimeoutInMs; }
+  time_t getRecvTimeout() const { return _recvTimeoutInMicroSeconds; }
   void setRecvTimeout(const struct timeval* timeout) {
-    _recvTimeoutInMs = 0;
+    _recvTimeoutInMicroSeconds = 0;
     if (timeout) {
-      _recvTimeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+      _recvTimeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
     }
   }
 
@@ -98,7 +98,7 @@ private:
   const SA_FAMILY_TYPE _family;
   const int _protocol;
   bool _allowBroadcast;
-  time_t _sendTimeoutInMs;
-  time_t _recvTimeoutInMs;
+  time_t _sendTimeoutInMicroSeconds;
+  time_t _recvTimeoutInMicroSeconds;
   SOCKET_SHUTDOWN_TYPE _shutdownStatus;
 };

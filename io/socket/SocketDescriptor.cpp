@@ -30,7 +30,7 @@ SocketDescriptor::SocketDescriptor(int pid, int fd, SA_FAMILY_TYPE family, int p
   : IODescriptor(pid, fd, O_RDWR),
     _family(family),
     _protocol(protocol),
-    _allowBroadcast(false), _sendTimeoutInMs(0), _recvTimeoutInMs(0),
+    _allowBroadcast(false), _sendTimeoutInMicroSeconds(0), _recvTimeoutInMicroSeconds(0),
     _shutdownStatus(SHUT_NA) {
 }
 

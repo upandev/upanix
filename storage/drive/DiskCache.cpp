@@ -52,7 +52,7 @@ void LFUSectorManager::Run()
 	if(m_bReleaseListBuilt)
 		return ;
 
-	m_uiCurrent = PIT::Instance().GetClockCount() ;
+  _currentTsc = TscClock::instance().rdtsc();
 	m_uiBuildCount = 0 ;
 
 	_mCache._tree.InOrderTraverse(*this) ;
@@ -107,7 +107,7 @@ bool LFUSectorManager::ReplaceCache(unsigned uiSectorID, byte* bDataBuffer)
   if(!(_mCache._tree.Delete(DiskCacheKey(node.m_uiSectorID))))
 	{
 		printf("\n Failed to delete ranked sector: %u from the Cache BTree", node.m_uiSectorID) ;
-		ProcessManager::Instance().Sleep(10000); 
+		ProcessManager::Instance().Sleep(10000000);
 		return false ;
 	}
 
@@ -136,7 +136,7 @@ void LFUSectorManager::operator()(const BTreeKey& rKey, BTreeValue* pValue)
   if(upan::find(_mCache._dirtyCacheList.begin(), _mCache._dirtyCacheList.end(), skey) != _mCache._dirtyCacheList.end())
 		return;
 
-	unsigned uiTimeDiff = m_uiCurrent - value->GetLastAccess() ;
+	uint64_t uiTimeDiff = _currentTsc - value->GetLastAccess() ;
 	double dRank = 	(double)uiTimeDiff / (double)value->GetHitCount() ;
   CacheRankNode node;
 	if(m_mReleaseList.size() == m_uiMaxRelListSize)

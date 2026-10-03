@@ -27,12 +27,6 @@ void SysDisplay_Message(const char* szMessage, unsigned uiAttr)
 	SysCallDisplay_Handle(&retStatus, SYS_CALL_DISPLAY_MESSAGE, false, (uint64_t)szMessage, uiAttr, 3, 4, 5);
 }
 
-void SysDisplay_ClearScreen()
-{
-  uint64_t retStatus ;
-	SysCallDisplay_Handle(&retStatus, SYS_CALL_DISPLAY_CLR_SCR, false, 1, 2, 3, 4, 5);
-}
-
 void SysDisplay_MoveCursor(int n)
 {
   uint64_t retStatus ;

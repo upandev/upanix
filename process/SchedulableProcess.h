@@ -161,7 +161,7 @@ protected:
   PROCESS_STATUS _status;
   int _driveID;
   int _userID;
-  uint32_t _runTick;
+  uint64_t _runTick;
   ProcessStateInfo& _stateInfo;
   TaskContext _taskContext;
   FileNodeRef _pwd;

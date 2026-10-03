@@ -73,7 +73,7 @@ void SessionManager_StartSession()
 
 	while(true)
 	{
-    KC::MConsole().ClearScreen() ;
+    putchar(Keyboard_CTRL_L);
 
     printf("\n  *********************  Welcome to Upanix V.3.0  *********************");
 

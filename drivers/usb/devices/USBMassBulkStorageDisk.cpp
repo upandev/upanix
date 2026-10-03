@@ -30,7 +30,6 @@
 #include <FileSystem.h>
 #include <StringUtil.h>
 #include <USBController.h>
-#include <EHCIStructures.h>
 #include <USBDevice.h>
 #include <RawStorageDrive.h>
 #include <StorageDriveManager.h>
@@ -84,7 +83,7 @@ byte USBMassBulkStorageDisk::DoReset()
 	printf("\n Command Reset Complete");
 
 	// Long Wait For Reset
-	ProcessManager::Instance().Sleep( 200);
+	ProcessManager::Instance().Sleep(200000);
 
 	printf("\n Doing IN EndPoint Clear Halt");
 

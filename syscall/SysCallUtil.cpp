@@ -24,6 +24,7 @@
 # include <SystemUtil.h>
 # include <RTC.h>
 # include <KernelUtil.h>
+# include <TscClock.h>
 
 bool SysCallUtil_IsPresent(uint64_t sysCallId)
 {
@@ -48,7 +49,7 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
 
     case SYS_CALL_UTIL_BTIME:
       {
-        *retVal = PIT::Instance().GetClockCount();
+        *retVal = TscClock::instance().currentTime();
       }
       break;
 
@@ -60,9 +61,9 @@ SysCallUtil_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTranslation,
         *retVal = 0 ;
         try
         {
-          auto ms = PIT::Instance().GetCurrentTimeFromBoot();
-          tv->tv_sec = ms / 1000;
-          tv->tv_usec = (ms % 1000) * 1000;
+          auto ms = TscClock::instance().currentTime();
+          tv->tv_sec = ms / 1000000;
+          tv->tv_usec = (ms % 1000000);
         }
         catch(...)
         {

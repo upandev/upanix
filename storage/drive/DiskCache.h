@@ -19,12 +19,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _DISK_CACHE_H_
-#define _DISK_CACHE_H_
+#pragma once
 
 #include <BTree.h>
 #include <list.h>
-#include <PIT.h>
+#include <TscClock.h>
 #include <StringUtil.h>
 #include <MemPool.h>
 #include <mutex.h>
@@ -41,11 +40,11 @@ class DiskCacheKey : public BTreeKey
 
 	public:
 		DiskCacheKey() : m_uiSectorID(0) { }
-		DiskCacheKey(const unsigned uiSectorID) : m_uiSectorID(uiSectorID) { }
+		explicit DiskCacheKey(const unsigned uiSectorID) : m_uiSectorID(uiSectorID) { }
 
 		virtual bool operator<(const BTreeKey& rKey) const
 		{
-			const DiskCacheKey& rhs = static_cast<const DiskCacheKey&>(rKey) ;
+			const auto& rhs = dynamic_cast<const DiskCacheKey&>(rKey) ;
 
 			return m_uiSectorID < rhs.GetSectorID() ;
 		}
@@ -58,32 +57,32 @@ class DiskCacheValue : public BTreeValue
 {
 	private:
 		static const unsigned SEC_SIZE = 512 ;
-		unsigned m_uiLastAccess ;
+		uint64_t _lastAccessTsc;
 		unsigned m_uiHitCount ;
 		byte m_bSectorBuffer[ SEC_SIZE ] ;
 
 	public:
-		DiskCacheValue() : m_uiLastAccess(PIT::Instance().GetClockCount()), m_uiHitCount(1)
+		DiskCacheValue() : _lastAccessTsc(TscClock::instance().rdtsc()), m_uiHitCount(1)
     { 
     }
 
 		byte* GetSectorBuffer() { return m_bSectorBuffer ; }
 
 		inline unsigned GetHitCount() const { return m_uiHitCount ; }
-		inline unsigned GetLastAccess() const { return m_uiLastAccess ; }
+		inline uint64_t GetLastAccess() const { return _lastAccessTsc ; }
 
 		void Read(byte* pDest)
 		{
 			memcpy(pDest, m_bSectorBuffer, SEC_SIZE) ;
 			m_uiHitCount++ ;
-			m_uiLastAccess = PIT::Instance().GetClockCount() ;
+      _lastAccessTsc = TscClock::instance().rdtsc();
 		}
 
 		void Write(const byte* pSrc)
 		{
 			memcpy(m_bSectorBuffer, pSrc, SEC_SIZE) ;
 			m_uiHitCount++ ;
-			m_uiLastAccess = PIT::Instance().GetClockCount() ;
+      _lastAccessTsc = TscClock::instance().rdtsc();
 		}
 } ;
 
@@ -112,7 +111,7 @@ class LFUSectorManager : public BTree::InOrderVisitor
 		unsigned m_uiBuildBreak ;
 		bool m_bAbort ;
 
-		unsigned m_uiCurrent ;
+		uint64_t _currentTsc;
 		unsigned m_uiBuildCount ;
 
 		upan::mutex lruMutex;
@@ -209,17 +208,13 @@ class DestroyDiskCacheKeyValue : public BTree::DestroyKeyValue
 		DiskCache& _cache;
 
 	public:
-		DestroyDiskCacheKeyValue(DiskCache& cache) : _cache(cache) { }
+		explicit DestroyDiskCacheKeyValue(DiskCache& cache) : _cache(cache) { }
 
-		void DestroyKey(BTreeKey* pKey)
-		{
-			_cache._cacheKeyMemPool.release(*static_cast<DiskCacheKey*>(pKey)) ;
+		void DestroyKey(BTreeKey* pKey) override {
+			_cache._cacheKeyMemPool.release(*dynamic_cast<DiskCacheKey*>(pKey)) ;
 		}
 
-		void DestroyValue(BTreeValue* pValue)
-		{
-			_cache._cacheValueMemPool.release(*static_cast<DiskCacheValue*>(pValue)) ;
+		void DestroyValue(BTreeValue* pValue) override {
+			_cache._cacheValueMemPool.release(*dynamic_cast<DiskCacheValue*>(pValue)) ;
 		}
-} ;
-
-#endif
+};

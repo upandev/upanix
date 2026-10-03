@@ -53,6 +53,6 @@ void PCSound::Stop()
 void PCSound::Beep()
 {
   Play(1000);
-  ProcessManager::Instance().Sleep(1000);
+  ProcessManager::Instance().Sleep(1000000);
   Stop();
 }

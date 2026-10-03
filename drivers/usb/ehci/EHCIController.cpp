@@ -101,7 +101,7 @@ EHCIController::EHCIController(PCIEntry* pPCIEntry, int iMemMapIndex)
 
 	Start() ;
 
-	ProcessManager::Instance().Sleep(100) ;
+	ProcessManager::Instance().Sleep(100000) ;
 
   SetConfigFlag(true);
 
@@ -144,7 +144,7 @@ void EHCIController::SetConfigFlag(bool bSet)
 
 		_pOpRegs->uiConfigFlag = uiConfigFlag ;
 
-		ProcessManager::Instance().Sleep(100) ;
+		ProcessManager::Instance().Sleep(100000) ;
 		if((_pOpRegs->uiConfigFlag & 0x1) == uiCompareValue)
       throw upan::exception(XLOC, "Failed to Set Config Flag to: %d:", bSet ? 1 : 0) ;
 	}
@@ -338,7 +338,7 @@ void EHCIController::Probe()
 		if(bPPC)
 		{
 			*pPort |= (1 << 12) ;
-			ProcessManager::Instance().Sleep(30) ;
+			ProcessManager::Instance().Sleep(30000) ;
 		}
 
 		if((*pPort & (1 << 13)))
@@ -355,9 +355,9 @@ void EHCIController::Probe()
 
 		// Perform Port Reset
 		*pPort = (*pPort | 0x100) & ~(0x4) ;
-		ProcessManager::Instance().Sleep(30) ;
+		ProcessManager::Instance().Sleep(30000) ;
 		*pPort &= (~(0x100)) ;
-		ProcessManager::Instance().Sleep(30) ;
+		ProcessManager::Instance().Sleep(30000) ;
 
 		if(!(*pPort & 0x4))
 		{
@@ -399,7 +399,7 @@ void EHCIController::PerformBiosToOSHandoff()
   uiLegSup = uiLegSup | ( 1 << 24 ) ;
 
   _pPCIEntry->WritePCIConfig(bEECPOffSet, 4, uiLegSup) ;
-  ProcessManager::Instance().Sleep(500) ;
+  ProcessManager::Instance().Sleep(500000) ;
   _pPCIEntry->ReadPCIConfig(bEECPOffSet, 4, &uiLegSup) ;
 
   printf(", New USB EHCI LEGSUP: %x", uiLegSup) ;

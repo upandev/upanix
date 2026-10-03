@@ -39,7 +39,7 @@ int SysUtil_GetTimeOfDay(struct timeval* pTV) {
 	return retStatus ;
 }
 
-uint32_t SysUtil_GetTimeSinceBoot() {
+time_t SysUtil_GetTimeSinceBoot() {
   uint64_t retStatus ;
   SysCallUtil_Handle(&retStatus, SYS_CALL_UTIL_BTIME, false, 1, 2, 3, 4, 5);
   return retStatus ;

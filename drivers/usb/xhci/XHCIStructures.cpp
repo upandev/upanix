@@ -50,7 +50,7 @@ void XHCIOpRegister::Run()
   if(!ProcessManager::Instance().ConditionalWait(&_usbStatus, 0, false))
     throw upan::exception(XLOC, "Failed to start HC - timedout");
 
-  ProcessManager::Instance().Sleep(100);
+  ProcessManager::Instance().Sleep(100000);
 }
 
 void XHCIOpRegister::Stop()
@@ -110,7 +110,7 @@ void XHCIOpRegister::HCSave()
 
   _usbCmd |= 0x100;
 
-  ProcessManager::Instance().Sleep(20);
+  ProcessManager::Instance().Sleep(20000);
   if(!ProcessManager::Instance().ConditionalWait(&_usbStatus, 8, false))
     throw upan::exception(XLOC, "HC Save didn't complete - timedout");
 }
@@ -128,7 +128,7 @@ void XHCIOpRegister::HCRestore()
 
   _usbCmd |= 0x200;
 
-  ProcessManager::Instance().Sleep(20);
+  ProcessManager::Instance().Sleep(20000);
   if(!ProcessManager::Instance().ConditionalWait(&_usbStatus, 9, false))
     throw upan::exception(XLOC, "HC Restore didn't complete - timedout");
 }
@@ -180,7 +180,7 @@ bool XHCIOpRegister::IsHCReady() const
 { 
   if(IsHCNotReady())
   {
-    ProcessManager::Instance().Sleep(100);
+    ProcessManager::Instance().Sleep(100000);
     return !IsHCNotReady();
   }
   return true;
@@ -214,13 +214,13 @@ void XHCIPortRegister::WarmReset()
 void XHCIPortRegister::PowerOn()
 {
   Bit::Set(_sc, 0x200, true);
-  ProcessManager::Instance().Sleep(100);
+  ProcessManager::Instance().Sleep(100000);
 }
 
 void XHCIPortRegister::PowerOff()
 {
   Bit::Set(_sc, 0x200, false);
-  ProcessManager::Instance().Sleep(100);
+  ProcessManager::Instance().Sleep(100000);
 }
 
 void XHCIPortRegister::Print()

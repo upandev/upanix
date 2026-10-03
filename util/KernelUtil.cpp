@@ -28,25 +28,23 @@
 #include <RealNetworkDevice.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
-#include <openssl/sha.h>
 #include <TerminalDescriptor.h>
 #include <TerminalMasterDescriptor.h>
 #include <RedirectDescriptor.h>
+#include <TscClock.h>
 
-void KernelUtil::Wait(__volatile__ unsigned uiTimeInMilliSec)
-{
-	uiTimeInMilliSec = PIT::Instance().RoundSleepTime(uiTimeInMilliSec) ;
-	__volatile__ unsigned uiStartTime = PIT::Instance().GetClockCount() ;
+void KernelUtil::Wait(uint64_t timeInMicroSec) {
+	const uint64_t startTick = TscClock::instance().rdtsc();
 
   const bool isIntEnabled = IrqManager::IsInterruptEnabled();
   int count = 100000;
-  while((PIT::Instance().GetClockCount() - uiStartTime) < uiTimeInMilliSec)	{
+  while(TscClock::instance().duration(startTick) < (time_t)timeInMicroSec) {
     if (!isIntEnabled) {
       if (--count <= 0) {
         break;
       }
     }
-		__asm__ __volatile__("nop") ;
+		__asm__ __volatile__("pause") ;
 		__asm__ __volatile__("nop") ;
 	}
 }
@@ -86,7 +84,7 @@ void KernelUtil::SystemTimer(unsigned timeInMilliSec, TimerTask* task)
 {
 	do
 	{
-		ProcessManager::Instance().Sleep(timeInMilliSec) ;
+		ProcessManager::Instance().Sleep(timeInMilliSec * 1000) ;
   } while(task->TimerTrigger()) ;
   ProcessManager_Exit(0);
 }
@@ -134,23 +132,17 @@ void KernelUtil::IOCtl(int fd, uint64_t cmd, uint64_t arg) {
     break;
   }
 
-  throw upan::exception(XLOC, "unsupported IOCTL cmd: %ul", cmd);
-}
-
-static inline uint64_t rdtsc() {
-  uint32_t lo, hi;
-  __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-  return ((uint64_t)hi << 32) | lo;
+  throw upan::exception(XLOC, "unsupported IOCTL cmd: %lu", cmd);
 }
 
 // Collect `count` samples into out[32], hashed
 void entropy_jitter_collect(uint8_t out[32], size_t count) {
-  uint64_t last = rdtsc();
+  uint64_t last = TscClock::instance().rdtsc();
   uint8_t pool[512];
   size_t pool_pos = 0;
 
   for (size_t i = 0; i < count; i++) {
-    uint64_t t1 = rdtsc();
+    uint64_t t1 = TscClock::instance().rdtsc();
     uint64_t delta = t1 - last;
     last = t1;
 

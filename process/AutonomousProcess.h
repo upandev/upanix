@@ -78,7 +78,7 @@ public:
   }
 
   time_t setAlarm(uint32_t seconds) override;
-  time_t alarmExpiry() const override {
+  uint64_t alarmExpiry() const override {
     return _alarmExpiry;
   }
 
@@ -100,6 +100,6 @@ private:
   SIGNAL_ACTION_MAP _signalHandler;
   IODescriptorTable _iodTable;
   upan::shared_ptr<FSTerminalDevice> _terminalDevice;
-  time_t _alarmExpiry;
+  uint64_t _alarmExpiry;
   upan::option<Thread&> _curScheduledThread;
 };

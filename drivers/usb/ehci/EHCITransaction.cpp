@@ -42,12 +42,12 @@ EHCITransaction::EHCITransaction(EHCIQueueHead* qh, EHCIQTransferDesc* tdStart)
 
 bool EHCITransaction::PollWait()
 {
-	const unsigned uiSleepTime = 10 ; // 10 ms
-	int iMaxLimit = 10000 ; // 10 Sec
+	const uint64_t uiSleepTime = 10000; // 10 ms
+	int64_t iMaxLimit = 10000000; // 10 Sec
 
 	EHCIQTransferDesc* tdCur;
 
-	while(iMaxLimit > 10)
+	while(iMaxLimit > 10000)
 	{
 		int poll = 10000;
 		while(poll > 0)
@@ -68,7 +68,7 @@ bool EHCITransaction::PollWait()
 			--poll ;
 		}
 		iMaxLimit -= uiSleepTime ;
-		if(iMaxLimit == 20)
+		if(iMaxLimit == 20000)
 			ProcessManager::Instance().Sleep(uiSleepTime) ;
 	}
 

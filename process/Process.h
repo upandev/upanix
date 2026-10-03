@@ -139,5 +139,5 @@ public:
   }
 
   virtual time_t setAlarm(uint32_t seconds) = 0;
-  virtual time_t alarmExpiry() const = 0;
+  virtual uint64_t alarmExpiry() const = 0;
 };

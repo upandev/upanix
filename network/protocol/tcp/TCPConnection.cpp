@@ -280,7 +280,7 @@ void TCPConnection::processRecvPackets() {
       _ackNum += dataLen;
 
       if (dataLen > 0) {
-        if (_recvStream.availableSize() >= dataLen) {
+        if (_recvStream.availableCapacity() >= dataLen) {
           _recvStream.write(packet->getTCPData(), dataLen);
         } else {
           _pendingDataPackets.insert(PACKET_SEQ_MAP::value_type(recvSeqNum, packet));
@@ -307,7 +307,7 @@ void TCPConnection::processRecvPackets() {
 
     if (recvSeqNum <= _ackNum) {
       const auto dataLen = packet->getTCPDataLen();
-      if (_recvStream.availableSize() >= dataLen) {
+      if (_recvStream.availableCapacity() >= dataLen) {
         _recvStream.write(packet->getTCPData(), dataLen);
         _pendingDataPackets.erase(it++);
 

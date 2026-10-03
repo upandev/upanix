@@ -87,10 +87,10 @@ void SysProcess_Yield()
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_YIELD, false, 1, 2, 3, 4, 5);
 }
 
-int SysProcess_Sleep(unsigned millisec)
+int SysProcess_Sleep(uint64_t microsec)
 {
   uint64_t retStatus ;
-  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SLEEP, false, millisec, 2, 3, 4, 5);
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_SLEEP, false, microsec, 2, 3, 4, 5);
   return (int)retStatus;
 }
 
@@ -100,11 +100,11 @@ void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
 }
 
 int SysProcess_WaitQueue(int id, void* mutex, const struct timeval* timeout) {
-  time_t timeoutInMs = 0;
+  time_t timeoutInMicroSeconds = 0;
   if (timeout) {
-    timeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+    timeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
   }
-  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), timeoutInMs, true);
+  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), timeoutInMicroSeconds, true);
 
   const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
   if (r != ProcessStateInfo::NO_ERROR) {

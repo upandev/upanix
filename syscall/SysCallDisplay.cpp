@@ -43,12 +43,6 @@ void SysCallDisplay_Handle(uint64_t *retVal, uint64_t sysCallID, bool doAddrTran
 			}
 			break ;
 
-		case SYS_CALL_DISPLAY_CLR_SCR :
-			{
-        KC::MConsole().ClearScreen() ;
-			}
-			break ;
-
 		case SYS_CALL_DISPLAY_MOV_CURSOR :
 			// P1 => No of Positions to Move
 			{

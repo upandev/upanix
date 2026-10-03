@@ -236,7 +236,7 @@ KernelService::Request* KernelService::GetRequest()
 		Request* pRequest = pService->GetRequest() ;
 		if(!pRequest)
 		{
-			ProcessManager::Instance().Sleep(1) ;
+			ProcessManager::Instance().Sleep(1000) ;
 			continue ;
 		}
 

@@ -31,7 +31,7 @@ void SystemUtil_Reboot() {
   ProcessManager::Instance().stopUserProcesses();
   StorageDriveManager::Instance().Close();
   ProcessManager::Instance().stopKernelProcesses();
-	ProcessManager::Instance().Sleep(2000);
+	ProcessManager::Instance().Sleep(2000000);
   PS2Controller::Instance().Reboot();
 }
 

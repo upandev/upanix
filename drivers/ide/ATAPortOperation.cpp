@@ -208,9 +208,9 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 
 	// Drive Reset
 	ATA_WRITE_REG(pPort, ATA_REG_CONTROL, ATA_CONTROL_DEFAULT | ATA_CONTROL_RESET) ;
-	KernelUtil::Wait(10) ;
+	KernelUtil::Wait(10000) ;
 	ATA_WRITE_REG(pPort, ATA_REG_CONTROL, ATA_CONTROL_DEFAULT) ;
-	KernelUtil::Wait(10) ;
+	KernelUtil::Wait(10000) ;
 	
 	RETURN_X_IF_NOT(ATAPortManager_IOWait(pPort, ATA_STATUS_BUSY, 0), ATAPortManager_SUCCESS, ATAPortOperation_FAILURE) ;
 
@@ -228,7 +228,7 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 	if(!(uiCount == 0x01 && uiLBALow == 0x01))
 		return ATAPortOperation_FAILURE ;
 
-	KernelUtil::Wait(50) ;
+	KernelUtil::Wait(50000) ;
 
 	return ATAPortOperation_SUCCESS ;
 }

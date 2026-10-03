@@ -134,7 +134,7 @@ void PS2MouseDriver::HandleEvent() {
 upanui::MouseData PS2MouseDriver::GetMouseData(const upanui::MouseData& prevMouseData) {
   while(true) {
     if(_qBuffer.empty()) {
-      ProcessManager::Instance().WaitOnInterruptWithTimeout(StdIRQ::Instance().MOUSE_IRQ, 100);
+      ProcessManager::Instance().WaitOnInterruptWithTimeout(StdIRQ::Instance().MOUSE_IRQ, 100000);
       if (_qBuffer.empty()) {
         auto mouseData = prevMouseData.transition(0, 0,
                                                   prevMouseData.leftButtonState() == upanui::MouseData::PRESSED || prevMouseData.leftButtonState() == upanui::MouseData::HOLD,

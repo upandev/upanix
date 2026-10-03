@@ -120,7 +120,9 @@ bool KeyboardHandler::Process(const KeyboardKeys key, const bool isKeyReleased) 
 
 //just wait for a keyboard char input
 void KeyboardHandler::Getch() {
-  while(GetCharInNonBlockMode().isEmpty());
+  while(GetCharInNonBlockMode().isEmpty()) {
+    __asm__ __volatile__("pause");
+  }
 }
 
 static void Keyboard_Event_Dispatcher() {

@@ -384,7 +384,7 @@ static void Floppy_FullFormat(const StorageDrive* pDiskDrive)
 	unsigned uiTrackCount ;
 	for(uiTrackCount = 0; uiTrackCount < pDiskDrive->TracksPerHead(); uiTrackCount++)
 	{
-		ProcessManager::Instance().Sleep(100) ;
+		ProcessManager::Instance().Sleep(100000) ;
 
     Floppy_Seek(pDiskDrive->DriveNumber(), (Floppy_HEAD_NO)0, uiTrackCount);
 

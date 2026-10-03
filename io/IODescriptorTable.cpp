@@ -171,8 +171,8 @@ upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::select(const u
   retCode = 0;
   const auto& result = selectCheck(ioDescriptors);
   if (result.empty()) {
-    const time_t timeoutInMs = timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : 0;
-    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, timeoutInMs);
+    const time_t timeoutInMicroSeconds = timeout ? timeout->tv_sec * 1000000 + timeout->tv_usec : 0;
+    ProcessManager::Instance().WaitOnIODescriptors(ioDescriptors, timeoutInMicroSeconds);
     const auto err = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
     if (err == ProcessStateInfo::INTERRUPTED) {
       //throw upan::exception(XLOC, "IO select interrupted");

@@ -22,6 +22,7 @@
 # include <SysCall.h>
 # include <SysCallDisplay.h>
 # include <typeinfo.h>
+# include <TscClock.h>
 
 bool SysCallProc_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_PROC_START && sysCallId < SYS_CALL_PROC_END);
@@ -126,12 +127,12 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       // P3 => timeout
       {
         const auto timeout = (struct timeval*)p3;
-        time_t timeoutInMs = 0;
+        time_t timeoutInMicroSeconds = 0;
         if (timeout) {
-          timeoutInMs = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+          timeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
         }
         *retVal = 0;
-        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), timeoutInMs, false);
+        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), timeoutInMicroSeconds, false);
         const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
         if (r != ProcessStateInfo::NO_ERROR) {
           *retVal = -1;
@@ -167,11 +168,11 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
 			// P1 => Exit Status
 			{
         try {
-          ProcessManager::Instance().Sleep((unsigned) p1);
+          ProcessManager::Instance().Sleep((uint64_t) p1);
           Process& process = ProcessManager::Instance().GetCurrentPAS();
           if (process.stateInfo().getError() == ProcessStateInfo::INTERRUPTED) {
-            *retVal = process.stateInfo().SleepTime();
-            process.stateInfo().SleepTime(0);
+            *retVal = TscClock::instance().duration(TscClock::instance().rdtsc(), process.stateInfo().sleepTsc());
+            process.stateInfo().sleepTsc(0);
             process.stateInfo().setError(ProcessStateInfo::NO_ERROR);
           } else {
             *retVal = 0;

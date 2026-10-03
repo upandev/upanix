@@ -161,7 +161,7 @@ E1000NICDevice::RegEEPROM::RegEEPROM(const uint64_t memIOBase) :
 
 uint16_t E1000NICDevice::RegEEPROM::readEEPROM(const int wordPos) const {
   *_eeprom = 0x001 | (wordPos << 8);
-  ProcessManager::Instance().Sleep(10);
+  ProcessManager::Instance().Sleep(10000);
   uint32_t val = *_eeprom;
   if (val & 0x10) {
     val >>= 16;

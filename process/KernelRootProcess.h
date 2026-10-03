@@ -169,7 +169,7 @@ public:
     return 0;
   }
 
-  time_t alarmExpiry() const override {
+  uint64_t alarmExpiry() const override {
     return 0;
   }
 

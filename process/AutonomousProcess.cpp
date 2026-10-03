@@ -27,6 +27,7 @@
 #include <GraphicsVideo.h>
 #include <FSDeviceManager.h>
 #include <RedirectDescriptor.h>
+#include <TscClock.h>
 
 AutonomousProcess::AutonomousProcess(const upan::string& name, int parentID, bool forkChild, bool isFGProcess)
   : SchedulableProcess(name, parentID, isFGProcess), _nextThreadIt(_threadSchedulerList.begin()),
@@ -351,9 +352,9 @@ upan::shared_ptr<FSTerminalDevice> AutonomousProcess::controllingTerminal() {
 }
 
 time_t AutonomousProcess::setAlarm(uint32_t seconds) {
-  const time_t r = _alarmExpiry ? (_alarmExpiry - btime()) : 0;
+  const time_t r = _alarmExpiry ? TscClock::instance().duration(_alarmExpiry) / 1000000 : 0;
   if (seconds) {
-    _alarmExpiry = btime() + seconds * 1000;
+    _alarmExpiry = TscClock::instance().durationToCycles(seconds * 1000000ULL);
   } else {
     _alarmExpiry = 0;
   }

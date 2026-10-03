@@ -50,8 +50,8 @@ public:
     return _isDirty.get();
   }
 
-  void clean() {
-    _isDirty.set(false);
+  bool clean() {
+    return _isDirty.set(false);
   }
 
   uint32_t* buffer() {
