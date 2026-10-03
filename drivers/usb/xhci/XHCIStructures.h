@@ -204,11 +204,12 @@ class XHCIOpRegister
     void Run();
     void Stop();
 
+    uint32_t Status() const { return _usbStatus; }
     bool StatusChanged() const { return _usbStatus & 0x41C ? true : false; }
+    static bool StatusChanged(const uint32_t usbStatus) { return usbStatus & 0x41C ? true : false; }
     //write 1 to a given bit to clear
     void Clear() { _usbStatus = _usbStatus; }
 
-    bool IsHCHalted() const { return Bit::IsSet(_usbStatus, 0x1); }
     void HCReset();
 
     bool IsHCInterruptEnabled() const { return Bit::IsSet(_usbCmd, 0x4); }
@@ -237,7 +238,11 @@ class XHCIOpRegister
 
     void LightHCReset(const XHCICapRegister* cr);
     bool Saving() const { return Bit::IsSet(_usbStatus, 0x100); }
+    static bool Saving(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x100); }
+
     bool Restoring() const { return Bit::IsSet(_usbStatus, 0x200); }
+    static bool Restoring(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x200); }
+
     void HCSave();
     void HCRestore();
 
@@ -284,25 +289,38 @@ class XHCIOpRegister
     }
 
     void SetDNCTRL(uint32_t val) { _dnCtrl |= val; }
-    //Status 
+    //Status
+
+    bool IsHCHalted() const { return Bit::IsSet(_usbStatus, 0x1); }
+    static bool IsHCHalted(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x1); }
+
     //Host System Error
     bool IsHSError() const { return Bit::IsSet(_usbStatus, 0x4); }
-    void ClearHSError() { _usbStatus = Bit::Set(_usbStatus, 0x4, true); }
+    static bool IsHSError(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x4); }
 
     bool IsAnyEventPending() const { return Bit::IsSet(_usbStatus, 0x8); }
-    void ClearEventInterrupt() { _usbStatus = Bit::Set(_usbStatus, 0x8, true); }
-    
-    bool IsPortChanged() const { return Bit::IsSet(_usbStatus, 0x10); }
-    void ClearPortChanged() { _usbStatus = Bit::Set(_usbStatus, 0x10, true); }
+    static bool IsAnyEventPending(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x8); }
 
     //Save/Restore Error
     bool IsSRError() const { return Bit::IsSet(_usbStatus, 0x400); }
-    void ClearSRError() { _usbStatus = Bit::Set(_usbStatus, 0x400, true); }
+    static bool IsSRError(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x400); }
+
+    bool IsPortChanged() const { return Bit::IsSet(_usbStatus, 0x10); }
+    static bool IsPortChanged(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x10); }
 
     bool IsHCNotReady() const { return Bit::IsSet(_usbStatus, 0x800); }
-    bool IsHCReady() const;
+    static bool IsHCNotReady(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x800); }
+
     //Host Controller Error
     bool IsHCError() const { return Bit::IsSet(_usbStatus, 0x1000); }
+    static bool IsHCError(const uint32_t usbStatus) { return Bit::IsSet(usbStatus, 0x1000); }
+
+    void ClearHSError() { _usbStatus = Bit::Set(_usbStatus, 0x4, true); }
+    void ClearEventInterrupt() { _usbStatus = Bit::Set(_usbStatus, 0x8, true); }
+    void ClearPortChanged() { _usbStatus = Bit::Set(_usbStatus, 0x10, true); }
+    void ClearSRError() { _usbStatus = Bit::Set(_usbStatus, 0x400, true); }
+
+    bool IsHCReady() const;
 
     //in KB
     uint32_t SupportedPageSize() const;
