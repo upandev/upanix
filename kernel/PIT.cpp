@@ -25,16 +25,14 @@
 #include <PIT.h>
 #include <PIC.h>
 #include <PortCom.h>
-#include <atomicop.h>
 #include <ProcessManager.h>
-#include "Acpi.h"
-#include "SystemUtil.h"
+#include <Acpi.h>
 
 extern "C" {
   void _pit_timer_interrupt_handler();
 }
 
-PIT::PIT() : _clockCountForSleep(0), _pitIrq(&StdIRQ::Instance().TIMER_IRQ) {
+PIT::PIT() : _pitIrq(&StdIRQ::Instance().TIMER_IRQ) {
 }
 
 void PIT::Initialize() {
@@ -80,20 +78,12 @@ void PIT::ContextSwitchHandler(TaskContext& taskContext) {
   IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 }
 
+void PIT::disable() {
+  IrqManager::Instance().DisableIRQ(*_pitIrq);
+  printf("\n PIT Timer Disabled");
+}
+
 void PIT::Handler() {
   // 1 Int --> 1ms
-  if (_clockCountForSleep.get() == 0) {
-    _bootTime = SystemUtil_GetTimeOfDay() * 1000;
-  }
-  _clockCountForSleep.inc();
   IrqManager::Instance().SendEOI(*_pitIrq);
 }
-
-time_t PIT::RoundSleepTime(__volatile__ time_t uiSleepTime) {
-  return uiSleepTime;
-//	if((uiSleepTime % 10) >= 5)
-//		return uiSleepTime / 10 + 1 ;
-//
-//	return uiSleepTime / 10 ;
-}
-

@@ -82,6 +82,9 @@ TscClock::TscClock() {
 
 
   printf("\nTSC frequency: %lu Hz", _frequencyHz);
+
+  PIT::Instance().disable();
+  KC::MConsole().LoadMessage("TSC Clock Initialization", Success);
 }
 
 time_t TscClock::currentTime() const {

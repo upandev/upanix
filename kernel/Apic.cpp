@@ -179,10 +179,9 @@ void Apic::Initialize()
   _apicBase[APIC_TIMER_INITCOUNT] = 0xFFFFFFFF;
 
   // PIT timer at zero?
-  while (!(PortCom_ReceiveByte(PIT_COUNTER_2_CTRLPORT) & (1U << 5))) 
-  {
-    //if no, do nothing
-  };
+  while (!(PortCom_ReceiveByte(PIT_COUNTER_2_CTRLPORT) & (1U << 5))) {
+    __asm__ __volatile__("pause");
+  }
   _apicBase[APIC_TIMER] = APIC_INTERRUPTDISABLED; // if yes, stop APIC timer
 
   // calculate value for APIC timer

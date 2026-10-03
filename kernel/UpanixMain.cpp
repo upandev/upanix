@@ -39,7 +39,7 @@
 # include <Acpi.h>
 # include <Cpu.h>
 # include <IrqManager.h>
-# include "network/NetworkManager.h"
+# include <NetworkManager.h>
 # include <Mtrr.h>
 # include <Pat.h>
 # include <PS2Controller.h>
@@ -202,6 +202,7 @@ void Initialize() {
     PCIBusHandler::Instance().Initialize();
     IrqManager::Initialize();
     PIT::Instance().Initialize();
+    TscClock::initialize();
     __asm__ __volatile__("sti");
     StorageDriveManager::Instance();
 
