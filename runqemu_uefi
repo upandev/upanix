@@ -100,7 +100,7 @@ sudo qemu-system-x86_64 \
 -drive if=pflash,file=$UPANIX_TOOLS/OVMF.fd,format=raw \
 -m 512 \
 -s \
--smp 1 \
+-smp 4 \
 -usb \
 -drive if=none,id=usbbootdrive,file=$BOOT_DRIVE,file.locking=off,format=raw \
 -device usb-ehci,id=ehci \

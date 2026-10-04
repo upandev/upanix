@@ -59,22 +59,15 @@ extern "C" {
   void _timer_interrupt_handler();
 }
 
-bool Apic::IsAvailable()
-{
-  if(Cpu::Instance().HasSupport(CF_MSR) && Cpu::Instance().HasSupport(CF_APIC)) // We need MSR (to initialize APIC) and (obviously) APIC
-  {
-    // Ensure that I/O-APIC is available - this is the case if its address was found in the ACPI tables
-    return Acpi::Instance().GetMadt().GetIoApics().size() > 0;
-  }
-  return false;
+bool Apic::IsAvailable() {
+  // We need MSR (to initialize APIC) and (obviously) APIC
+  return Cpu::Instance().HasSupport(CF_MSR)
+         && Cpu::Instance().HasSupport(CF_APIC)
+         // Ensure that I/O-APIC is available - this is the case if its address was found in the ACPI tables
+         && Acpi::Instance().GetMadt().GetIoApics().size() > 0;
 }
 
-Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr)
-{
-}
-
-void Apic::Initialize()
-{
+Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr) {
   // Local APIC, cf. Intel manual 3A, chapter 10
   _phyApicBase = (Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL); // read APIC base address (ignore bit0-11)
   Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, ((_phyApicBase & ~0xFFFUL) | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
@@ -86,7 +79,9 @@ void Apic::Initialize()
   printf("\n APIC VBase: %x, IO APID VBase: %x", MMAP_APIC_BASE, MMAP_IOAPIC_BASE);
   printf("\n APIC Base: %x, IO APIC Base: %x", _phyApicBase, phyIoApicBase);
   printf("\n MADT APIC Base: %x", Acpi::Instance().GetMadt().LocalApicAddress());
+}
 
+void Apic::initialize() {
   IrqGuard g;
 
   uint8_t ioApicMaxIndexRedirTab = Bit::Byte3(IoApicRead(IOAPIC_VERSION)); // bit16-23 // Maximum Redirection Entry  ReadOnly
@@ -253,12 +248,12 @@ void Apic::RemapVector(uint8_t vector, uint32_t mapped, bool level /*f:edge t:le
     mapped |= APIC_LOW;
 
   IoApicWrite(0x10 + vector * 2, mapped);
-  IoApicWrite(0x11 + vector * 2, _apicBase[APIC_APICID] << (56 - 32));
+  IoApicWrite(0x11 + vector * 2, _apicBase[APIC_APICID] << 24);
 }
 
 uint8_t Apic::GetLocalApicID() const
 {
-  return _apicBase[APIC_APICID];
+  return (uint8_t)((_apicBase[APIC_APICID] >> 24) & 0xFF);
 }
 
 uint8_t Apic::GetIOApicID()

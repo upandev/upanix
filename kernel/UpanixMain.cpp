@@ -50,6 +50,7 @@
 # include <NetworkOperations.h>
 # include <KLog.h>
 # include <LocalDataGramResolver.h>
+# include <ProcessorManager.h>
 
 /**** Global Variable declaration/definition *****/
 bool KERNEL_MODE;
@@ -183,9 +184,10 @@ void Initialize() {
   try {
     upan::metrics::create();
 
-    IDT::Instance();
-    Cpu::Instance();
     Acpi::Instance();
+    Cpu::Instance();
+    ProcessorManager::instance();
+    IDT::Instance();
     Pat::Instance();
     Mtrr::Instance();
     DMA_Initialize();

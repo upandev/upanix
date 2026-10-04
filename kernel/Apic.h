@@ -51,14 +51,13 @@ enum APIC_REG_INDEX {
   APIC_TIMER_DIVIDECONFIG = 0x3E0 / 4,
 };
 
-class Apic : public IrqManager
-{
+class Apic : public IrqManager {
   private:
-    Apic();
     Apic(const Apic&);
-    void Initialize();
+    void initialize();
 
   public:
+    Apic();
     static bool IsAvailable();
     uint8_t GetLocalApicID() const;
     uint8_t GetIOApicID();

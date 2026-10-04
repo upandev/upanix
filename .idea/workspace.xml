@@ -33,25 +33,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="timer count granularity increased to microseconds with the use of TSC">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="1. XHCI interrupt handler has its own stack - so, it can yield/context-switch&#10;2. Introduce priority process queue - to allow processes waiting for events like XHCI disk io - can be invoked on priority to reduce io delay&#10;3. use TSC for managing sleep and alarm - in microsecond granularity&#10;4. XHCI mmio is mapped to uncacheable PAT area&#10;5. XHCI status register (mmio) is read once and then the bits are checked using static util methods - this should be more optimal than access mmio registry on each bit check">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIEventResult.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIEventResult.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/IrqManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/IrqManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IrqManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/PIT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/PIT.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runqemu_uefi" beforeDir="false" afterPath="$PROJECT_DIR$/runqemu_uefi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/upanix_src_files.sh" beforeDir="false" afterPath="$PROJECT_DIR$/upanix_src_files.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,37 +90,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck&quot;,
-    &quot;Shell Script.run.executor&quot;: &quot;Run&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/prajwala.prabhakar/workspace/upandev/upanix/kernel&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHELLCHECK.PATH": "/Users/prajwala.prabhakar/Library/Application Support/JetBrains/CLion2024.3/plugins/Shell Script/shellcheck",
+    "Shell Script.run.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/prajwala.prabhakar/workspace/upandev/upanix/processor",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "CMakeSettings",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/processor" />
       <recent name="$PROJECT_DIR$/kernel" />
       <recent name="$PROJECT_DIR$/interopc" />
       <recent name="$PROJECT_DIR$/util" />
       <recent name="$PROJECT_DIR$/drivers/usb/xhci" />
-      <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/io/pipe" />
@@ -851,7 +841,7 @@
       <workItem from="1790163429778" duration="9993000" />
       <workItem from="1790384429757" duration="1291000" />
       <workItem from="1790418496240" duration="54181000" />
-      <workItem from="1790945295659" duration="34090000" />
+      <workItem from="1790945295659" duration="41045000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1196,7 +1186,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="294" />
+    <option name="localTasksCounter" value="295" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1230,7 +1220,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="initialize the dmmFlag in constructor and provide get/set method for rootAut - which will be used while forking a child process" />
     <MESSAGE value="rephrase comment" />
     <MESSAGE value="The parent IOD table will create the child IOD table. If the child is an exec child - then a separate IOD table is created by redirecting the standard I/O to parent I/O descriptors. If the child is a fork child - then a clone of the parent IOD table is created" />
     <MESSAGE value="support for forking a child process" />
@@ -1255,7 +1244,8 @@
     <MESSAGE value="Disable PIT after TSC initialization" />
     <MESSAGE value="increase max sector read block from 32 to 64 sectors - this is possible with tdSize fix at TRB setup" />
     <MESSAGE value="timer count granularity increased to microseconds with the use of TSC" />
-    <option name="LAST_COMMIT_MESSAGE" value="timer count granularity increased to microseconds with the use of TSC" />
+    <MESSAGE value="1. XHCI interrupt handler has its own stack - so, it can yield/context-switch&#10;2. Introduce priority process queue - to allow processes waiting for events like XHCI disk io - can be invoked on priority to reduce io delay&#10;3. use TSC for managing sleep and alarm - in microsecond granularity&#10;4. XHCI mmio is mapped to uncacheable PAT area&#10;5. XHCI status register (mmio) is read once and then the bits are checked using static util methods - this should be more optimal than access mmio registry on each bit check" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. XHCI interrupt handler has its own stack - so, it can yield/context-switch&#10;2. Introduce priority process queue - to allow processes waiting for events like XHCI disk io - can be invoked on priority to reduce io delay&#10;3. use TSC for managing sleep and alarm - in microsecond granularity&#10;4. XHCI mmio is mapped to uncacheable PAT area&#10;5. XHCI status register (mmio) is read once and then the bits are checked using static util methods - this should be more optimal than access mmio registry on each bit check" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

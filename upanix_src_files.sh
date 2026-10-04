@@ -29,6 +29,7 @@ SRC_DIRS="
   kernel
   kernelprocs
   memory
+  processor
   process
   interopc
   syscall

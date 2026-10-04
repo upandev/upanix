@@ -51,6 +51,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/bin)
 include_directories(${PROJECT_SOURCE_DIR}/kernel)
 include_directories(${PROJECT_SOURCE_DIR}/process)
+include_directories(${PROJECT_SOURCE_DIR}/processor)
 include_directories(${PROJECT_SOURCE_DIR}/display)
 
 include_directories(${PROJECT_SOURCE_DIR}/kernelprocs/console)

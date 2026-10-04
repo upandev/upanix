@@ -25,6 +25,7 @@
 #include <PIC.h>
 #include <Apic.h>
 #include <IDT.h>
+#include <ProcessorManager.h>
 
 IrqManager* IrqManager::_instance = nullptr;
 
@@ -57,16 +58,14 @@ StdIRQ& StdIRQ::Instance()
   return instance;
 }
 
-void IrqManager::Initialize()
-{
+void IrqManager::Initialize() {
   static PIC pic;
-  if(Apic::IsAvailable())
-  {
+  Apic* apic = ProcessorManager::instance().apic();
+  if(apic) {
     pic.DisableForAPIC();
-    static Apic apic;
-    _instance = &apic;
+    _instance = apic;
     _instance->_isApic = true;
-    apic.Initialize();
+    apic->initialize();
   }
   else
   {
