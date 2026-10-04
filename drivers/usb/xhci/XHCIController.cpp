@@ -22,19 +22,18 @@
 #include <PCIBusHandler.h>
 #include <DMM.h>
 #include <MemManager.h>
-#include <stdio.h>
-#include <uniq_ptr.h>
 #include <XHCIController.h>
 #include <XHCIContext.h>
 #include <XHCIManager.h>
 #include <USBDataHandler.h>
 #include <XHCIDevice.h>
+#include <Pat.h>
 
 uint64_t XHCIController::_memMapBaseAddress = XHCI_MMIO_BASE_ADDR;
 
 XHCIController::XHCIController(PCIEntry* pPCIEntry)
   : _pPCIEntry(pPCIEntry), _capReg(nullptr), _opReg(nullptr),
-    _legSupXCap(nullptr), _doorBellRegs(nullptr), _eventQueue(1024) {
+    _legSupXCap(nullptr), _doorBellRegs(nullptr), _eventQueue(1024), _eventHandlerPid(NO_PROCESS_ID) {
   const uint64_t ioAddress = pPCIEntry->GetIOMapAddress();
   const uint32_t ioSize = pPCIEntry->GetPCIMemSize(0);
 	printf(", Raw MMIO BaseAddr: %lx, IOSize: %d, KernelPageTableMmap Address: %lx", ioAddress, ioSize, _memMapBaseAddress);
@@ -43,7 +42,16 @@ XHCIController::XHCIController(PCIEntry* pPCIEntry)
 	if(ioSize > availableMemMapSize)
     throw upan::exception(XLOC, "XHCI IO Size is %x > greater than available size %x!", ioSize, availableMemMapSize);
 
-  MemManager::Instance().MapAddressSpace(MEM_PML4_TABLE, 0x7, _memMapBaseAddress, ioAddress, ioSize);
+  uint32_t pageFlags = 0x3; // present + writable, supervisor-only
+  const int ucFlag = Pat::Instance().pageTableFlag(Cpu::MEM_TYPE::UNCACHEABLE);
+  if (ucFlag >= 0) {
+    pageFlags |= static_cast<uint32_t>(ucFlag);
+  } else {
+    // Legacy PWT + PCD fallback when PAT is unavailable.
+    pageFlags |= (1u << 3) | (1u << 4);
+  }
+
+  MemManager::Instance().MapAddressSpace(MEM_PML4_TABLE, pageFlags, _memMapBaseAddress, ioAddress, ioSize);
   Mem_FlushTLB();
 
 	printf("\n Bus: %d, Dev: %d, Func: %d", pPCIEntry->uiBusNumber, pPCIEntry->uiDeviceNumber, pPCIEntry->uiFunction);
@@ -137,7 +145,7 @@ void XHCIController::Start()
     return;
   _opReg->DisableHCInterrupt();
   _opReg->Run();
-  ProcessManager::Instance().Sleep(100);
+  ProcessManager::Instance().Sleep(100000);
   if(!_opReg->IsHCRunning() || _opReg->IsHCHalted())
     throw upan::exception(XLOC, "Failed to start XHCI HC");
   _opReg->Print();
@@ -145,42 +153,46 @@ void XHCIController::Start()
 }
 
 //Should be called from IRQ handler - so no need for any synchronization constructs
-void XHCIController::NotifyEvent() {
-  if(!_opReg->StatusChanged())
-    return;
+upan::option<pid_t> XHCIController::NotifyEvent() {
+  volatile uint32_t usbStatus = _opReg->Status();
+  if(!XHCIOpRegister::StatusChanged(usbStatus)) {
+    return upan::option<pid_t>::empty();
+  }
 
+  pid_t handlerPid = NO_PROCESS_ID;
   try {
     InterruptData data;
-    if(_opReg->IsHCHalted()) {
+    if(XHCIOpRegister::IsHCHalted(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::HCHalted });
     }
 
-    if(_opReg->IsHSError()) {
+    if(XHCIOpRegister::IsHSError(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::HCError });
     }
 
-    if(_opReg->IsSRError()) {
+    if(XHCIOpRegister::IsSRError(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::SRError });
     }
 
-    if(_opReg->IsHCNotReady()) {
+    if(XHCIOpRegister::IsHCNotReady(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::HCNotReady });
     }
 
-    if(_opReg->IsHCError()) {
+    if(XHCIOpRegister::IsHCError(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::HCError });
     }
 
-    if(_opReg->Saving()) {
+    if(XHCIOpRegister::Saving(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::Saving });
     }
 
-    if(_opReg->Restoring()) {
+    if(XHCIOpRegister::Restoring(usbStatus)) {
       _eventQueue.push_back({InterruptResultType::Restoring });
     }
 
-    if(_opReg->IsAnyEventPending()) {
+    if(XHCIOpRegister::IsAnyEventPending(usbStatus)) {
       _eventManager->NotifyEvents();
+      handlerPid = _eventHandlerPid;
     }
   }
   catch(const upan::exception& e) {
@@ -188,6 +200,7 @@ void XHCIController::NotifyEvent() {
   }
 
   _opReg->Clear();
+  return upan::option<pid_t>(handlerPid);
 }
 
 void XHCIController::InitInterruptHandler()
@@ -361,7 +374,9 @@ void XHCIController::RingDoorBell(unsigned index, unsigned value)
 //  __volatile__ uint32_t temp = _doorBellRegs[index];
 //  _doorBellRegs[index] = value;
 //  temp = _doorBellRegs[index];
-  upan::atomic::op::swap(_doorBellRegs[index], value);
+  __asm__ __volatile__("sfence" ::: "memory");
+  _doorBellRegs[index] = value;
+//  upan::atomic::op::swap(_doorBellRegs[index], value);
 }
 
 EventTRB XHCIController::InitiateCommand()
@@ -466,17 +481,21 @@ EventResult& XHCIController::ConsumeEventResult(uint64_t trbId) {
 }
 
 void XHCIController::PublishEventResult(const EventTRB& result) {
-  upan::mutex_guard g(_eventMutex);
-
-  auto it = _eventResults.find(result.TRBPointer());
-  if(it == _eventResults.end())
+  pid_t pid;
   {
-    printf("\n No entry found in EventResults for TRB Id: %llx, Event Type: %d CC: %d, TLen: %d\n",
-           (uint64_t)result.TRBPointer(), result.Type(), result.CompletionCode(), result.TransferLength());
-    ((TRB*)result.TRBPointer())->Print();
-    return;
+    upan::mutex_guard g(_eventMutex);
+
+    auto it = _eventResults.find(result.TRBPointer());
+    if (it == _eventResults.end()) {
+      printf("\n No entry found in EventResults for TRB Id: %llx, Event Type: %d CC: %d, TLen: %d\n",
+             (uint64_t) result.TRBPointer(), result.Type(), result.CompletionCode(), result.TransferLength());
+      ((TRB*) result.TRBPointer())->Print();
+      return;
+    }
+    it->second->Consume(result);
+    pid = it->second->Pid();
   }
-  it->second->Consume(result);
+  ProcessManager::Instance().EventCompleted(pid);
 }
 
 CommandManager::CommandManager(XHCICapRegister& creg, 
@@ -540,7 +559,7 @@ void CommandManager::EvaluateContext(unsigned icptr, unsigned slotID)
 EventManager::InterrupterRegister::InterrupterRegister() 
 {
   _iman = 0; //Interrupter is disabled by default
-  _imod = 4000; //15:0 = 4000 --> 1ms, 31:16 = 0 --> initial count
+  _imod = 400; //15:0 = 4000 --> 1ms, 31:16 = 0 --> initial count
   const int ERST_SIZE = 1;
   _erstSize = (_erstSize & 0xFFFF0000) | ERST_SIZE;
 
@@ -552,7 +571,7 @@ EventManager::InterrupterRegister::InterrupterRegister()
 
 void EventManager::InterrupterRegister::DebugPrint()
 {
-  printf("\n IMAN: %x, IMON: %x, DQPTR: %llx", _iman, _imod, (uint64_t)DQPtr());
+  printf("\n IMAN: %x, IMOD: %x, DQPTR: %llx", _iman, _imod, (uint64_t)DQPtr());
 //  _erdqPtr = _erdqPtr | 0x8;
 //  _iman = _iman | 0x1;
   for(int i = 0; i < 16; ++i)
@@ -596,7 +615,7 @@ bool EventManager::WaitForEvent(uint64_t trbId, EventTRB& result)
       if(result.TRBPointer() == trbId)
         return true;
     }
-    ProcessManager::Instance().Sleep(10);
+    ProcessManager::Instance().Sleep(10000);
     timeout -= 10;
   }
   return false;
@@ -682,6 +701,6 @@ void XHCIController::StartEventHandler() {
     return;
   }
   started = true;
-  ProcessManager::Instance().CreateKernelProcess("xhci0.eh", (uintptr_t) &XHCIController::EventHandler,
+  _eventHandlerPid = ProcessManager::Instance().CreateKernelProcess("xhci0.eh", (uintptr_t) &XHCIController::EventHandler,
                                                  ProcessManager::GetCurrentProcessID(), false, false, upan::vector<uintptr_t>());
 }

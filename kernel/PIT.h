@@ -70,7 +70,7 @@ public:
   }
 
   void Initialize();
-  void ContextSwitchHandler(TaskContext& taskContext);
+  void ContextSwitch(TaskContext& state);
   void Handler();
   void disable();
 

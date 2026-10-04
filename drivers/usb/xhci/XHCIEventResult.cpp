@@ -27,7 +27,6 @@
 
 void WaitedEventResult::Consume(const EventTRB &r) {
   _result = r;
-  ProcessManager::Instance().EventCompleted(Pid());
 }
 
 void InterruptEventResult::Consume(const EventTRB &r) {

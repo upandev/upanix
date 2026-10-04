@@ -71,16 +71,14 @@ void PIT::Initialize() {
   KC::MConsole().LoadMessage("Timer Initialization", status);
 }
 
-void PIT::ContextSwitchHandler(TaskContext& taskContext) {
-  SetKernelMode(true);
-  ProcessManager::Instance().ContextSwitch(taskContext);
-  SetKernelMode(false);
-  IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
-}
-
 void PIT::disable() {
   IrqManager::Instance().DisableIRQ(*_pitIrq);
   printf("\n PIT Timer Disabled");
+}
+
+void PIT::ContextSwitch(TaskContext& state) {
+  ProcessManager::Instance().ContextSwitch(state);
+  IrqManager::Instance().SendEOI(StdIRQ::Instance().TIMER_IRQ);
 }
 
 void PIT::Handler() {

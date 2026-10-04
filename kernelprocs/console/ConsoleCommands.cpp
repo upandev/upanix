@@ -2716,8 +2716,4 @@ void ConsoleCommands_KernelProp() {
   }
   const upan::string prop = CommandLineParser::Instance().GetParameterAt(0);
   const upan::string value = CommandLineParser::Instance().GetParameterAt(1);
-
-  if (prop == "priority.schedule") {
-    ProcessManager::Instance().enablePriorityScheduling(value == "true");
-  }
 }

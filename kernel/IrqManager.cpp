@@ -24,9 +24,7 @@
 #include <IrqManager.h>
 #include <PIC.h>
 #include <Apic.h>
-#include <mutex.h>
 #include <IDT.h>
-#include <atomicop.h>
 
 IrqManager* IrqManager::_instance = nullptr;
 

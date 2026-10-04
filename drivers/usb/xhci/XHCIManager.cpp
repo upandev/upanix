@@ -24,19 +24,27 @@
 #include <XHCIController.h>
 #include <XHCIManager.h>
 #include <IrqManager.h>
-#include <KeyboardHandler.h>
 #include <InterruptHandlers.h>
 
-void XHCIManager::Handler() {
+void XHCIManager::Handler(TaskContext& taskContext) {
   //printf("\n XHCI IRQ");
   auto& xhciManager = XHCIManager::Instance();
-  if(xhciManager.Initialized() && xhciManager.GetEventMode() == XHCIManager::Interrupt)
-  {
-    for(auto c : xhciManager.Controllers())
-      c->NotifyEvent();
+  bool priorityProcessScheduled = false;
+  if(xhciManager.Initialized() && xhciManager.GetEventMode() == XHCIManager::Interrupt) {
+    for(auto c : xhciManager.Controllers()) {
+      c->NotifyEvent().ifPresent([&priorityProcessScheduled](pid_t pid) {
+        if (pid != NO_PROCESS_ID) {
+          ProcessManager::Instance().schedulePriorityProcess(pid);
+          priorityProcessScheduled = true;
+        }
+      });
+    }
   }
 
   xhciManager.irq()->Signal();
+  if (!IsKernel() && priorityProcessScheduled) {
+    ProcessManager::Instance().ContextSwitch(taskContext);
+  }
   IrqManager::Instance().SendEOI(*xhciManager.irq());
 }
 

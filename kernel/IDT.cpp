@@ -47,6 +47,7 @@ extern "C" {
   void _page_fault_interrupt_handler();
   void _isr_0x27_interrupt_handler();
   void _timer_interrupt_handler();
+  void _xhci_interrupt_handler();
 }
 
 void IDT::LoadHandlers() {
@@ -94,7 +95,9 @@ void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t
     idtEntry->_ist = 1;
 	}	else if (offset == (uintptr_t)&_page_fault_interrupt_handler) {
     idtEntry->_ist = 2;
-	} else {
+  }	else if (offset == (uintptr_t)&_xhci_interrupt_handler) {
     idtEntry->_ist = 3;
+	} else {
+    idtEntry->_ist = 4;
 	}
 }

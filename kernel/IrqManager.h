@@ -19,8 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _IRQ_MANAGER_H_
-#define _IRQ_MANAGER_H_
+#pragma once
 
 #include <Global.h>
 #include <list.h>
@@ -130,5 +129,3 @@ class IrqGuard
     const IRQ* _irq;
     __volatile__ uint64_t _allIntSyncFlag;
 };
-
-#endif

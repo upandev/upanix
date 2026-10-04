@@ -54,6 +54,7 @@ class ProcessManager
       return instance;
     }
 
+    void schedulePriorityProcess(pid_t pid);
     upan::option<Process&> GetProcess(int pid);
     upan::option<SchedulableProcess&> GetSchedulableProcess(int pid);
     Process& GetCurrentPAS();
@@ -64,9 +65,9 @@ class ProcessManager
     void AddToSchedulerList(SchedulableProcess& process);
     void AddToProcessMap(SchedulableProcess& process);
     void RemoveFromProcessMap(SchedulableProcess& process);
-    void Sleep(uint32_t sleepTime);
+    void Sleep(uint64_t duration);
     void WaitOnInterrupt(const IRQ&);
-    void WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout);
+    void WaitOnInterruptWithTimeout(const IRQ& irq, uint64_t timeout);
     int GetCurProcId();
     void WakeUpFromKSWait(int iProcessID);
     bool IsAlive(int pid);
@@ -81,11 +82,11 @@ class ProcessManager
     bool IsDMMOn(int iProcessID);
     int WaitOnChild(int iChildProcessID, int& exitStatus);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
-    void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace);
+    void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMicroSeconds, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
-    void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs);
-    void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs);
-    void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs);
+    void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMicroSeconds);
+    void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMicroSeconds);
+    void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMicroSeconds);
     void WaitOnKernelService();
     void WaitOnKernelServiceFork();
     bool IsKernelProcess(int iProcessID);
@@ -143,6 +144,9 @@ class ProcessManager
     typedef upan::list<SchedulableProcess*> ProcessSchedulerList;
     ProcessSchedulerList _processSchedulerList;
     ProcessSchedulerList::list_iterator _processSchedulerIt;
+
+    typedef upan::set<pid_t> PriorityProcessSet;
+    PriorityProcessSet _priorityProcessSet;
 
     //This is required even before initializing the ProcessManager for fetching
     static int _currentProcessID;

@@ -39,7 +39,7 @@ class XHCIManager
       static XHCIManager instance;
       return instance;
     }
-    static void Handler();
+    static void Handler(TaskContext& taskContext);
     void Initialize();
     void SetEventMode(EventMode e) { _eventMode = e; }
     EventMode GetEventMode() const { return _eventMode; }

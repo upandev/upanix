@@ -80,11 +80,11 @@ void SchedulableProcess::yield() {
 }
 
 bool SchedulableProcess::CanPreempt() {
-  return (PIT::Instance().GetClockCount() - _runTick) > 10;
+  return TscClock::instance().duration(_runTick) >= 4000;
 }
 
 void SchedulableProcess::Load(TaskContext& taskContext) {
-  _runTick = PIT::Instance().GetClockCount();
+  _runTick = TscClock::instance().rdtsc();
   _tls->switchSpace();
   SwitchInterruptStack();
   onLoad();
@@ -106,7 +106,7 @@ void SchedulableProcess::Deallocate() {
 }
 
 void SchedulableProcess::SwitchInterruptStack() {
-  uintptr_t istVirtualAddress = MEM_KERNEL_IST3_COMMON_STACK_TOP - _istStackPages.size() * PAGE_SIZE;
+  uintptr_t istVirtualAddress = MEM_KERNEL_IST4_COMMON_STACK_TOP - _istStackPages.size() * PAGE_SIZE;
   for(auto istRealAddress : _istStackPages) {
     MemManager::Instance().MapAddressSpace(pml4Table(), 0x7, istVirtualAddress, istRealAddress, PAGE_SIZE);
     istVirtualAddress += PAGE_SIZE;
@@ -474,7 +474,7 @@ void SchedulableProcess::prepareToRun() {
 
   if (!isThread()) {
     const auto aExpiry = alarmExpiry();
-    if (aExpiry && PIT::Instance().GetClockCount() >= aExpiry) {
+    if (aExpiry && TscClock::instance().rdtsc() > aExpiry) {
       setAlarm(0);
       queueSignal(SIGALARM, nullptr);
     }
@@ -496,14 +496,14 @@ void SchedulableProcess::prepareToRun() {
     break;
 
     case WAIT_SLEEP: {
-      if(PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()
+      if(TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()
          || _processID == KernelRootProcess::Instance().scheduleRunnerPid())
       {
-        _stateInfo.SleepTime(0);
+        _stateInfo.sleepTsc(0);
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else if (interruptedBySignal) {
-        _stateInfo.SleepTime(_stateInfo.SleepTime() - PIT::Instance().GetClockCount());
+        _stateInfo.sleepTsc(_stateInfo.sleepTsc() - TscClock::instance().rdtsc());
         _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
         setStatus(RUN);
       }
@@ -521,8 +521,8 @@ void SchedulableProcess::prepareToRun() {
       if (WakeupProcessOnInterrupt()) {
         setStatus(RUN);
       } else {
-        if (PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
-          _stateInfo.SleepTime(0);
+        if (TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()) {
+          _stateInfo.sleepTsc(0);
           setStatus(RUN);
         }
       }
@@ -543,12 +543,12 @@ void SchedulableProcess::prepareToRun() {
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else {
-        if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
-          _stateInfo.SleepTime(0);
+        if (_stateInfo.sleepTsc() && TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()) {
+          _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::TIMEOUT);
           setStatus(RUN);
         } else if (interruptedBySignal) {
-          _stateInfo.SleepTime(0);
+          _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
         }
@@ -560,19 +560,19 @@ void SchedulableProcess::prepareToRun() {
       const auto& waitInfo = _stateInfo.GetTerminalIOWaitInfo();
       const auto& terminalDevice = FSDeviceManager::Instance().getTerminalDevice(waitInfo._path);
       if (terminalDevice.isEmpty()) {
-        _stateInfo.SleepTime(0);
+        _stateInfo.sleepTsc(0);
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else if (terminalDevice->isReady(waitInfo._waitType)) {
-        _stateInfo.SleepTime(0);
+        _stateInfo.sleepTsc(0);
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
-      } else if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
-        _stateInfo.SleepTime(0);
+      } else if (_stateInfo.sleepTsc() && TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()) {
+        _stateInfo.sleepTsc(0);
         _stateInfo.setError(ProcessStateInfo::TIMEOUT);
         setStatus(RUN);
       } else if (interruptedBySignal) {
-        _stateInfo.SleepTime(0);
+        _stateInfo.sleepTsc(0);
         _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
         setStatus(RUN);
       }
@@ -645,14 +645,14 @@ void SchedulableProcess::prepareToRun() {
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else {
-        if (_stateInfo.SleepTime() && PIT::Instance().GetClockCount() >= _stateInfo.SleepTime()) {
+        if (_stateInfo.sleepTsc() && TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()) {
           q.erase(upan::find(q.begin(), q.end(), _processID));
-          _stateInfo.SleepTime(0);
+          _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::TIMEOUT);
           setStatus(RUN);
         } else if (interruptedBySignal) {
           q.erase(upan::find(q.begin(), q.end(), _processID));
-          _stateInfo.SleepTime(0);
+          _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
         }

@@ -21,7 +21,6 @@
  */
 
 #include <InterruptHandlers.h>
-#include <PIT.h>
 #include <stdio.h>
 #include <ProcessManager.h>
 #include <PS2KeyboardDriver.h>
@@ -35,7 +34,7 @@
 
 extern "C" {
   void timer_interrupt_handler(TaskContext *state) {
-    PIT::Instance().ContextSwitchHandler(*state);
+    PIT::Instance().ContextSwitch(*state);
   }
 
   void pit_timer_interrupt_handler() {
@@ -54,8 +53,8 @@ extern "C" {
     RTC::Handler();
   }
 
-  void xhci_interrupt_handler() {
-    XHCIManager::Handler();
+  void xhci_interrupt_handler(TaskContext* state) {
+    XHCIManager::Handler(*state);
   }
 
   void page_fault_interrupt_handler(TaskContext* state) {

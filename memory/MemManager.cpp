@@ -73,7 +73,7 @@ MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
 }
 
 void MemManager::PrintInitStatus() const {
-  printf("\n\tRAM SIZE = %ul", RAM_SIZE) ;
+  printf("\n\tRAM SIZE = %lu", RAM_SIZE) ;
   printf("\n\tNo. of Pages = %d", _noOfPages) ;
   printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
 }
@@ -108,7 +108,8 @@ void MemManager::InitTaskState64() {
   taskState64->_rsp0 = MEM_KERNEL_RING0_STACK_TOP;
   taskState64->_ist1 = MEM_KERNEL_IST1_TIMER_STACK_TOP;
   taskState64->_ist2 = MEM_KERNEL_IST2_PAGE_FAULT_STACK_TOP;
-  taskState64->_ist3 = MEM_KERNEL_IST3_COMMON_STACK_TOP;
+  taskState64->_ist3 = MEM_KERNEL_IST3_XHCI_STACK_TOP;
+  taskState64->_ist4 = MEM_KERNEL_IST4_COMMON_STACK_TOP;
 
   __asm__ __volatile__("mov %0, %%ax;"
                        "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);

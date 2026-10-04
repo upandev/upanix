@@ -43,7 +43,7 @@ class XHCIController
   public:
     explicit XHCIController(PCIEntry*);
     void Probe();
-    void NotifyEvent();
+    upan::option<pid_t> NotifyEvent();
     const XHCICapRegister& CapReg() const { return *_capReg; }
 
   private:
@@ -107,6 +107,7 @@ private:
     upan::mutex _eventMutex;
     upan::map<uint64_t, EventResult*> _eventResults;
     upan::queue<InterruptData> _eventQueue;
+    pid_t _eventHandlerPid;
 
     friend class XHCIManager;
     friend class EventManager;

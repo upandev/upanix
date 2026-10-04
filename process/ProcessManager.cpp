@@ -37,6 +37,8 @@
 #include <UserThread.h>
 #include <KernelRootProcess.h>
 #include <ProcessStat.h>
+#include <PortCom.h>
+#include <TscClock.h>
 
 int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
@@ -113,12 +115,31 @@ void ProcessManager::RemoveFromProcessMap(SchedulableProcess& process) {
   _processMap.erase(process.processID());
 }
 
+void ProcessManager::schedulePriorityProcess(pid_t pid) {
+  ProcessSwitchLock switchLock;
+  if (pid != NO_PROCESS_ID) {
+    _priorityProcessSet.insert(pid);
+  }
+}
+
+class KernelModeGuard {
+  public:
+    KernelModeGuard() {
+      SetKernelMode(true);
+    }
+    ~KernelModeGuard() {
+      SetKernelMode(false);
+    }
+};
+
 void ProcessManager::ContextSwitch(TaskContext& taskContext) {
+  KernelModeGuard kernelModeGuard;
   KernelRootProcess::Instance().switchPageTable();
   const auto& p = GetSchedulableProcess(GetCurrentProcessID());
   if (!p.isEmpty()) {
     auto &currentProcess = p.value();
-    if (currentProcess.status() == PROCESS_STATUS::RUN && (!IsTaskSwitchEnabled() || !currentProcess.CanPreempt())) {
+    if (currentProcess.status() == PROCESS_STATUS::RUN
+        && (!IsTaskSwitchEnabled() || (!currentProcess.CanPreempt() && _priorityProcessSet.empty()))) {
       currentProcess.switchPageTable();
       return;
     } else if (currentProcess.status() == TERMINATED) {
@@ -134,11 +155,29 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
 
   if (IsTaskSwitchEnabled()) {
     while (!_processSchedulerList.empty()) {
+      SchedulableProcess* candidateProcess = nullptr;
+      if (!_priorityProcessSet.empty()) {
+        auto it = _priorityProcessSet.begin();
+        auto priorityProcessID = *it;
+        _priorityProcessSet.erase(it);
+        for (_processSchedulerIt = _processSchedulerList.begin();
+             _processSchedulerIt != _processSchedulerList.end(); ++_processSchedulerIt) {
+          if ((*_processSchedulerIt)->processID() == priorityProcessID) {
+            candidateProcess = *_processSchedulerIt;
+            break;
+          }
+        }
+      }
+
       if (_processSchedulerIt == _processSchedulerList.end()) {
         _processSchedulerIt = _processSchedulerList.begin();
       }
 
-      auto &process = (*_processSchedulerIt)->forSchedule();
+      if (candidateProcess == nullptr) {
+        candidateProcess = &(*_processSchedulerIt)->forSchedule();
+      }
+
+      auto &process = *candidateProcess;
       _currentProcessID = process.processID();
       process.prepareToRun();
       process.deliverPendingSignal();
@@ -169,26 +208,24 @@ bool ProcessManager::DisableTaskSwitch() {
   return upan::atomic::op::swap(_taskSwitch, 0) == 1;
 }
 
-void ProcessManager::Sleep(uint32_t sleepTime) // in Milli Seconds
+void ProcessManager::Sleep(uint64_t duration) // in micro Seconds
 {
 	if(DoPollWait()) {
-		KernelUtil::Wait(sleepTime) ;
+		KernelUtil::Wait(duration) ;
 		return ;
 	}
 
   auto &p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    p.stateInfo().SleepTime(btime() + PIT::Instance().RoundSleepTime(sleepTime));
+    p.stateInfo().sleepTsc(TscClock::instance().rdtsc(duration));
     p.setStatus(WAIT_SLEEP);
   }
   p.yield();
 }
 
-void ProcessManager::WaitOnInterrupt(const IRQ& irq)
-{
-	if(DoPollWait())
-	{
+void ProcessManager::WaitOnInterrupt(const IRQ& irq) {
+	if(DoPollWait()) {
 		KernelUtil::WaitOnInterrupt(irq);
 		return;
 	}
@@ -202,7 +239,7 @@ void ProcessManager::WaitOnInterrupt(const IRQ& irq)
   p.yield();
 }
 
-void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout)
+void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint64_t timeout)
 {
   if(DoPollWait())
   {
@@ -214,7 +251,7 @@ void ProcessManager::WaitOnInterruptWithTimeout(const IRQ& irq, uint32_t timeout
   {
     ProcessSwitchLock lock;
     p.stateInfo().Irq(&irq);
-    p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeout));
+    p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeout));
     p.setStatus(WAIT_INT_WITH_TIMEOUT);
   }
   p.yield();
@@ -284,7 +321,7 @@ void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVa
   p.yield();
 }
 
-void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMs, bool isKernelSpace) {
+void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMicroSeconds, bool isKernelSpace) {
   if(GetCurProcId() < 0)
     return ;
 
@@ -300,10 +337,10 @@ void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutI
     _processWaitQueueMap[spaceId][id].push_back(p.processID());
     p.stateInfo().WaitQueueId(id);
     p.stateInfo().WaitQueueSpaceId(spaceId);
-    if (timeoutInMs) {
-      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    if (timeoutInMicroSeconds) {
+      p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeoutInMicroSeconds));
     } else {
-      p.stateInfo().SleepTime(0);
+      p.stateInfo().sleepTsc(0);
     }
     p.setStatus(WAIT_QUEUE);
     waitMutex.unlock();
@@ -325,16 +362,16 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
   }
 }
 
-void ProcessManager::WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMs) {
+void ProcessManager::WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMicroSeconds) {
   upan::vector<IODescriptorTable::io_descriptor> waitIODescriptors;
   IODescriptorTable::io_descriptor waitIODescriptor;
   waitIODescriptor._fd = fd;
   waitIODescriptor._ioType = waitType;
   waitIODescriptors.push_back(waitIODescriptor);
-  WaitOnIODescriptors(waitIODescriptors, timeoutInMs);
+  WaitOnIODescriptors(waitIODescriptors, timeoutInMicroSeconds);
 }
 
-void ProcessManager::WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMs) {
+void ProcessManager::WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMicroSeconds) {
   if(GetCurProcId() < 0)
     return ;
   auto& p = GetCurrentPAS();
@@ -345,17 +382,17 @@ void ProcessManager::WaitOnTerminalIO(const upan::string& path, FSTerminalDevice
     waitInfo._waitType = waitType;
     p.stateInfo().SetTerminalIOWaitInfo(waitInfo);
     p.stateInfo().setError(ProcessStateInfo::NO_ERROR);
-    if (timeoutInMs) {
-      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    if (timeoutInMicroSeconds) {
+      p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeoutInMicroSeconds));
     } else {
-      p.stateInfo().SleepTime(0);
+      p.stateInfo().sleepTsc(0);
     }
     p.setStatus(WAIT_TERMINAL_IO);
   }
   p.yield();
 }
 
-void ProcessManager::WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMs) {
+void ProcessManager::WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMicroSeconds) {
   if(GetCurProcId() < 0)
     return ;
   auto& p = GetCurrentPAS();
@@ -363,10 +400,10 @@ void ProcessManager::WaitOnIODescriptors(const upan::vector<IODescriptorTable::i
     ProcessSwitchLock lock;
     p.stateInfo().SetIODescriptors(waitIODescriptors);
     p.stateInfo().setError(ProcessStateInfo::NO_ERROR);
-    if (timeoutInMs) {
-      p.stateInfo().SleepTime(PIT::Instance().GetClockCount() + PIT::Instance().RoundSleepTime(timeoutInMs));
+    if (timeoutInMicroSeconds) {
+      p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeoutInMicroSeconds));
     } else {
-      p.stateInfo().SleepTime(0);
+      p.stateInfo().sleepTsc(0);
     }
     p.setStatus(WAIT_IO_DESCRIPTORS);
   }
@@ -562,16 +599,16 @@ bool ProcessManager::ConditionalWait(const volatile unsigned* registry, unsigned
 		return false ;
   unsigned value = 1 << bitPos;
 
-	int iMaxLimit = 1000 ; // 1 Sec
-	unsigned uiSleepTime = 10 ; // 10 ms
+	int64_t iMaxLimit = 1000 ; // 1 Sec
+	uint64_t duration = 10 * 1000 ; // 10 ms
 
 	while(iMaxLimit > 10)
 	{
     const bool res = ((*registry) & value) ? true : false;
     if(res == waitfor)
       return true;
-		Sleep(uiSleepTime) ;
-		iMaxLimit -= uiSleepTime ;
+		Sleep(duration) ;
+		iMaxLimit -= duration ;
 	}
 
 	return false ;
@@ -583,6 +620,10 @@ bool ProcessManager::IsEventCompleted(int pid) {
 
 void ProcessManager::EventCompleted(int pid) {
   GetProcessStateInfo(pid).EventCompleted();
+  if (!IsKernel()) {
+    schedulePriorityProcess(pid);
+    GetCurrentPAS().yield();
+  }
 }
 
 ProcessStateInfo& ProcessManager::GetProcessStateInfo(int pid) {
@@ -650,14 +691,14 @@ void ProcessManager::stopProcesses(upan::function<bool, SchedulableProcess&> sto
   }
 
   printf("\n waiting for all processes to terminate...");
-  sleepms(100);
+  millisleep(100);
   for (int i = 0; i < 20; ++i) {
     {
       ProcessSwitchLock lock;
       for (auto& e : _processMap) {
         auto& process = *e.second;
         if (stopCondition(process)) {
-          sleepms(100);
+          millisleep(100);
           continue;
         }
       }
