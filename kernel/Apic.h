@@ -62,6 +62,8 @@ class Apic : public IrqManager {
     uint8_t GetLocalApicID() const;
     uint8_t GetIOApicID();
     uint32_t PhyApicBase() const { return _phyApicBase; }
+    void initAP(uint32_t targetApicId);
+    void sipiAP(uint32_t targetApicId, uint8_t startupVector);
 
   private:
     uint32_t* MmapBase(uint64_t vAddr, uint64_t pAddr);

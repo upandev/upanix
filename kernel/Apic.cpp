@@ -290,3 +290,17 @@ bool Apic::IsIRQEnabled(const IRQ& irq) {
   uint32_t entry = 0x10 + irq.GetIRQNo() * 2;
   return (IoApicRead(entry) & APIC_INTERRUPTDISABLED) == 0;
 }
+
+void Apic::initAP(uint32_t targetApicId) {
+  // Target one CPU using physical destination mode.
+  _apicBase[APIC_ICRH] = targetApicId << 24;
+
+  // INIT: delivery mode INIT, level assert, edge trigger.
+  // Destination shorthand is zero: use the explicit target.
+  _apicBase[APIC_ICRL] = 0x00004500u;
+}
+
+void Apic::sipiAP(uint32_t targetApicId, uint8_t startupVector) {
+  _apicBase[APIC_ICRH] = uint32_t(targetApicId) << 24;
+  _apicBase[APIC_ICRL] = 0x00004600u | startupVector;
+}
