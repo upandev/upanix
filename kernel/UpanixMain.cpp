@@ -240,6 +240,9 @@ void Initialize() {
     //Now that the TLS is initialized for KernelRoot, getpid() can get the PID from the thread local space
     openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
     KLog::info("Kernel Root TLS is Initialized");
+
+    ProcessorManager::instance().initAPs();
+    KeyboardHandler::Instance().Getch();
   }
   catch(const upan::exception& ex)
   {
