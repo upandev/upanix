@@ -33,22 +33,6 @@
 #include <RedirectDescriptor.h>
 #include <TscClock.h>
 
-void KernelUtil::Wait(uint64_t timeInMicroSec) {
-	const uint64_t startTick = TscClock::instance().rdtsc();
-
-  const bool isIntEnabled = IrqManager::IsInterruptEnabled();
-  int count = 100000;
-  while(TscClock::instance().duration(startTick) < (time_t)timeInMicroSec) {
-    if (!isIntEnabled) {
-      if (--count <= 0) {
-        break;
-      }
-    }
-		__asm__ __volatile__("pause") ;
-		__asm__ __volatile__("nop") ;
-	}
-}
-
 void KernelUtil::WaitOnInterrupt(const IRQ& irq)
 {
 	while(!irq.Consume())

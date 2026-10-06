@@ -46,11 +46,6 @@ void SysCall_InitializeHandler(SysCallHandler* pSysCallHandler, Check* pFuncChec
 
 /******************************************************************/
 
-constexpr uint32_t IA32_EFER = 0xC0000080;
-constexpr uint32_t IA32_STAR = 0xC0000081;
-constexpr uint32_t IA32_LSTAR = 0xC0000082;
-constexpr uint32_t IA32_FMASK = 0xC0000084;
-
 extern "C" {
   void _syscall_handler();
 }

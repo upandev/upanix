@@ -211,7 +211,7 @@ bool ProcessManager::DisableTaskSwitch() {
 void ProcessManager::Sleep(uint64_t duration) // in micro Seconds
 {
 	if(DoPollWait()) {
-		KernelUtil::Wait(duration) ;
+    TscClock::instance().busyWait(duration);
 		return ;
 	}
 

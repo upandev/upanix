@@ -116,3 +116,11 @@ time_t TscClock::duration(uint64_t start, uint64_t end) const {
 uint64_t TscClock::durationToCycles(uint64_t duration) const {
   return static_cast<uint64_t>(duration * _frequencyHz / 1000000);
 }
+
+void TscClock::busyWait(uint64_t timeInMicroSec) const {
+  const uint64_t startTick = rdtsc();
+  while(duration(startTick) < (time_t)timeInMicroSec) {
+    __asm__ __volatile__("pause") ;
+    __asm__ __volatile__("nop") ;
+  }
+}

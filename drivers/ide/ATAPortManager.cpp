@@ -24,6 +24,7 @@
 # include <PIT.h>
 # include <PortCom.h>
 # include <KernelUtil.h>
+# include <TscClock.h>
 
 // Cable Types
 char ATAPortManager_szCable[][50] = {
@@ -297,7 +298,7 @@ byte ATAPortManager_IOWait(ATAPort* pPort, unsigned uiMask, unsigned uiValue)
 		if((bStatus & uiMask) == uiValue)
 			return ATAPortManager_SUCCESS ;
 
-		KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
+    TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
 	}
 
 	return ATAPortManager_ERR_TIMEOUT ;
@@ -308,9 +309,8 @@ byte ATAPortManager_IOWaitAlt(ATAPort* pPort, unsigned uiMask, unsigned uiValue)
 	byte bStatus = 0 ;
 	byte i ;
 
-	for(i = 0; i < 200; i++)
-	{
-		KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
+	for(i = 0; i < 200; i++) {
+    TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
 
 		ATA_READ_REG(pPort, ATA_REG_CONTROL, bStatus) ;
 
@@ -328,9 +328,8 @@ byte ATAPortManager_IORead(ATAPort* pPort, void* pBuffer, unsigned uiLength)
 	unsigned uiTransfered = 0 ;
 
 	byte to ;
-	for(to = 0; to < 10; to++)
-	{
-		KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
+	for(to = 0; to < 10; to++) {
+    TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
 		ATA_READ_REG(pPort, ATA_REG_ALTSTATUS, bStatus) ;
 		
 		if(!(bStatus & ATA_STATUS_DRQ) && !(bStatus & ATA_STATUS_ERROR))
@@ -370,7 +369,7 @@ byte ATAPortManager_IORead(ATAPort* pPort, void* pBuffer, unsigned uiLength)
 					return ATAPortManager_SUCCESS ;
 
 				ATA_READ_REG(pPort, ATA_REG_STATUS, bStatus) ;
-				KernelUtil::Wait(ATA_CMD_DELAY) ;
+        TscClock::instance().busyWait(ATA_CMD_DELAY);
 				to = 0 ;
 				continue ;
 			}
@@ -389,10 +388,9 @@ byte ATAPortManager_IOWrite(ATAPort* pPort, void* pBuffer, unsigned uiLength)
 	byte* bData = (byte*)pBuffer ;
 
 	byte to ;
-	for(to = 0; to < 10; to++)
-	{
-		KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
-		
+	for(to = 0; to < 10; to++) {
+    TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
+
 		ATA_READ_REG(pPort, ATA_REG_ALTSTATUS, bStatus) ;
 		
 		if(!(bStatus & ATA_STATUS_DRQ) && !(bStatus & ATA_STATUS_ERROR))
@@ -432,7 +430,7 @@ byte ATAPortManager_IOWrite(ATAPort* pPort, void* pBuffer, unsigned uiLength)
 					return ATAPortManager_SUCCESS ;
 
 				ATA_READ_REG(pPort, ATA_REG_STATUS, bStatus) ;
-				KernelUtil::Wait(ATA_CMD_DELAY) ;
+        TscClock::instance().busyWait(ATA_CMD_DELAY);
 				to = 0 ;
 				continue ;
 			}

@@ -26,6 +26,7 @@
 # include <KernelUtil.h>
 # include <MemConstants.h>
 # include <ProcessManager.h>
+# include <TscClock.h>
 
 #define NO_OF_PRD			256
 #define PRD_TERMINATE		0x8000
@@ -182,7 +183,7 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 	else
 		ATA_WRITE_REG(pPort, ATA_REG_DEVICE, ATA_DEVICE_DEFAULT | ATA_DEVICE_SLAVE) ;
 
-	KernelUtil::Wait(ATA_CMD_DELAY) ;
+  TscClock::instance().busyWait(ATA_CMD_DELAY);
 
 	// Reset
 	ATA_WRITE_REG(pPort, ATA_REG_COUNT, 0x55) ;
@@ -204,13 +205,13 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 	else
 		ATA_WRITE_REG(pPort, ATA_REG_DEVICE, ATA_DEVICE_DEFAULT | ATA_DEVICE_SLAVE)
 
-	KernelUtil::Wait(ATA_CMD_DELAY) ;
+  TscClock::instance().busyWait(ATA_CMD_DELAY);
 
 	// Drive Reset
 	ATA_WRITE_REG(pPort, ATA_REG_CONTROL, ATA_CONTROL_DEFAULT | ATA_CONTROL_RESET) ;
-	KernelUtil::Wait(10000) ;
+  TscClock::instance().busyWait(10000);
 	ATA_WRITE_REG(pPort, ATA_REG_CONTROL, ATA_CONTROL_DEFAULT) ;
-	KernelUtil::Wait(10000) ;
+  TscClock::instance().busyWait(10000);
 	
 	RETURN_X_IF_NOT(ATAPortManager_IOWait(pPort, ATA_STATUS_BUSY, 0), ATAPortManager_SUCCESS, ATAPortOperation_FAILURE) ;
 
@@ -218,9 +219,9 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 	if(pPort->uiPort == 0)
 		ATA_WRITE_REG(pPort, ATA_REG_DEVICE, ATA_DEVICE_DEFAULT) 
 	else
-		ATA_WRITE_REG(pPort, ATA_REG_DEVICE, ATA_DEVICE_DEFAULT | ATA_DEVICE_SLAVE) 
+		ATA_WRITE_REG(pPort, ATA_REG_DEVICE, ATA_DEVICE_DEFAULT | ATA_DEVICE_SLAVE)
 
-	KernelUtil::Wait(ATA_CMD_DELAY) ;
+  TscClock::instance().busyWait(ATA_CMD_DELAY);
 
 	ATA_READ_REG(pPort, ATA_REG_COUNT, uiCount) ;
 	ATA_READ_REG(pPort, ATA_REG_LBA_LOW, uiLBALow) ;
@@ -228,7 +229,7 @@ byte ATAPortOperation_PortReset(ATAPort* pPort)
 	if(!(uiCount == 0x01 && uiLBALow == 0x01))
 		return ATAPortOperation_FAILURE ;
 
-	KernelUtil::Wait(50000) ;
+  TscClock::instance().busyWait(50000);
 
 	return ATAPortOperation_SUCCESS ;
 }

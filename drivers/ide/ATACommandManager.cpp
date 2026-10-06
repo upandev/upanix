@@ -24,6 +24,7 @@
 # include <ATAPortOperation.h>
 # include <PortCom.h>
 # include <KernelUtil.h>
+# include <TscClock.h>
 
 void ATACommandManager_ExecuteATACommand(ATACommand* pCommand)
 {
@@ -178,7 +179,7 @@ void ATACommandManager_ExecuteATACommand(ATACommand* pCommand)
 			ATA_WRITE_REG(pPort, ATA_REG_COMMAND, bCommand) ;
 			ATA_READ_REG(pPort, ATA_REG_CONTROL, bControl) ;
 
-			KernelUtil::Wait(ATA_CMD_DELAY) ;
+      TscClock::instance().busyWait(ATA_CMD_DELAY);
 
 			if(pPort->portOperation.FlushRegs)
 				pPort->portOperation.FlushRegs(pPort) ;
@@ -360,7 +361,7 @@ void ATACommandManager_ExecuteATAPICommand(ATACommand* pCommand)
 						break ;
 					}
 
-					KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
+          TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
 				}
 
 				if(bTimedOut)
@@ -442,9 +443,8 @@ void ATACommandManager_ExecuteATAPICommand(ATACommand* pCommand)
 				byte bStatus = 0 ;
 				byte i ;
 
-				for(i = 0; i < 200; i++)
-				{
-					KernelUtil::Wait(ATA_CMD_TIMEOUT) ;
+				for(i = 0; i < 200; i++) {
+          TscClock::instance().busyWait(ATA_CMD_TIMEOUT);
 
 					ATA_READ_REG(pPort, ATA_REG_STATUS, bStatus) ;
 

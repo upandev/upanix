@@ -26,7 +26,6 @@ class KernelUtil {
 	typedef int KernelUtilTimerFunc() ;
 
 	public:
-		static void Wait(uint64_t timeInMicroSec) ;
 		static void WaitOnInterrupt(const IRQ&);
     static void TightLoopWait(unsigned loop) ;
 

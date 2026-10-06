@@ -43,6 +43,7 @@ public:
   time_t duration(uint64_t start) const;
   time_t duration(uint64_t start, uint64_t end) const;
   uint64_t durationToCycles(uint64_t duration) const;
+  void busyWait(uint64_t timeInMicroSec) const;
 
   time_t bootTime() const { return _bootTime; }
   time_t currentTime() const;
