@@ -36,6 +36,7 @@ public:
 
   static ProcessorManager& instance();
   Apic* apic() { return _apic; }
+  void initAPs();
 
 private:
   Apic* _apic;

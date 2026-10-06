@@ -20,25 +20,20 @@
 ASM = ${HOME}/opt/cross/bin/nasm
 
 BIN = ${UPANIX_HOME}/bin
-UPANIX_START_MAIN_SRC = UpanixStart_Main.asm
-UPANIX_START_MAIN_OBJ = UpanixStart_Main.grub
-FPU_INIT_SRC = fpu_init.asm
-FPU_INIT_OBJ = fpu_init.obj
 
-boot_elf: ${UPANIX_START_MAIN_OBJ} ${FPU_INIT_OBJ}
+boot_elf: UpanixStart_Main.obj fpu_init.obj ap_init.obj
 
-${FPU_INIT_OBJ}: ${FPU_INIT_SRC}
-	${ASM} -felf64 ${FPU_INIT_SRC} -o ${FPU_INIT_OBJ}
+fpu_init.obj: fpu_init.asm
+	${ASM} -felf64 $< -o $@
 
-${UPANIX_START_MAIN_OBJ}: ${UPANIX_START_MAIN_SRC}
-	${ASM} -felf64 ${UPANIX_START_MAIN_SRC} -o ${UPANIX_START_MAIN_OBJ}
+ap_init.obj: ap_init.asm
+	${ASM} -felf64 $< -o $@
+
+UpanixStart_Main.obj: UpanixStart_Main.asm
+	${ASM} -felf64 $< -o $@
 
 clean:
-	rm -f *.o
-	rm -f ${FPU_INIT_OBJ}
-	rm -f ${UPANIX_START_MAIN_OBJ}
+	rm -f *.obj
 
 distclean:
-	rm -f *.o
-	rm -f ${FPU_INIT_OBJ}
-	rm -f ${UPANIX_START_MAIN_OBJ}
+	rm -f *.obj

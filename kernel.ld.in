@@ -39,14 +39,19 @@ SECTIONS
   .bootstrap BLOCK(1K) : ALIGN(8)
   {
       *(.multiboot)
-      @PROJECT_SOURCE_DIR@/boot/UpanixStart_Main.grub (.text)
+      @PROJECT_SOURCE_DIR@/boot/UpanixStart_Main.obj (.text)
+  }
+
+  .ap_init 0x8000 : ALIGN(4K)
+  {
+    @PROJECT_SOURCE_DIR@/boot/ap_init.obj (.ap_init)
   }
 
   . = 1M;
 
   .text BLOCK(4K) : ALIGN(4K)
   {
-    *(EXCLUDE_FILE(*UpanixStart_Main.grub) .text)
+    *(EXCLUDE_FILE(*UpanixStart_Main.obj) .text)
     *(.text*)
   }
 
