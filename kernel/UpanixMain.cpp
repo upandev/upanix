@@ -186,8 +186,8 @@ void Initialize() {
 
     Acpi::Instance();
     Cpu::Instance();
-    ProcessorManager::instance();
     IDT::Instance();
+    ProcessorManager::instance();
     Pat::Instance();
     Mtrr::Instance();
     DMA_Initialize();

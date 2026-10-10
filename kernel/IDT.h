@@ -19,19 +19,19 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
-#ifndef _IDT_H_
-#define _IDT_H_
+#pragma once
 
 #include <Global.h>
 
-class IDT
-{
+class IDT {
+  public:
+    static constexpr int MAX_IDT_ENTRIES = 50;
+
 	private:
-		IDT();
+		explicit IDT();
 
 	public:
-		static IDT& Instance()
-		{
+		static IDT& Instance() {
 			static IDT instance;
 			return instance;
 		}
@@ -43,7 +43,7 @@ class IDT
 		typedef struct {
 				uint16_t _limit;
 				uint64_t _base;
-		} PACKED IDTRegister ;
+		} PACKED IDTRegister;
 
 		typedef struct {
 			uint16_t _lowerOffset;
@@ -56,8 +56,8 @@ class IDT
       uint16_t _midOffset;
       uint32_t _higherOffset;
       uint32_t _reserved;
-		} PACKED IDTEntry ;
-	friend class IrqManager;
-};
+		} PACKED IDTEntry;
 
-#endif
+    friend class IrqManager;
+    friend class Processor;
+};

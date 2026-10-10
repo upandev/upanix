@@ -27,20 +27,12 @@
 #include <InterruptHandlers.h>
 
 IDT::IDT() {
-  const int MAX_IDT_ENTRIES = 50;
   for (unsigned i = 0; i < MAX_IDT_ENTRIES; ++i) {
     LoadEntry(i, (uintptr_t) &isr_default_interrupt_handler, SYS_CODE_SELECTOR, 0x8E);
   }
 
-  LoadHandlers() ;
-
-	IDT::IDTRegister IDTR ;
-
-	IDTR._limit = MAX_IDT_ENTRIES * sizeof(IDT::IDTEntry) ;
-	IDTR._base = IDT_BASE_ADDR ;
-
-	__asm__ __volatile__("LIDT (%0)" : : "r"(&IDTR)) ;
-  KC::MConsole().LoadMessage("IDT Initialization", Success) ;
+  LoadHandlers();
+  KC::MConsole().LoadMessage("IDT Initialization", Success);
 }
 
 extern "C" {

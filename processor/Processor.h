@@ -22,29 +22,15 @@
 
 #pragma once
 
-#include <Apic.h>
-#include <map.h>
-#include <Processor.h>
+#include <stdint.h>
 
-class ProcessorManager {
-private:
-  static ProcessorManager* _instance;
-  ProcessorManager();
-  ~ProcessorManager() = default;
+class Processor {
+  private:
+    explicit Processor(uint32_t id);
+    void LIDT();
 
-public:
-  ProcessorManager(const ProcessorManager&)=delete;
-  ProcessorManager& operator=(const ProcessorManager&)=delete;
+  private:
+    uint32_t _id;
 
-  static ProcessorManager& instance();
-  Apic* apic() { return _apic; }
-  void initAPs();
-  void apMain();
-  Processor& getProcessor() const;
-
-private:
-  Apic* _apic;
-  upan::mutex _processorMutex;
-  typedef upan::map<uint32_t, Processor*> ProcessorMap;
-  ProcessorMap _processors;
+  friend class ProcessorManager;
 };

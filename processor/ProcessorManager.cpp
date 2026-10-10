@@ -32,7 +32,9 @@ extern "C" {
   extern uint32_t AP_PAGE_TABLE;
   extern uint32_t AP_EFER_BITS;
   extern uint64_t AP_STACK_TOP;
-  extern uint32_t AP_READY;
+
+  static uint32_t AP_REPORTED_ID;
+  static uint32_t AP_READY;
 }
 
 ProcessorManager* ProcessorManager::_instance = nullptr;
@@ -65,15 +67,13 @@ ProcessorManager::ProcessorManager() : _apic(nullptr) {
   if (!bspFound) {
     printf("\nCPU discovery: executing APIC ID %u missing from MADT", bspApicId);
   }
+
+  _processors.insert(ProcessorMap::value_type(bspApicId, new Processor(bspApicId)));
 }
 
 void ProcessorManager::initAPs() {
   AP_PAGE_TABLE = (uint32_t)(reinterpret_cast<uintptr_t>(MEM_PML4_TABLE));
-
   AP_EFER_BITS = (uint32_t)(Cpu::Instance().MSRread(IA32_EFER) & (1ULL << 11));
-
-  const uintptr_t apStackAddress = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
-  AP_STACK_TOP = apStackAddress + PAGE_SIZE;
 
   const auto startupVector = uint8_t(uintptr_t(AP_TRAMPOLINE_START) >> 12);
 
@@ -86,22 +86,53 @@ void ProcessorManager::initAPs() {
     }
     printf("\nInitializing AP with APIC ID %u", cpu.Id());
 
+    const uintptr_t apStackBase = MemManager::Instance().AllocatePhysicalPage() * PAGE_SIZE;
+    AP_STACK_TOP = apStackBase + PAGE_SIZE;
+
+    __atomic_store_n(&AP_REPORTED_ID, 0u, __ATOMIC_RELAXED);
     __atomic_store_n(&AP_READY, 0u, __ATOMIC_RELAXED);
 
     _apic->initAP(cpu.Id());
     TscClock::instance().busyWait(10000);
 
     bool apReady = false;
-    for (int i = 0; i < 2 && !apReady; ++i) {
+    for (int i = 0; i < 200 && !apReady; ++i) {
       _apic->sipiAP(cpu.Id(), startupVector);
-      TscClock::instance().busyWait(200);
-      apReady = __atomic_load_n(&AP_READY, __ATOMIC_ACQUIRE) == 99;
+
+      TscClock::instance().busyWait(500);
+
+      apReady = __atomic_load_n(&AP_READY, __ATOMIC_ACQUIRE) == 1;
     }
+
     if (!apReady) {
-      printf("\nAP with APIC ID %u failed to initialize", cpu.Id());
+      printf("\n AP with APIC ID %u failed to initialize", cpu.Id());
     } else {
-      printf("\nAP with APIC ID %u initialized", cpu.Id());
+      const auto apId = __atomic_load_n(&AP_REPORTED_ID, __ATOMIC_ACQUIRE);
+      printf("\n AP with APIC ID %u initialized, Reported ID: %u", cpu.Id(), apId);
     }
-    break;
   }
+}
+
+extern "C"
+void _ap_main() {
+  ProcessorManager::instance().apMain();
+}
+
+void ProcessorManager::apMain() {
+  const auto apicId = _apic->GetLocalApicID();
+
+  //no need for mutex here because APs are initialized sequentially
+  _processors.insert(ProcessorMap::value_type(apicId, new Processor(apicId)));
+
+  __atomic_store_n(&AP_REPORTED_ID, apicId, __ATOMIC_RELAXED);
+  __atomic_store_n(&AP_READY, 1u, __ATOMIC_RELEASE);
+}
+
+Processor& ProcessorManager::getProcessor() const {
+  upan::mutex_guard g(_processorMutex);
+  auto it = _processors.find(_apic->GetLocalApicID());
+  if (it == _processors.end()) {
+    throw upan::exception(XLOC, "Processor %d not found", _apic->GetLocalApicID());
+  }
+  return *it->second;
 }

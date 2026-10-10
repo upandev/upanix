@@ -20,31 +20,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#pragma once
-
-#include <Apic.h>
-#include <map.h>
 #include <Processor.h>
+#include <IDT.h>
 
-class ProcessorManager {
-private:
-  static ProcessorManager* _instance;
-  ProcessorManager();
-  ~ProcessorManager() = default;
+Processor::Processor(uint32_t id) : _id(id) {
+  LIDT();
+}
 
-public:
-  ProcessorManager(const ProcessorManager&)=delete;
-  ProcessorManager& operator=(const ProcessorManager&)=delete;
+void Processor::LIDT() {
+  IDT::IDTRegister IDTR;
+  IDTR._limit = IDT::MAX_IDT_ENTRIES * sizeof(IDT::IDTEntry);
+  IDTR._base = IDT_BASE_ADDR;
 
-  static ProcessorManager& instance();
-  Apic* apic() { return _apic; }
-  void initAPs();
-  void apMain();
-  Processor& getProcessor() const;
-
-private:
-  Apic* _apic;
-  upan::mutex _processorMutex;
-  typedef upan::map<uint32_t, Processor*> ProcessorMap;
-  ProcessorMap _processors;
-};
+  __asm__ __volatile__("LIDT (%0)" : : "r"(&IDTR));
+  printf("\n IDT loaded for processor: %d", _id);
+}

@@ -10,7 +10,8 @@ GLOBAL AP_TRAMPOLINE_END
 GLOBAL AP_PAGE_TABLE
 GLOBAL AP_EFER_BITS
 GLOBAL AP_STACK_TOP
-GLOBAL AP_READY
+
+EXTERN _ap_main
 
 AP_TRAMPOLINE_START:
     cli
@@ -19,10 +20,9 @@ AP_TRAMPOLINE_START:
 
 ; Mailbox fields filled by the BSP before sending SIPI.
 times 0x10 - ($ - $$) db 0
-AP_PAGE_TABLE:  dd 0                 ; 0x10: physical CR3, below 4 GiB
-AP_EFER_BITS:  dd 0                 ; 0x14: BSP EFER.NXE (bit 11), or zero
-AP_STACK_TOP:  dq 0                 ; 0x18: private, mapped stack top
-AP_READY:      dd 0                 ; 0x20: AP writes 1 after entering long mode
+AP_PAGE_TABLE:        dd 0 ; 0x10: physical CR3, below 4 GiB
+AP_EFER_BITS:         dd 0 ; 0x14: BSP EFER.NXE (bit 11), or zero
+AP_STACK_TOP:         dq 0 ; 0x18: private, mapped stack top
 
 real_mode:
     xor ax, ax
@@ -76,7 +76,8 @@ long_mode:
     mov gs, ax
     mov rsp, [AP_STACK_TOP]
     xor ebp, ebp
-    mov dword [AP_READY], 99
+
+    call _ap_main
 .park:
     hlt                          ; interrupts remain disabled
     jmp .park
