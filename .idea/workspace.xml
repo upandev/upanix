@@ -33,20 +33,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="IDT is loaded within the processor - all CPUs use a shared IDT initialized space">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="AP initialization further extended to load it's own dedicated GDT - which is clone of BSP GDT and also TSS with dedicated ring0, ist1, ist2, ist3, ist4 stack and also a dedicated AP stack">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/ap_init.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/ap_init.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/fpu_init.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/fpu_init.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Cpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Cpu.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/IDT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/IDT.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/IDT.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/_InterruptHandlers.s" beforeDir="false" afterPath="$PROJECT_DIR$/libints/_InterruptHandlers.s" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/processor/Processor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/processor/Processor.h" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/processor/ProcessorManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/ProcessorManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/processor/ProcessorManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/processor/ProcessorManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -846,7 +841,7 @@
       <workItem from="1790163429778" duration="9993000" />
       <workItem from="1790384429757" duration="1291000" />
       <workItem from="1790418496240" duration="54181000" />
-      <workItem from="1790945295659" duration="100046000" />
+      <workItem from="1790945295659" duration="108199000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1191,7 +1186,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="302" />
+    <option name="localTasksCounter" value="303" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1225,7 +1220,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="rusage system call is fixed to pass the current process as param to the underlying rusage method" />
     <MESSAGE value="improved log to print ST_BIND value during relocation failure" />
     <MESSAGE value="bug fix in argv size calculation - to include the null terminator entry" />
     <MESSAGE value="fix waitpid() on a child process to work for a thread" />
@@ -1250,7 +1244,8 @@
     <MESSAGE value="implemented AP initialization code - trampoline" />
     <MESSAGE value="use TscClock for busy spin wait" />
     <MESSAGE value="IDT is loaded within the processor - all CPUs use a shared IDT initialized space" />
-    <option name="LAST_COMMIT_MESSAGE" value="IDT is loaded within the processor - all CPUs use a shared IDT initialized space" />
+    <MESSAGE value="AP initialization further extended to load it's own dedicated GDT - which is clone of BSP GDT and also TSS with dedicated ring0, ist1, ist2, ist3, ist4 stack and also a dedicated AP stack" />
+    <option name="LAST_COMMIT_MESSAGE" value="AP initialization further extended to load it's own dedicated GDT - which is clone of BSP GDT and also TSS with dedicated ring0, ist1, ist2, ist3, ist4 stack and also a dedicated AP stack" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

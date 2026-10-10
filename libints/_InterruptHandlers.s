@@ -102,3 +102,7 @@ interrupt_handler ata_primary
 interrupt_handler ata_secondary
 interrupt_handler floppy
 interrupt_handler e1000_nic
+
+.global _ap_spurious_interrupt_handler
+_ap_spurious_interrupt_handler:
+    iretq

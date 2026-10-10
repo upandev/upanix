@@ -69,8 +69,8 @@ bool Apic::IsAvailable() {
 
 Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr) {
   // Local APIC, cf. Intel manual 3A, chapter 10
-  _phyApicBase = (Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL); // read APIC base address (ignore bit0-11)
-  Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, ((_phyApicBase & ~0xFFFUL) | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
+  _phyApicBase = Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL; // read APIC base address (ignore bit0-11)
+  Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, (_phyApicBase | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
   _apicBase = MmapBase(MMAP_APIC_BASE, _phyApicBase);
 
   uint64_t phyIoApicBase = (*Acpi::Instance().GetMadt().GetIoApics().begin()).Address();
@@ -303,4 +303,67 @@ void Apic::initAP(uint32_t targetApicId) {
 void Apic::sipiAP(uint32_t targetApicId, uint8_t startupVector) {
   _apicBase[APIC_ICRH] = uint32_t(targetApicId) << 24;
   _apicBase[APIC_ICRL] = 0x00004600u | startupVector;
+}
+
+bool Apic::initAPLocalApic() {
+  // Called on the AP. Leave maskable interrupts disabled.
+  __asm__ __volatile__("cli" ::: "memory");
+
+  const uint64_t baseMsr =
+          Cpu::Instance().MSRread(IA32_APIC_BASE_MSR);
+
+  constexpr uint64_t X2APIC_ENABLE = 1ULL << 10;
+  constexpr uint64_t BASE_ADDRESS_MASK = 0x000FFFFFFFFFF000ULL;
+
+  // This routine is for APs in hardware-enabled xAPIC mode.
+  // Reject unexpected state instead of changing modes here.
+  if ((baseMsr & IA32_APIC_BASE_BSP) != 0 ||
+      (baseMsr & X2APIC_ENABLE) != 0 ||
+      (baseMsr & IA32_APIC_BASE_MSR_ENABLE) == 0 ||
+      (baseMsr & BASE_ADDRESS_MASK) != _phyApicBase) {
+    return false;
+  }
+
+  const uint32_t version = _apicBase[APIC_APICVERSION];
+  const uint32_t maxLvt = (version >> 16) & 0xFFu;
+
+  // Require the integrated Local APIC layout used by this sample.
+  if ((version & 0xFFu) < 0x10u || maxLvt < 3u) {
+    return false;
+  }
+
+  // Mask errors first. Give the entry a valid vector even while masked.
+  _apicBase[APIC_ERROR] = APIC_INTERRUPTDISABLED | 0xFEu;
+
+  // Mask sources without changing their other configuration bits.
+  const auto maskEntry = [this](APIC_REG_INDEX index) {
+    _apicBase[index] = _apicBase[index] | APIC_INTERRUPTDISABLED;
+  };
+
+  maskEntry(APIC_TIMER);
+  _apicBase[APIC_TIMER_INITCOUNT] = 0;
+
+  maskEntry(APIC_LINT0);
+  maskEntry(APIC_LINT1);
+
+  if (maxLvt >= 4u) {
+    maskEntry(APIC_PERFORMANCECOUNTER);
+  }
+  if (maxLvt >= 5u) {
+    maskEntry(APIC_THERMALSENSOR);
+  }
+  if (maxLvt >= 6u) {
+    maskEntry(APIC_CMCI);
+  }
+
+  // No task-priority restriction on future fixed-delivery IPIs.
+  _apicBase[APIC_TASKPRIORITY] = 0;
+
+  // Set spurious vector 0xFF and software-enable this Local APIC.
+  const uint32_t oldSvr = _apicBase[APIC_SPURIOUSINTERRUPT];
+  _apicBase[APIC_SPURIOUSINTERRUPT] = (oldSvr & ~0xFFu) | 0xFFu | APIC_SW_ENABLE;
+
+  // Read back to check the vector and software-enable bit.
+  const uint32_t svr = _apicBase[APIC_SPURIOUSINTERRUPT];
+  return (svr & 0x1FFu) == 0x1FFu;
 }

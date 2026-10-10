@@ -37,9 +37,10 @@ IDT::IDT() {
 
 extern "C" {
   void _page_fault_interrupt_handler();
-  void _isr_0x27_interrupt_handler();
   void _timer_interrupt_handler();
   void _xhci_interrupt_handler();
+  void _isr_0x27_interrupt_handler();
+  void _ap_spurious_interrupt_handler();
 }
 
 void IDT::LoadHandlers() {
@@ -67,6 +68,7 @@ void IDT::LoadHandlers() {
 
 	//Spurious IRQ
 	LoadEntry(0x27, (uintptr_t)&_isr_0x27_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
+  LoadEntry(0xFF, (uintptr_t)&_ap_spurious_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 }
 
 void IDT::LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options) {

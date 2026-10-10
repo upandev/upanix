@@ -38,12 +38,17 @@ Cpu::Cpu() {
                        "popq %%rax;"
                        "xorq %%rcx, %%rax;"
                        "shrq $21, %%rax;"
-                       "popfq;" : "=m"(result) : : "rax", "rcx", "memory");
-  _cpuIdAvailable = (result == 0);
-  if(_cpuIdAvailable) {
-    printf("\n CPUID is available");
-    EnableSSE();
+                       "popfq;"
+                       "movq %%rax, %0;" : "=r"(result) : : "rax", "rcx", "memory");
+  _cpuIdAvailable = (result & 1u) != 0;
+  if(!_cpuIdAvailable) {
+    printf("\n CPUID is not available!!");
+    for (;;) {
+      __asm__ __volatile__("hlt");
+    }
   }
+  printf("\n CPUID is available");
+  EnableSSE();
 }
 
 bool Cpu::HasSupport(CPU_FEATURE feature)

@@ -36,6 +36,7 @@ enum APIC_REG_INDEX {
   APIC_DFR                = 0xE0  / 4, // Destination Format
   APIC_SPURIOUSINTERRUPT  = 0xF0  / 4,
   APIC_ESR                = 0x280 / 4, // Error Status
+  APIC_CMCI               = 0x2F0 / 4, // Corrected Machine Check Interrupt
   APIC_ICRL               = 0x300 / 4, // Interrupt Command Lo
   APIC_ICRH               = 0x310 / 4, // Interrupt Command Hi
 
@@ -64,6 +65,7 @@ class Apic : public IrqManager {
     uint32_t PhyApicBase() const { return _phyApicBase; }
     void initAP(uint32_t targetApicId);
     void sipiAP(uint32_t targetApicId, uint8_t startupVector);
+    bool initAPLocalApic();
 
   private:
     uint32_t* MmapBase(uint64_t vAddr, uint64_t pAddr);

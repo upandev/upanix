@@ -125,6 +125,14 @@ void ApplicationProcessor::main() {
   LTR();
   LIDT();
 
+  if (!_apic.initAPLocalApic()) {
+    // Do not publish readiness. BSP should time out and stop startup.
+    return;
+  }
   __atomic_store_n(&AP_REPORTED_ID, _apic.GetLocalApicID(), __ATOMIC_RELAXED);
   __atomic_store_n(&AP_READY, 1u, __ATOMIC_RELEASE);
+
+  for (;;) {
+    __asm__ __volatile__("sti; hlt" ::: "memory");
+  }
 }

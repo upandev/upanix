@@ -25,7 +25,7 @@
 
 class IDT {
   public:
-    static constexpr int MAX_IDT_ENTRIES = 50;
+    static constexpr int MAX_IDT_ENTRIES = 256;
 
 	private:
 		explicit IDT();
