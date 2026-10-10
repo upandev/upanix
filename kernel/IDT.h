@@ -41,11 +41,6 @@ class IDT {
 		void LoadEntry(uint32_t idtNo, uintptr_t offset, uint16_t selector, uint8_t options);
 
 		typedef struct {
-				uint16_t _limit;
-				uint64_t _base;
-		} PACKED IDTRegister;
-
-		typedef struct {
 			uint16_t _lowerOffset;
 			uint16_t _selector;
 

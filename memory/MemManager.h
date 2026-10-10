@@ -88,7 +88,6 @@ private:
 		bool BuildPagePoolMap();
 		bool BuildPageTable() ;
     bool MarkACPIInfoRegionAsAllocated();
-    void InitTaskState64();
 
 	private:
     uint32_t _noOfPages ;

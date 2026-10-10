@@ -59,7 +59,6 @@ MemManager::MemManager() : RAM_SIZE(MultiBoot::Instance().GetRamSize()) {
     if(BuildPageTable()) {
       if (BuildPagePoolMap()) {
         if (MarkACPIInfoRegionAsAllocated()) {
-          InitTaskState64();
           Mem_FlushTLB();
           KC::MConsole().LoadMessage("Memory Manager Initialization", Success);
           return;
@@ -76,43 +75,6 @@ void MemManager::PrintInitStatus() const {
   printf("\n\tRAM SIZE = %lu", RAM_SIZE) ;
   printf("\n\tNo. of Pages = %d", _noOfPages) ;
   printf("\n\tNo. of Resv Pages = %d\n", _kernelReservedPages) ;
-}
-
-class TaskState64 {
-public:
-  uint32_t _reserved1;
-
-  uint64_t _rsp0;
-  uint64_t _rsp1;
-  uint64_t _rsp2;
-
-  uint64_t _reserved2;
-
-  uint64_t _ist1;
-  uint64_t _ist2;
-  uint64_t _ist3;
-  uint64_t _ist4;
-  uint64_t _ist5;
-  uint64_t _ist6;
-  uint64_t _ist7;
-
-  uint64_t _reserved3;
-  uint16_t _reserved4;
-  uint16_t _ioMapBase;
-} PACKED;
-
-void MemManager::InitTaskState64() {
-  TaskState64* taskState64 = (TaskState64*)(TSS_BASE_ADDR);
-  memset(taskState64, 0, sizeof(TaskState64));
-  taskState64->_ioMapBase = 103;
-  taskState64->_rsp0 = MEM_KERNEL_RING0_STACK_TOP;
-  taskState64->_ist1 = MEM_KERNEL_IST1_TIMER_STACK_TOP;
-  taskState64->_ist2 = MEM_KERNEL_IST2_PAGE_FAULT_STACK_TOP;
-  taskState64->_ist3 = MEM_KERNEL_IST3_XHCI_STACK_TOP;
-  taskState64->_ist4 = MEM_KERNEL_IST4_COMMON_STACK_TOP;
-
-  __asm__ __volatile__("mov %0, %%ax;"
-                       "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);
 }
 
 bool MemManager::MarkACPIInfoRegionAsAllocated() {

@@ -7,10 +7,13 @@ ALIGN 4096
 
 GLOBAL AP_TRAMPOLINE_START
 GLOBAL AP_TRAMPOLINE_END
-GLOBAL AP_PAGE_TABLE
 GLOBAL AP_EFER_BITS
 GLOBAL AP_STACK_TOP
 
+EXTERN MEM_PML4_TABLE
+EXTERN SYS_CODE_SELECTOR
+EXTERN SYS_DATA_SELECTOR
+EXTERN AP_GDTR
 EXTERN _ap_main
 
 AP_TRAMPOLINE_START:
@@ -20,7 +23,6 @@ AP_TRAMPOLINE_START:
 
 ; Mailbox fields filled by the BSP before sending SIPI.
 times 0x10 - ($ - $$) db 0
-AP_PAGE_TABLE:        dd 0 ; 0x10: physical CR3, below 4 GiB
 AP_EFER_BITS:         dd 0 ; 0x14: BSP EFER.NXE (bit 11), or zero
 AP_STACK_TOP:         dq 0 ; 0x18: private, mapped stack top
 
@@ -47,7 +49,7 @@ protected_mode:
     mov eax, cr4
     or eax, 1 << 5               ; CR4.PAE
     mov cr4, eax
-    mov eax, [AP_PAGE_TABLE]
+    mov eax, [MEM_PML4_TABLE]
     mov cr3, eax
 
     mov ecx, 0xC0000080          ; IA32_EFER
@@ -74,15 +76,45 @@ long_mode:
     xor eax, eax
     mov fs, ax
     mov gs, ax
+
+    ; load gdt
+    LGDT [AP_GDTR]
+
+    ;jmp SYS_CODE_SELECTOR:long_mode
+    ;instead of simply doing above, we are calculating the far target like below because GDT.SYS_CODE and the SYS_CODE_SELECTOR may not be same
+    ;there is no way to use SYS_CODE_SELECTOR variable in jmp directly
+
+    mov ax, [SYS_CODE_SELECTOR]
+    mov [start_ap_target_address + 8], ax
+
+    lea rax, [rel _start_ap]
+    mov [start_ap_target_address], rax
+
+    jmp far qword [rel start_ap_target_address]
+
+_start_ap:
+    mov ax, [SYS_DATA_SELECTOR]
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    xor eax, eax
+    mov fs, ax
+    mov gs, ax
     mov rsp, [AP_STACK_TOP]
     xor ebp, ebp
 
     call _ap_main
+
 .park:
     hlt                          ; interrupts remain disabled
     jmp .park
 
 ALIGN 8
+
+start_ap_target_address:
+    dq 0    ; 64-bit destination address
+    dw 0    ; 16-bit code selector
+
 GDT:
     .NULL EQU $ - GDT
         DW 0                ; Limit 15:0

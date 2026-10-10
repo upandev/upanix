@@ -766,7 +766,6 @@ int FileSystem::read(FileNodeRef fileNodeRef, FileDescriptor& fdEntry, uint8_t* 
   int readRemainingCount = (size < (currentFileSize - offset) && size > 0) ? size : (currentFileSize  - offset) ;
 
   upan::uniq_ptr<uint8_t> sectorBuffer(new uint8_t[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE]);
-  //uint8_t sectorBuffer[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE];
   int startReadSectorOffset = offset % FileSystem::SECTOR_SIZE;
   int sectorCount = 0;
 
@@ -950,7 +949,7 @@ int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint
   bool allocationStarted = false ;
 
   uint32_t uiBufStartSectorId, bufPrevSectorId;
-  uint8_t writeBuffer[MAX_SECTORS_PER_WRITE * FileSystem::SECTOR_SIZE];
+  upan::uniq_ptr<uint8_t> writeBuffer(new uint8_t[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE]);
   uint32_t bufCount = 0;
 
   while(true) {
@@ -967,19 +966,19 @@ int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint
 
       memcpy(sectorBuffer, (dataBuffer + writtenCount), writeRemainingCount);
 
-      _bufferedWrite(currentSectorId, sectorBuffer, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, false);
-      _bufferedWrite(EOC, nullptr, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, true);
+      _bufferedWrite(currentSectorId, sectorBuffer, writeBuffer.get(), uiBufStartSectorId, bufPrevSectorId, bufCount, false);
+      _bufferedWrite(EOC, nullptr, writeBuffer.get(), uiBufStartSectorId, bufPrevSectorId, bufCount, true);
 
       return size;
     }
 
-    _bufferedWrite(currentSectorId, dataBuffer + writtenCount, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, false);
+    _bufferedWrite(currentSectorId, dataBuffer + writtenCount, writeBuffer.get(), uiBufStartSectorId, bufPrevSectorId, bufCount, false);
 
     writtenCount += FileSystem::SECTOR_SIZE;
     writeRemainingCount -= FileSystem::SECTOR_SIZE;
 
     if(writeRemainingCount == 0) {
-      _bufferedWrite(EOC, nullptr, writeBuffer, uiBufStartSectorId, bufPrevSectorId, bufCount, true);
+      _bufferedWrite(EOC, nullptr, writeBuffer.get(), uiBufStartSectorId, bufPrevSectorId, bufCount, true);
       return size;
     }
 

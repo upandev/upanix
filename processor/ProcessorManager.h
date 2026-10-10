@@ -24,6 +24,7 @@
 
 #include <Apic.h>
 #include <map.h>
+#include <vector.h>
 #include <Processor.h>
 
 class ProcessorManager {
@@ -40,11 +41,14 @@ public:
   Apic* apic() { return _apic; }
   void initAPs();
   void apMain();
-  Processor& getProcessor() const;
+
+  Processor& getProcessor(uint32_t id) const;
+  Processor& getCurrentProcessor() const;
 
 private:
   Apic* _apic;
   upan::mutex _processorMutex;
   typedef upan::map<uint32_t, Processor*> ProcessorMap;
   ProcessorMap _processors;
+  upan::vector<uintptr_t> _apGDTs;
 };

@@ -23,14 +23,66 @@
 #pragma once
 
 #include <stdint.h>
+#include <Global.h>
+#include <Apic.h>
 
 class Processor {
-  private:
-    explicit Processor(uint32_t id);
+  public:
+    explicit Processor(int seqId, uint32_t id);
+    virtual void init() = 0;
+    virtual void main() = 0;
+
+    typedef struct {
+      uint16_t _limit;
+      uint64_t _base;
+    } PACKED DTRegister;
+
+  protected:
+    typedef struct {
+      uint32_t _reserved1;
+
+      uint64_t _rsp0;
+      uint64_t _rsp1;
+      uint64_t _rsp2;
+
+      uint64_t _reserved2;
+
+      uint64_t _ist1;
+      uint64_t _ist2;
+      uint64_t _ist3;
+      uint64_t _ist4;
+      uint64_t _ist5;
+      uint64_t _ist6;
+      uint64_t _ist7;
+
+      uint64_t _reserved3;
+      uint16_t _reserved4;
+      uint16_t _ioMapBase;
+    } PACKED TaskState64;
+
     void LIDT();
+    void LTR();
+
+  protected:
+    const int _seqId;
+    const uint32_t _id;
+    TaskState64* _tss;
+};
+
+class BootstrapProcessor : public Processor {
+  public:
+    explicit BootstrapProcessor(int seqId, uint32_t id);
+    void init() override {}
+    void main() override {}
+};
+
+class ApplicationProcessor : public Processor {
+  public:
+    explicit ApplicationProcessor(int seqId, uint32_t id, Apic& _apic);
+    void init() override;
+    void main() override;
 
   private:
-    uint32_t _id;
-
-  friend class ProcessorManager;
+    Apic& _apic;
+    uintptr_t _gdtBase;
 };
