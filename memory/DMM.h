@@ -25,6 +25,7 @@
 #include <MemConstants.h>
 #include <ProcessConstants.h>
 #include <mutex.h>
+#include <spinmutex.h>
 
 #define NULL 0x0
 
@@ -105,4 +106,7 @@ public:
   bool free(uintptr_t address) override;
   bool getAllocSize(uintptr_t address, size_t* size) override;
   uint64_t availableHeapSize() override;
+
+private:
+  upan::spinmutex _mutex;
 };

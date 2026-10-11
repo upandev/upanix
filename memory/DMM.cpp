@@ -20,11 +20,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 #include <DMM.h>
-#include <MemManager.h>
-#include <UpanixMain.h>
-#include <stdio.h>
-#include <exception.h>
 #include <Bit.h>
+#include <IrqLockGuard.h>
 
 uint64_t AllocationUnitTracker::calculateCheckSum() const {
   return uint64_t(allocatedAddress) ^ size ^ returnAddress ^ uint64_t(nextAUTAddress);
@@ -265,25 +262,25 @@ uint64_t UserDMM::availableHeapSize() {
   return _availableHeapSize();
 };
 
-KernelDMM::KernelDMM() : DMM(MEM_KERNEL_HEAP_START, MEM_KERNEL_HEAP_SIZE) {
+KernelDMM::KernelDMM() : DMM(MEM_KERNEL_HEAP_START, MEM_KERNEL_HEAP_SIZE), _mutex(KERNEL_DMM_LOCK_MEM) {
 }
 
 uintptr_t KernelDMM::allocate(uint32_t sizeInBytes, uint32_t alignment) {
-  IrqGuard g;
+  IrqLockGuard g(_mutex);
   return _allocate(sizeInBytes, alignment);
 }
 
 bool KernelDMM::free(uintptr_t address) {
-  IrqGuard g;
+  IrqLockGuard g(_mutex);
   return _free(address);
 }
 
 bool KernelDMM::getAllocSize(uintptr_t address, size_t* size) {
-  IrqGuard g;
+  IrqLockGuard g(_mutex);
   return _getAllocSize(address, size);
 }
 
 uint64_t KernelDMM::availableHeapSize() {
-  IrqGuard g;
+  IrqLockGuard g(_mutex);
   return _availableHeapSize();
 };
