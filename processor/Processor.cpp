@@ -40,7 +40,65 @@ extern "C" {
   static uint32_t AP_READY;
 }
 
-Processor::Processor(int seqId, uint32_t id) : _seqId(seqId), _id(id), _tss(nullptr) {
+Processor::Processor(int seqId, uint32_t id, Apic& apic) : _seqId(seqId), _id(id), _apic(apic), _tss(nullptr),
+  _kernelMode(true), _currentProcessId(NO_PROCESS_ID) {
+}
+
+bool Processor::enableSSE() {
+  uint64_t result = 0;
+  // Test if the CPU supports the CPUID-Command
+  __asm__ __volatile__("pushfq;"
+                       "pushfq;"
+                       "popq %%rax;"
+                       "movq %%rax, %%rcx;"
+                       "xorq $0x200000, %%rax;"
+                       "pushq %%rax;"
+                       "popfq;"
+                       "pushfq;"
+                       "popq %%rax;"
+                       "xorq %%rcx, %%rax;"
+                       "shrq $21, %%rax;"
+                       "popfq;"
+                       "movq %%rax, %0;" : "=r"(result) : : "rax", "rcx", "memory");
+  if((result & 1u) == 0) {
+    return false;
+  }
+
+  if (Cpu::HasSupport(CF_SSE) && Cpu::HasSupport(CF_SSE2)) {
+    printf("\n SSE/SSE2 is supported.");
+    __asm__ __volatile__("mov %%cr0, %%rax;"
+                         "and $0xFFFB, %%ax;" // clear coprocessor emulation CR0.EM
+                         "or $0x2, %%ax;" // set coprocessor monitoring CR0.MP
+                         "mov %%rax, %%cr0;"
+                         "mov %%cr4, %%rax;"
+                         "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
+                         "mov %%rax, %%cr4;" : : : );
+    printf("\n SSE/SSE2 enabled");
+
+    if (Cpu::HasSupport(CF_SSE3))
+      printf("\n SSE3 is supported");
+
+    if (Cpu::HasSupport(CF_SSE41))
+      printf("\n SSE41 supported");
+
+    if (Cpu::HasSupport(CF_SSE42))
+      printf("\n SSE42 supported");
+
+    if (Cpu::HasSupport(CF_SSSE3))
+      printf("\n SSSE3 supported");
+
+    if(Cpu::HasSupport(CF_FPU)) {
+      //set NE flag
+      __asm__ __volatile__("mov %%cr0, %%rax;"
+                           "or $0x20, %%ax;"
+                           "mov %%rax, %%cr0;" : : : );
+      printf("\n Builtin FPU found");
+    }
+  } else {
+    printf("\n SSE/SSE2 is not supported!!");
+    return false;
+  }
+  return true;
 }
 
 void Processor::LIDT() {
@@ -65,8 +123,15 @@ void Processor::LTR() {
                        "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);
 }
 
-BootstrapProcessor::BootstrapProcessor(int seqId, uint32_t id) : Processor(seqId, id) {
-  AP_EFER_BITS = (uint32_t)(Cpu::Instance().MSRread(IA32_EFER) & (1ULL << 11));
+BootstrapProcessor::BootstrapProcessor(int seqId, uint32_t id, Apic& apic) : Processor(seqId, id, apic) {
+  if (!enableSSE()) {
+    printf("\n SSE/SSE2 is not supported!!");
+    for (;;) {
+      __asm__ __volatile__("hlt");
+    }
+  }
+
+  AP_EFER_BITS = (uint32_t)(Cpu::MSRread(IA32_EFER) & (1ULL << 11));
   _tss = (TaskState64*)TSS_BASE_ADDR;
 
   //load LTR to ensure stack is setup in case if there is an exception after LIDT
@@ -74,7 +139,7 @@ BootstrapProcessor::BootstrapProcessor(int seqId, uint32_t id) : Processor(seqId
   LIDT();
 }
 
-ApplicationProcessor::ApplicationProcessor(int seqId, uint32_t id, Apic& apic) : Processor(seqId, id), _apic(apic) {
+ApplicationProcessor::ApplicationProcessor(int seqId, uint32_t id, Apic& apic) : Processor(seqId, id, apic) {
   _gdtBase = KernelDMM::Instance().allocate(BSP_GDT_SIZE, 8);
   memcpy((void*)_gdtBase, BSP_GDT, BSP_GDT_SIZE);
 
@@ -91,6 +156,7 @@ ApplicationProcessor::ApplicationProcessor(int seqId, uint32_t id, Apic& apic) :
   *(uint8_t*)(tssSegment + 5) = 0x89;
 }
 
+//init is executed by BSP
 void ApplicationProcessor::init() {
   printf("\nInitializing AP with APIC ID %u", _id);
   const auto startupVector = uint8_t(uintptr_t(AP_TRAMPOLINE_START) >> 12);
@@ -103,11 +169,18 @@ void ApplicationProcessor::init() {
   __atomic_store_n(&AP_REPORTED_ID, 0u, __ATOMIC_RELAXED);
   __atomic_store_n(&AP_READY, 0u, __ATOMIC_RELAXED);
 
-  _apic.initAP(_id);
+  if (!_apic.apSendInit(_id)) {
+    printf("\n APIC initialization failed - failed to send INIT IPI to AP");
+    return;
+  }
   TscClock::instance().busyWait(10000);
 
   bool apReady = false;
-  _apic.sipiAP(_id, startupVector);
+  if (!_apic.apSendSIPI(_id, startupVector)) {
+    printf("\n APIC initialization failed - failed to send SIPI to AP");
+    return;
+  }
+
   for (int i = 0; i < 200 && !apReady; ++i) {
     TscClock::instance().busyWait(500);
     apReady = __atomic_load_n(&AP_READY, __ATOMIC_ACQUIRE) == 1;
@@ -121,7 +194,12 @@ void ApplicationProcessor::init() {
   }
 }
 
+//main is executed by AP
 void ApplicationProcessor::main() {
+  if (!enableSSE()) {
+    return;
+  }
+
   LTR();
   LIDT();
 
