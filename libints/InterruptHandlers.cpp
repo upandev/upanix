@@ -31,6 +31,7 @@
 #include <ATADeviceController.h>
 #include <E1000NICDevice.h>
 #include <Floppy.h>
+#include <ProcessorManager.h>
 
 extern "C" {
   void timer_interrupt_handler(TaskContext *state) {
@@ -79,6 +80,11 @@ extern "C" {
 
   void e1000_nic_interrupt_handler() {
     E1000NICDevice::InterruptHandler();
+  }
+
+  void ap_ipi_interrupt_handler() {
+    printf("\n AP %d: BSP IPI Interrupt Handler", ProcessorManager::instance().getCurrentProcessor().id());
+    ProcessorManager::instance().apic().SendEOI(StdIRQ::Instance().TIMER_IRQ);
   }
 }
 
