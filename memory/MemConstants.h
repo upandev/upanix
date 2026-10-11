@@ -24,6 +24,7 @@
 #include <mosstd.h>
 
 extern "C" {
+  extern uint64_t KERNEL_DMM_LOCK_MEM[0];
   extern uint16_t SYS_CODE_SELECTOR;
   extern uint16_t SYS_DATA_SELECTOR;
   extern uint16_t USER_CODE_SELECTOR;
