@@ -41,6 +41,7 @@ extern "C" {
   void _xhci_interrupt_handler();
   void _isr_0x27_interrupt_handler();
   void _ap_spurious_interrupt_handler();
+  void _ap_ipi_interrupt_handler();
 }
 
 void IDT::LoadHandlers() {
@@ -65,6 +66,8 @@ void IDT::LoadHandlers() {
   LoadEntry(19, (uintptr_t)&isr_19_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
   LoadEntry(20, (uintptr_t)&isr_20_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
   LoadEntry(21, (uintptr_t)&isr_21_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
+
+  LoadEntry(0xF0, (uintptr_t)&_ap_ipi_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
 
 	//Spurious IRQ
 	LoadEntry(0x27, (uintptr_t)&_isr_0x27_interrupt_handler, SYS_CODE_SELECTOR, 0x8E) ;
