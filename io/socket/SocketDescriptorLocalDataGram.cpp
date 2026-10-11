@@ -55,7 +55,7 @@ static upan::string extractPath(const struct sockaddr& address, socklen_t len) {
 
   const upan::string path = localAddr.sun_path;
   if (!path.empty() && !(
-          (IsKernel() || IsKernelProcess(ProcessManager::GetCurrentProcessID()))
+          (iskernel() || IsKernelProcess(ProcessManager::GetCurrentProcessID()))
           && path == SYS_LOG_PATH)) {
     if (access(path.c_str(), O_WRONLY) != 0) {
       throw upan::exception(XLOC, "Permission denied to open socket on file: %s", path.c_str());
