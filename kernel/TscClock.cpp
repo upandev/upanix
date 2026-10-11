@@ -45,7 +45,7 @@ TscClock& TscClock::instance() {
 }
 
 TscClock::TscClock() {
-  if (!Cpu::Instance().HasSupport(CF_RDTSC)) {
+  if (!Cpu::HasSupport(CF_RDTSC)) {
     throw upan::exception(XLOC, "CPU does not support RDTSC");
   }
 
