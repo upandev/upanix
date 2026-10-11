@@ -30,25 +30,29 @@
 class ProcessorManager {
 private:
   static ProcessorManager* _instance;
-  ProcessorManager();
+  explicit ProcessorManager(Apic& apic);
   ~ProcessorManager() = default;
 
 public:
+  typedef upan::map<uint32_t, Processor*> ProcessorMap;
+
   ProcessorManager(const ProcessorManager&)=delete;
   ProcessorManager& operator=(const ProcessorManager&)=delete;
 
+  static bool isInitialized() { return _instance != nullptr; }
   static ProcessorManager& instance();
-  Apic* apic() { return _apic; }
+
+  Apic& apic() { return _apic; }
   void initAPs();
   void apMain();
 
+  const ProcessorMap& getProcessors() const { return _processors; }
   Processor& getProcessor(uint32_t id) const;
   Processor& getCurrentProcessor() const;
+  int getCpuId() const;
 
 private:
-  Apic* _apic;
-  upan::mutex _processorMutex;
-  typedef upan::map<uint32_t, Processor*> ProcessorMap;
+  Apic& _apic;
   ProcessorMap _processors;
   upan::vector<uintptr_t> _apGDTs;
 };

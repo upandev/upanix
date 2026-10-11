@@ -86,19 +86,7 @@ enum CPU_FEATURE
 #define IA32_FMASK 0xC0000084
 
 class Cpu {
-  private:
-    Cpu();
-    Cpu(const Cpu&);
-
   public:
-    static Cpu& Instance() {
-      static Cpu cpu;
-      return cpu;
-    }
-    bool HasSupport(CPU_FEATURE feature);
-    uint64_t MSRread(uint32_t msr);
-    void MSRwrite(uint32_t msr, uint64_t value);
-
     typedef enum {
       UNCACHEABLE = 0,
       WRITE_COMBINING = 1,
@@ -112,15 +100,13 @@ class Cpu {
       CR0, CR1, CR2, CR3, CR4
     } Register;
 
+    static bool HasSupport(CPU_FEATURE feature);
+    static uint64_t MSRread(uint32_t msr);
+    static void MSRwrite(uint32_t msr, uint64_t value);
     static const char* memTypeToStr(MEM_TYPE memType);
     static uint64_t GetRegValue(Cpu::Register reg);
     static void SetRegValue(Cpu::Register reg, uint64_t val);
-
-  private:
-    void EnableSSE();
-    uint32_t GetIdRegister(uint32_t function, CPU_REGISTER reg);
-
-    bool _cpuIdAvailable;
+    static uint32_t GetIdRegister(uint32_t function, CPU_REGISTER reg);
 };
 
 #endif

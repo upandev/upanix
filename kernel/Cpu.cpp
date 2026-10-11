@@ -24,50 +24,17 @@
 #include <stdio.h>
 #include <exception.h>
 
-Cpu::Cpu() {
-  uint64_t result = 0;
-  // Test if the CPU supports the CPUID-Command
-  __asm__ __volatile__("pushfq;"
-                       "pushfq;"
-                       "popq %%rax;"
-                       "movq %%rax, %%rcx;"
-                       "xorq $0x200000, %%rax;"
-                       "pushq %%rax;"
-                       "popfq;"
-                       "pushfq;"
-                       "popq %%rax;"
-                       "xorq %%rcx, %%rax;"
-                       "shrq $21, %%rax;"
-                       "popfq;"
-                       "movq %%rax, %0;" : "=r"(result) : : "rax", "rcx", "memory");
-  _cpuIdAvailable = (result & 1u) != 0;
-  if(!_cpuIdAvailable) {
-    printf("\n CPUID is not available!!");
-    for (;;) {
-      __asm__ __volatile__("hlt");
-    }
+bool Cpu::HasSupport(CPU_FEATURE feature) {
+  if(feature == CF_CPUID) {
+      return true;
   }
-  printf("\n CPUID is available");
-  EnableSSE();
-}
-
-bool Cpu::HasSupport(CPU_FEATURE feature)
-{
-  if(feature == CF_CPUID)
-      return _cpuIdAvailable;
-
-  if(!_cpuIdAvailable)
-      return false;
 
   CPU_REGISTER r = (CPU_REGISTER)(feature & ~31);
-
   return GetIdRegister(0x1, r) & (1 << (feature - r));
 }
 
-uint32_t Cpu::GetIdRegister(uint32_t function, CPU_REGISTER reg)
-{
-  switch (reg)
-  {
+uint32_t Cpu::GetIdRegister(uint32_t function, CPU_REGISTER reg) {
+  switch (reg) {
     case CR_EAX: {
       uint32_t temp;
       __asm__ __volatile__("cpuid" : "=a"(temp) : "a"(function) : "ebx", "ecx", "edx");
@@ -92,55 +59,16 @@ uint32_t Cpu::GetIdRegister(uint32_t function, CPU_REGISTER reg)
   return 0;
 }
 
-uint64_t Cpu::MSRread(uint32_t msr)
-{
+uint64_t Cpu::MSRread(uint32_t msr) {
   uint32_t low, high;
   __asm__ __volatile__("rdmsr" : "=a" (low), "=d" (high) : "c" (msr));
   return ((uint64_t)high << 32) | low;
 }
 
-void Cpu::MSRwrite(uint32_t msr, uint64_t value)
-{
+void Cpu::MSRwrite(uint32_t msr, uint64_t value) {
   uint32_t low = value & 0xFFFFFFFF;
   uint32_t high = value >> 32;
   __asm__ __volatile__("wrmsr" :: "a"(low), "c"(msr), "d"(high));
-}
-
-void Cpu::EnableSSE() {
-  if (HasSupport(CF_SSE) && HasSupport(CF_SSE2)) {
-    printf("\n SSE/SSE2 is supported.");
-    __asm__ __volatile__("mov %%cr0, %%rax;"
-                         "and $0xFFFB, %%ax;" // clear coprocessor emulation CR0.EM
-                         "or $0x2, %%ax;" // set coprocessor monitoring CR0.MP
-                         "mov %%rax, %%cr0;"
-                         "mov %%cr4, %%rax;"
-                         "or $0x600, %%ax;" // set CR4.OSFXSR and CR4.OSXMMEXCPT
-                         "mov %%rax, %%cr4;" : : : );
-    printf("\n SSE/SSE2 enabled");
-
-    if (HasSupport(CF_SSE3))
-      printf("\n SSE3 is supported");
-
-    if (HasSupport(CF_SSE41))
-      printf("\n SSE41 supported");
-
-    if (HasSupport(CF_SSE42))
-      printf("\n SSE42 supported");
-
-    if (HasSupport(CF_SSSE3))
-      printf("\n SSSE3 supported");
-
-    if(HasSupport(CF_FPU)) {
-      //set NE flag
-      __asm__ __volatile__("mov %%cr0, %%rax;"
-                           "or $0x20, %%ax;"
-                           "mov %%rax, %%cr0;" : : : );
-      printf("\n Builtin FPU found");
-    }
-  } else {
-    printf("\n SSE/SSE2 is not supported!!");
-    while (1);
-  }
 }
 
 uint64_t Cpu::GetRegValue(Cpu::Register reg) {

@@ -60,18 +60,11 @@ StdIRQ& StdIRQ::Instance()
 
 void IrqManager::Initialize() {
   static PIC pic;
-  Apic* apic = ProcessorManager::instance().apic();
-  if(apic) {
-    pic.DisableForAPIC();
-    _instance = apic;
-    _instance->_isApic = true;
-    apic->initialize();
-  }
-  else
-  {
-    _instance = &pic;
-    _instance->_isApic = false;
-  }
+  Apic& apic = ProcessorManager::instance().apic();
+  pic.DisableForAPIC();
+  _instance = &apic;
+  _instance->_isApic = true;
+  apic.initialize();
 }
 
 IrqManager& IrqManager::Instance()

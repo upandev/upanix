@@ -27,21 +27,19 @@ ProcessorManager* ProcessorManager::_instance = nullptr;
 
 ProcessorManager& ProcessorManager::instance() {
   if (!_instance) {
-    _instance = new ProcessorManager();
+    if (!Apic::IsAvailable()) {
+      throw upan::exception(XLOC, "APIC not available");
+    }
+    _instance = new ProcessorManager(*new Apic());
   }
   return *_instance;
 }
 
-ProcessorManager::ProcessorManager() : _apic(nullptr) {
-  if (!Apic::IsAvailable()) {
-    throw upan::exception(XLOC, "APIC not available");
-  }
-
-  _apic = new Apic();
-  const uint32_t bspApicId = _apic->GetLocalApicID();
+ProcessorManager::ProcessorManager(Apic& apic) : _apic(apic) {
+  const uint32_t bspApicId = _apic.GetLocalApicID();
 
   const auto& cpus = Acpi::Instance().GetMadt().GetLocalApics();
-  printf("\nCPU discovery: %u enabled logical CPUs", cpus.size());
+  printf("\n CPU discovery: %u enabled logical CPUs", cpus.size());
 
   bool bspFound = false;
   int seqId = 0;
@@ -49,7 +47,7 @@ ProcessorManager::ProcessorManager() : _apic(nullptr) {
     const bool isBsp = cpu.Id() == bspApicId;
     bspFound |= isBsp;
 
-    auto processor = isBsp ? (Processor*)(new BootstrapProcessor(seqId, cpu.Id())) : new ApplicationProcessor(seqId, cpu.Id(), *_apic);
+    auto processor = isBsp ? (Processor*)(new BootstrapProcessor(seqId, cpu.Id(), _apic)) : new ApplicationProcessor(seqId, cpu.Id(), _apic);
     seqId++;
     _processors.insert(ProcessorMap::value_type(cpu.Id(), processor));
 
@@ -63,7 +61,7 @@ ProcessorManager::ProcessorManager() : _apic(nullptr) {
 
 void ProcessorManager::initAPs() {
   const auto& cpus = Acpi::Instance().GetMadt().GetLocalApics();
-  const uint32_t bspApicId = _apic->GetLocalApicID();
+  const uint32_t bspApicId = _apic.GetLocalApicID();
 
   for (const auto& cpu : cpus) {
     if (cpu.Id() == bspApicId) {
@@ -83,14 +81,17 @@ void ProcessorManager::apMain() {
 }
 
 Processor& ProcessorManager::getProcessor(uint32_t id) const {
-  upan::mutex_guard g(_processorMutex);
   auto it = _processors.find(id);
   if (it == _processors.end()) {
-    throw upan::exception(XLOC, "Processor %d not found", _apic->GetLocalApicID());
+    throw upan::exception(XLOC, "Processor %d not found", _apic.GetLocalApicID());
   }
   return *it->second;
 }
 
 Processor& ProcessorManager::getCurrentProcessor() const {
-  return getProcessor(_apic->GetLocalApicID());
+  return getProcessor(_apic.GetLocalApicID());
+}
+
+int ProcessorManager::getCpuId() const {
+  return _apic.GetLocalApicID();
 }

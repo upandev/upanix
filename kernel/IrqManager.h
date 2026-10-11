@@ -101,31 +101,3 @@ class IrqManager
 		upan::list<const IRQ*> _irqs;
     bool _isApic;
 };
-
-class IrqGuard
-{
-  public:
-    IrqGuard(const IRQ& irq) : _irq(&irq)
-    {
-      IrqManager::Instance().DisableIRQ(*_irq);
-    }
-    IrqGuard() : _irq(nullptr) {
-      __asm__ __volatile__("pushfq;"
-                           "popq %0;" : "=m"(_allIntSyncFlag) : : "memory");
-      if(_allIntSyncFlag & 0x200) {
-        __asm__ __volatile__("cli");
-      }
-    }
-    ~IrqGuard() {
-      if(_irq) {
-        IrqManager::Instance().EnableIRQ(*_irq);
-      } else {
-        if(_allIntSyncFlag & 0x200) {
-          __asm__ __volatile__("sti");
-        }
-      }
-    }
-  private:
-    const IRQ* _irq;
-    __volatile__ uint64_t _allIntSyncFlag;
-};
