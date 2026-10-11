@@ -22,7 +22,7 @@
 #pragma once
 
 #include <queue.h>
-#include <mutex.h>
+#include <spinmutex.h>
 #include <function.h>
 
 class StreamBuffer {
@@ -35,5 +35,5 @@ public:
 
 private:
   upan::queue<uint8_t> _queue;
-  upan::mutex _ioSync;
+  mutable upan::spinmutex _ioSync;
 };

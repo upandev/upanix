@@ -37,6 +37,6 @@ public:
 private:
   StreamBuffer& _streamBuffer;
   upan::string _line;
-  upan::mutex _ioSync;
+  upan::spinmutex _ioSync;
   int _cursorPos;
 };

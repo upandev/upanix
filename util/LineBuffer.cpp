@@ -22,12 +22,13 @@
 
 #include <LineBuffer.h>
 #include <kb.h>
+#include <IrqLockGuard.h>
 
 LineBuffer::LineBuffer(StreamBuffer& streamBuffer) : _streamBuffer(streamBuffer), _cursorPos(0) {
 }
 
 LineBuffer::Result LineBuffer::process(const uint8_t ch, upan::function<void> waitFunc) {
-  upan::mutex_guard g(_ioSync);
+  IrqLockGuard g(_ioSync);
   Result r { false, 0 };
   if (ch == Keyboard_KEY_HOME) {
     r._distance = _cursorPos;

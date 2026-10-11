@@ -23,19 +23,20 @@
 #include <StreamBuffer.h>
 #include <ProcessManager.h>
 #include <PCSound.h>
+#include <IrqLockGuard.h>
 
 StreamBuffer::StreamBuffer(int bufSize) : _queue(bufSize) {
 }
 
 bool StreamBuffer::canRead() const {
-  upan::mutex_guard g(_ioSync);
+  IrqLockGuard g(_ioSync);
   return !_queue.empty();
 }
 
 int StreamBuffer::read(void* buffer, int len, bool block, upan::function<void> waitFunc) {
   while(true) {
     {
-      upan::mutex_guard g(_ioSync);
+      IrqLockGuard g(_ioSync);
       if (!_queue.empty()) {
         return _queue.read((uint8_t*)buffer, len);
       }
@@ -55,14 +56,14 @@ int StreamBuffer::read(void* buffer, int len, bool block, upan::function<void> w
 }
 
 bool StreamBuffer::canWrite() const {
-  upan::mutex_guard g(_ioSync);
+  IrqLockGuard g(_ioSync);
   return !_queue.full();
 }
 
 int StreamBuffer::write(const void* buffer, int len, bool block, upan::function<void> waitFunc) {
   while(true) {
     {
-      upan::mutex_guard g(_ioSync);
+      IrqLockGuard g(_ioSync);
       if (!_queue.full()) {
         return _queue.write((uint8_t*)buffer, len);
       }
