@@ -77,7 +77,7 @@ void KernelRootProcess::initTLS() {
              (uintptr_t)&__tdata_end - (uintptr_t)&__tdata_start,
              (uint8_t*)&__tdata_start);
 
-  Cpu::Instance().MSRwrite(MSR_FS_BASE, THREAD_LOCAL_META_SPACE_ADDRESS);
+  Cpu::MSRwrite(MSR_FS_BASE, THREAD_LOCAL_META_SPACE_ADDRESS);
 
   _tls.reset(new ThreadLocalStorage(NO_PROCESS_ID, false, pml4Table(), *_tlsp, 0x7));
   _tls->switchSpace();

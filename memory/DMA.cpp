@@ -23,7 +23,7 @@
 // INTEL 8237A DMA CHIP
 #include <DMA.h>
 #include <MemConstants.h>
-#include <IrqManager.h>
+#include <IrqGuard.h>
 
 #define DMA_CMD_REG_W 0x08
 #define DMA_STATUS_REG_R 0x08

@@ -26,10 +26,10 @@
 #include <exception.h>
 
 Pat::Pat() {
-  _isSupported = Cpu::Instance().HasSupport(CF_MSR) && Cpu::Instance().HasSupport(CF_PAT);
+  _isSupported = Cpu::HasSupport(CF_MSR) && Cpu::HasSupport(CF_PAT);
   if (_isSupported) {
     printf("\nPAT is supported");
-    _patReg = Cpu::Instance().MSRread(IA32_PAT);
+    _patReg = Cpu::MSRread(IA32_PAT);
     print();
   }
 }
@@ -67,5 +67,5 @@ void Pat::set(int i, Cpu::MEM_TYPE memType) {
   const uint64_t value = ((uint64_t)memType) << (i * 8);
   _patReg = (_patReg & mask) | value;
 
-  Cpu::Instance().MSRwrite(IA32_PAT, _patReg);
+  Cpu::MSRwrite(IA32_PAT, _patReg);
 }

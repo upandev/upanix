@@ -22,6 +22,7 @@
 
 #include <PIC.h>
 #include <PortCom.h>
+#include <IrqGuard.h>
 
 PIC::PIC()
 {

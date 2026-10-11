@@ -51,18 +51,18 @@ extern "C" {
 }
 
 void SysCall_Initialize() {
-  if (!Cpu::Instance().HasSupport(CF_MSR) || !Cpu::Instance().HasSupport(CF_SYSENTEREXIT)) {
+  if (!Cpu::HasSupport(CF_MSR) || !Cpu::HasSupport(CF_SYSENTEREXIT)) {
     throw upan::exception(XLOC, "MSR support is required to support system calls");
   }
 
   //enable syscall/sysret instructions in 64bit mode
-  Cpu::Instance().MSRwrite(IA32_EFER, Cpu::Instance().MSRread(IA32_EFER) | 1);
-  Cpu::Instance().MSRwrite(IA32_FMASK, 0x200);
-  Cpu::Instance().MSRwrite(IA32_LSTAR, (uintptr_t)&_syscall_handler);
+  Cpu::MSRwrite(IA32_EFER, Cpu::MSRread(IA32_EFER) | 1);
+  Cpu::MSRwrite(IA32_FMASK, 0x200);
+  Cpu::MSRwrite(IA32_LSTAR, (uintptr_t)&_syscall_handler);
   //As per intel documentation,
   //For Ring0->Ring3 (entry), the SS selector is obtained by adding 8 to the CS selector value in STAR [47:32]
   //For Ring3->Ring0 (return), the CS selector is obtained by adding 16 to STAR [63:48] and SS selector by adding 8 to STAR [63:48]
-  Cpu::Instance().MSRwrite(IA32_STAR, ((uint64_t)(SYS_DATA_SELECTOR | 0x3) << 48) | ((uint64_t)SYS_CODE_SELECTOR << 32));
+  Cpu::MSRwrite(IA32_STAR, ((uint64_t)(SYS_DATA_SELECTOR | 0x3) << 48) | ((uint64_t)SYS_CODE_SELECTOR << 32));
 
 	SysCall_NoOfHandlers = 0 ;
 

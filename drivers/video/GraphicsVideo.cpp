@@ -30,6 +30,7 @@
 #include <RootGUIConsole.h>
 #include <metrics.h>
 #include <PortCom.h>
+#include <IrqGuard.h>
 
 //make below extern as you load bmp files during testing
 unsigned _binary_p16_bmp_start;
@@ -420,8 +421,8 @@ GraphicsVideo::RedrawInfo GraphicsVideo::isDirty() {
   upan::mutex_guard g(_fgProcessMutex);
   RedrawInfo redrawInfo;
 
-  redrawInfo._mouseChanged = _mouseChange.set(false);
-  redrawInfo._processChanged = _needRefresh.set(false);
+  redrawInfo._mouseChanged = _mouseChange.swap(false);
+  redrawInfo._processChanged = _needRefresh.swap(false);
   if (redrawInfo._processChanged) {
     return redrawInfo;
   }

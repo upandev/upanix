@@ -27,6 +27,7 @@
 #include <PortCom.h>
 #include <ProcessManager.h>
 #include <Acpi.h>
+#include <IrqGuard.h>
 
 extern "C" {
   void _pit_timer_interrupt_handler();
