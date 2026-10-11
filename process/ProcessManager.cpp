@@ -23,15 +23,9 @@
 #include <FileSystem.h>
 #include <IrqManager.h>
 #include <PIT.h>
-#include <DMM.h>
 #include <KernelService.h>
-#include <UserManager.h>
-#include <StringUtil.h>
 #include <ProcessConstants.h>
 #include <KernelUtil.h>
-#include <exception.h>
-#include <mutex.h>
-#include <uniq_ptr.h>
 #include <syscalldefs.h>
 #include <KernelProcess.h>
 #include <UserThread.h>
@@ -39,8 +33,9 @@
 #include <ProcessStat.h>
 #include <PortCom.h>
 #include <TscClock.h>
+#include <IrqGuard.h>
+#include <ProcessorManager.h>
 
-int ProcessManager::_currentProcessID = NO_PROCESS_ID;
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
 uint32_t ProcessManager::_taskSwitch = 0;
 bool ProcessManager::_contextSwitch = false;
@@ -88,12 +83,12 @@ upan::option<SchedulableProcess&> ProcessManager::GetSchedulableProcess(int pid)
 
 Process& ProcessManager::GetCurrentPAS() {
   ProcessSwitchLock switchLock;
-  if (IsKernel()) {
+  if (iskernel()) {
     return KernelRootProcess::Instance();
   }
   //This function is a utility that assumes that a ProcessAddressSpace entry always exists for current (active) process
   //Caller should take care of cases when ProcessID = NO_PROCESS_ID - which is usually the case before kernel scheduler is initialized
-  return GetSchedulableProcess(_currentProcessID).value();
+  return GetSchedulableProcess(GetCurrentProcessID()).value();
 }
 
 void ProcessManager::AddToSchedulerList(SchedulableProcess& process) {
@@ -125,10 +120,10 @@ void ProcessManager::schedulePriorityProcess(pid_t pid) {
 class KernelModeGuard {
   public:
     KernelModeGuard() {
-      SetKernelMode(true);
+      ProcessorManager::instance().getCurrentProcessor().setKernelMode(true);
     }
     ~KernelModeGuard() {
-      SetKernelMode(false);
+      ProcessorManager::instance().getCurrentProcessor().setKernelMode(false);
     }
 };
 
@@ -178,7 +173,7 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
       }
 
       auto &process = *candidateProcess;
-      _currentProcessID = process.processID();
+      ProcessorManager::instance().getCurrentProcessor().setCurrentProcessId(process.processID());
       process.prepareToRun();
       process.deliverPendingSignal();
 
@@ -532,7 +527,7 @@ bool ProcessManager::IsKernelProcess(int iProcessID) {
 }
 
 void ProcessManager_Exit(int exitStatus) {
-  if (IsKernel()) {
+  if (iskernel()) {
     __asm__ __volatile__("HLT");
   }
   auto& p = ProcessManager::Instance().GetCurrentPAS();
@@ -543,7 +538,7 @@ void ProcessManager_Exit(int exitStatus) {
 
 int ProcessManager::GetCurProcId()
 {
-	return IsKernel() ? NO_PROCESS_ID : ProcessManager::GetCurrentProcessID();
+	return iskernel() ? NO_PROCESS_ID : ProcessManager::GetCurrentProcessID();
 }
 
 void ProcessManager::WakeUpFromKSWait(int iProcessID) {
@@ -590,7 +585,7 @@ void ProcessManager::WaitOnKernelServiceFork() {
 }
 
 bool ProcessManager::DoPollWait() {
-	return (IsKernel() || !IsTaskSwitchEnabled()) ;
+	return (iskernel() || !IsTaskSwitchEnabled()) ;
 }
 
 bool ProcessManager::ConditionalWait(const volatile unsigned* registry, unsigned bitPos, bool waitfor)
@@ -620,7 +615,7 @@ bool ProcessManager::IsEventCompleted(int pid) {
 
 void ProcessManager::EventCompleted(int pid) {
   GetProcessStateInfo(pid).EventCompleted();
-  if (!IsKernel()) {
+  if (!iskernel()) {
     schedulePriorityProcess(pid);
     GetCurrentPAS().yield();
   }
@@ -654,7 +649,7 @@ void ProcessManager::updateAllIODescriptorRedirections(pid_t pid, int srcFD, con
 
 void ProcessManager::MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset) {
   ProcessSwitchLock lock;
-  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) { process.maskSignal(how, set, oldset); });
+  GetSchedulableProcess(GetCurrentProcessID()).ifPresent([&](SchedulableProcess& process) { process.maskSignal(how, set, oldset); });
 }
 
 void ProcessManager::SendSignal(pid_t pid, SIGNAL signo, const union sigval* value) {
@@ -664,14 +659,14 @@ void ProcessManager::SendSignal(pid_t pid, SIGNAL signo, const union sigval* val
 
 void ProcessManager::SetSignalAction(SIGNAL signo, const struct sigaction* newact, struct sigaction* oldact) {
   ProcessSwitchLock pLock;
-  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) {
+  GetSchedulableProcess(GetCurrentProcessID()).ifPresent([&](SchedulableProcess& process) {
     process.setSignalAction(signo, newact, oldact);
   });
 }
 
 void ProcessManager::SignalReturn(SignalTaskContext& signalTaskContext) {
   //don't put this under process-switch lock because the process will resume on a completely different RIP after signal return
-  GetSchedulableProcess(_currentProcessID).ifPresent([&](SchedulableProcess& process) {
+  GetSchedulableProcess(GetCurrentProcessID()).ifPresent([&](SchedulableProcess& process) {
     process.setSignalRestoreContext(signalTaskContext);
     process.setStatus(SIGNAL_RETURN);
     process.yield();
@@ -741,4 +736,8 @@ void ProcessManager::getProcessRUsage(Process& p, RUSAGE_ID who, struct rusage& 
 time_t ProcessManager::SetAlarm(uint32_t seconds) {
   ProcessSwitchLock lock;
   return GetCurrentPAS().setAlarm(seconds);
+}
+
+pid_t ProcessManager::GetCurrentProcessID() {
+  return ProcessorManager::instance().getCurrentProcessor().getCurrentProcessId();
 }

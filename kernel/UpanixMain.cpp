@@ -37,7 +37,6 @@
 # include <GraphicsVideo.h>
 # include <KeyboardHandler.h>
 # include <Acpi.h>
-# include <Cpu.h>
 # include <IrqManager.h>
 # include <NetworkManager.h>
 # include <Mtrr.h>
@@ -147,19 +146,16 @@ public:
 
 static const TG x;
 
-bool IsKernel() {
-  return KERNEL_MODE == true || KERNEL_ROOT == true || ProcessManager::GetCurrentProcessID() == NO_PROCESS_ID;
-}
-
 bool IsKernelProcess(int pid) {
   return SPECIAL_TASK || ProcessManager::Instance().IsKernelProcess(pid);
-}
-void SetKernelMode(bool val) {
-  KERNEL_MODE = val;
 }
 
 void SetKernelRootMode(bool val) {
   KERNEL_ROOT = val;
+}
+
+bool GetKernelRootMode() {
+  return KERNEL_ROOT;
 }
 
 void Initialize() {
@@ -185,7 +181,6 @@ void Initialize() {
     upan::metrics::create();
 
     Acpi::Instance();
-    Cpu::Instance();
     IDT::Instance();
     ProcessorManager::instance();
     Pat::Instance();
@@ -264,14 +259,13 @@ upan::mutex& UpanixMain_GetDMMMutex()
 }
 
 void UpanixMain() {
-  SetKernelMode(true);
   SetKernelRootMode(false);
 
   Initialize();
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, true, upan::vector<uintptr_t>());
 
-  SetKernelMode(false);
-	ProcessManager::Instance().EnableTaskSwitch();
+  ProcessorManager::instance().getCurrentProcessor().setKernelMode(false);
+	ProcessManager::EnableTaskSwitch();
 	while(1) ;
 }
 

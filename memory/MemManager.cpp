@@ -32,7 +32,7 @@ void MemManager::PageFaultHandler(TaskContext& taskContext) {
 	uint64_t faultyAddress ;
   __asm__ __volatile__("movq %%cr2, %0" : "=rm"(faultyAddress) : ) ;
 
-	if (IsKernel()) {
+	if (iskernel()) {
     printf("\n Page Fault in Kernel! FIX THIS !!! @ %lx", faultyAddress);
     __asm__ __volatile__ ("HLT");
     while(true);

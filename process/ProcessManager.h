@@ -98,9 +98,8 @@ class ProcessManager
     void updateAllIODescriptorRedirections(pid_t pid, int srcFD, const IODescriptor::Ptr& targetDesc);
     void getProcessRUsage(Process& p, RUSAGE_ID who, struct rusage& ru);
 
-    static int GetCurrentProcessID() {
-      return _currentProcessID;
-    }
+    static pid_t GetCurrentProcessID();
+
     static int UpanixKernelProcessID() {
       return _upanixKernelProcessID;
     }
@@ -149,7 +148,6 @@ class ProcessManager
     PriorityProcessSet _priorityProcessSet;
 
     //This is required even before initializing the ProcessManager for fetching
-    static int _currentProcessID;
     static int _upanixKernelProcessID;
     static uint32_t _taskSwitch;
     static bool _contextSwitch;

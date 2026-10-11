@@ -20,10 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 # include <SysCall.h>
-# include <malloc.h>
-# include <string.h>
-# include <stdlib.h>
-# include <stdio.h>
+# include <ProcessorManager.h>
 
 int exec(const char* szFileName, ...) {
   uint64_t iProcessID;
@@ -155,10 +152,6 @@ int SysProcess_IsChildAlive(int iProcessID) {
   return retStatus ;
 }
 
-int SysProcess_IsKernel() {
-  return IsKernel() ? 1 : 0;
-}
-
 int SysProcess_MaskSignal(SIG_MASKING_TYPE how, const sigset_t *set, sigset_t *oldset) {
   uint64_t retStatus ;
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_MASK_SIGNAL, false, (uint64_t)how, (uint64_t)set, (uint64_t)oldset, 4, 5);
@@ -198,4 +191,42 @@ pid_t SysProcess_Fork() {
   uint64_t retStatus ;
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_FORK, false, 1, 2, 3, 4, 5);
   return (pid_t)retStatus;
+}
+
+int SysProcess_CpuId() {
+  uint64_t retStatus;
+  SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_CPUID, false, 1, 2, 3, 4, 5);
+  return (int)retStatus;
+}
+
+int SysProcess_IsKernel() {
+  if (!ProcessorManager::isInitialized()) {
+    return true;
+  }
+
+  if (GetKernelRootMode()) {
+    return true;
+  }
+
+  auto& curProcessor = ProcessorManager::instance().getCurrentProcessor();
+  return curProcessor.isKernelMode() || curProcessor.getCurrentProcessId() == NO_PROCESS_ID;
+}
+
+int SysProcess_LockOwnerId() {
+  if (!ProcessorManager::isInitialized()) {
+    return NO_PROCESS_ID;
+  }
+
+  if (GetKernelRootMode()) {
+    return NO_PROCESS_ID;
+  }
+
+  auto& curProcessor = ProcessorManager::instance().getCurrentProcessor();
+  auto pid = curProcessor.getCurrentProcessId();
+
+  if (curProcessor.isKernelMode() || pid == NO_PROCESS_ID) {
+    return -static_cast<int>(curProcessor.id() + 1);
+  } else {
+    return pid;
+  }
 }

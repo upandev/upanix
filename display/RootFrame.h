@@ -51,7 +51,7 @@ public:
   }
 
   bool clean() {
-    return _isDirty.set(false);
+    return _isDirty.swap(false);
   }
 
   uint32_t* buffer() {

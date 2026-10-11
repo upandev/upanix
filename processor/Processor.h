@@ -28,7 +28,16 @@
 
 class Processor {
   public:
-    explicit Processor(int seqId, uint32_t id);
+    Processor(int seqId, uint32_t id, Apic& apic);
+
+    uint32_t id() const { return _id; }
+    bool isKernelMode() { return _kernelMode.get(); }
+    pid_t getCurrentProcessId() { return _currentProcessId.get(); }
+
+    void setKernelMode(bool val) { _kernelMode.set(val); }
+    void setCurrentProcessId(pid_t pid) { _currentProcessId.set(pid); }
+
+    virtual bool isBSP() const = 0;
     virtual void init() = 0;
     virtual void main() = 0;
 
@@ -60,29 +69,34 @@ class Processor {
       uint16_t _ioMapBase;
     } PACKED TaskState64;
 
+    bool enableSSE();
     void LIDT();
     void LTR();
 
   protected:
     const int _seqId;
     const uint32_t _id;
+    Apic& _apic;
     TaskState64* _tss;
+    upan::atomic::integral<bool> _kernelMode;
+    upan::atomic::integral<pid_t> _currentProcessId;
 };
 
 class BootstrapProcessor : public Processor {
   public:
-    explicit BootstrapProcessor(int seqId, uint32_t id);
+    BootstrapProcessor(int seqId, uint32_t id, Apic& _apic);
+    bool isBSP() const override { return true; }
     void init() override {}
     void main() override {}
 };
 
 class ApplicationProcessor : public Processor {
   public:
-    explicit ApplicationProcessor(int seqId, uint32_t id, Apic& _apic);
+    ApplicationProcessor(int seqId, uint32_t id, Apic& _apic);
+    bool isBSP() const override { return false; }
     void init() override;
     void main() override;
 
   private:
-    Apic& _apic;
     uintptr_t _gdtBase;
 };

@@ -23,6 +23,7 @@
 # include <SysCallDisplay.h>
 # include <typeinfo.h>
 # include <TscClock.h>
+# include <ProcessorManager.h>
 
 bool SysCallProc_IsPresent(uint64_t sysCallId) {
 	return (sysCallId > SYS_CALL_PROC_START && sysCallId < SYS_CALL_PROC_END);
@@ -291,6 +292,11 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       *retVal = ProcessManager::Instance().SetAlarm((uint32_t)p1);
     }
     break;
+
+    case SYS_CALL_PROCESS_CPUID:
+    {
+      *retVal = ProcessorManager::isInitialized() ? ProcessorManager::instance().getCpuId() : 0;
+    }
   }
 }
 

@@ -42,7 +42,7 @@ void XHCIManager::Handler(TaskContext& taskContext) {
   }
 
   xhciManager.irq()->Signal();
-  if (!IsKernel() && priorityProcessScheduled) {
+  if (!iskernel() && priorityProcessScheduled) {
     ProcessManager::Instance().ContextSwitch(taskContext);
   }
   IrqManager::Instance().SendEOI(*xhciManager.irq());
