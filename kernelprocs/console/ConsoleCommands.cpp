@@ -81,6 +81,7 @@
 #include <ConfigFileDB.h>
 #include <NetworkDevice.h>
 #include <RealNetworkDevice.h>
+#include <ProcessorManager.h>
 #include <TestRunner.h>
 
 /**** Command Function Declarations  *****/
@@ -2427,6 +2428,19 @@ void ConsoleCommands_Test() {
         if (i != e.second.end()) {
           printf(" %d , ", i->second);
         }
+      }
+    }
+  } else if (test == "ap-ipi") {
+    auto& pm = ProcessorManager::instance();
+    auto& processors = pm.getProcessors();
+    auto& curProcessor = pm.getCurrentProcessor();
+
+    for (auto& p : processors) {
+      if (p.first == curProcessor.id()) {
+        continue;
+      }
+      if (!pm.apic().apSendFixedIPI(p.first, 0xF0)) {
+        printf("\nFailed to send IPI to processor %d", p.first);
       }
     }
   }
