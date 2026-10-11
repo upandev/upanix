@@ -31,8 +31,9 @@
 #include <PCIBusHandler.h>
 #include <PortCom.h>
 #include <PIT.h>
-#include <atomicop.h>
-#include "Pat.h"
+#include <Pat.h>
+#include <TscClock.h>
+#include <IrqGuard.h>
 
 #define IA32_APIC_BASE_MSR          0x1B
 #define IA32_APIC_BASE_BSP          0x100
@@ -61,16 +62,16 @@ extern "C" {
 
 bool Apic::IsAvailable() {
   // We need MSR (to initialize APIC) and (obviously) APIC
-  return Cpu::Instance().HasSupport(CF_MSR)
-         && Cpu::Instance().HasSupport(CF_APIC)
+  return Cpu::HasSupport(CF_MSR)
+         && Cpu::HasSupport(CF_APIC)
          // Ensure that I/O-APIC is available - this is the case if its address was found in the ACPI tables
          && Acpi::Instance().GetMadt().GetIoApics().size() > 0;
 }
 
 Apic::Apic() : _apicBase(nullptr), _ioApicBase(nullptr) {
   // Local APIC, cf. Intel manual 3A, chapter 10
-  _phyApicBase = Cpu::Instance().MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL; // read APIC base address (ignore bit0-11)
-  Cpu::Instance().MSRwrite(IA32_APIC_BASE_MSR, (_phyApicBase | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
+  _phyApicBase = Cpu::MSRread(IA32_APIC_BASE_MSR) & ~0xFFFUL; // read APIC base address (ignore bit0-11)
+  Cpu::MSRwrite(IA32_APIC_BASE_MSR, (_phyApicBase | IA32_APIC_BASE_BSP | IA32_APIC_BASE_MSR_ENABLE)); // enable APIC, Bootstrap Processor
   _apicBase = MmapBase(MMAP_APIC_BASE, _phyApicBase);
 
   uint64_t phyIoApicBase = (*Acpi::Instance().GetMadt().GetIoApics().begin()).Address();
@@ -264,7 +265,7 @@ uint8_t Apic::GetIOApicID()
 void Apic::SendEOI(const IRQ&)
 {
 //  _apicBase[APIC_EOI] = 0;
-  upan::atomic::op::swap(_apicBase[APIC_EOI], 0);
+  upan::atomic::op::set(_apicBase[APIC_EOI], 0);
 }
 
 void Apic::EnableIRQ(const IRQ& irq)
@@ -291,18 +292,80 @@ bool Apic::IsIRQEnabled(const IRQ& irq) {
   return (IoApicRead(entry) & APIC_INTERRUPTDISABLED) == 0;
 }
 
-void Apic::initAP(uint32_t targetApicId) {
+bool Apic::waitForIcrIdle() const {
+  constexpr uint32_t DELIVERY_PENDING = 1u << 12;
+
+  //wait for 1000 micro seconds
+  for (int i = 0; ((_apicBase[APIC_ICRL] & DELIVERY_PENDING) != 0); ++i) {
+    if (i == 10) {
+      return false;
+    }
+    TscClock::instance().busyWait(100);
+    __asm__ __volatile__("pause");
+  }
+
+  return true;
+}
+
+bool Apic::apSendInit(uint32_t targetApicId) {
+  IrqGuard guard;
+
+  if (!waitForIcrIdle()) {
+    return false;
+  }
   // Target one CPU using physical destination mode.
   _apicBase[APIC_ICRH] = targetApicId << 24;
 
   // INIT: delivery mode INIT, level assert, edge trigger.
   // Destination shorthand is zero: use the explicit target.
   _apicBase[APIC_ICRL] = 0x00004500u;
+
+  return waitForIcrIdle();
 }
 
-void Apic::sipiAP(uint32_t targetApicId, uint8_t startupVector) {
+bool Apic::apSendSIPI(uint32_t targetApicId, uint8_t startupVector) {
+  IrqGuard guard;
+
+  if (!waitForIcrIdle()) {
+    return false;
+  }
+
   _apicBase[APIC_ICRH] = uint32_t(targetApicId) << 24;
   _apicBase[APIC_ICRL] = 0x00004600u | startupVector;
+
+  return waitForIcrIdle();
+}
+
+bool Apic::apSendFixedIPI(uint32_t targetApicId, uint8_t vector) {
+  // xAPIC physical destinations use an 8-bit APIC ID.
+  // 0xFF is the broadcast destination.
+  if (targetApicId >= 0xFFu || vector < 0x20u) {
+    return false;
+  }
+
+  // Prevent a local interrupt handler from interleaving ICR writes.
+  // This restores the sender's previous interrupt-enable state.
+  IrqGuard guard;
+
+  if (!waitForIcrIdle()) {
+    return false;
+  }
+
+  // ICR high: destination APIC ID occupies bits 31:24.
+  _apicBase[APIC_ICRH] = targetApicId << 24;
+
+  constexpr uint32_t LEVEL_ASSERT = 1u << 14;
+
+  // Writing ICR low sends the IPI:
+  // bits  7:0  = vector
+  // bits 10:8  = 000: fixed delivery
+  // bit     11 = 0: physical destination
+  // bit     14 = 1: assert (ignored for edge-triggered fixed delivery)
+  // bit     15 = 0: edge trigger
+  // bits 19:18 = 00: explicit destination, no shorthand
+  _apicBase[APIC_ICRL] = LEVEL_ASSERT | uint32_t(vector);
+
+  return waitForIcrIdle();
 }
 
 bool Apic::initAPLocalApic() {
@@ -310,7 +373,7 @@ bool Apic::initAPLocalApic() {
   __asm__ __volatile__("cli" ::: "memory");
 
   const uint64_t baseMsr =
-          Cpu::Instance().MSRread(IA32_APIC_BASE_MSR);
+          Cpu::MSRread(IA32_APIC_BASE_MSR);
 
   constexpr uint64_t X2APIC_ENABLE = 1ULL << 10;
   constexpr uint64_t BASE_ADDRESS_MASK = 0x000FFFFFFFFFF000ULL;
@@ -321,6 +384,7 @@ bool Apic::initAPLocalApic() {
       (baseMsr & X2APIC_ENABLE) != 0 ||
       (baseMsr & IA32_APIC_BASE_MSR_ENABLE) == 0 ||
       (baseMsr & BASE_ADDRESS_MASK) != _phyApicBase) {
+    printf("\n Error: Unexpected state of APIC: baseMsr=0x%llx", baseMsr);
     return false;
   }
 
@@ -329,6 +393,7 @@ bool Apic::initAPLocalApic() {
 
   // Require the integrated Local APIC layout used by this sample.
   if ((version & 0xFFu) < 0x10u || maxLvt < 3u) {
+    printf("\n Error: APIC version %u or max LVT %u not supported", version, maxLvt);
     return false;
   }
 

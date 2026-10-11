@@ -63,8 +63,10 @@ class Apic : public IrqManager {
     uint8_t GetLocalApicID() const;
     uint8_t GetIOApicID();
     uint32_t PhyApicBase() const { return _phyApicBase; }
-    void initAP(uint32_t targetApicId);
-    void sipiAP(uint32_t targetApicId, uint8_t startupVector);
+    bool waitForIcrIdle() const;
+    bool apSendInit(uint32_t targetApicId);
+    bool apSendSIPI(uint32_t targetApicId, uint8_t startupVector);
+    bool apSendFixedIPI(uint32_t targetApicId, uint8_t vector);
     bool initAPLocalApic();
 
   private:
@@ -72,7 +74,7 @@ class Apic : public IrqManager {
     uint32_t IoApicRead(uint8_t index);
     void IoApicWrite(uint8_t index, uint32_t val);
     void RemapVector(uint8_t vector, uint32_t mapped, bool level /*f:edge t:level*/, bool low /*f:high t:low*/, bool disabled);
-
+public:
     void SendEOI(const IRQ&) override;
     void EnableIRQ(const IRQ&) override;
     void DisableIRQ(const IRQ&) override;
