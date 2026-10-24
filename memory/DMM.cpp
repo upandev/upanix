@@ -262,7 +262,7 @@ uint64_t UserDMM::availableHeapSize() {
   return _availableHeapSize();
 };
 
-KernelDMM::KernelDMM() : DMM(MEM_KERNEL_HEAP_START, MEM_KERNEL_HEAP_SIZE), _mutex(KERNEL_DMM_LOCK_MEM) {
+KernelDMM::KernelDMM() : DMM(MEM_KERNEL_HEAP_START, MEM_KERNEL_HEAP_SIZE) {
 }
 
 uintptr_t KernelDMM::allocate(uint32_t sizeInBytes, uint32_t alignment) {
