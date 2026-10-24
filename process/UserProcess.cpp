@@ -490,7 +490,7 @@ void UserProcess::DeallocateGUIFramebuffer() {
   }
 }
 
-upan::option<IRelocateInfo&> UserProcess::getRelocateInfo(const upan::string& symName, bool fallbackToExe, int stBind) {
+upan::option<IRelocateInfo&> UserProcess::getRelocateInfo(const upan::string& binaryName, const upan::string& symName, bool fallbackToExe, int stBind) {
   auto it = _relocateInfoDLLMap.find(symName);
   if (it == _relocateInfoDLLMap.end()) {
     if (fallbackToExe) {
@@ -500,7 +500,7 @@ upan::option<IRelocateInfo&> UserProcess::getRelocateInfo(const upan::string& sy
       }
     }
     if (stBind != STB_WEAK) {
-      printf("\n Dynamic Symbol %s not found in any DLL/Exe (st-bind:%d), relocation failed!", symName.c_str(), stBind);
+      printf("\n %s: dynamic symbol '%s' not found in any DLL/Exe (st-bind:%d), relocation failed!", binaryName.c_str(), symName.c_str(), stBind);
     }
     return upan::option<IRelocateInfo&>::empty();
   }
@@ -533,13 +533,13 @@ void UserProcess::relocateMainExe(process_init_fini_t& init_fini) {
         const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
         const char* symName = _elfInfo.getDynSymName(dynSym.st_name);
         auto rel_offset = (uint64_t*) dynRelTable[i].r_offset;
-        getRelocateInfo(symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+        getRelocateInfo(_name, symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
           *rel_offset = relocateInfo.value() + dynRelTable[i].r_addend - relocateInfo.tlsOffset();
         });
       } else if (relType == ElfRelocSection::R_X86_64_COPY) {
         const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
         const char* symName = _elfInfo.getDynSymName(dynSym.st_name);
-        getRelocateInfo(symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+        getRelocateInfo(_name, symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
           auto src = (void*)GLOBAL_REL_ADDR(relocateInfo.value() + dynRelTable[i].r_addend, relocateInfo.base());
           auto dest = (void*)dynRelTable[i].r_offset;
           memcpy(dest, src, dynSym.st_size);
@@ -548,7 +548,7 @@ void UserProcess::relocateMainExe(process_init_fini_t& init_fini) {
         const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
         const char* symName = _elfInfo.getDynSymName(dynSym.st_name);
         auto rel_offset = (uint64_t*)dynRelTable[i].r_offset;
-        getRelocateInfo(symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+        getRelocateInfo(_name, symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
             *rel_offset = GLOBAL_REL_ADDR(relocateInfo.value() + dynRelTable[i].r_addend, relocateInfo.base());
         });
       }
@@ -562,6 +562,7 @@ void UserProcess::relocateDLLs(process_init_fini_t* init_fini_list) {
   int init_fini_index = 0;
 
   for (auto& dllEntry: _dllInfoMap) {
+    const auto& dllName = dllEntry.first;
     auto& elfInfo = dllEntry.second.elfInfo();
     elfInfo.getDynRelTable().ifPresent([&](Elf64_Rela* dynRelTable) {
       auto dynSymTable = elfInfo.getDynSymTable().valueOrThrow(XLOC, "no dynamic symbol table found");
@@ -570,23 +571,28 @@ void UserProcess::relocateDLLs(process_init_fini_t* init_fini_list) {
         const auto relType = ELF64_R_TYPE(dynRelTable[i].r_info);
 
         if (relType == ElfRelocSection::R_X86_64_DTPMOD64) {
-          const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
-          const char* symName = elfInfo.getDynSymName(dynSym.st_name);
+          const int symIndex = ELF64_R_SYM(dynRelTable[i].r_info);
           auto rel_offset = (uint64_t*)GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase());
-          getRelocateInfo(symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
-            *rel_offset = relocateInfo.tlsModuleId();
-          });
+          if (symIndex == 0) {
+            *rel_offset = dllEntry.second.tlsInfo().moduleId();
+          } else {
+            const auto& dynSym = dynSymTable[symIndex];
+            const char* symName = elfInfo.getDynSymName(dynSym.st_name);
+            getRelocateInfo(dllName, symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+              *rel_offset = relocateInfo.tlsModuleId();
+            });
+          }
         } else if (relType == ElfRelocSection::R_X86_64_DTPOFF64) {
           const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
           const char* symName = elfInfo.getDynSymName(dynSym.st_name);
           auto rel_offset = (uint64_t*)GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase());
-          getRelocateInfo(symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+          getRelocateInfo(dllName, symName, false, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
             *rel_offset = relocateInfo.value() + dynRelTable[i].r_addend;
           });
         } else if (relType == ElfRelocSection::R_X86_64_COPY) {
           const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
           const char* symName = elfInfo.getDynSymName(dynSym.st_name);
-          getRelocateInfo(symName, true, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+          getRelocateInfo(dllName, symName, true, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
             auto src = (void*)(relocateInfo.base() + relocateInfo.value() + dynRelTable[i].r_addend);
             auto dest = (void*)GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase());
             memcpy(dest, src, dynSym.st_size);
@@ -595,7 +601,7 @@ void UserProcess::relocateDLLs(process_init_fini_t* init_fini_list) {
           const auto dynSym = dynSymTable[ELF64_R_SYM(dynRelTable[i].r_info)];
           const char* symName = elfInfo.getDynSymName(dynSym.st_name);
           auto rel_offset = (uint64_t*)GLOBAL_REL_ADDR(dynRelTable[i].r_offset, elfInfo.getBase());
-          getRelocateInfo(symName, true, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
+          getRelocateInfo(dllName, symName, true, ELF64_ST_BIND(dynSym.st_info)).ifPresent([&](IRelocateInfo& relocateInfo) {
             //relocate only if the global symbol is from a different shared library
             if (relocateInfo.id() != dllEntry.second.id()) {
               *rel_offset = GLOBAL_REL_ADDR(relocateInfo.value() + dynRelTable[i].r_addend, relocateInfo.base());

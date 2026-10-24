@@ -82,7 +82,7 @@ private:
   void Load(const upan::vector<upan::string>& argv, const upan::vector<upan::string>& envp);
   void LoadDLLs();
   void LoadELFDLL(const upan::string& dllName);
-  upan::option<IRelocateInfo&> getRelocateInfo(const upan::string& symName, bool fallbackToExe, int stBind);
+  upan::option<IRelocateInfo&> getRelocateInfo(const upan::string& binaryName, const upan::string& symName, bool fallbackToExe, int stBind);
   void relocateMainExe(process_init_fini_t& init_fini);
   void relocateDLLs(process_init_fini_t* init_fini_list);
 
