@@ -30,7 +30,7 @@ int TerminalDescriptor::_read(void* buffer, int len) {
   return _terminalDevice->readInStream(buffer, len);
 }
 
-bool TerminalDescriptor::_canRead() {
+bool TerminalDescriptor::_canRead() const {
   return _terminalDevice->canReadInStream();
 }
 
@@ -38,6 +38,6 @@ int TerminalDescriptor::_write(const void* buffer, int len) {
   return _terminalDevice->writeOutStream(buffer, len);
 }
 
-bool TerminalDescriptor::_canWrite() {
+bool TerminalDescriptor::_canWrite() const {
   return _terminalDevice->canWriteOutStream();
 }

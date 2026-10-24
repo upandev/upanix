@@ -23,7 +23,7 @@
 #pragma once
 
 #include <BaseFrame.h>
-#include <atomicop.h>
+#include <uatomic.h>
 
 class RootFrame : public upanui::BaseFrame {
 public:

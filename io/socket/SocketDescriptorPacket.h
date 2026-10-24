@@ -33,10 +33,10 @@ protected:
 
 protected:
   int _read(void* buffer, int len) override;
-  bool _canRead_1() override;
+  bool _canRead_1() const override;
 
   int _write(const void* buffer, int len) override;
-  bool _canWrite_1() override { return true; }
+  bool _canWrite_1() const override { return true; }
 
   void _seek(int seekType, int offset) override { }
   uint32_t _getOffset() const override { return 0; }

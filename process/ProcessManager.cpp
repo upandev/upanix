@@ -195,12 +195,12 @@ void ProcessManager::ContextSwitch(TaskContext& taskContext) {
 
 //return true if it was previously disabled and now enabled
 bool ProcessManager::EnableTaskSwitch() {
-  return upan::atomic::op::swap(_taskSwitch, 1) == 0;
+  return atomic_swap(&_taskSwitch, 1) == 0;
 }
 
 //return true if it was previously enabled and now disabled
 bool ProcessManager::DisableTaskSwitch() {
-  return upan::atomic::op::swap(_taskSwitch, 0) == 1;
+  return atomic_swap(&_taskSwitch, 0) == 1;
 }
 
 void ProcessManager::Sleep(uint64_t duration) // in micro Seconds
@@ -360,7 +360,8 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
 void ProcessManager::WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMicroSeconds) {
   upan::vector<IODescriptorTable::io_descriptor> waitIODescriptors;
   IODescriptorTable::io_descriptor waitIODescriptor;
-  waitIODescriptor._fd = fd;
+  auto& p = GetCurrentPAS();
+  waitIODescriptor._desc = p.iodTable().get(fd);
   waitIODescriptor._ioType = waitType;
   waitIODescriptors.push_back(waitIODescriptor);
   WaitOnIODescriptors(waitIODescriptors, timeoutInMicroSeconds);

@@ -30,7 +30,7 @@ int PipeWriteDescriptor::_read(void* buffer, int len) {
   throw upan::exception(XLOC, "read not supported for pipe read descriptors");
 }
 
-bool PipeWriteDescriptor::_canRead() {
+bool PipeWriteDescriptor::_canRead() const {
   return false;
 }
 
@@ -38,6 +38,6 @@ int PipeWriteDescriptor::_write(const void* buffer, int len) {
   return _pipeDevice->write(id(), buffer, len, !(getMode() & O_WR_NONBLOCK || getMode() & O_NONBLOCK));
 }
 
-bool PipeWriteDescriptor::_canWrite() {
+bool PipeWriteDescriptor::_canWrite() const {
   return _pipeDevice->canWrite();
 }

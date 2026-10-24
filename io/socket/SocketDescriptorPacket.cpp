@@ -36,7 +36,7 @@ int SocketDescriptorPacket::_read(void* buffer, int len) {
   throw upan::exception(XLOC, "read not supported for packet sockets");
 }
 
-bool SocketDescriptorPacket::_canRead_1() {
+bool SocketDescriptorPacket::_canRead_1() const {
   upan::mutex_guard g(_ioSync);
   return !_packetQueue.empty();
 }

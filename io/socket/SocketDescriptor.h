@@ -75,10 +75,10 @@ public:
   virtual int getLastError() const { return 0; }
 
 protected:
-  bool _canRead() override;
-  bool _canWrite() override;
-  virtual bool _canRead_1() = 0;
-  virtual bool _canWrite_1() = 0;
+  bool _canRead() const override;
+  bool _canWrite() const override;
+  virtual bool _canRead_1() const = 0;
+  virtual bool _canWrite_1() const = 0;
   virtual void _bind(const struct sockaddr& address, socklen_t len) = 0;
   virtual void _connect(const struct sockaddr& address, socklen_t len) = 0;
   virtual void _listen(int backlog) = 0;

@@ -40,7 +40,7 @@ int TerminalMasterDescriptor::_read(void* buffer, int len) {
   return _terminalDevice->readOutStream(buffer, len);
 }
 
-bool TerminalMasterDescriptor::_canRead() {
+bool TerminalMasterDescriptor::_canRead() const {
   return _terminalDevice->canReadOutStream();
 }
 
@@ -48,6 +48,6 @@ int TerminalMasterDescriptor::_write(const void* buffer, int len) {
   return _terminalDevice->writeInStream(buffer, len);
 }
 
-bool TerminalMasterDescriptor::_canWrite() {
+bool TerminalMasterDescriptor::_canWrite() const {
   return _terminalDevice->canWriteInStream();
 }

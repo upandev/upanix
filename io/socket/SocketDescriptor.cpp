@@ -66,14 +66,14 @@ void SocketDescriptor::validateRecvFromParams(const void* buf, int flags, struct
   validateBuf(buf);
 }
 
-bool SocketDescriptor::_canRead() {
+bool SocketDescriptor::_canRead() const {
   if (_shutdownStatus == SHUT_RD || _shutdownStatus == SHUT_RDWR) {
     return false;
   }
   return _canRead_1();
 }
 
-bool SocketDescriptor::_canWrite() {
+bool SocketDescriptor::_canWrite() const {
   if (_shutdownStatus == SHUT_WR || _shutdownStatus == SHUT_RDWR) {
     return false;
   }

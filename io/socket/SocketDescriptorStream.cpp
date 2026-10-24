@@ -200,7 +200,7 @@ int SocketDescriptorStream::_read(void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::_canRead_1() {
+bool SocketDescriptorStream::_canRead_1() const {
   if (_tcpConnection.isEmpty()) {
     return false;
   }
@@ -235,7 +235,7 @@ int SocketDescriptorStream::_write(const void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStream::_canWrite_1() {
+bool SocketDescriptorStream::_canWrite_1() const {
   if (_tcpConnection.isEmpty()) {
     return false;
   }

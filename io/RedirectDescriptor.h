@@ -43,7 +43,7 @@ private:
     return _parentDesc->read(buffer, len);
   }
 
-  bool _canRead() override {
+  bool _canRead() const override {
     return _parentDesc->canRead();
   }
 
@@ -51,7 +51,7 @@ private:
     return _parentDesc->write(buffer, len);
   }
 
-  bool _canWrite() override {
+  bool _canWrite() const override {
     return _parentDesc->canWrite();
   }
 

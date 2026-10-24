@@ -33,9 +33,9 @@ public:
 
 private:
   int _read(void* buffer, int len) override;
-  bool _canRead() override { return true; }
+  bool _canRead() const override { return true; }
   int _write(const void* buffer, int len) override;
-  bool _canWrite() override { return true; }
+  bool _canWrite() const override { return true; }
   void _seek(int seekType, int offset) override {}
   uint32_t _getOffset() const override { return 0; }
   void _close() override {}

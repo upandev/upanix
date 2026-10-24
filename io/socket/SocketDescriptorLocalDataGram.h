@@ -36,10 +36,10 @@ public:
 
 protected:
   int _read(void* buffer, int len) override;
-  bool _canRead_1() override;
+  bool _canRead_1() const override;
 
   int _write(const void* buffer, int len) override;
-  bool _canWrite_1() override;
+  bool _canWrite_1() const override;
 
   void _bind(const struct sockaddr& address, socklen_t len) override;
   void _connect(const struct sockaddr& address, socklen_t len) override;

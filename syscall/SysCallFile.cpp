@@ -269,13 +269,14 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
         fd_set* exceptfds = (fd_set*) p4;
         struct timeval* timeout = (struct timeval*) p5;
 
+        auto& process = ProcessManager::Instance().GetCurrentPAS();
         upan::vector<IODescriptorTable::io_descriptor> waitIODescriptors;
         for (int i = 0; i < nfds; ++i) {
           if (readfds && FD_ISSET(i, readfds)) {
-            waitIODescriptors.push_back({i, IODescriptorTable::IO_OP_TYPES::IO_Read});
+            waitIODescriptors.push_back({ process.iodTable().get(i), IODescriptorTable::IO_OP_TYPES::IO_Read});
           }
           if (writefds && FD_ISSET(i, writefds)) {
-            waitIODescriptors.push_back({i, IODescriptorTable::IO_OP_TYPES::IO_Write});
+            waitIODescriptors.push_back({ process.iodTable().get(i), IODescriptorTable::IO_OP_TYPES::IO_Write});
           }
         }
 
@@ -287,13 +288,13 @@ void SysCallFile_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
           *retVal = -1;
         } else {
           int retCode = 0;
-          const auto& readyIODescriptors = ProcessManager::Instance().GetCurrentPAS().iodTable().select(waitIODescriptors, timeout, retCode);
+          const auto& readyIODescriptors = process.iodTable().select(waitIODescriptors, timeout, retCode);
           for(auto& d : readyIODescriptors) {
             if (readfds && d._ioType == IODescriptorTable::IO_OP_TYPES::IO_Read) {
-              FD_SET(d._fd, readfds);
+              FD_SET(d._desc->id(), readfds);
             }
             if (writefds && d._ioType == IODescriptorTable::IO_OP_TYPES::IO_Write) {
-              FD_SET(d._fd, writefds);
+              FD_SET(d._desc->id(), writefds);
             }
           }
           *retVal = retCode;

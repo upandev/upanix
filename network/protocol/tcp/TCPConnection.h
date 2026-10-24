@@ -58,10 +58,10 @@ public:
   void close();
 
   int recv(uint8_t* buf, int len);
-  bool canRecv();
+  bool canRecv() const;
 
   int send(const uint8_t* buf, int len);
-  bool canSend();
+  bool canSend() const;
   void processStream();
 
   int socketId() const { return _socketId; }
@@ -79,8 +79,8 @@ public:
   void doneReceiving();
 
 private:
-  bool allowAppSend() { return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT; }
-  bool allowAppRecv() { return _state.get() != TCP_CLOSED; }
+  bool allowAppSend() const { return _state.get() == TCP_ESTABLISHED || _state.get() == TCP_CLOSE_WAIT; }
+  bool allowAppRecv() const { return _state.get() != TCP_CLOSED; }
   void updateToString();
 
   void processRecvPackets();
@@ -108,7 +108,7 @@ private:
   bool _blockingSocket;
   upan::string _str;
 
-  upan::atomic::integral<State> _state;
+  mutable upan::atomic::integral<State> _state;
   uint32_t _seqNum;
   uint32_t _ackNum;
   uint32_t _finSeqNum;

@@ -192,15 +192,14 @@ upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::select(const u
 upan::vector<IODescriptorTable::io_descriptor> IODescriptorTable::selectCheck(const upan::vector<io_descriptor>& ioDescriptors) {
   upan::vector<io_descriptor> result;
   for(const auto& ioDescriptor : ioDescriptors) {
-    auto d = get(ioDescriptor._fd);
     switch(ioDescriptor._ioType) {
       case IO_OP_TYPES::IO_Read:
-        if (d->canRead()) {
+        if (ioDescriptor._desc->canRead()) {
           result.push_back(ioDescriptor);
         }
         break;
       case IO_OP_TYPES::IO_Write:
-        if (d->canWrite()) {
+        if (ioDescriptor._desc->canWrite()) {
           result.push_back(ioDescriptor);
         }
         break;

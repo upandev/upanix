@@ -27,7 +27,7 @@ int IODescriptor::read(void* buffer, int len) {
   return _read(buffer, len);
 }
 
-bool IODescriptor::canRead() {
+bool IODescriptor::canRead() const {
   closeCheckAndThrow();
   return _canRead();
 }
@@ -37,7 +37,7 @@ int IODescriptor::write(const void* buffer, int len) {
   return _write(buffer, len);
 }
 
-bool IODescriptor::canWrite() {
+bool IODescriptor::canWrite() const {
   closeCheckAndThrow();
   return _canWrite();
 }

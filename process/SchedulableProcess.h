@@ -82,7 +82,7 @@ public:
 
   PROCESS_STATUS status() const override { return _status; }
   PROCESS_STATUS setStatus(PROCESS_STATUS status) override {
-    return (PROCESS_STATUS) upan::atomic::op::swap((__volatile__ uint32_t &) (_status), static_cast<int>(status));
+    return (PROCESS_STATUS) atomic_swap(&_status, static_cast<int>(status));
   }
 
   int driveID() const override { return _driveID; }

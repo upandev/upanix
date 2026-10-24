@@ -30,7 +30,7 @@ public:
 
 private:
   int _read(void* buffer, int len) override;
-  bool _canRead() override;
+  bool _canRead() const override;
   int _write(const void* buffer, int len) override;
-  bool _canWrite() override;
+  bool _canWrite() const override;
 };

@@ -46,7 +46,7 @@ int SocketDescriptorStreamBuffer::_read(void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStreamBuffer::_canRead() {
+bool SocketDescriptorStreamBuffer::_canRead() const {
   upan::mutex_guard g(_ioSync);
   return !_queue.empty();
 }
@@ -77,14 +77,14 @@ int SocketDescriptorStreamBuffer::send(const void* buffer, int len) {
   }
 }
 
-bool SocketDescriptorStreamBuffer::_canWrite() {
+bool SocketDescriptorStreamBuffer::_canWrite() const {
   if (_peer.isEmpty()) {
     throw upan::exception(XLOC, "canWrite failed - socket-pair peer is not connected for %d", id());
   }
   return _peer->canSend();
 }
 
-bool SocketDescriptorStreamBuffer::canSend() {
+bool SocketDescriptorStreamBuffer::canSend() const {
   upan::mutex_guard g(_ioSync);
   return !_queue.full();
 }

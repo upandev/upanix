@@ -66,18 +66,18 @@ public:
   }
 
   int read(void* buffer, int len);
-  bool canRead();
+  bool canRead() const;
   int write(const void* buffer, int len);
-  bool canWrite();
+  bool canWrite() const;
   void seek(int seekType, int offset);
   uint32_t getOffset() const;
   struct stat getStat();
 
 protected:
   virtual int _read(void* buffer, int len) = 0;
-  virtual bool _canRead() = 0;
+  virtual bool _canRead() const = 0;
   virtual int _write(const void* buffer, int len) = 0;
-  virtual bool _canWrite() = 0;
+  virtual bool _canWrite() const = 0;
   virtual void _seek(int seekType, int offset) = 0;
   virtual uint32_t _getOffset() const = 0;
   virtual struct stat _getStat() { return {}; }

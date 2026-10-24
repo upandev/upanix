@@ -50,7 +50,7 @@ public:
   } IO_OP_TYPES ;
 
   typedef struct {
-    int _fd;
+    IODescriptor::Ptr _desc;
     IO_OP_TYPES _ioType;
   } io_descriptor;
 
