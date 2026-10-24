@@ -231,7 +231,6 @@ void Initialize() {
 
     Console::Instance();
 
-    KernelRootProcess::Instance().initTLS();
     //Now that the TLS is initialized for KernelRoot, getpid() can get the PID from the thread local space
     openlog("Upanix", LOG_PID | LOG_CONS, LOG_KERN);
     KLog::info("Kernel Root TLS is Initialized");

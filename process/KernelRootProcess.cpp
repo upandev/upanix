@@ -48,6 +48,8 @@ KernelRootProcess& KernelRootProcess::Instance() {
   return instance;
 }
 
+extern "C" void _initialize_standard_library();
+
 KernelRootProcess::KernelRootProcess() :
   _iodTable(NO_PROCESS_ID),
   _scheduleRunnerPid(NO_PROCESS_ID), _processGroup(nullptr) {
@@ -61,6 +63,10 @@ KernelRootProcess::KernelRootProcess() :
   _iodTable.allocate([&stdoutFD](int fd) { return new RedirectDescriptor(NO_PROCESS_ID, fd, stdoutFD); });
   _iodTable.allocate([&stdinFD](int fd) { return new RedirectDescriptor(NO_PROCESS_ID, fd, stdinFD); });
   _iodTable.allocate([](int fd) { return new SocketDescriptorLocalDataGram(NO_PROCESS_ID, fd, AF_LOCAL); });
+
+  initTLS();
+  //standard library initialization requires TLS initialization to be complete
+  _initialize_standard_library();
 }
 
 void KernelRootProcess::createScheduleRunner() {
