@@ -51,13 +51,15 @@ int FileDescriptor::_write(const void* buffer, int len) {
     throw upan::exception(XLOC, "insufficient permission to write file fd: %d", id());
   }
 
-  int incLen = len ;
-  const int limit = 1 MB ;
+  int incLen = len;
+  int bufOffset = 0;
+  const int limit = 1 MB;
 
   while(true) {
     auto n = (incLen > limit) ? limit : incLen;
-    n = _diskDrive.fileSystem().write(_fileNodeRef, *this, (const uint8_t*)buffer, n);
+    n = _diskDrive.fileSystem().write(_fileNodeRef, *this, (const uint8_t*)buffer + bufOffset, n);
     incLen -= n;
+    bufOffset += n;
     if (incLen == 0) { break; }
   }
 
