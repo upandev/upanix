@@ -21,6 +21,7 @@
  */
 
 #include <LocalDataGramResolver.h>
+#include <IrqLockGuard.h>
 
 LocalDataGramResolver& LocalDataGramResolver::Instance() {
   static LocalDataGramResolver instance;
@@ -28,7 +29,7 @@ LocalDataGramResolver& LocalDataGramResolver::Instance() {
 }
 
 void LocalDataGramResolver::setup(SocketDescriptorLocalDataGram& socket, const upan::string& path) {
-  upan::mutex_guard g(_mutex);
+  IrqLockGuard g(_mutex);
   auto r = _socketBindMap.insert(SOCKET_PATH_MAP::value_type(path, &socket));
   if (r.second == false) {
     throw upan::exception(XLOC, "setup failed - socket %s is already bound", path.c_str());
@@ -36,7 +37,7 @@ void LocalDataGramResolver::setup(SocketDescriptorLocalDataGram& socket, const u
 }
 
 void LocalDataGramResolver::release(SocketDescriptorLocalDataGram& socket) {
-  upan::mutex_guard g(_mutex);
+  IrqLockGuard g(_mutex);
   auto it = _socketBindMap.find(socket.srcPath());
   if (it != _socketBindMap.end()) {
     _socketBindMap.erase(it);
@@ -44,7 +45,7 @@ void LocalDataGramResolver::release(SocketDescriptorLocalDataGram& socket) {
 }
 
 upan::option<SocketDescriptorLocalDataGram&> LocalDataGramResolver::resolve(const upan::string& path) {
-  upan::mutex_guard g(_mutex);
+  IrqLockGuard g(_mutex);
   auto it = _socketBindMap.find(path);
   if (it != _socketBindMap.end()) {
     return upan::option<SocketDescriptorLocalDataGram&>(*it->second);

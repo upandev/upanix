@@ -24,6 +24,7 @@
 #include <option.h>
 #include <map.h>
 #include <SocketDescriptorLocalDataGram.h>
+#include <spinmutex.h>
 
 class LocalDataGramResolver {
 private:
@@ -42,5 +43,5 @@ private:
   typedef upan::map<upan::string, SocketDescriptorLocalDataGram*> SOCKET_PATH_MAP;
 
   SOCKET_PATH_MAP _socketBindMap;
-  upan::mutex _mutex;
+  upan::spinmutex _mutex;
 };
