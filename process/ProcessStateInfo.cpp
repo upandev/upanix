@@ -65,8 +65,10 @@ bool ProcessStateInfo::IsWaitOnLockCompleted() {
   }
 
   if (!isprocessalive(prevVal)) {
-    _waitLock->set(_newVal);
-    return true;
+    const int ppVal = _waitLock->compare_set(prevVal, _newVal);
+    if (ppVal == prevVal) {
+      return true;
+    }
   }
 
   return false;
