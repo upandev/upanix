@@ -354,7 +354,7 @@ upan::shared_ptr<FSTerminalDevice> AutonomousProcess::controllingTerminal() {
 time_t AutonomousProcess::setAlarm(uint32_t seconds) {
   const time_t r = _alarmExpiry ? TscClock::instance().duration(_alarmExpiry) / 1000000 : 0;
   if (seconds) {
-    _alarmExpiry = TscClock::instance().durationToCycles(seconds * 1000000ULL);
+    _alarmExpiry = TscClock::instance().rdtsc(seconds * 1000000ULL);
   } else {
     _alarmExpiry = 0;
   }
