@@ -58,35 +58,37 @@ private:
 
   class WriteGuard {
   public:
-    WriteGuard(FileNodeRef& ref) : _ref(ref) {
+    WriteGuard() = delete;
+    WriteGuard(const WriteGuard&) = delete;
+    WriteGuard& operator=(const WriteGuard&) = delete;
+
+    explicit WriteGuard(FileNodeRef& ref) : _ref(ref) {
       _ref.node().ifPresent([](FileTree::Node& node) { node.rwlock().write_lock(); });
     }
 
     ~WriteGuard() {
       _ref.node().ifPresent([](FileTree::Node& node) { node.rwlock().write_unlock(); });
     }
-  private:
-    WriteGuard() = delete;
-    WriteGuard(const WriteGuard&) = delete;
-    WriteGuard& operator=(const WriteGuard&) = delete;
 
+  private:
     FileNodeRef& _ref;
   };
 
   class ReadGuard {
   public:
-    ReadGuard(FileNodeRef& ref) : _ref(ref) {
+    ReadGuard() = delete;
+    ReadGuard(const ReadGuard&) = delete;
+    ReadGuard& operator=(const ReadGuard&) = delete;
+
+    explicit ReadGuard(FileNodeRef& ref) : _ref(ref) {
       _ref.node().ifPresent([](FileTree::Node& node) { node.rwlock().read_lock(); });
     }
 
     ~ReadGuard() {
       _ref.node().ifPresent([](FileTree::Node& node) { node.rwlock().read_unlock(); });
     }
-  private:
-    ReadGuard() = delete;
-    ReadGuard(const ReadGuard&) = delete;
-    ReadGuard& operator=(const ReadGuard&) = delete;
 
+  private:
     FileNodeRef& _ref;
   };
 
