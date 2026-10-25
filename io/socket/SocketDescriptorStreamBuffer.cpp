@@ -47,7 +47,6 @@ int SocketDescriptorStreamBuffer::_read(void* buffer, int len) {
 }
 
 bool SocketDescriptorStreamBuffer::_canRead() const {
-  upan::mutex_guard g(_ioSync);
   return !_queue.empty();
 }
 
@@ -85,6 +84,5 @@ bool SocketDescriptorStreamBuffer::_canWrite() const {
 }
 
 bool SocketDescriptorStreamBuffer::canSend() const {
-  upan::mutex_guard g(_ioSync);
   return !_queue.full();
 }

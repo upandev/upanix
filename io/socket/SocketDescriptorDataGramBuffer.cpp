@@ -36,7 +36,7 @@ int SocketDescriptorDataGramBuffer::_read(void* buffer, int len) {
         _queue.pop_front();
         int n = upan::min(message._len, len);
         memcpy(buffer, message._buffer.get(), n);
-        _bufSize -= message._len;
+        _bufSize.add(-message._len);
         return n;
       }
     }
@@ -52,7 +52,6 @@ int SocketDescriptorDataGramBuffer::_read(void* buffer, int len) {
 }
 
 bool SocketDescriptorDataGramBuffer::_canRead() const {
-  upan::mutex_guard g(_ioSync);
   return !_queue.empty();
 }
 
@@ -70,7 +69,7 @@ int SocketDescriptorDataGramBuffer::send(const void* buffer, int len) {
   while (true) {
     {
       upan::mutex_guard g(_ioSync);
-      if ((_bufSize + len) <= _maxBufSize) {
+      if ((_bufSize.get() + len) <= _maxBufSize) {
         _queue.push_back(Message(buffer, len));
         return len;
       }
@@ -94,6 +93,5 @@ bool SocketDescriptorDataGramBuffer::_canWrite() const {
 }
 
 bool SocketDescriptorDataGramBuffer::canSend() const {
-  upan::mutex_guard g(_ioSync);
-  return _bufSize < _maxBufSize;
+  return _bufSize.get() < _maxBufSize;
 }

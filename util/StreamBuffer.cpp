@@ -29,7 +29,6 @@ StreamBuffer::StreamBuffer(int bufSize) : _queue(bufSize) {
 }
 
 bool StreamBuffer::canRead() const {
-  IrqLockGuard g(_ioSync);
   return !_queue.empty();
 }
 
@@ -56,7 +55,6 @@ int StreamBuffer::read(void* buffer, int len, bool block, upan::function<void> w
 }
 
 bool StreamBuffer::canWrite() const {
-  IrqLockGuard g(_ioSync);
   return !_queue.full();
 }
 

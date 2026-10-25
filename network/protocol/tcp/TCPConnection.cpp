@@ -125,7 +125,6 @@ int TCPConnection::recv(uint8_t* data, int len) {
 }
 
 bool TCPConnection::canRecv() const {
-  upan::mutex_guard g(_sendRecvMutex);
   if (!allowAppRecv()) {
     return false;
   }
@@ -141,7 +140,6 @@ int TCPConnection::send(const uint8_t* data, int len) {
 }
 
 bool TCPConnection::canSend() const {
-  upan::mutex_guard g(_sendRecvMutex);
   if (!allowAppSend()) {
     return false;
   }

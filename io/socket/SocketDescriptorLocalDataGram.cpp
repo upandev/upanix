@@ -98,7 +98,6 @@ int SocketDescriptorLocalDataGram::_read(void* buffer, int len) {
 }
 
 bool SocketDescriptorLocalDataGram::_canRead_1() const {
-  upan::mutex_guard g(_ioSync);
   return !_messages.empty();
 }
 
@@ -107,7 +106,6 @@ int SocketDescriptorLocalDataGram::_write(const void* buffer, int len) {
 }
 
 bool SocketDescriptorLocalDataGram::_canWrite_1() const {
-  upan::mutex_guard g(_ioSync);
   if (_destPath.empty()) {
     return true;
   } else {

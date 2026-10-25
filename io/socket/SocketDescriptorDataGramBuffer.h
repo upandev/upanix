@@ -52,8 +52,8 @@ private:
   };
 private:
   const uint32_t _maxBufSize;
+  mutable upan::atomic::integral<uint32_t> _bufSize;
   upan::shared_ptr<SocketDescriptorDataGramBuffer> _peer;
-  uint32_t _bufSize;
   upan::list<Message> _queue;
   upan::mutex _ioSync;
 };

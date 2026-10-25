@@ -50,7 +50,6 @@ int StreamBufferDescriptor::_read(void* buffer, int len) {
 }
 
 bool StreamBufferDescriptor::_canRead() const {
-  upan::mutex_guard g(_ioSync);
   return !_queue.empty();
 }
 
@@ -79,6 +78,5 @@ int StreamBufferDescriptor::_write(const void* buffer, int len) {
 }
 
 bool StreamBufferDescriptor::_canWrite() const {
-  upan::mutex_guard g(_ioSync);
   return !_queue.full();
 }

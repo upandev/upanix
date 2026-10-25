@@ -33,52 +33,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="CpuId is mandatory for kernel startup&#10;Apic is mandatory for kernel startup&#10;SSE is enabled in the Processor">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" beforeDir="false" afterPath="$PROJECT_DIR$/boot/UpanixStart_Main.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/display/RootFrame.h" beforeDir="false" afterPath="$PROJECT_DIR$/display/RootFrame.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/FileDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/FileDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/IODescriptorTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/IODescriptorTable.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/NullDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/NullDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/RedirectDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/RedirectDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/pipe/PipeReadDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/pipe/PipeReadDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/pipe/PipeReadDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/pipe/PipeReadDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/pipe/PipeWriteDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/pipe/PipeWriteDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/pipe/PipeWriteDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/pipe/PipeWriteDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStream.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/terminal/TerminalDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/terminal/TerminalDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/terminal/TerminalDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/terminal/TerminalDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/terminal/TerminalMasterDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/terminal/TerminalMasterDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/terminal/TerminalMasterDescriptor.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/terminal/TerminalMasterDescriptor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/MemConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/MemConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/UserProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/UserProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/StreamBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/StreamBuffer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,9 +137,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
@@ -880,7 +849,8 @@
       <workItem from="1790418496240" duration="54181000" />
       <workItem from="1790945295659" duration="138555000" />
       <workItem from="1791727457925" duration="1068000" />
-      <workItem from="1792212608878" duration="43721000" />
+      <workItem from="1792212608878" duration="55489000" />
+      <workItem from="1792839122392" duration="5456000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1225,7 +1195,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="318" />
+    <option name="localTasksCounter" value="324" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1259,12 +1229,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Introducing TSC clock - to enhance the accuracy of sleep to mircosecond granularity - which also helps improve context switch accuracy and makes it independent of PIT timer interrupt" />
-    <MESSAGE value="minor refactoring" />
-    <MESSAGE value="1. introduce kprop - kernel utility to enable/disable core kernel changes&#10;2. sleep() takes microseconds&#10;3. clear-screen should be through ctrl+L character - so it is processed synchronously with other IO inputs" />
-    <MESSAGE value="added a static method to check bits of usbStatus - so, reading the mmio register happens and all status bit checks happen on the value that is read into a local variable - this is more optimal" />
-    <MESSAGE value="bugfix - the tdSize must not be more than 31" />
-    <MESSAGE value="Disable PIT after TSC initialization" />
     <MESSAGE value="increase max sector read block from 32 to 64 sectors - this is possible with tdSize fix at TRB setup" />
     <MESSAGE value="timer count granularity increased to microseconds with the use of TSC" />
     <MESSAGE value="1. XHCI interrupt handler has its own stack - so, it can yield/context-switch&#10;2. Introduce priority process queue - to allow processes waiting for events like XHCI disk io - can be invoked on priority to reduce io delay&#10;3. use TSC for managing sleep and alarm - in microsecond granularity&#10;4. XHCI mmio is mapped to uncacheable PAT area&#10;5. XHCI status register (mmio) is read once and then the bits are checked using static util methods - this should be more optimal than access mmio registry on each bit check" />
@@ -1284,7 +1248,13 @@
     <MESSAGE value="kernel mode and current processor id is now part of Processor instance - as it can vary from one processor to another" />
     <MESSAGE value="Terminal LineBuffer and StreamBuffer uses IrqLockGuard" />
     <MESSAGE value="CpuId is mandatory for kernel startup&#10;Apic is mandatory for kernel startup&#10;SSE is enabled in the Processor" />
-    <option name="LAST_COMMIT_MESSAGE" value="CpuId is mandatory for kernel startup&#10;Apic is mandatory for kernel startup&#10;SSE is enabled in the Processor" />
+    <MESSAGE value="pass the binary name to getRelocateInfo - to print in error message - for debugging purpose" />
+    <MESSAGE value="mutex doesn't use heap allocated lock variable anymore - it will use 4 byte aligned uint32_t lock member variable - and this should work fine because by default, all heap allocationss in upanix are 16 byte aligned" />
+    <MESSAGE value="write to apic base for EOI - MMIO location can be a simple assignment - doesn't have to be an atomic swap" />
+    <MESSAGE value="c++ mutex impl in libustd now uses libupthread c implementation" />
+    <MESSAGE value="even kernel should initialize the stdio streams at start-up - but before that we need to initialize the TLS for kernel" />
+    <MESSAGE value="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard" />
+    <option name="LAST_COMMIT_MESSAGE" value="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

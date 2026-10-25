@@ -37,7 +37,6 @@ int SocketDescriptorPacket::_read(void* buffer, int len) {
 }
 
 bool SocketDescriptorPacket::_canRead_1() const {
-  upan::mutex_guard g(_ioSync);
   return !_packetQueue.empty();
 }
 
