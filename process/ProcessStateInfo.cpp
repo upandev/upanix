@@ -50,7 +50,7 @@ void ProcessStateInfo::EventCompleted() {
 
 void ProcessStateInfo::WaitOnLock(upan::atomic::integral<int> *lock, int oldVal, int newVal) {
   _waitLock = lock;
-  _oldVal = newVal;
+  _oldVal = oldVal;
   _newVal = newVal;
 }
 
