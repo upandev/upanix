@@ -72,9 +72,9 @@ void TCPConnection::connect() {
   _pendingAckSegments.push_back(packet);
 
   if (_blockingSocket) {
-    struct timeval timeout;
+    struct timespec timeout;
     timeout.tv_sec = 3;
-    timeout.tv_usec = 0;
+    timeout.tv_nsec = 0;
     try {
       _sendRecvCond.wait(_sendRecvMutex, &timeout);
     } catch(...) {
