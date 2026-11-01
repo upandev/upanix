@@ -492,8 +492,8 @@ void XHCIController::PublishEventResult(const EventTRB& result) {
       ((TRB*) result.TRBPointer())->Print();
       return;
     }
-    it->second->Consume(result);
     pid = it->second->Pid();
+    it->second->Consume(result);
   }
   ProcessManager::Instance().EventCompleted(pid);
 }
@@ -679,6 +679,9 @@ void XHCIController::HandleEvent() {
         case InterruptResultType::PendingEvent:
           PublishEventResult(data._trb);
           break;
+
+        default:
+          printf("\n Unknown XHCI Interrupt Result Type: %d", data._resultType);
       }
     }
   }

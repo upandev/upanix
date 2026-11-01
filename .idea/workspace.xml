@@ -33,21 +33,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use timespec instead of timeval for condition variable timed-wait">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/StreamBufferDescriptor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorDataGramBuffer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorPacket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorStreamBuffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/ldgram/LocalDataGramResolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/TscClock.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/TscClock.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/TscClock.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/TscClock.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileNodeRef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/StreamBuffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/StreamBuffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,11 +138,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -850,7 +846,8 @@
       <workItem from="1790945295659" duration="138555000" />
       <workItem from="1791727457925" duration="1068000" />
       <workItem from="1792212608878" duration="55489000" />
-      <workItem from="1792839122392" duration="5456000" />
+      <workItem from="1792839122392" duration="18690000" />
+      <workItem from="1792973017795" duration="59041000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1195,7 +1192,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="324" />
+    <option name="localTasksCounter" value="333" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1229,15 +1226,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="increase max sector read block from 32 to 64 sectors - this is possible with tdSize fix at TRB setup" />
-    <MESSAGE value="timer count granularity increased to microseconds with the use of TSC" />
-    <MESSAGE value="1. XHCI interrupt handler has its own stack - so, it can yield/context-switch&#10;2. Introduce priority process queue - to allow processes waiting for events like XHCI disk io - can be invoked on priority to reduce io delay&#10;3. use TSC for managing sleep and alarm - in microsecond granularity&#10;4. XHCI mmio is mapped to uncacheable PAT area&#10;5. XHCI status register (mmio) is read once and then the bits are checked using static util methods - this should be more optimal than access mmio registry on each bit check" />
-    <MESSAGE value="started SMP implementation with a small initial step - to manager processor initialization and other SMP management in a new class ProcessorManager. Made some basic changes to allow for creating multiple APIC instances - one per CPU. For now, created only on APIC as before - which is the APIC for the BSP (Bootstrap Processor)" />
-    <MESSAGE value="implemented AP initialization code - trampoline" />
-    <MESSAGE value="use TscClock for busy spin wait" />
-    <MESSAGE value="IDT is loaded within the processor - all CPUs use a shared IDT initialized space" />
-    <MESSAGE value="AP initialization further extended to load it's own dedicated GDT - which is clone of BSP GDT and also TSS with dedicated ring0, ist1, ist2, ist3, ist4 stack and also a dedicated AP stack" />
-    <MESSAGE value="initialize AP's Local APIC and install a basic spurious interrupt handler at 0xFF vector" />
     <MESSAGE value="added a test interrupt handler for AP" />
     <MESSAGE value="1. implemented Local APIC initialization code for AP.&#10;2. implemented IPI - to test an interrupt handler" />
     <MESSAGE value="added ap-ipi test command in kernel console" />
@@ -1254,7 +1242,16 @@
     <MESSAGE value="c++ mutex impl in libustd now uses libupthread c implementation" />
     <MESSAGE value="even kernel should initialize the stdio streams at start-up - but before that we need to initialize the TLS for kernel" />
     <MESSAGE value="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard" />
-    <option name="LAST_COMMIT_MESSAGE" value="store the shared_ptr of the descriptor in the io_descriptor list that is used for IO (select) wait - this is necessary now because when kernel scheduler (which runs directly under the CPU without a scheduled process) - will have to acquire mutex lock to fetch the descriptor from the file descriptor ID otherwise - and that will lead to deadlock because if scheduler code blocks on mutex - the kernek or that particular CPU will be stuck. We shouldn't use any code in scheduler that acquires lock going forward unless that lock is additionally guarded by IRQ (interrupt) guard" />
+    <MESSAGE value="bug fix: calculate the sig-alarm expiry duration properly" />
+    <MESSAGE value="refactor: declare deleted constructors as public" />
+    <MESSAGE value="bug fix: LocalDataGramResolver must use IrqLockGuard - as it is used across scheduled process and scheduler (kernel)" />
+    <MESSAGE value="bug fix: wait-on-lock to compare and set the correct old and new value" />
+    <MESSAGE value="make canRead and canWrite - mutex free" />
+    <MESSAGE value="bug fix: if lock holding process is not alive then compare_set to take over the lock instead of blanket direct set" />
+    <MESSAGE value="edge case fix - in case writing more than 1MB, fix to advance the buffer pointer with number of bytes written" />
+    <MESSAGE value="move out entropy into upanssl library - it's not a system call anymore" />
+    <MESSAGE value="use timespec instead of timeval for condition variable timed-wait" />
+    <option name="LAST_COMMIT_MESSAGE" value="use timespec instead of timeval for condition variable timed-wait" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
