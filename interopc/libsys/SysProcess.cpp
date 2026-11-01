@@ -21,6 +21,7 @@
  */
 # include <SysCall.h>
 # include <ProcessorManager.h>
+# include <TscClock.h>
 
 int exec(const char* szFileName, ...) {
   uint64_t iProcessID;
@@ -96,12 +97,16 @@ void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_ON_LOCK, false, lockAddress, newVal, curVal, 4, 5);
 }
 
-int SysProcess_WaitQueue(int id, void* mutex, const struct timeval* timeout) {
-  time_t timeoutInMicroSeconds = 0;
-  if (timeout) {
-    timeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
+int SysProcess_WaitQueue(int id, void* mtx, const struct timespec* abstime) {
+  time_t timeout = 0;
+  if (abstime) {
+    timeout = abstime->tv_sec * 1000000 + abstime->tv_nsec / 1000;
+    timeout = timeout - TscClock::instance().currentTime();
+    if (timeout <= 0) {
+      timeout = 1;
+    }
   }
-  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<upan::mutex*>(mutex), timeoutInMicroSeconds, true);
+  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<pthread_mutex_t*>(mtx), timeout, true);
 
   const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
   if (r != ProcessStateInfo::NO_ERROR) {

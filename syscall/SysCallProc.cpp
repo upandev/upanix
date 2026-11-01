@@ -127,13 +127,17 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       // P2 => mutex address
       // P3 => timeout
       {
-        const auto timeout = (struct timeval*)p3;
-        time_t timeoutInMicroSeconds = 0;
-        if (timeout) {
-          timeoutInMicroSeconds = timeout->tv_sec * 1000000 + timeout->tv_usec;
+        const auto abstime = (struct timespec*)p3;
+        time_t timeout = 0;
+        if (abstime) {
+          timeout = abstime->tv_sec * 1000000 + abstime->tv_nsec / 1000 ;
+          timeout = timeout - TscClock::instance().currentTime();
+          if (timeout <= 0) {
+            timeout = 1;
+          }
         }
         *retVal = 0;
-        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<upan::mutex *>(p2), timeoutInMicroSeconds, false);
+        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<pthread_mutex_t*>(p2), timeout, false);
         const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
         if (r != ProcessStateInfo::NO_ERROR) {
           *retVal = -1;

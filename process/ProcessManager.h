@@ -41,8 +41,7 @@ void ProcessManager_Exit(int exitStatus);
 
 class AutonomousProcess;
 
-class ProcessManager
-{
+class ProcessManager {
   private:
     ProcessManager();
 
@@ -82,7 +81,7 @@ class ProcessManager
     bool IsDMMOn(int iProcessID);
     int WaitOnChild(int iChildProcessID, int& exitStatus);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
-    void WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMicroSeconds, bool isKernelSpace);
+    void WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace);
     void WaitDequeue(int id, bool, bool isKernelSpace);
     void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMicroSeconds);
     void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMicroSeconds);
@@ -122,7 +121,11 @@ class ProcessManager
       return _processWaitQueueMap[spaceId][queueId];
     }
 
-    void stopUserProcesses();
+    upan::spinmutex& getWaitQueueMutex() {
+      return _waitQueueMutex;
+    }
+
+  void stopUserProcesses();
     void stopKernelProcesses();
 
     time_t SetAlarm(uint32_t seconds);
@@ -151,6 +154,7 @@ class ProcessManager
     static int _upanixKernelProcessID;
     static uint32_t _taskSwitch;
     static bool _contextSwitch;
+    upan::spinmutex _waitQueueMutex;
 };
 
 class ProcessSwitchLock {

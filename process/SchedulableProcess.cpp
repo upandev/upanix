@@ -30,6 +30,7 @@
 #include <KernelRootProcess.h>
 #include <StorageDrive.h>
 #include <FSDeviceManager.h>
+#include <IrqLockGuard.h>
 
 int SchedulableProcess::_nextPid = 0;
 
@@ -638,20 +639,22 @@ void SchedulableProcess::prepareToRun() {
     break;
 
     case WAIT_QUEUE: {
+      IrqLockGuard guard(ProcessManager::Instance().getWaitQueueMutex());
       auto& q = ProcessManager::Instance().getWaitQueue(_stateInfo.WaitQueueSpaceId(), _stateInfo.WaitQueueId());
-      if (upan::find(q.begin(), q.end(), _processID) == q.end()) {
+      auto item = upan::find(q.begin(), q.end(), _processID);
+      if (item == q.end()) {
         _stateInfo.WaitQueueId(0);
         _stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
         _stateInfo.setError(ProcessStateInfo::NO_ERROR);
         setStatus(RUN);
       } else {
         if (_stateInfo.sleepTsc() && TscClock::instance().rdtsc() >= _stateInfo.sleepTsc()) {
-          q.erase(upan::find(q.begin(), q.end(), _processID));
+          q.erase(item);
           _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::TIMEOUT);
           setStatus(RUN);
         } else if (interruptedBySignal) {
-          q.erase(upan::find(q.begin(), q.end(), _processID));
+          q.erase(item);
           _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);

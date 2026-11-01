@@ -22,6 +22,7 @@
 #include <TCPConnection.h>
 #include <RawNetPacket.h>
 #include <NetworkManager.h>
+#include <TscClock.h>
 
 constexpr int MAX_RETRY_PER_SEGMENT = 6;
 constexpr int RETRANSMIT_TIMEOUT = 1000; //ms
@@ -73,8 +74,9 @@ void TCPConnection::connect() {
 
   if (_blockingSocket) {
     struct timespec timeout;
-    timeout.tv_sec = 3;
-    timeout.tv_nsec = 0;
+    auto currentTime = btime();
+    timeout.tv_sec =  (currentTime / 1000000) + 3;
+    timeout.tv_nsec = (currentTime % 1000000) * 1000;
     try {
       _sendRecvCond.wait(_sendRecvMutex, &timeout);
     } catch(...) {

@@ -35,6 +35,7 @@
 #include <TscClock.h>
 #include <IrqGuard.h>
 #include <ProcessorManager.h>
+#include <IrqLockGuard.h>
 
 int ProcessManager::_upanixKernelProcessID = NO_PROCESS_ID;
 uint32_t ProcessManager::_taskSwitch = 0;
@@ -316,7 +317,7 @@ void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVa
   p.yield();
 }
 
-void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutInMicroSeconds, bool isKernelSpace) {
+void ProcessManager::WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace) {
   if(GetCurProcId() < 0)
     return ;
 
@@ -327,18 +328,18 @@ void ProcessManager::WaitOnQueue(int id, upan::mutex &waitMutex, time_t timeoutI
 
   auto& p = GetCurrentPAS();
   {
-    ProcessSwitchLock lock;
+    IrqLockGuard g(_waitQueueMutex);
     const int spaceId = isKernelSpace ? NO_PROCESS_ID : p.processSpaceID();
     _processWaitQueueMap[spaceId][id].push_back(p.processID());
     p.stateInfo().WaitQueueId(id);
     p.stateInfo().WaitQueueSpaceId(spaceId);
-    if (timeoutInMicroSeconds) {
-      p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeoutInMicroSeconds));
+    if (timeout) {
+      p.stateInfo().sleepTsc(TscClock::instance().rdtsc(timeout));
     } else {
       p.stateInfo().sleepTsc(0);
     }
     p.setStatus(WAIT_QUEUE);
-    waitMutex.unlock();
+    pthread_mutex_unlock(&waitmtx);
   }
   p.yield();
 }
@@ -349,7 +350,7 @@ void ProcessManager::WaitDequeue(int id, bool all, bool isKernelSpace) {
 
   auto& p = GetCurrentPAS();
   {
-    ProcessSwitchLock lock;
+    IrqLockGuard g(_waitQueueMutex);
     const int spaceId = isKernelSpace ? NO_PROCESS_ID : p.processSpaceID();
     auto& wq = _processWaitQueueMap[spaceId][id];
     if (all) { wq.clear(); }
@@ -407,6 +408,9 @@ void ProcessManager::WaitOnIODescriptors(const upan::vector<IODescriptorTable::i
 }
 
 bool ProcessManager::IsAlive(int pid) {
+  if (pid < 0) { //this happens for locks held by CPUs
+    return true;
+  }
   auto process = GetSchedulableProcess(pid);
   return !process.isEmpty() && process.value().status() != PROCESS_STATUS::TERMINATED && process.value().status() != PROCESS_STATUS::RELEASED;
 }
