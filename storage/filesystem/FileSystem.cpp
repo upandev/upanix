@@ -949,7 +949,7 @@ int FileSystem::_write(FileTree::Node& node, FileDescriptor& fdEntry, const uint
   bool allocationStarted = false ;
 
   uint32_t uiBufStartSectorId, bufPrevSectorId;
-  upan::uniq_ptr<uint8_t> writeBuffer(new uint8_t[MAX_SECTORS_PER_READ * FileSystem::SECTOR_SIZE]);
+  upan::uniq_ptr<uint8_t> writeBuffer(new uint8_t[MAX_SECTORS_PER_WRITE * FileSystem::SECTOR_SIZE]);
   uint32_t bufCount = 0;
 
   while(true) {
