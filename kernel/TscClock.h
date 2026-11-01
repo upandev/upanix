@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <time.h>
+#include <ThreadLocalStorage.h>
 
 class TscClock {
 private:
@@ -46,6 +47,8 @@ public:
   void busyWait(uint64_t timeInMicroSec) const;
 
   time_t bootTime() const { return _bootTime; }
+  uint64_t bootTsc() const { return _bootTsc; }
+  uint64_t frequencyHz() const { return _frequencyHz; }
   time_t currentTime() const;
 
 private:

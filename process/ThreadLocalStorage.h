@@ -32,6 +32,7 @@ public:
 
   void update();
   void switchSpace();
+  void initTscFields();
 
 private:
   uintptr_t getPageAddress(uint64_t address);

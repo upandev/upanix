@@ -22,6 +22,7 @@
 
 #include <ThreadLocalStorage.h>
 #include <MemManager.h>
+#include <TscClock.h>
 
 ThreadLocalStorage::ThreadLocalStorage(int pid, bool isThread, uint64_t* pml4Table,
                                        ThreadLocalSpace& tlsp, uint8_t pageFlag)
@@ -46,6 +47,9 @@ ThreadLocalStorage::ThreadLocalStorage(int pid, bool isThread, uint64_t* pml4Tab
   _tcb->_self = THREAD_LOCAL_META_SPACE_ADDRESS;
   _tcb->_tlms._pid = pid;
   _tcb->_tlms._is_thread = isThread;
+  if (pid != NO_PROCESS_ID) {
+    initTscFields();
+  }
   //the size of dtv itself is used as the generation-id
   _tcb->_dtv[0] = 0;
 
@@ -142,4 +146,10 @@ void ThreadLocalStorage::setPDAddress(uintptr_t value) {
 void ThreadLocalStorage::switchSpace() {
   update();
   setPDAddress(((uintptr_t)_tlPDTable & PAGE_MASK) | _pageFlag);
+}
+
+void ThreadLocalStorage::initTscFields() {
+  _tcb->_tlms._bootTime = TscClock::instance().bootTime();
+  _tcb->_tlms._bootTsc = TscClock::instance().bootTsc();
+  _tcb->_tlms._tscFreq = TscClock::instance().frequencyHz();
 }

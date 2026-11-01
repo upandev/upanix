@@ -89,6 +89,10 @@ void KernelRootProcess::initTLS() {
   _tls->switchSpace();
 }
 
+void KernelRootProcess::initThreadLocalTsc() {
+  _tls->initTscFields();
+}
+
 void KernelRootProcess::initGuiFrame() {
   static bool initialized = false;
   if (initialized) {

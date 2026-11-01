@@ -40,6 +40,7 @@ public:
   void createScheduleRunner();
   int scheduleRunnerPid() const { return _scheduleRunnerPid; }
   void initTLS();
+  void initThreadLocalTsc();
   void initTerminalDevice();
   void initInMemoryTerminalDevice();
   void initFSDevices();

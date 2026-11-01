@@ -27,6 +27,7 @@
 #include <SystemUtil.h>
 #include <PortCom.h>
 #include <Bit.h>
+#include <KernelRootProcess.h>
 
 TscClock* TscClock::_instance = nullptr;
 
@@ -35,6 +36,7 @@ void TscClock::initialize() {
     throw upan::exception(XLOC, "TscClock already initialized");
   }
   _instance = new TscClock();
+  KernelRootProcess::Instance().initThreadLocalTsc();
 }
 
 TscClock& TscClock::instance() {
@@ -79,7 +81,6 @@ TscClock::TscClock() {
   _bootTsc = endTsc;
 
   _frequencyHz = (elapsedCycles * static_cast<uint64_t>(TIMECOUNTER_i8254_FREQU) / divisor);
-
 
   printf("\nTSC frequency: %lu Hz", _frequencyHz);
 
