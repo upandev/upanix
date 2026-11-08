@@ -210,7 +210,7 @@ bool DMM::_getAllocSize(uintptr_t address, size_t* size) {
     return false;
   }
   auto aut = (AllocationUnitTracker *) (address - sizeof(AllocationUnitTracker));
-  *size = aut->size;
+  *size = aut->size - sizeof(AllocationUnitTracker) - aut->byteStuffForAlign;
   return true;
 }
 
@@ -252,6 +252,7 @@ bool UserDMM::free(uintptr_t address) {
   upan::mutex_guard g(_mutex);
   return _free(address);
 }
+
 bool UserDMM::getAllocSize(uintptr_t address, size_t* size) {
   upan::mutex_guard g(_mutex);
   return _getAllocSize(address, size);
