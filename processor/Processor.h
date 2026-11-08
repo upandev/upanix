@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <Global.h>
 #include <Apic.h>
+#include <InterruptHandlers.h>
 
 class Processor {
   public:
@@ -36,10 +37,12 @@ class Processor {
 
     void setKernelMode(bool val) { _kernelMode.set(val); }
     void setCurrentProcessId(pid_t pid) { _currentProcessId.set(pid); }
-
+    uint64_t timerTicks() const;
+    
     virtual bool isBSP() const = 0;
     virtual void init() = 0;
     virtual void main() = 0;
+    virtual void handleTimerInterrupt(TaskContext& state) = 0;
 
     typedef struct {
       uint16_t _limit;
@@ -72,6 +75,7 @@ class Processor {
     bool enableSSE();
     void LIDT();
     void LTR();
+    void incTimerTick();
 
   protected:
     const int _seqId;
@@ -80,23 +84,5 @@ class Processor {
     TaskState64* _tss;
     upan::atomic::integral<bool> _kernelMode;
     upan::atomic::integral<pid_t> _currentProcessId;
-};
-
-class BootstrapProcessor : public Processor {
-  public:
-    BootstrapProcessor(int seqId, uint32_t id, Apic& _apic);
-    bool isBSP() const override { return true; }
-    void init() override {}
-    void main() override {}
-};
-
-class ApplicationProcessor : public Processor {
-  public:
-    ApplicationProcessor(int seqId, uint32_t id, Apic& _apic);
-    bool isBSP() const override { return false; }
-    void init() override;
-    void main() override;
-
-  private:
-    uintptr_t _gdtBase;
+    alignas(8) uint64_t _timerTicks;
 };

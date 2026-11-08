@@ -33,15 +33,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="initialize timer interrupt for APs and also run a simple timer-tick handler for AP to begin with. Refactored code to separate BSP and AP processor classes into their own .h and .cpp files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Apic.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/processor/Processor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/processor/Processor.h" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/processor/ProcessorManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/ProcessorManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -846,7 +840,7 @@
       <workItem from="1792212608878" duration="55489000" />
       <workItem from="1792839122392" duration="18690000" />
       <workItem from="1792973017795" duration="59338000" />
-      <workItem from="1793538387695" duration="74166000" />
+      <workItem from="1793538387695" duration="75549000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1191,7 +1185,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="341" />
+    <option name="localTasksCounter" value="342" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1225,7 +1219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Terminal LineBuffer and StreamBuffer uses IrqLockGuard" />
     <MESSAGE value="CpuId is mandatory for kernel startup&#10;Apic is mandatory for kernel startup&#10;SSE is enabled in the Processor" />
     <MESSAGE value="pass the binary name to getRelocateInfo - to print in error message - for debugging purpose" />
     <MESSAGE value="mutex doesn't use heap allocated lock variable anymore - it will use 4 byte aligned uint32_t lock member variable - and this should work fine because by default, all heap allocationss in upanix are 16 byte aligned" />
@@ -1250,7 +1243,8 @@
     <MESSAGE value="1. KernelRootMode is made individual schedulable process specific (process/thread) - this will ensure that other processes/threads running when KernelRootMode is turned on will continue to use their process space while only the process who KernelRootMode is enabled will be elevated to use KernelRootProcess space - like iodTable during terminal initialization at Upanix start-up&#10;2. Support periodic wake-up on wait-queue - to ensure processes don't get stuck when lock owners are terminated without releasing the lock&#10;3. refactor to call releaseLocks() upon process/thread termination&#10;4." />
     <MESSAGE value="bug fix: remove (pop_front) message from message queue after the referenced variable is used and it is not referenced anymore" />
     <MESSAGE value="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method" />
+    <MESSAGE value="initialize timer interrupt for APs and also run a simple timer-tick handler for AP to begin with. Refactored code to separate BSP and AP processor classes into their own .h and .cpp files" />
+    <option name="LAST_COMMIT_MESSAGE" value="initialize timer interrupt for APs and also run a simple timer-tick handler for AP to begin with. Refactored code to separate BSP and AP processor classes into their own .h and .cpp files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
