@@ -75,6 +75,9 @@ public:
   virtual void addChildProcessID(int pid) = 0;
   virtual void removeChildProcessID(int pid) = 0;
 
+  virtual bool isKernelRootMode() const = 0;
+  virtual void setKernelRootMode(bool) = 0;
+
   virtual IODescriptorTable& iodTable() = 0;
   virtual upan::option<upan::mutex&> dllMutex() {
     throw upan::exception(XLOC, "dllMutex unsupported");

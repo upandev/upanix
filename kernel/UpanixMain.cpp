@@ -51,11 +51,6 @@
 # include <LocalDataGramResolver.h>
 # include <ProcessorManager.h>
 
-/**** Global Variable declaration/definition *****/
-bool KERNEL_MODE;
-bool KERNEL_ROOT;
-bool SPECIAL_TASK;
-
 /***********************************************/
 
 [[noreturn]] void UpanixMain_KernelProcess() {
@@ -146,21 +141,7 @@ public:
 
 static const TG x;
 
-bool IsKernelProcess(int pid) {
-  return SPECIAL_TASK || ProcessManager::Instance().IsKernelProcess(pid);
-}
-
-void SetKernelRootMode(bool val) {
-  KERNEL_ROOT = val;
-}
-
-bool GetKernelRootMode() {
-  return KERNEL_ROOT;
-}
-
 void Initialize() {
-	SPECIAL_TASK = false ;
-
 	MultiBoot::Instance();
   RootConsole::Create();
   MemManager::Instance();
@@ -258,8 +239,6 @@ upan::mutex& UpanixMain_GetDMMMutex()
 }
 
 void UpanixMain() {
-  SetKernelRootMode(false);
-
   Initialize();
 	ProcessManager::Instance().CreateKernelProcess("kerparent", (uintptr_t) &UpanixMain_KernelProcess, NO_PROCESS_ID, true, true, upan::vector<uintptr_t>());
 

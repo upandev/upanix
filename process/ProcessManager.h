@@ -81,8 +81,8 @@ class ProcessManager {
     bool IsDMMOn(int iProcessID);
     int WaitOnChild(int iChildProcessID, int& exitStatus);
     void WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVal, int newVal);
-    void WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace);
-    void WaitDequeue(int id, bool, bool isKernelSpace);
+    void WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace, bool periodicWakeup);
+    void WaitDequeue(int id, bool all, bool isKernelSpace);
     void WaitOnIODescriptor(int fd, IODescriptorTable::IO_OP_TYPES waitType, time_t timeoutInMicroSeconds);
     void WaitOnTerminalIO(const upan::string& path, FSTerminalDevice::TERMINAL_IO_TYPES waitType, time_t timeoutInMicroSeconds);
     void WaitOnIODescriptors(const upan::vector<IODescriptorTable::io_descriptor>& waitIODescriptors, time_t timeoutInMicroSeconds);

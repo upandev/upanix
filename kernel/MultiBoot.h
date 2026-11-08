@@ -28,6 +28,7 @@
 #define MULTIBOOT2_BOOTLOADER_MAGIC 0x36D76289
 
 #define MULTIBOOT_TAG_TYPE_END 0
+#define MULTIBOOT_TAG_TYPE_CMDLINE 1
 #define MULTIBOOT_TAG_TYPE_BOOTDEV 5
 #define MULTIBOOT_TAG_TYPE_MMAP 6
 #define MULTIBOOT_TAG_TYPE_FRAMEBUFFER 8
@@ -131,6 +132,14 @@ class MultiBoot {
     const multiboot_mmap_entry* GetACPIInfoMemMap() const {
       return _acpi_mmap;
     }
+    const char* GetCommandLine() const {
+      return _commandLine;
+    }
+
+    bool isOptionPresent(const char* option) {
+      return strstr(_commandLine, option) != nullptr;
+    }
+
     void Print();
     void InitializeGraphicsPageMap(int memTypeFlag);
 	private:
@@ -142,6 +151,7 @@ class MultiBoot {
     multiboot_mmap_entry* _acpi_mmap;
     multiboot_mmap_entry _mmap[MAX_MMAP_ENTRIES];
     uint32_t _mmap_size;
+    char _commandLine[512] = {};
     bool _hasFrameBufferInfo;
     uint64_t _rawFrameBufferAddress;
     FrameBufferInfo _framebufferInfo;

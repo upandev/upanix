@@ -117,6 +117,9 @@ public:
   virtual void setupSignalStackFrame(const struct sigaction& action, const Signal& signal) = 0;
   void setSignalRestoreContext(SignalTaskContext& signalTaskContext) { _signalRestoreContext = signalTaskContext; }
 
+  bool isKernelRootMode() const override { return _kernelRootMode; }
+  void setKernelRootMode(bool v) override { _kernelRootMode = v; }
+
   void prepareToRun();
   void deliverPendingSignal();
   void applyDefaultSignalAction(const Signal& signal);
@@ -135,6 +138,7 @@ protected:
   virtual void onLoad() = 0;
   virtual void DeallocateResources() = 0;
   void Deallocate();
+  void releaseLocks();
 
   class Common {
   public:
@@ -157,6 +161,7 @@ protected:
   upan::string _name;
   int _processID;
   int _parentProcessID;
+  bool _kernelRootMode;
   uint64_t _processBase;
   PROCESS_STATUS _status;
   int _driveID;

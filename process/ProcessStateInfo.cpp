@@ -25,7 +25,7 @@
 #include <ProcessConstants.h>
 
 ProcessStateInfo::ProcessStateInfo() :
-        _sleepTsc(0),
+        _sleepTsc(0), _rwWakeupTsc(0),
         _irq(&StdIRQ::Instance().NO_IRQ),
         _waitChildProcId(NO_PROCESS_ID),
         _waitQueueId(0),

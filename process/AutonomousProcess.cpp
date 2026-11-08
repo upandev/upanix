@@ -129,10 +129,7 @@ void AutonomousProcess::Destroy() {
     delete _processGroup;
   }
 
-  dmm().releaseLocks(_processID);
-  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-
-  //TODO: release all the mutex held by the process or an individual thread
+  releaseLocks();
 
   if(_parentProcessID == NO_PROCESS_ID) {
     Release();

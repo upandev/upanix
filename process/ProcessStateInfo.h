@@ -43,6 +43,9 @@ public:
   uint64_t sleepTsc() const { return _sleepTsc; }
   void sleepTsc(const uint64_t s) { _sleepTsc = s; }
 
+  uint64_t rwLockWakeupTsc() const { return _rwWakeupTsc; }
+  void rwLockWakeupTsc(const uint64_t s) { _rwWakeupTsc = s; }
+
   int WaitChildProcId() const { return _waitChildProcId; }
   void WaitChildProcId(const int id) { _waitChildProcId = id; }
 
@@ -92,8 +95,9 @@ public:
   void setExitStatusStopped(int signo) { _exitStatus = ((signo & 0x7f) << 16); }
   void setExitStatusContinued() { _exitStatus = 1 << 23; }
 
-private:
+public:
   uint64_t       _sleepTsc;
+  uint64_t       _rwWakeupTsc;
   const IRQ*     _irq;
   int            _waitChildProcId;
   int            _waitQueueId;

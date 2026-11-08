@@ -97,7 +97,7 @@ void SysProcess_WaitOnLock(uint64_t lockAddress, int newVal, int curVal) {
   SysCallProc_Handle(&retStatus, SYS_CALL_PROCESS_WAIT_ON_LOCK, false, lockAddress, newVal, curVal, 4, 5);
 }
 
-int SysProcess_WaitQueue(int id, void* mtx, const struct timespec* abstime) {
+int SysProcess_WaitQueue(int id, void* mtx, const struct timespec* abstime, bool periodicWakeup) {
   time_t timeout = 0;
   if (abstime) {
     timeout = abstime->tv_sec * 1000000 + abstime->tv_nsec / 1000;
@@ -106,7 +106,7 @@ int SysProcess_WaitQueue(int id, void* mtx, const struct timespec* abstime) {
       timeout = 1;
     }
   }
-  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<pthread_mutex_t*>(mtx), timeout, true);
+  ProcessManager::Instance().WaitOnQueue(id, *reinterpret_cast<pthread_mutex_t*>(mtx), timeout, true, periodicWakeup);
 
   const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
   if (r != ProcessStateInfo::NO_ERROR) {
@@ -209,20 +209,17 @@ int SysProcess_IsKernel() {
     return true;
   }
 
-  if (GetKernelRootMode()) {
+  auto& curProcessor = ProcessorManager::instance().getCurrentProcessor();
+  auto pid = curProcessor.getCurrentProcessId();
+  if (curProcessor.isKernelMode() || pid == NO_PROCESS_ID) {
     return true;
   }
 
-  auto& curProcessor = ProcessorManager::instance().getCurrentProcessor();
-  return curProcessor.isKernelMode() || curProcessor.getCurrentProcessId() == NO_PROCESS_ID;
+  return ProcessManager::Instance().GetSchedulableProcess(pid).value().isKernelRootMode();
 }
 
 int SysProcess_LockOwnerId() {
   if (!ProcessorManager::isInitialized()) {
-    return NO_PROCESS_ID;
-  }
-
-  if (GetKernelRootMode()) {
     return NO_PROCESS_ID;
   }
 

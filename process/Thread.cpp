@@ -35,10 +35,7 @@ void Thread::Destroy() {
   // Deallocate Resources
   Deallocate();
 
-  dmm().releaseLocks(_processID);
-  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.unlock(_processID); });
-
-  //TODO: release all the mutex held by the process or an individual thread
+  releaseLocks();
 
   if(_parentProcessID == NO_PROCESS_ID || !_joinable) {
     Release();

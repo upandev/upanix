@@ -33,6 +33,7 @@
 #include <SocketDescriptorLocalDataGram.h>
 #include <StreamBufferDescriptor.h>
 #include <FSDeviceManager.h>
+#include <MultiBoot.h>
 
 extern uintptr_t __tdata_start, __tdata_end;
 extern uintptr_t __tbss_start, __tbss_end;
@@ -109,7 +110,8 @@ void KernelRootProcess::initGuiFrame() {
 }
 
 void KernelRootProcess::initTerminalDevice() {
-  SetKernelRootMode(true);
+  auto& curProcess = ProcessManager::Instance().GetCurrentPAS();
+  curProcess.setKernelRootMode(true);
   try {
     _terminalMasterFD = posix_openpt(O_RDWR);
     char name[PATH_MAX];
@@ -130,14 +132,15 @@ void KernelRootProcess::initTerminalDevice() {
     dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
     dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
   } catch(...) {
-    SetKernelRootMode(false);
+    curProcess.setKernelRootMode(false);
     throw;
   }
-  SetKernelRootMode(false);
+  curProcess.setKernelRootMode(false);
 }
 
 void KernelRootProcess::initInMemoryTerminalDevice() {
-  SetKernelRootMode(true);
+  auto& curProcess = ProcessManager::Instance().GetCurrentPAS();
+  curProcess.setKernelRootMode(true);
   try {
     const upan::string path = "/dev/root_ptsm";
     _terminalMasterFD = FSDeviceManager::Instance().createKernelRootInMemoryTerminalDevice(path);
@@ -151,18 +154,22 @@ void KernelRootProcess::initInMemoryTerminalDevice() {
     dup2(_terminalSlaveFD, IODescriptorTable::STDIN);
     dup2(_terminalSlaveFD, IODescriptorTable::STDOUT);
   } catch(...) {
-    SetKernelRootMode(false);
+    curProcess.setKernelRootMode(false);
     throw;
   }
-  SetKernelRootMode(false);
+  curProcess.setKernelRootMode(false);
 }
 
 void KernelRootProcess::initFSDevices() {
   try {
     XHCIManager::Instance().ProbeDevice();
-    StorageDriveManager::Instance().MountDrive("usdb");
-    initTerminalDevice();
-    KernelSysLog::Instance().start();
+    if (MultiBoot::Instance().isOptionPresent("-nomount")) {
+      initInMemoryTerminalDevice();
+    } else {
+      StorageDriveManager::Instance().MountDrive("usdb");
+      initTerminalDevice();
+      KernelSysLog::Instance().start();
+    }
   } catch(upan::exception& ex) {
     ex.Print();
     initInMemoryTerminalDevice();

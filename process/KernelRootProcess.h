@@ -63,6 +63,9 @@ public:
   void addChildProcessID(int pid) override {}
   void removeChildProcessID(int pid) override {}
 
+  bool isKernelRootMode() const override { return true; }
+  void setKernelRootMode(bool v) override {}
+
   IODescriptorTable& iodTable() override {
     return _iodTable;
   }

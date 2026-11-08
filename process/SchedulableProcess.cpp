@@ -35,7 +35,7 @@
 int SchedulableProcess::_nextPid = 0;
 
 SchedulableProcess::SchedulableProcess(const upan::string& name, int parentID, bool isFGProcess)
-  : _name(name), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr), _signalQueue(MAX_ACTIVE_SIGNALS) {
+  : _name(name), _kernelRootMode(false), _stateInfo(*new ProcessStateInfo()), _processGroup(nullptr), _signalQueue(MAX_ACTIVE_SIGNALS) {
   _processID = _nextPid++;
   _parentProcessID = parentID;
   _status = NEW;
@@ -658,6 +658,14 @@ void SchedulableProcess::prepareToRun() {
           _stateInfo.sleepTsc(0);
           _stateInfo.setError(ProcessStateInfo::INTERRUPTED);
           setStatus(RUN);
+        } else if (_stateInfo.rwLockWakeupTsc() && TscClock::instance().rdtsc() >= _stateInfo.rwLockWakeupTsc()) {
+          q.erase(item);
+          _stateInfo.sleepTsc(0);
+          _stateInfo.rwLockWakeupTsc(0);
+          _stateInfo.WaitQueueId(0);
+          _stateInfo.WaitQueueSpaceId(NO_PROCESS_ID);
+          _stateInfo.setError(ProcessStateInfo::NO_ERROR);
+          setStatus(RUN);
         }
       }
     }
@@ -744,4 +752,9 @@ void SchedulableProcess::deliverPendingSignal() {
   } else {
     applyDefaultSignalAction(signal);
   }
+}
+
+void SchedulableProcess::releaseLocks() {
+  dmm().releaseLocks(_processID);
+  pageAllocMutex().ifPresent([this](upan::mutex& m) { m.release(_processID); });
 }

@@ -35,10 +35,6 @@
 typedef unsigned long long	DDWORD ;
 typedef unsigned			DWORD ;
 
-bool IsKernelProcess(int pid);
-void SetKernelRootMode(bool);
-bool GetKernelRootMode();
-
 #define IS_FG_PROCESS_GROUP() (ProcessManager::Instance().GetCurrentPAS().isFGProcessGroup())
 
 #define RETURN_IF_NOT(RetVal, Func, CheckVal) \

@@ -126,6 +126,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       // P1 => queue id
       // P2 => mutex address
       // P3 => timeout
+      // P4 => periodic wakeup
       {
         const auto abstime = (struct timespec*)p3;
         time_t timeout = 0;
@@ -137,7 +138,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
           }
         }
         *retVal = 0;
-        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<pthread_mutex_t*>(p2), timeout, false);
+        ProcessManager::Instance().WaitOnQueue((int) p1, *reinterpret_cast<pthread_mutex_t*>(p2), timeout, false, (bool)p4);
         const auto r = ProcessManager::Instance().GetCurrentPAS().stateInfo().getError();
         if (r != ProcessStateInfo::NO_ERROR) {
           *retVal = -1;
@@ -149,7 +150,7 @@ void SysCallProc_Handle(uint64_t *retVal, uint64_t sysCallId, bool doAddrTransla
       // P1 => queue id
       // P2 => all?
       {
-        ProcessManager::Instance().WaitDequeue((int) p1, p2, false);
+        ProcessManager::Instance().WaitDequeue((int)p1, (bool)p2, false);
       }
       break;
 

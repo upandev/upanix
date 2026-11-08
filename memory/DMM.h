@@ -86,7 +86,7 @@ public:
   bool free(uintptr_t address) override;
   bool getAllocSize(uintptr_t address, size_t* size) override;
   uint64_t availableHeapSize() override;
-  void releaseLocks(int pid) override { _mutex.unlock(pid); }
+  void releaseLocks(int pid) override { _mutex.release(pid); }
 
 private:
   void accessMem(AllocationUnitTracker* aut) override;

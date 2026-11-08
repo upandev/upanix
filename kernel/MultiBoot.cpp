@@ -43,6 +43,25 @@ MultiBoot::MultiBoot() : _bootDevId(0), _bootPartitionId(0), _ramSize(0),
       }
       break;
 
+      case MULTIBOOT_TAG_TYPE_CMDLINE: {
+        if (tag->size <= sizeof(multiboot_tag)) {
+          break;
+        }
+
+        const auto* text = reinterpret_cast<const char*>(tag + 1);
+        const auto available = tag->size - sizeof(multiboot_tag);
+
+        unsigned i = 0;
+        while (i < available &&
+               i < sizeof(_commandLine) - 1 &&
+               text[i] != '\0') {
+          _commandLine[i] = text[i];
+          ++i;
+        }
+        _commandLine[i] = '\0';
+      }
+      break;
+
       case MULTIBOOT_TAG_TYPE_MMAP: {
         int i = 0;
         auto mmap_tag = (multiboot_tag_mmap *) tag;
@@ -136,6 +155,9 @@ void MultiBoot::Print() {
   sprintf(buffer, "\n FRAMEBUFFER_HEIGHT: %u", _framebufferInfo._height);
   msg += buffer;
   sprintf(buffer, "\n FRAMEBUFFER_BPP: %u", _framebufferInfo._bpp);
+  msg += buffer;
+
+  sprintf(buffer, "\n Boot Command Line: %s", _commandLine);
   msg += buffer;
 
   COM1::Instance().Write(msg);

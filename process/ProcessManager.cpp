@@ -307,17 +307,17 @@ void ProcessManager::WaitOnLock(upan::atomic::integral<int>* waitLock, int oldVa
   auto& p = GetCurrentPAS();
   {
     ProcessSwitchLock lock;
-    upan::atomic::integral<int>* covertWaitLock = waitLock;
+    upan::atomic::integral<int>* convertedWaitLock = waitLock;
     if (!p.isKernelProcess()) {
-      covertWaitLock = (upan::atomic::integral<int>*)MemManager::Instance().GetFlatAddress(p.pml4Table(), (uint64_t)waitLock);
+      convertedWaitLock = (upan::atomic::integral<int>*)MemManager::Instance().GetFlatAddress(p.pml4Table(), (uint64_t)waitLock);
     }
-    p.stateInfo().WaitOnLock(covertWaitLock, oldVal, newVal);
+    p.stateInfo().WaitOnLock(convertedWaitLock, oldVal, newVal);
     p.setStatus(WAIT_LOCK);
   }
   p.yield();
 }
 
-void ProcessManager::WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace) {
+void ProcessManager::WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeout, bool isKernelSpace, bool periodicWakeup) {
   if(GetCurProcId() < 0)
     return ;
 
@@ -338,6 +338,7 @@ void ProcessManager::WaitOnQueue(int id, pthread_mutex_t &waitmtx, time_t timeou
     } else {
       p.stateInfo().sleepTsc(0);
     }
+    p.stateInfo().rwLockWakeupTsc(periodicWakeup ? TscClock::instance().rdtsc(1000000) : 0); // 1 second
     p.setStatus(WAIT_QUEUE);
     pthread_mutex_unlock(&waitmtx);
   }
