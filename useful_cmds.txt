@@ -1,0 +1,6 @@
+hdiutil detach disk5
+dd if=/dev/zero of=300MUSB_ehci.img bs=512 count=614400
+sgdisk -n 1:2048:200M -n 2:: 300MUSB_ehci.img
+hdiutil attach -nomount 300MUSB_ehci.img
+hdiutil info
+openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt -days 365 -nodes

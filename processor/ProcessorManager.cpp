@@ -21,6 +21,8 @@
  */
 
 #include <ProcessorManager.h>
+#include <BootstrapProcessor.h>
+#include <ApplicationProcessor.h>
 #include <Acpi.h>
 
 ProcessorManager* ProcessorManager::_instance = nullptr;

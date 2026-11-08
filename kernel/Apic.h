@@ -68,6 +68,7 @@ class Apic : public IrqManager {
     bool apSendSIPI(uint32_t targetApicId, uint8_t startupVector);
     bool apSendFixedIPI(uint32_t targetApicId, uint8_t vector);
     bool initAPLocalApic();
+    bool initAPTimer();
 
   private:
     uint32_t* MmapBase(uint64_t vAddr, uint64_t pAddr);

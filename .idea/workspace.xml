@@ -33,31 +33,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="bug fix: getAllocSize should return the size of usable allocated head size">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot/grub.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/boot/grub.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/Thread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_macos" beforeDir="false" afterPath="$PROJECT_DIR$/run_macos" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/KernelUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Apic.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Apic.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernelprocs/console/ConsoleCommands.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/libints/InterruptHandlers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/processor/Processor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/processor/Processor.h" beforeDir="false" afterPath="$PROJECT_DIR$/processor/Processor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/processor/ProcessorManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/processor/ProcessorManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,6 +131,11 @@
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.run">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="boot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Upanix" TARGET_NAME="boot" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -857,7 +846,7 @@
       <workItem from="1792212608878" duration="55489000" />
       <workItem from="1792839122392" duration="18690000" />
       <workItem from="1792973017795" duration="59338000" />
-      <workItem from="1793538387695" duration="65286000" />
+      <workItem from="1793538387695" duration="74166000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1202,7 +1191,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="338" />
+    <option name="localTasksCounter" value="341" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1236,9 +1225,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Kernel DMM spin mutex uses a preallocated memory area for lock" />
-    <MESSAGE value="all Cpu methods are made static - no Instance() anymore" />
-    <MESSAGE value="kernel mode and current processor id is now part of Processor instance - as it can vary from one processor to another" />
     <MESSAGE value="Terminal LineBuffer and StreamBuffer uses IrqLockGuard" />
     <MESSAGE value="CpuId is mandatory for kernel startup&#10;Apic is mandatory for kernel startup&#10;SSE is enabled in the Processor" />
     <MESSAGE value="pass the binary name to getRelocateInfo - to print in error message - for debugging purpose" />
@@ -1261,7 +1247,10 @@
     <MESSAGE value="refactor to print additional message for debugging purpose" />
     <MESSAGE value="use correct macro MAX_SECTORS_PER_WRITE in _write() filesystem function" />
     <MESSAGE value="bug fix: getAllocSize should return the size of usable allocated head size" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fix: getAllocSize should return the size of usable allocated head size" />
+    <MESSAGE value="1. KernelRootMode is made individual schedulable process specific (process/thread) - this will ensure that other processes/threads running when KernelRootMode is turned on will continue to use their process space while only the process who KernelRootMode is enabled will be elevated to use KernelRootProcess space - like iodTable during terminal initialization at Upanix start-up&#10;2. Support periodic wake-up on wait-queue - to ensure processes don't get stuck when lock owners are terminated without releasing the lock&#10;3. refactor to call releaseLocks() upon process/thread termination&#10;4." />
+    <MESSAGE value="bug fix: remove (pop_front) message from message queue after the referenced variable is used and it is not referenced anymore" />
+    <MESSAGE value="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor to call pause instruction instead of nop in polling interrupt wait util method. Removed unused TightLoopWait() method" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

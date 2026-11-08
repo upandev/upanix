@@ -23,25 +23,10 @@
 #include <Processor.h>
 #include <IDT.h>
 #include <Cpu.h>
-#include <TscClock.h>
-#include <DMM.h>
-
-extern "C" {
-  extern const uint8_t AP_TRAMPOLINE_START[];
-
-  extern uint8_t BSP_GDT[];
-  extern uint16_t BSP_GDT_SIZE;
-
-  extern uint32_t AP_EFER_BITS;
-  extern uint64_t AP_STACK_TOP;
-
-  Processor::DTRegister AP_GDTR;
-  static uint32_t AP_REPORTED_ID;
-  static uint32_t AP_READY;
-}
+#include <ProcessConstants.h>
 
 Processor::Processor(int seqId, uint32_t id, Apic& apic) : _seqId(seqId), _id(id), _apic(apic), _tss(nullptr),
-  _kernelMode(true), _currentProcessId(NO_PROCESS_ID) {
+  _kernelMode(true), _currentProcessId(NO_PROCESS_ID), _timerTicks(0) {
 }
 
 bool Processor::enableSSE() {
@@ -123,94 +108,11 @@ void Processor::LTR() {
                        "ltr %%ax;" : : "m"(SYS_TSS_SELECTOR) :);
 }
 
-BootstrapProcessor::BootstrapProcessor(int seqId, uint32_t id, Apic& apic) : Processor(seqId, id, apic) {
-  if (!enableSSE()) {
-    printf("\n SSE/SSE2 is not supported!!");
-    for (;;) {
-      __asm__ __volatile__("hlt");
-    }
-  }
-
-  AP_EFER_BITS = (uint32_t)(Cpu::MSRread(IA32_EFER) & (1ULL << 11));
-  _tss = (TaskState64*)TSS_BASE_ADDR;
-
-  //load LTR to ensure stack is setup in case if there is an exception after LIDT
-  LTR();
-  LIDT();
+void Processor::incTimerTick() {
+  __atomic_fetch_add(&_timerTicks, uint64_t(1), __ATOMIC_RELAXED);
 }
 
-ApplicationProcessor::ApplicationProcessor(int seqId, uint32_t id, Apic& apic) : Processor(seqId, id, apic) {
-  _gdtBase = KernelDMM::Instance().allocate(BSP_GDT_SIZE, 8);
-  memcpy((void*)_gdtBase, BSP_GDT, BSP_GDT_SIZE);
-
-  uintptr_t tssBase = MEM_KERNEL_TSS_START + _seqId * MAX_KERNEL_TSS_SIZE;
-  _tss = (TaskState64*)tssBase;
-
-  uintptr_t tssSegment = _gdtBase + SYS_TSS_SELECTOR;
-  *(uint16_t*)(tssSegment + 2) = tssBase & 0xFFFF;
-  *(uint8_t*)(tssSegment + 4) = (tssBase >> 16) & 0xFF;
-  *(uint8_t*)(tssSegment + 7) = (tssBase >> 24) & 0xFF;
-  *(uint32_t*)(tssSegment + 8) = (tssBase >> 32) & 0xFFFFFFFF;
-
-  // Present, ring 0, available 64-bit TSS.
-  *(uint8_t*)(tssSegment + 5) = 0x89;
-}
-
-//init is executed by BSP
-void ApplicationProcessor::init() {
-  printf("\nInitializing AP with APIC ID %u", _id);
-  const auto startupVector = uint8_t(uintptr_t(AP_TRAMPOLINE_START) >> 12);
-
-  AP_STACK_TOP = MEM_KERNEL_STACK_TOP - _seqId * MAX_KERNEL_STACK_SIZE;
-
-  AP_GDTR._limit = BSP_GDT_SIZE - 1;
-  AP_GDTR._base = _gdtBase;
-
-  __atomic_store_n(&AP_REPORTED_ID, 0u, __ATOMIC_RELAXED);
-  __atomic_store_n(&AP_READY, 0u, __ATOMIC_RELAXED);
-
-  if (!_apic.apSendInit(_id)) {
-    printf("\n APIC initialization failed - failed to send INIT IPI to AP");
-    return;
-  }
-  TscClock::instance().busyWait(10000);
-
-  bool apReady = false;
-  if (!_apic.apSendSIPI(_id, startupVector)) {
-    printf("\n APIC initialization failed - failed to send SIPI to AP");
-    return;
-  }
-
-  for (int i = 0; i < 200 && !apReady; ++i) {
-    TscClock::instance().busyWait(500);
-    apReady = __atomic_load_n(&AP_READY, __ATOMIC_ACQUIRE) == 1;
-  }
-
-  if (!apReady) {
-    printf("\n AP with APIC ID %u failed to initialize", _id);
-  } else {
-    const auto apId = __atomic_load_n(&AP_REPORTED_ID, __ATOMIC_ACQUIRE);
-    printf("\n AP with APIC ID %u initialized, Reported ID: %u", _id, apId);
-  }
-}
-
-//main is executed by AP
-void ApplicationProcessor::main() {
-  if (!enableSSE()) {
-    return;
-  }
-
-  LTR();
-  LIDT();
-
-  if (!_apic.initAPLocalApic()) {
-    // Do not publish readiness. BSP should time out and stop startup.
-    return;
-  }
-  __atomic_store_n(&AP_REPORTED_ID, _apic.GetLocalApicID(), __ATOMIC_RELAXED);
-  __atomic_store_n(&AP_READY, 1u, __ATOMIC_RELEASE);
-
-  for (;;) {
-    __asm__ __volatile__("sti; hlt" ::: "memory");
-  }
+uint64_t Processor::timerTicks() const {
+  __atomic_load_n(&_timerTicks, __ATOMIC_RELAXED);
+  return _timerTicks;
 }

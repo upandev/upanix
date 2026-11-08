@@ -2443,6 +2443,13 @@ void ConsoleCommands_Test() {
         printf("\nFailed to send IPI to processor %d", p.first);
       }
     }
+  } else if (test == "ap-timer") {
+    auto& pm = ProcessorManager::instance();
+    auto& processors = pm.getProcessors();
+
+    for (auto& p: processors) {
+      printf("\n Processor: %d, Timer Tick: %lu", p.first, p.second->timerTicks());;
+    }
   }
   //MemManager::Instance().DisplayPageAllocationStats();
   //printf("\n Kernel Heap Available Size: %llu", KernelDMM::Instance().availableHeapSize());

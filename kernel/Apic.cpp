@@ -371,8 +371,7 @@ bool Apic::initAPLocalApic() {
   // Called on the AP. Leave maskable interrupts disabled.
   __asm__ __volatile__("cli" ::: "memory");
 
-  const uint64_t baseMsr =
-          Cpu::MSRread(IA32_APIC_BASE_MSR);
+  const uint64_t baseMsr = Cpu::MSRread(IA32_APIC_BASE_MSR);
 
   constexpr uint64_t X2APIC_ENABLE = 1ULL << 10;
   constexpr uint64_t BASE_ADDRESS_MASK = 0x000FFFFFFFFFF000ULL;
@@ -430,4 +429,62 @@ bool Apic::initAPLocalApic() {
   // Read back to check the vector and software-enable bit.
   const uint32_t svr = _apicBase[APIC_SPURIOUSINTERRUPT];
   return (svr & 0x1FFu) == 0x1FFu;
+}
+
+bool Apic::initAPTimer() {
+  // Runs on the AP whose Local APIC timer is being configured.
+  // Caller must keep interrupts disabled.
+  constexpr uint32_t MASKED = 1u << 16;
+  constexpr uint32_t DIVIDE_BY_16 = 0x03;
+  constexpr uint32_t MAX_COUNT = 0xFFFFFFFFu;
+
+  // Stop the timer, then configure masked one-shot mode.
+  const int AP_TIMER_VECTOR = IRQ_BASE + StdIRQ::Instance().TIMER_IRQ.GetIRQNo();
+
+  _apicBase[APIC_TIMER_INITCOUNT] = 0;
+  _apicBase[APIC_TIMER] = MASKED | AP_TIMER_VECTOR;
+  _apicBase[APIC_TIMER_DIVIDECONFIG] = DIVIDE_BY_16;
+
+  auto& clock = TscClock::instance();
+
+  // Measure how far the APIC counter advances against the TSC clock.
+  const uint64_t startTsc = clock.rdtsc();
+  _apicBase[APIC_TIMER_INITCOUNT] = MAX_COUNT;
+
+  clock.busyWait(10000); // Approximately 10 ms.
+
+  const uint32_t remaining = _apicBase[APIC_TIMER_CURRENTCOUNT];
+  const uint64_t endTsc = clock.rdtsc();
+
+  _apicBase[APIC_TIMER_INITCOUNT] = 0;
+
+  const auto elapsedUs = clock.duration(startTsc, endTsc);
+
+  // Zero means the measurement exhausted the one-shot counter.
+  if (remaining == 0 || remaining == MAX_COUNT || elapsedUs <= 0) {
+    return false;
+  }
+
+  const uint64_t elapsedCounts = uint64_t(MAX_COUNT) - remaining;
+
+  // counts/second divided by requested interrupts/second.
+  // --> The timer counter countdown from elapsedCounts to 0 takes elapsedUs micro-seconds and generates 1 interrupt
+  // elapsedCounts = elapsedUs
+  // ? counts = 1 seconds / 1000 (the frequency i.e. no. of interrupts required per second)
+  // Therefore, ? counts = 1000000 micro seconds / 1000
+  // --> cross multiply
+  // ? counts = 1000000 * elapsedCounts / (elapsedUs * 1000)
+  const uint64_t initialCount =
+          (elapsedCounts * 1000000ULL) /
+          (uint64_t(elapsedUs) * INT_PER_SEC);
+
+  if (initialCount < 16 || initialCount > MAX_COUNT) {
+    return false;
+  }
+
+  // Configure periodic mode, unmask, then start counting.
+  _apicBase[APIC_TIMER] = TMR_PERIODIC | AP_TIMER_VECTOR;
+  _apicBase[APIC_TIMER_INITCOUNT] = uint32_t(initialCount);
+
+  return true;
 }
