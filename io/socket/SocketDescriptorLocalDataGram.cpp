@@ -55,7 +55,7 @@ static upan::string extractPath(const struct sockaddr& address, socklen_t len) {
 
   const upan::string path = localAddr.sun_path;
   if (!path.empty() && !(
-          (iskernel() || IsKernelProcess(ProcessManager::GetCurrentProcessID()))
+          (iskernel() || ProcessManager::Instance().IsKernelProcess(ProcessManager::GetCurrentProcessID()))
           && path == SYS_LOG_PATH)) {
     if (access(path.c_str(), O_WRONLY) != 0) {
       throw upan::exception(XLOC, "Permission denied to open socket on file: %s", path.c_str());
@@ -197,7 +197,6 @@ ssize_t SocketDescriptorLocalDataGram::_recvFrom(void* buf, size_t n, int flags,
       upan::mutex_guard g(_ioSync);
       if (!_messages.empty()) {
         const Message& msg = _messages.front();
-        _messages.pop_front();
 
         n = upan::min((size_t)msg._msg.length(), n);
         memcpy(buf, msg._msg.c_str(), n);
@@ -212,6 +211,7 @@ ssize_t SocketDescriptorLocalDataGram::_recvFrom(void* buf, size_t n, int flags,
           *len = sizeof(struct sockaddr_un);
         }
 
+        _messages.pop_front();
         return n;
       }
     }
