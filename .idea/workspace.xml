@@ -33,22 +33,31 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="use timespec instead of timeval for condition variable timed-wait">
+    <list default="true" id="0666e7ef-3f43-4b44-9d04-614e4deea9ab" name="Default Changelist" comment="bug fix: getAllocSize should return the size of usable allocated head size">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/drivers/usb/xhci/XHCIController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/boot/grub.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/boot/grub.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/interopc/libsys/SysProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/TscClock.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/TscClock.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/TscClock.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/TscClock.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/network/protocol/tcp/TCPConnection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/io/socket/SocketDescriptorLocalDataGram.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/MultiBoot.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/MultiBoot.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/UpanixMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/UpanixMain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory/DMM.h" beforeDir="false" afterPath="$PROJECT_DIR$/memory/DMM.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/AutonomousProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/AutonomousProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/KernelRootProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/KernelRootProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Process.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/Process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/ProcessStateInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ProcessStateInfo.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/ThreadLocalStorage.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/ThreadLocalStorage.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/storage/filesystem/FileSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/SchedulableProcess.h" beforeDir="false" afterPath="$PROJECT_DIR$/process/SchedulableProcess.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/Thread.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/process/Thread.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_macos" beforeDir="false" afterPath="$PROJECT_DIR$/run_macos" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syscall/SysCallProc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/syscall/SysCallProc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/Global.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/Global.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/KernelUtil.h" beforeDir="false" afterPath="$PROJECT_DIR$/util/KernelUtil.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -847,7 +856,8 @@
       <workItem from="1791727457925" duration="1068000" />
       <workItem from="1792212608878" duration="55489000" />
       <workItem from="1792839122392" duration="18690000" />
-      <workItem from="1792973017795" duration="59041000" />
+      <workItem from="1792973017795" duration="59338000" />
+      <workItem from="1793538387695" duration="65286000" />
     </task>
     <task id="LOCAL-00016" summary="save fx states and protect framebuffer copy by disabling all interrupts">
       <created>1693107341944</created>
@@ -1192,7 +1202,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712750419996</updated>
     </task>
-    <option name="localTasksCounter" value="333" />
+    <option name="localTasksCounter" value="338" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1226,11 +1236,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added a test interrupt handler for AP" />
-    <MESSAGE value="1. implemented Local APIC initialization code for AP.&#10;2. implemented IPI - to test an interrupt handler" />
-    <MESSAGE value="added ap-ipi test command in kernel console" />
-    <MESSAGE value="implement IrqGuard and IrqLockGuard that uses a spin mutex lock" />
-    <MESSAGE value="Kernel DMM uses IrqLockGuard - that ensure that it is safe across threads, processes and processor switches" />
     <MESSAGE value="Kernel DMM spin mutex uses a preallocated memory area for lock" />
     <MESSAGE value="all Cpu methods are made static - no Instance() anymore" />
     <MESSAGE value="kernel mode and current processor id is now part of Processor instance - as it can vary from one processor to another" />
@@ -1251,7 +1256,12 @@
     <MESSAGE value="edge case fix - in case writing more than 1MB, fix to advance the buffer pointer with number of bytes written" />
     <MESSAGE value="move out entropy into upanssl library - it's not a system call anymore" />
     <MESSAGE value="use timespec instead of timeval for condition variable timed-wait" />
-    <option name="LAST_COMMIT_MESSAGE" value="use timespec instead of timeval for condition variable timed-wait" />
+    <MESSAGE value="initiaize the threadcontrolblock with bootTime, bootTsc and tscFrequency data so some duration and other duration related util methods based on rdtsc value can be implemented in libc - without having to make system calls. This is also used when setting absolute time for system calls like timed-condition-variable-wait" />
+    <MESSAGE value="condition variable timed-wait uses absolute time as per POSIX spec. The waitqueue also uses raw pthread_mutex_t mutex variable instead of upan::mutex and waitqueue, dequeue and WAIT_QUEUE handler in scheduling process all use Irq-Spin-Lock guard" />
+    <MESSAGE value="refactor to print additional message for debugging purpose" />
+    <MESSAGE value="use correct macro MAX_SECTORS_PER_WRITE in _write() filesystem function" />
+    <MESSAGE value="bug fix: getAllocSize should return the size of usable allocated head size" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fix: getAllocSize should return the size of usable allocated head size" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -27,7 +27,6 @@ class KernelUtil {
 
 	public:
 		static void WaitOnInterrupt(const IRQ&);
-    static void TightLoopWait(unsigned loop) ;
 
     struct TimerTask
     {
@@ -35,7 +34,6 @@ class KernelUtil {
     };
     static void ScheduleTimedTask(const char* szName, unsigned uiTimeInMilliSec, TimerTask&, bool isCoreProcess);
     static void IOCtl(int fd, uint64_t cmd, uint64_t arg);
-    static void GetEntropy(void* buffer, size_t size);
 
 	private:
     static void SystemTimer(unsigned timeInMilliSec, TimerTask* task) ;

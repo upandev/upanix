@@ -31,28 +31,11 @@
 #include <TerminalDescriptor.h>
 #include <TerminalMasterDescriptor.h>
 #include <RedirectDescriptor.h>
-#include <TscClock.h>
 
 void KernelUtil::WaitOnInterrupt(const IRQ& irq)
 {
-	while(!irq.Consume())
-	{	
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
-	}
-}
-
-void KernelUtil::TightLoopWait(unsigned loop)
-{
-	unsigned i ;
-	for(i = 0; i < loop * loop * loop; i++)
-	{
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
-		__asm__ __volatile__("nop") ;
+	while(!irq.Consume()) {
+		__asm__ __volatile__("pause") ;
 	}
 }
 
